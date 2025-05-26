@@ -1,0 +1,13 @@
+{
+  "name": "@package/utils",
+  "version": "0.1.0",
+  "main": "index.ts",
+  "types": "index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "peerDependencies": {
+    "clsx": "2.1.1",
+    "tailwind-merge": "2.5.4"
+  }
+}

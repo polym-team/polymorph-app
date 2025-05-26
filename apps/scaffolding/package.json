@@ -1,0 +1,17 @@
+{
+  "name": "scaffolding",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "tsc": "tsc --noEmit",
+    "clean": "rm -rf .next"
+  },
+  "dependencies": {
+    "@package/ui": "workspace:*",
+    "@package/utils": "workspace:*"
+  }
+}

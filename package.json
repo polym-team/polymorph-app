@@ -1,0 +1,36 @@
+{
+  "name": "polymorph-app",
+  "version": "1.0.0",
+  "description": "Polymorph App Monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter scaffolding dev",
+    "build": "pnpm --filter scaffolding build",
+    "start": "pnpm --filter scaffolding start",
+    "lint": "pnpm --recursive lint",
+    "tsc": "pnpm --recursive type-check",
+    "clean": "pnpm --recursive clean"
+  },
+  "dependencies": {
+    "next": "14.2.29",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "tailwind-merge": "2.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "20.17.9",
+    "@types/react": "18.3.17",
+    "@types/react-dom": "18.3.5",
+    "postcss": "8.5.1",
+    "tailwindcss": "3.4.17",
+    "typescript": "5.7.2",
+    "autoprefixer": "10.4.20"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}
