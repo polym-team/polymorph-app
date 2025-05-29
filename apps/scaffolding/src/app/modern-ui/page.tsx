@@ -3,6 +3,10 @@ import {
   Typography,
   Input,
   Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Card,
   CardHeader,
   CardTitle,
@@ -106,9 +110,14 @@ export default function ModernUIPage() {
               <div className="space-y-3">
                 <Input type="text" placeholder="텍스트 입력" />
                 <Select>
-                  <option>옵션 선택</option>
-                  <option>옵션 1</option>
-                  <option>옵션 2</option>
+                  <SelectTrigger>
+                    <SelectValue placeholder="옵션 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="option1">옵션 1</SelectItem>
+                    <SelectItem value="option2">옵션 2</SelectItem>
+                    <SelectItem value="option3">옵션 3</SelectItem>
+                  </SelectContent>
                 </Select>
                 <div className="flex gap-2">
                   <Button variant="primary" className="flex-1">
