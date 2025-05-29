@@ -5,25 +5,29 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@package/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border",
   {
     variants: {
       variant: {
-        default: "bg-default text-default-foreground hover:bg-default/80",
-        primary: "bg-primary text-primary-foreground hover:bg-primary/90",
-        danger: "bg-danger text-danger-foreground hover:bg-danger/90",
+        default:
+          "border-transparent bg-default text-default-foreground hover:bg-default/80",
+        primary:
+          "border-transparent bg-primary text-primary-foreground hover:bg-primary/90",
+        danger:
+          "border-transparent bg-danger text-danger-foreground hover:bg-danger/90",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          "border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost:
+          "border-transparent hover:bg-accent hover:text-accent-foreground",
+        link: "border-transparent text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded px-3",
-        lg: "h-11 rounded px-8",
-        icon: "h-10 w-10",
+        default: "px-4 py-2",
+        sm: "rounded px-3 py-1.5",
+        lg: "rounded px-8 py-2.5",
+        icon: "p-2",
       },
     },
     defaultVariants: {
