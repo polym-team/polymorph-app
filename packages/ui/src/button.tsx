@@ -24,10 +24,10 @@ const buttonVariants = cva(
         link: "border-transparent text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "px-4 py-2",
-        sm: "rounded px-3 py-1.5",
-        lg: "rounded px-8 py-2.5",
-        icon: "p-2",
+        default: "px-4 py-2 text-sm",
+        sm: "rounded px-3 py-1.5 text-xs",
+        lg: "rounded px-8 py-2.5 text-base",
+        icon: "p-2 text-sm",
       },
     },
     defaultVariants: {

@@ -37,26 +37,54 @@ export default function ModernUIPage() {
             <Typography variant="h3" className="mb-4">
               버튼 컴포넌트
             </Typography>
-            <div className="space-y-3">
-              <Button className="w-full">Default Button</Button>
-              <Button variant="primary" className="w-full">
-                Primary Button
-              </Button>
-              <Button variant="danger" className="w-full">
-                Danger Button
-              </Button>
-              <Button variant="outline" className="w-full">
-                Outline Button
-              </Button>
-              <Button variant="secondary" className="w-full">
-                Secondary Button
-              </Button>
-              <Button variant="ghost" className="w-full">
-                Ghost Button
-              </Button>
-              <Button variant="link" className="w-full">
-                Link Button
-              </Button>
+            <div className="space-y-4">
+              <div>
+                <Typography variant="h4" className="mb-3 text-left">
+                  Variants
+                </Typography>
+                <div className="space-y-3">
+                  <Button className="w-full">Default Button</Button>
+                  <Button variant="primary" className="w-full">
+                    Primary Button
+                  </Button>
+                  <Button variant="danger" className="w-full">
+                    Danger Button
+                  </Button>
+                  <Button variant="outline" className="w-full">
+                    Outline Button
+                  </Button>
+                  <Button variant="secondary" className="w-full">
+                    Secondary Button
+                  </Button>
+                  <Button variant="ghost" className="w-full">
+                    Ghost Button
+                  </Button>
+                  <Button variant="link" className="w-full">
+                    Link Button
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <Typography variant="h4" className="mb-3 text-left">
+                  Sizes
+                </Typography>
+                <div className="space-y-3">
+                  <Button size="sm" className="w-full">
+                    Small Button
+                  </Button>
+                  <Button size="default" className="w-full">
+                    Default Button
+                  </Button>
+                  <Button size="lg" className="w-full">
+                    Large Button
+                  </Button>
+                  <div className="flex justify-center">
+                    <Button size="icon" variant="outline">
+                      ⚙️
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
