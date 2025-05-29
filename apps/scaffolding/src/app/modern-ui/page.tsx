@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import {
   Button,
   Typography,
@@ -7,6 +10,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  DatePicker,
+  MonthPicker,
   Card,
   CardHeader,
   CardTitle,
@@ -18,6 +23,9 @@ import {
 import Link from "next/link";
 
 export default function ModernUIPage() {
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedMonth, setSelectedMonth] = useState<Date>();
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="max-w-4xl w-full text-center">
@@ -273,6 +281,16 @@ export default function ModernUIPage() {
                     <SelectItem value="option3">옵션 3</SelectItem>
                   </SelectContent>
                 </Select>
+                <DatePicker
+                  value={selectedDate}
+                  onChange={setSelectedDate}
+                  placeholder="날짜를 선택하세요"
+                />
+                <MonthPicker
+                  value={selectedMonth}
+                  onChange={setSelectedMonth}
+                  placeholder="월을 선택하세요"
+                />
                 <div className="flex gap-2">
                   <Button variant="primary" className="flex-1">
                     제출

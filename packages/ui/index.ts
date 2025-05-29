@@ -22,3 +22,7 @@ export {
   CardContent,
 } from "./src/card";
 export { Badge } from "./src/badge";
+export { Calendar } from "./src/calendar";
+export { Popover, PopoverTrigger, PopoverContent } from "./src/popover";
+export { DatePicker } from "./src/date-picker";
+export { MonthPicker } from "./src/month-picker";
