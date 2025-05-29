@@ -1,4 +1,5 @@
 import * as React from 'react';
+
 import { cn } from '@package/utils';
 
 interface TypographyProps {

@@ -1,34 +1,35 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
+
 import {
+  Badge,
   Button,
-  Typography,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  DatePicker,
   Input,
+  MonthPicker,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  DatePicker,
-  MonthPicker,
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-  Badge,
+  Typography,
 } from '@package/ui';
-import Link from 'next/link';
 
 export default function ModernUIPage() {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedMonth, setSelectedMonth] = useState<Date>();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="max-w-4xl w-full text-center">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-24">
+      <div className="w-full max-w-4xl text-center">
         <Typography
           variant="h1"
           className="mb-8 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
@@ -39,9 +40,9 @@ export default function ModernUIPage() {
           shadcn/ui와 Tailwind CSS로 아름다운 UI를 구성하세요
         </Typography>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* Button Variants */}
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+          <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg">
             <Typography variant="h3" className="mb-4">
               버튼 컴포넌트
             </Typography>
@@ -97,7 +98,7 @@ export default function ModernUIPage() {
           </div>
 
           {/* Color Palette */}
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+          <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg">
             <Typography variant="h3" className="mb-4">
               컬러 팔레트
             </Typography>
@@ -109,37 +110,37 @@ export default function ModernUIPage() {
                 </Typography>
                 <div className="grid grid-cols-6 gap-2">
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-red-500 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-red-500"></div>
                     <Typography variant="small" className="text-xs">
                       Red
                     </Typography>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-orange-500 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-orange-500"></div>
                     <Typography variant="small" className="text-xs">
                       Orange
                     </Typography>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-yellow-500 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-yellow-500"></div>
                     <Typography variant="small" className="text-xs">
                       Yellow
                     </Typography>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-green-500 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-green-500"></div>
                     <Typography variant="small" className="text-xs">
                       Green
                     </Typography>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-blue-500"></div>
                     <Typography variant="small" className="text-xs">
                       Blue
                     </Typography>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-purple-500 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-purple-500"></div>
                     <Typography variant="small" className="text-xs">
                       Purple
                     </Typography>
@@ -154,37 +155,37 @@ export default function ModernUIPage() {
                 </Typography>
                 <div className="grid grid-cols-6 gap-2">
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-pink-500 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-pink-500"></div>
                     <Typography variant="small" className="text-xs">
                       Pink
                     </Typography>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-indigo-500 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-indigo-500"></div>
                     <Typography variant="small" className="text-xs">
                       Indigo
                     </Typography>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-teal-500 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-teal-500"></div>
                     <Typography variant="small" className="text-xs">
                       Teal
                     </Typography>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-cyan-500 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-cyan-500"></div>
                     <Typography variant="small" className="text-xs">
                       Cyan
                     </Typography>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-emerald-500 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-emerald-500"></div>
                     <Typography variant="small" className="text-xs">
                       Emerald
                     </Typography>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-lime-500 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-lime-500"></div>
                     <Typography variant="small" className="text-xs">
                       Lime
                     </Typography>
@@ -199,37 +200,37 @@ export default function ModernUIPage() {
                 </Typography>
                 <div className="grid grid-cols-6 gap-2">
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-gray-900 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-gray-900"></div>
                     <Typography variant="small" className="text-xs">
                       Gray 900
                     </Typography>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-gray-700 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-gray-700"></div>
                     <Typography variant="small" className="text-xs">
                       Gray 700
                     </Typography>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-gray-500 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-gray-500"></div>
                     <Typography variant="small" className="text-xs">
                       Gray 500
                     </Typography>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-gray-300 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-gray-300"></div>
                     <Typography variant="small" className="text-xs">
                       Gray 300
                     </Typography>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full bg-gray-100"></div>
                     <Typography variant="small" className="text-xs">
                       Gray 100
                     </Typography>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-white border border-gray-200 rounded-full mb-1"></div>
+                    <div className="mb-1 h-8 w-8 rounded-full border border-gray-200 bg-white"></div>
                     <Typography variant="small" className="text-xs">
                       White
                     </Typography>
@@ -240,11 +241,11 @@ export default function ModernUIPage() {
           </div>
 
           {/* Typography */}
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+          <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg">
             <Typography variant="h3" className="mb-4">
               타이포그래피
             </Typography>
-            <div className="text-left space-y-3">
+            <div className="space-y-3 text-left">
               <Typography variant="h1">H1 Heading</Typography>
               <Typography variant="h2">H2 Heading</Typography>
               <Typography variant="h3">H3 Heading</Typography>
@@ -260,11 +261,11 @@ export default function ModernUIPage() {
         </div>
 
         {/* Interactive Elements */}
-        <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 mb-8">
+        <div className="mb-8 rounded-xl border border-gray-100 bg-white p-8 shadow-lg">
           <Typography variant="h3" className="mb-6">
             인터랙티브 요소들
           </Typography>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             <div>
               <Typography variant="h4" className="mb-3">
                 폼 요소들
@@ -314,7 +315,7 @@ export default function ModernUIPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex justify-center gap-2 mb-3 flex-wrap">
+                    <div className="mb-3 flex flex-wrap justify-center gap-2">
                       <Badge variant="default">기본</Badge>
                       <Badge variant="secondary">보조</Badge>
                       <Badge variant="danger">위험</Badge>

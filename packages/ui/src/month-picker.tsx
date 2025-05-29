@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
@@ -8,8 +7,10 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
+import * as React from 'react';
 
 import { cn } from '@package/utils';
+
 import { Button } from './button';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
@@ -158,7 +159,7 @@ export function MonthPicker({
           <Button
             variant="outline"
             className={cn(
-              'w-full justify-center text-center font-normal pr-12 pl-12',
+              'w-full justify-center pl-12 pr-12 text-center font-normal',
               !value && 'text-muted-foreground'
             )}
             disabled={disabled}
@@ -181,7 +182,7 @@ export function MonthPicker({
           size="icon"
           onClick={() => handleMonthNavigation('prev')}
           disabled={disabled}
-          className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-7 z-10 hover:bg-accent"
+          className="hover:bg-accent absolute left-1 top-1/2 z-10 h-7 w-7 -translate-y-1/2"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -192,7 +193,7 @@ export function MonthPicker({
           size="icon"
           onClick={() => handleMonthNavigation('next')}
           disabled={disabled}
-          className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 z-10 hover:bg-accent"
+          className="hover:bg-accent absolute right-1 top-1/2 z-10 h-7 w-7 -translate-y-1/2"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
