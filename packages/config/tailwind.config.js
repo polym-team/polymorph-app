@@ -8,6 +8,9 @@ module.exports = (contentPaths = []) => ({
   ],
   theme: {
     extend: {
+      fontSize: {
+        base: "14px",
+      },
       colors: {
         border: "hsl(214.3 31.8% 91.4%)",
         input: "hsl(214.3 31.8% 91.4%)",
@@ -54,5 +57,12 @@ module.exports = (contentPaths = []) => ({
       },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addBase }) {
+      addBase({
+        html: { fontSize: "14px" },
+        body: { fontSize: "14px" },
+      });
+    },
+  ],
 });
