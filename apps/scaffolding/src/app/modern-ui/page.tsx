@@ -93,15 +93,141 @@ export default function ModernUIPage() {
             <Typography variant="h3" className="mb-4">
               컬러 팔레트
             </Typography>
-            <div className="grid grid-cols-4 gap-2">
-              <div className="w-8 h-8 bg-blue-500 rounded-full"></div>
-              <div className="w-8 h-8 bg-purple-500 rounded-full"></div>
-              <div className="w-8 h-8 bg-green-500 rounded-full"></div>
-              <div className="w-8 h-8 bg-red-500 rounded-full"></div>
-              <div className="w-8 h-8 bg-yellow-500 rounded-full"></div>
-              <div className="w-8 h-8 bg-pink-500 rounded-full"></div>
-              <div className="w-8 h-8 bg-indigo-500 rounded-full"></div>
-              <div className="w-8 h-8 bg-gray-500 rounded-full"></div>
+            <div className="space-y-4">
+              {/* Primary Colors */}
+              <div>
+                <Typography variant="h4" className="mb-2 text-left text-sm">
+                  Primary Colors
+                </Typography>
+                <div className="grid grid-cols-6 gap-2">
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-red-500 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Red
+                    </Typography>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-orange-500 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Orange
+                    </Typography>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-yellow-500 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Yellow
+                    </Typography>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-green-500 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Green
+                    </Typography>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Blue
+                    </Typography>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-purple-500 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Purple
+                    </Typography>
+                  </div>
+                </div>
+              </div>
+
+              {/* Extended Colors */}
+              <div>
+                <Typography variant="h4" className="mb-2 text-left text-sm">
+                  Extended Colors
+                </Typography>
+                <div className="grid grid-cols-6 gap-2">
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-pink-500 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Pink
+                    </Typography>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-indigo-500 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Indigo
+                    </Typography>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-teal-500 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Teal
+                    </Typography>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-cyan-500 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Cyan
+                    </Typography>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-emerald-500 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Emerald
+                    </Typography>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-lime-500 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Lime
+                    </Typography>
+                  </div>
+                </div>
+              </div>
+
+              {/* Neutral Colors */}
+              <div>
+                <Typography variant="h4" className="mb-2 text-left text-sm">
+                  Neutral Colors
+                </Typography>
+                <div className="grid grid-cols-6 gap-2">
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-gray-900 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Gray 900
+                    </Typography>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-gray-700 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Gray 700
+                    </Typography>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-gray-500 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Gray 500
+                    </Typography>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-gray-300 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Gray 300
+                    </Typography>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-gray-100 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      Gray 100
+                    </Typography>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-white border border-gray-200 rounded-full mb-1"></div>
+                    <Typography variant="small" className="text-xs">
+                      White
+                    </Typography>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
