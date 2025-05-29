@@ -31,6 +31,15 @@ importers:
         specifier: 5.7.2
         version: 5.7.2
 
+  apps/jibsayo:
+    dependencies:
+      '@package/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@package/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+
   apps/scaffolding:
     dependencies:
       '@package/ui':

@@ -4,12 +4,8 @@
   "description": "Polymorph App Monorepo",
   "private": true,
   "scripts": {
-    "dev": "pnpm --filter scaffolding dev",
-    "build": "pnpm --filter scaffolding build",
-    "start": "pnpm --filter scaffolding start",
-    "lint": "pnpm --recursive lint",
-    "tsc": "pnpm --recursive type-check",
-    "clean": "pnpm --recursive clean"
+    "scaffolding": "pnpm --filter scaffolding",
+    "jibsayo": "pnpm --filter jibsayo"
   },
   "engines": {
     "node": ">=18.0.0",
