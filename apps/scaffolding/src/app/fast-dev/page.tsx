@@ -1,5 +1,5 @@
-import { Button } from "@package/ui";
-import Link from "next/link";
+import { Button } from '@package/ui';
+import Link from 'next/link';
 
 export default function FastDevPage() {
   return (

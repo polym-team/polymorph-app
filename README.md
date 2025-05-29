@@ -167,7 +167,7 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
-} from "@package/ui";
+} from '@package/ui';
 
 function MyComponent() {
   return (
@@ -192,10 +192,10 @@ function MyComponent() {
 ### 유틸리티 함수 사용
 
 ```tsx
-import { cn } from "@package/utils";
+import { cn } from '@package/utils';
 
 function MyComponent({ className }) {
-  return <div className={cn("base-classes", className)}>내용</div>;
+  return <div className={cn('base-classes', className)}>내용</div>;
 }
 ```
 

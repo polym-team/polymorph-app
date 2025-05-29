@@ -1,4 +1,4 @@
-import { Typography } from "@package/ui";
+import { Typography } from '@package/ui';
 
 export default function Home() {
   return (

@@ -1,5 +1,5 @@
-import { Button, Typography } from "@package/ui";
-import Link from "next/link";
+import { Button, Typography } from '@package/ui';
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -29,7 +29,7 @@ export default function Home() {
           className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 cursor-pointer"
         >
           <Typography variant="h2" className="mb-3">
-            빠른 개발{" "}
+            빠른 개발{' '}
             <span className="inline-block transition-transform group-hover:translate-x-1">
               -&gt;
             </span>
@@ -44,7 +44,7 @@ export default function Home() {
           className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 cursor-pointer"
         >
           <Typography variant="h2" className="mb-3">
-            모던 UI{" "}
+            모던 UI{' '}
             <span className="inline-block transition-transform group-hover:translate-x-1">
               -&gt;
             </span>
@@ -59,7 +59,7 @@ export default function Home() {
           className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 cursor-pointer"
         >
           <Typography variant="h2" className="mb-3">
-            모노레포{" "}
+            모노레포{' '}
             <span className="inline-block transition-transform group-hover:translate-x-1">
               -&gt;
             </span>

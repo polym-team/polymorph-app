@@ -1,6 +1,6 @@
-import { Button } from "@package/ui";
-import { cn } from "@package/utils";
-import Link from "next/link";
+import { Button } from '@package/ui';
+import { cn } from '@package/utils';
+import Link from 'next/link';
 
 export default function MonorepoPage() {
   return (
@@ -17,7 +17,7 @@ export default function MonorepoPage() {
             <div>polymorph-app/</div>
             <div className="ml-4">├── apps/</div>
             <div className="ml-8">
-              └── scaffolding/{" "}
+              └── scaffolding/{' '}
               <span className="text-gray-500"># Next.js 앱</span>
             </div>
             <div className="ml-4">├── packages/</div>
@@ -68,8 +68,8 @@ export default function MonorepoPage() {
             <div className="space-y-2 mb-4">
               <div
                 className={cn(
-                  "p-2 bg-blue-100 rounded text-sm",
-                  "text-blue-800"
+                  'p-2 bg-blue-100 rounded text-sm',
+                  'text-blue-800'
                 )}
               >
                 cn() 함수 예시

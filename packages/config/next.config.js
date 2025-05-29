@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const createNextConfig = (customConfig = {}) => {
   const baseConfig = {
-    transpilePackages: ["@package/ui", "@package/utils"],
+    transpilePackages: ['@package/ui', '@package/utils'],
   };
 
   return {

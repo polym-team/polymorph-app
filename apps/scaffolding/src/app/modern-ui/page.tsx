@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Button,
   Typography,
@@ -19,8 +19,8 @@ import {
   CardContent,
   CardFooter,
   Badge,
-} from "@package/ui";
-import Link from "next/link";
+} from '@package/ui';
+import Link from 'next/link';
 
 export default function ModernUIPage() {
   const [selectedDate, setSelectedDate] = useState<Date>();
