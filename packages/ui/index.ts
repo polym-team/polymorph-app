@@ -41,4 +41,4 @@ export {
 } from './src/table';
 export { DataTableColumnHeader } from './src/data-table-column-header';
 export { DataTable } from './src/data-table';
-export type { ColumnDef } from '@tanstack/react-table';
+export type { ColumnDef, SortingState } from '@tanstack/react-table';

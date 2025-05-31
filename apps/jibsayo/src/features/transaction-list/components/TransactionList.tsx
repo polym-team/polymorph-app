@@ -13,6 +13,7 @@ import {
 
 import { useTransactionData } from '../hooks/useTransactionData';
 import { useTransactionFilter } from '../hooks/useTransactionFilter';
+import { useTransactionViewSetting } from '../hooks/useTransactionViewSetting';
 import { useTransactionListQuery } from '../models/useTransactionListQuery';
 import { formatPrice, formatSizeWithPyeong } from '../services/formatter';
 
@@ -94,6 +95,13 @@ export function TransactionList() {
   const { totalCount, averagePrice, fullRegionName } =
     useTransactionData(filteredTransactions);
 
+  const { sorting, pageSize, updateSorting, updatePageSize, isMounted } =
+    useTransactionViewSetting();
+
+  // SSR 환경에서는 기본값 사용, 클라이언트에서는 저장된 설정 사용
+  const effectivePageSize = isMounted ? pageSize : 10;
+  const effectiveSorting = isMounted ? sorting : [];
+
   return (
     <div className="w-full">
       <div className="mb-4 flex items-center justify-between">
@@ -146,6 +154,10 @@ export function TransactionList() {
             ? '데이터를 불러오는 중입니다.'
             : '검색 조건에 맞는 실거래가 데이터가 없습니다.'
         }
+        sorting={effectiveSorting}
+        pageSize={effectivePageSize}
+        onSortingChange={updateSorting}
+        onPageSizeChange={updatePageSize}
       />
     </div>
   );

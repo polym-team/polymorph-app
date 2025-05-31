@@ -2,10 +2,10 @@ import {
   getCityNameWithRegionCode,
   getRegionNameWithRegionCode,
 } from '@/entities/region';
-import { STORAGE_KEY } from '@/shared/consts/storageKet';
+import { STORAGE_KEY } from '@/shared/consts/storageKey';
 import { getItem, setItem } from '@/shared/lib/localStorage';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Return {
   favoriteRegions: string[];
@@ -14,9 +14,14 @@ interface Return {
 }
 
 export const useFavoriteRegion = (): Return => {
-  const [favoriteRegions, setFavoriteRegions] = useState<string[]>(
-    getItem(STORAGE_KEY.FAVORITE_REGION_LIST) ?? []
-  );
+  const [favoriteRegions, setFavoriteRegions] = useState<string[]>([]);
+
+  useEffect(() => {
+    const savedRegions = getItem<string[]>(STORAGE_KEY.FAVORITE_REGION_LIST);
+    if (savedRegions) {
+      setFavoriteRegions(savedRegions);
+    }
+  }, []);
 
   const addFavoriteRegion = (regionCode: string) => {
     setFavoriteRegions(prev => {
@@ -34,7 +39,11 @@ export const useFavoriteRegion = (): Return => {
   };
 
   const removeFavoriteRegion = (regionCode: string) => {
-    setFavoriteRegions(prev => prev.filter(r => r !== regionCode));
+    setFavoriteRegions(prev => {
+      const newRegions = prev.filter(r => r !== regionCode);
+      setItem(STORAGE_KEY.FAVORITE_REGION_LIST, newRegions);
+      return newRegions;
+    });
   };
 
   return { favoriteRegions, addFavoriteRegion, removeFavoriteRegion };
