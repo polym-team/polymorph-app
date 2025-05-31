@@ -26,3 +26,16 @@ export { Calendar } from './src/calendar';
 export { Popover, PopoverTrigger, PopoverContent } from './src/popover';
 export { DatePicker } from './src/date-picker';
 export { MonthPicker } from './src/month-picker';
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption,
+} from './src/table';
+export { DataTableColumnHeader } from './src/data-table-column-header';
+export { DataTable } from './src/data-table';
+export type { ColumnDef } from '@tanstack/react-table';

@@ -1,14 +1,87 @@
 'use client';
 
+import { TransactionsResponse } from '@/app/api/transactions/types';
+
+import { ColumnDef, DataTable, DataTableColumnHeader } from '@package/ui';
+
 import { useTransactionListQuery } from '../models/useTransactionListQuery';
+import { formatPrice } from '../service/formatter';
+
+const columns: ColumnDef<TransactionsResponse['list'][number]>[] = [
+  {
+    accessorKey: 'tradeDate',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="거래일" />
+    ),
+    size: 120,
+  },
+  {
+    accessorKey: 'address',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="주소지" />
+    ),
+    size: 200,
+  },
+  {
+    accessorKey: 'apartName',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="아파트명" />
+    ),
+    size: 260,
+  },
+  {
+    accessorKey: 'size',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="평수" />
+    ),
+    cell: ({ row }) => {
+      const size = row.getValue('size') as number;
+      return <div>{size}㎡</div>;
+    },
+    size: 80,
+  },
+  {
+    accessorKey: 'tradeAmount',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="거래가격" />
+    ),
+    cell: ({ row }) => {
+      const amount = row.getValue('tradeAmount') as number;
+      return <div className="font-medium">{formatPrice(amount)}</div>;
+    },
+    size: 150,
+  },
+  {
+    accessorKey: 'isNewRecord',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="신고가" />
+    ),
+    cell: ({ row }) => {
+      const isHigh = row.getValue('isNewRecord') as boolean;
+      return (
+        <div className={isHigh ? 'font-medium text-red-600' : ''}>
+          {isHigh ? '신고가' : ''}
+        </div>
+      );
+    },
+    size: 80,
+  },
+];
 
 export function TransactionList() {
-  const { data } = useTransactionListQuery();
+  const { isLoading, data } = useTransactionListQuery();
 
   return (
-    <div>
-      <h1>TransactionList</h1>
-      <div>{JSON.stringify(data)}</div>
+    <div className="w-full">
+      <DataTable
+        columns={columns}
+        data={data?.list ?? []}
+        emptyMessage={
+          isLoading
+            ? '데이터를 불러오는 중입니다.'
+            : '검색 조건에 맞는 실거래가 데이터가 없습니다.'
+        }
+      />
     </div>
   );
 }
