@@ -1,5 +1,7 @@
 'use client';
 
+import { cityNameList, getRegionsWithCityName } from '@/entities/region';
+
 import { useRouter } from 'next/navigation';
 
 import {
@@ -13,7 +15,6 @@ import {
 } from '@package/ui';
 
 import { useSearchForm } from '../hooks/useSearchForm';
-import { cityNameList, getRegionsWithCityName } from '../services/region';
 
 interface Props {
   onAddFavoriteRegion: (regionCode: string) => void;

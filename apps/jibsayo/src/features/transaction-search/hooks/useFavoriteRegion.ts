@@ -1,12 +1,11 @@
+import {
+  getCityNameWithRegionCode,
+  getRegionNameWithRegionCode,
+} from '@/entities/region';
 import { STORAGE_KEY } from '@/shared/consts/storageKet';
 import { getItem, setItem } from '@/shared/lib/localStorage';
 
 import { useState } from 'react';
-
-import {
-  getCityNameWithRegionCode,
-  getRegionNameWithRegionCode,
-} from '../services/region';
 
 interface Return {
   favoriteRegions: string[];

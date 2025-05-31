@@ -1,14 +1,14 @@
 'use client';
 
+import {
+  getCityNameWithRegionCode,
+  getRegionNameWithRegionCode,
+} from '@/entities/region';
+
 import { X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@package/ui';
-
-import {
-  getCityNameWithRegionCode,
-  getRegionNameWithRegionCode,
-} from '../services/region';
 
 interface Props {
   favoriteRegions: string[];

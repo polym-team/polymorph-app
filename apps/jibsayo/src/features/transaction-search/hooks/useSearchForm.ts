@@ -1,12 +1,13 @@
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-
-import { SearchForm } from '../models/types';
 import {
   cityNameList,
   getCityNameWithRegionCode,
   getRegionsWithCityName,
-} from '../services/region';
+} from '@/entities/region';
+
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+import { SearchForm } from '../models/types';
 
 interface Return {
   form: SearchForm;
