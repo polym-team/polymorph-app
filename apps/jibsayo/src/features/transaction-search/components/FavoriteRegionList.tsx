@@ -13,6 +13,7 @@ import { Button } from '@package/ui';
 interface Props {
   favoriteRegions: string[];
   onRemoveFavoriteRegion: (regionCode: string) => void;
+  isLoading?: boolean;
 }
 
 export function FavoriteRegionList({
@@ -41,17 +42,23 @@ export function FavoriteRegionList({
   };
 
   return (
-    <div className="flex gap-x-1">
+    <div
+      className="flex min-h-[34px] gap-x-1 overflow-x-auto [&::-webkit-scrollbar]:hidden"
+      style={{
+        scrollbarWidth: 'none' /* Firefox */,
+        msOverflowStyle: 'none' /* IE and Edge */,
+      }}
+    >
       {favoriteRegions.map(regionCode => (
         <div
           key={regionCode}
-          className="border-input bg-background flex rounded-md border"
+          className="border-input bg-background flex flex-shrink-0 rounded-md border"
         >
           <Button
             variant="ghost"
             size="sm"
             onClick={() => handleSelectRegion(regionCode)}
-            className="rounded-r-none border-0 px-3 py-1.5 text-sm"
+            className="whitespace-nowrap rounded-r-none border-0 px-3 py-1.5 text-sm"
           >
             <span className="translate-y-[-0.5px]">
               {getCityNameWithRegionCode(regionCode)}{' '}
