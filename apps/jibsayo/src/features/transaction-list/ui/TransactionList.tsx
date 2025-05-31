@@ -7,6 +7,14 @@ import { ColumnDef, DataTable, DataTableColumnHeader } from '@package/ui';
 import { useTransactionListQuery } from '../models/useTransactionListQuery';
 import { formatPrice } from '../service/formatter';
 
+// 평수 계산 함수 (㎡ -> 평, 공급면적 기준)
+const formatSizeWithPyeong = (exclusiveAreaInSquareMeters: number): string => {
+  // 공급면적 = 전용면적 × 1.35 (일반적인 계수)
+  const supplyArea = exclusiveAreaInSquareMeters * 1.35;
+  const pyeong = Math.round(supplyArea / 3.3);
+  return `${pyeong}평(${exclusiveAreaInSquareMeters}㎡)`;
+};
+
 const columns: ColumnDef<TransactionsResponse['list'][number]>[] = [
   {
     accessorKey: 'tradeDate',
@@ -36,9 +44,9 @@ const columns: ColumnDef<TransactionsResponse['list'][number]>[] = [
     ),
     cell: ({ row }) => {
       const size = row.getValue('size') as number;
-      return <div>{size}㎡</div>;
+      return <div>{formatSizeWithPyeong(size)}</div>;
     },
-    size: 80,
+    size: 120,
   },
   {
     accessorKey: 'tradeAmount',
@@ -47,7 +55,9 @@ const columns: ColumnDef<TransactionsResponse['list'][number]>[] = [
     ),
     cell: ({ row }) => {
       const amount = row.getValue('tradeAmount') as number;
-      return <div className="font-medium">{formatPrice(amount)}</div>;
+      return (
+        <div className="text-primary font-bold">{formatPrice(amount)}</div>
+      );
     },
     size: 150,
   },
