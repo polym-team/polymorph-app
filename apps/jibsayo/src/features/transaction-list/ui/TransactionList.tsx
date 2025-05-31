@@ -1,10 +1,22 @@
 'use client';
 
 import { TransactionsResponse } from '@/app/api/transactions/types';
+import {
+  getCityNameWithRegionCode,
+  getRegionNameWithRegionCode,
+} from '@/entities/region';
 
-import { ColumnDef, DataTable, DataTableColumnHeader } from '@package/ui';
+import { useSearchParams } from 'next/navigation';
+
+import {
+  ColumnDef,
+  DataTable,
+  DataTableColumnHeader,
+  Typography,
+} from '@package/ui';
 
 import { useTransactionListQuery } from '../models/useTransactionListQuery';
+import { calculateAveragePrice } from '../service/calculator';
 import { formatPrice } from '../service/formatter';
 
 // 평수 계산 함수 (㎡ -> 평, 공급면적 기준)
@@ -79,13 +91,39 @@ const columns: ColumnDef<TransactionsResponse['list'][number]>[] = [
 ];
 
 export function TransactionList() {
+  const searchParams = useSearchParams();
   const { isLoading, data } = useTransactionListQuery();
+
+  const transactions = data?.list ?? [];
+  const totalCount = data?.count ?? 0;
+  const averagePrice = calculateAveragePrice(transactions);
+
+  const regionCode = searchParams.get('regionCode');
+  const cityName = regionCode ? getCityNameWithRegionCode(regionCode) : '';
+  const regionName = regionCode ? getRegionNameWithRegionCode(regionCode) : '';
+  const fullRegionName =
+    cityName && regionName ? `${cityName} ${regionName}` : '';
 
   return (
     <div className="w-full">
+      {transactions.length > 0 && (
+        <div className="mb-4 flex items-center gap-x-1">
+          <Typography className="font-bold">{fullRegionName}</Typography>
+          <Typography variant="small">
+            (총 거래 건수{' '}
+            <span className="text-primary font-bold">{totalCount}건</span>
+            <span className="mx-1 text-gray-400">·</span>
+            평균 거래가격{' '}
+            <span className="text-primary font-bold">
+              {formatPrice(averagePrice)}
+            </span>
+            )
+          </Typography>
+        </div>
+      )}
       <DataTable
         columns={columns}
-        data={data?.list ?? []}
+        data={transactions}
         emptyMessage={
           isLoading
             ? '데이터를 불러오는 중입니다.'
