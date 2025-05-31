@@ -13,20 +13,20 @@ import {
 } from '@package/ui';
 
 import { useSearchForm } from '../hooks/useSearchForm';
+import { cityNameList, getRegionsWithCityName } from '../services/region';
 
-export function SearchForm() {
+interface Props {
+  onAddFavoriteRegion: (regionCode: string) => void;
+}
+
+export function SearchForm({ onAddFavoriteRegion }: Props) {
   const router = useRouter();
-  const { form, setForm } = useSearchForm();
-
-  const handleChangeDate = (nextDate: Date | undefined) => {
-    if (nextDate) {
-      setForm(prev => ({ ...prev, date: nextDate }));
-    }
-  };
-
-  const handleChangeRegionCode = (nextRegionCode: string) => {
-    setForm(prev => ({ ...prev, regionCode: nextRegionCode }));
-  };
+  const {
+    form,
+    handleChangeCityName,
+    handleChangeRegionCode,
+    handleChangeDate,
+  } = useSearchForm();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,13 +41,16 @@ export function SearchForm() {
 
   return (
     <form className="flex gap-x-2" onSubmit={handleSubmit}>
-      <Select>
+      <Select value={form.cityName} onValueChange={handleChangeCityName}>
         <SelectTrigger className="w-[150px]">
           <SelectValue placeholder="시/도 선택" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="apple">서울시</SelectItem>
-          <SelectItem value="banana">경기도</SelectItem>
+          {cityNameList.map(cityName => (
+            <SelectItem key={cityName} value={cityName}>
+              {cityName}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
       <Select value={form.regionCode} onValueChange={handleChangeRegionCode}>
@@ -55,15 +58,22 @@ export function SearchForm() {
           <SelectValue placeholder="시/군/구 선택" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="11740">강동구</SelectItem>
-          <SelectItem value="11590">동작구</SelectItem>
+          {getRegionsWithCityName(form.cityName).map(region => (
+            <SelectItem key={region.code} value={region.code}>
+              {region.name}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
       <MonthPicker value={form.date} onChange={handleChangeDate} />
       <Button type="submit" variant="primary">
         검색
       </Button>
-      <Button type="button" variant="outline">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => onAddFavoriteRegion(form.regionCode)}
+      >
         즐겨찾기
       </Button>
     </form>

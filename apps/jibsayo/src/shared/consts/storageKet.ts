@@ -1,0 +1,3 @@
+export const STORAGE_KEY = {
+  FAVORITE_REGION_LIST: 'JIBSAYO:FAVORITE_REGION_LIST',
+} as const;

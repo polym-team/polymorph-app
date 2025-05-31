@@ -1,2 +1,1 @@
-export { SearchForm } from './ui/SearchForm';
-export { FavoriteRegionList } from './ui/FavoriteRegionList';
+export { TransactionSearch } from './components/TransactionSearch';

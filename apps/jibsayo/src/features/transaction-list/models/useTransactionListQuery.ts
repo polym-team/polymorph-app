@@ -8,8 +8,10 @@ export const useTransactionListQuery = () => {
   const tradeDate = searchParams.get('tradeDate');
 
   return useQuery({
-    queryKey: ['transaction-list'],
+    queryKey: ['transaction-list', regionCode, tradeDate],
     enabled: !!regionCode && !!tradeDate,
+    staleTime: 1000 * 60 * 60 * 24,
+    gcTime: 1000 * 60 * 60 * 24,
     queryFn: async () =>
       (
         await fetch(
