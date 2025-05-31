@@ -1,18 +1,14 @@
-import { TransactionsResponse } from '@/app/api/transactions/types';
+'use client';
 
-interface Props {
-  isLoading: boolean;
-  data: TransactionsResponse;
-}
+import { useTransactionListQuery } from '../models/useTransactionListQuery';
 
-export function TransactionList({ isLoading, data }: Props) {
+export function TransactionList() {
+  const { data } = useTransactionListQuery();
+
   return (
     <div>
       <h1>TransactionList</h1>
-      <div>
-        {isLoading && <div>loading...</div>}
-        {JSON.stringify(data)}
-      </div>
+      <div>{JSON.stringify(data)}</div>
     </div>
   );
 }

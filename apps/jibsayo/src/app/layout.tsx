@@ -1,4 +1,5 @@
 import { Header } from '@/components/Header';
+import { QueryProvider } from '@/components/QueryProvider';
 
 import type { Metadata } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
@@ -24,14 +25,16 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${notoSansKr.variable} ${notoSansKr.className}`}>
-        <div className="flex min-h-screen flex-col">
-          <Header />
-          <main className="flex-1 bg-gray-50">
-            <section className="container mx-auto px-4 pb-10 pt-5">
-              {children}
-            </section>
-          </main>
-        </div>
+        <QueryProvider>
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-1 bg-gray-50">
+              <section className="container mx-auto px-4 pb-10 pt-5">
+                {children}
+              </section>
+            </main>
+          </div>
+        </QueryProvider>
       </body>
     </html>
   );
