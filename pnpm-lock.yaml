@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      lucide-react:
+        specifier: 0.511.0
+        version: 0.511.0(react@18.3.1)
       next:
         specifier: 14.2.29
         version: 14.2.29(react-dom@18.3.1)(react@18.3.1)
@@ -97,9 +100,6 @@ importers:
       date-fns:
         specifier: 3.6.0
         version: 3.6.0
-      lucide-react:
-        specifier: 0.511.0
-        version: 0.511.0(react@18.3.1)
       react:
         specifier: 18.3.1
         version: 18.3.1

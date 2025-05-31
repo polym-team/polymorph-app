@@ -25,14 +25,19 @@ interface MonthPickerProps {
 export function MonthPicker({
   value,
   onChange,
-  placeholder = '월을 선택하세요',
+  placeholder = '월 선택',
   disabled = false,
   className,
 }: MonthPickerProps) {
   const [open, setOpen] = React.useState(false);
-  const [currentYear, setCurrentYear] = React.useState(
-    value?.getFullYear() || new Date().getFullYear()
-  );
+  const [currentYear, setCurrentYear] = React.useState(() => {
+    return value?.getFullYear() || new Date().getFullYear();
+  });
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const months = [
     '1월',
@@ -61,6 +66,8 @@ export function MonthPicker({
 
   // 이전달/다음달 네비게이션
   const handleMonthNavigation = (direction: 'prev' | 'next') => {
+    if (!isMounted) return;
+
     if (!value) {
       // 값이 없으면 현재 날짜 기준으로 시작
       const now = new Date();

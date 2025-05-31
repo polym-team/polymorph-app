@@ -7,7 +7,7 @@ import * as React from 'react';
 
 import { cn } from '@package/utils';
 
-const Select = SelectPrimitive.Root;
+const SelectRoot = SelectPrimitive.Root;
 
 const SelectGroup = SelectPrimitive.Group;
 
@@ -146,6 +146,19 @@ const SelectSeparator = React.forwardRef<
   />
 ));
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
+
+// 중첩된 컴포넌트 구조 생성
+const Select = Object.assign(SelectRoot, {
+  Trigger: Object.assign(SelectTrigger, {
+    Value: SelectValue,
+  }),
+  Content: Object.assign(SelectContent, {
+    Item: SelectItem,
+  }),
+  Group: SelectGroup,
+  Label: SelectLabel,
+  Separator: SelectSeparator,
+});
 
 export {
   Select,

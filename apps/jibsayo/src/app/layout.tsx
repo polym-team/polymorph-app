@@ -1,8 +1,9 @@
+import { Header } from '@/components/Header';
+
 import type { Metadata } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
 
 import '../../../../packages/styles/globals.css';
-import { Header } from '../components/Header';
 
 const notoSansKr = Noto_Sans_KR({
   weight: ['400', '500', '700'],
@@ -25,7 +26,11 @@ export default function RootLayout({
       <body className={`${notoSansKr.variable} ${notoSansKr.className}`}>
         <div className="flex min-h-screen flex-col">
           <Header />
-          <main className="flex-1 bg-gray-50">{children}</main>
+          <main className="flex-1 bg-gray-50">
+            <section className="container mx-auto px-4 pb-10 pt-5">
+              {children}
+            </section>
+          </main>
         </div>
       </body>
     </html>

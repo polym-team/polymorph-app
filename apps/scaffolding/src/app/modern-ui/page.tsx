@@ -290,7 +290,6 @@ export default function ModernUIPage() {
                 <MonthPicker
                   value={selectedMonth}
                   onChange={setSelectedMonth}
-                  placeholder="월을 선택하세요"
                 />
                 <div className="flex gap-2">
                   <Button variant="primary" className="flex-1">
