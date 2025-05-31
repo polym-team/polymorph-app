@@ -15,6 +15,7 @@ import { useTransactionData } from '../hooks/useTransactionData';
 import { useTransactionFilter } from '../hooks/useTransactionFilter';
 import { useTransactionViewSetting } from '../hooks/useTransactionViewSetting';
 import { useTransactionListQuery } from '../models/useTransactionListQuery';
+import { calculatePricePerPyeong } from '../services/calculator';
 import { formatPrice, formatSizeWithPyeong } from '../services/formatter';
 
 const columns: ColumnDef<TransactionsResponse['list'][number]>[] = [
@@ -64,6 +65,23 @@ const columns: ColumnDef<TransactionsResponse['list'][number]>[] = [
     size: 150,
   },
   {
+    id: 'pricePerPyeong',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="평당 가격" />
+    ),
+    cell: ({ row }) => {
+      const amount = row.getValue('tradeAmount') as number;
+      const size = row.getValue('size') as number;
+      const pricePerPyeong = calculatePricePerPyeong(amount, size);
+      return (
+        <div className="font-medium text-blue-600">
+          {formatPrice(pricePerPyeong)}
+        </div>
+      );
+    },
+    size: 130,
+  },
+  {
     accessorKey: 'isNewRecord',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="신고가" />
@@ -92,7 +110,7 @@ export function TransactionList() {
     setIsNationalSizeOnly,
   } = useTransactionFilter(transactions);
 
-  const { totalCount, averagePrice, fullRegionName } =
+  const { totalCount, averagePricePerPyeong, fullRegionName } =
     useTransactionData(filteredTransactions);
 
   const { sorting, pageSize, updateSorting, updatePageSize, isMounted } =
@@ -118,9 +136,9 @@ export function TransactionList() {
                   <span className="text-gray-500">/{totalCount}건</span>
                 )}
                 <span className="mx-1 text-gray-400">·</span>
-                평균 거래가격{' '}
+                평당 거래가격{' '}
                 <span className="text-primary font-bold">
-                  {formatPrice(averagePrice)}
+                  {formatPrice(averagePricePerPyeong)}
                 </span>
                 )
               </Typography>

@@ -6,7 +6,7 @@ import {
 
 import { useSearchParams } from 'next/navigation';
 
-import { calculateAveragePrice } from '../services/calculator';
+import { calculateAveragePricePerPyeong } from '../services/calculator';
 
 export function useTransactionData(
   filteredTransactions: TransactionsResponse['list']
@@ -15,7 +15,8 @@ export function useTransactionData(
 
   const regionCode = searchParams.get('regionCode');
   const totalCount = filteredTransactions.length;
-  const averagePrice = calculateAveragePrice(filteredTransactions);
+  const averagePricePerPyeong =
+    calculateAveragePricePerPyeong(filteredTransactions);
 
   const cityName = regionCode ? getCityNameWithRegionCode(regionCode) : '';
   const regionName = regionCode ? getRegionNameWithRegionCode(regionCode) : '';
@@ -24,7 +25,7 @@ export function useTransactionData(
 
   return {
     totalCount,
-    averagePrice,
+    averagePricePerPyeong,
     fullRegionName,
   };
 }
