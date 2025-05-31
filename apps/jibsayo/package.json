@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@package/ui": "workspace:*",
-    "@package/utils": "workspace:*"
-  },
-  "devDependencies": {}
+    "@package/utils": "workspace:*",
+    "cheerio": "1.0.0-rc.12"
+  }
 }

@@ -164,6 +164,7 @@ export function MonthPicker({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
+            type="button"
             variant="outline"
             className={cn(
               'w-full justify-center pl-12 pr-12 text-center font-normal',
@@ -185,6 +186,7 @@ export function MonthPicker({
 
         {/* 이전달 버튼 - 절대 위치 */}
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           onClick={() => handleMonthNavigation('prev')}
@@ -196,6 +198,7 @@ export function MonthPicker({
 
         {/* 다음달 버튼 - 절대 위치 */}
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           onClick={() => handleMonthNavigation('next')}
@@ -210,6 +213,7 @@ export function MonthPicker({
             {/* Year Navigation */}
             <div className="flex items-center justify-between">
               <Button
+                type="button"
                 variant="outline"
                 size="icon"
                 onClick={() => handleYearChange('prev')}
@@ -219,6 +223,7 @@ export function MonthPicker({
               </Button>
               <div className="font-semibold">{currentYear}년</div>
               <Button
+                type="button"
                 variant="outline"
                 size="icon"
                 onClick={() => handleYearChange('next')}
@@ -233,6 +238,7 @@ export function MonthPicker({
               {months.map((month, index) => (
                 <Button
                   key={month}
+                  type="button"
                   variant={
                     value &&
                     value.getFullYear() === currentYear &&
