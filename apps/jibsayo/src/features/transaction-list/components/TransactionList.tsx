@@ -1,31 +1,20 @@
 'use client';
 
 import { TransactionsResponse } from '@/app/api/transactions/types';
-import {
-  getCityNameWithRegionCode,
-  getRegionNameWithRegionCode,
-} from '@/entities/region';
-
-import { useSearchParams } from 'next/navigation';
 
 import {
   ColumnDef,
   DataTable,
   DataTableColumnHeader,
+  Input,
+  LabelCheckbox,
   Typography,
 } from '@package/ui';
 
+import { useTransactionData } from '../hooks/useTransactionData';
+import { useTransactionFilter } from '../hooks/useTransactionFilter';
 import { useTransactionListQuery } from '../models/useTransactionListQuery';
-import { calculateAveragePrice } from '../service/calculator';
-import { formatPrice } from '../service/formatter';
-
-// 평수 계산 함수 (㎡ -> 평, 공급면적 기준)
-const formatSizeWithPyeong = (exclusiveAreaInSquareMeters: number): string => {
-  // 공급면적 = 전용면적 × 1.35 (일반적인 계수)
-  const supplyArea = exclusiveAreaInSquareMeters * 1.35;
-  const pyeong = Math.round(supplyArea / 3.3);
-  return `${pyeong}평(${exclusiveAreaInSquareMeters}㎡)`;
-};
+import { formatPrice, formatSizeWithPyeong } from '../services/formatter';
 
 const columns: ColumnDef<TransactionsResponse['list'][number]>[] = [
   {
@@ -91,39 +80,67 @@ const columns: ColumnDef<TransactionsResponse['list'][number]>[] = [
 ];
 
 export function TransactionList() {
-  const searchParams = useSearchParams();
   const { isLoading, data } = useTransactionListQuery();
-
   const transactions = data?.list ?? [];
-  const totalCount = data?.count ?? 0;
-  const averagePrice = calculateAveragePrice(transactions);
 
-  const regionCode = searchParams.get('regionCode');
-  const cityName = regionCode ? getCityNameWithRegionCode(regionCode) : '';
-  const regionName = regionCode ? getRegionNameWithRegionCode(regionCode) : '';
-  const fullRegionName =
-    cityName && regionName ? `${cityName} ${regionName}` : '';
+  const {
+    searchTerm,
+    isNationalSizeOnly,
+    filteredTransactions,
+    setSearchTerm,
+    setIsNationalSizeOnly,
+  } = useTransactionFilter(transactions);
+
+  const { totalCount, averagePrice, fullRegionName } =
+    useTransactionData(filteredTransactions);
 
   return (
     <div className="w-full">
-      {transactions.length > 0 && (
-        <div className="mb-4 flex items-center gap-x-1">
-          <Typography className="font-bold">{fullRegionName}</Typography>
-          <Typography variant="small">
-            (총 거래 건수{' '}
-            <span className="text-primary font-bold">{totalCount}건</span>
-            <span className="mx-1 text-gray-400">·</span>
-            평균 거래가격{' '}
-            <span className="text-primary font-bold">
-              {formatPrice(averagePrice)}
-            </span>
-            )
-          </Typography>
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-x-1">
+          {transactions.length > 0 && (
+            <>
+              <Typography className="font-bold">{fullRegionName}</Typography>
+              <Typography variant="small">
+                (총 거래 건수{' '}
+                <span className="text-primary font-bold">
+                  {filteredTransactions.length}건
+                </span>
+                {totalCount !== filteredTransactions.length && (
+                  <span className="text-gray-500">/{totalCount}건</span>
+                )}
+                <span className="mx-1 text-gray-400">·</span>
+                평균 거래가격{' '}
+                <span className="text-primary font-bold">
+                  {formatPrice(averagePrice)}
+                </span>
+                )
+              </Typography>
+            </>
+          )}
         </div>
-      )}
+        <div className="flex items-center gap-x-2">
+          <LabelCheckbox
+            checked={false}
+            onCheckedChange={() => {}}
+            title="저장된 아파트"
+          />
+          <LabelCheckbox
+            checked={isNationalSizeOnly}
+            onCheckedChange={setIsNationalSizeOnly}
+            title="국민평수"
+          />
+          <Input
+            placeholder="아파트명 검색"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="w-64"
+          />
+        </div>
+      </div>
       <DataTable
         columns={columns}
-        data={transactions}
+        data={filteredTransactions}
         emptyMessage={
           isLoading
             ? '데이터를 불러오는 중입니다.'

@@ -1,1 +1,1 @@
-export { TransactionList } from './ui/TransactionList';
+export { TransactionList } from './components/TransactionList';
