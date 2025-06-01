@@ -1,6 +1,11 @@
 'use client';
 
+import { useFavoriteApartList } from '@/entities/apart';
+import { getSearchParams } from '@/shared/lib/searchParams';
+import { TransactionPageSearchParams } from '@/shared/models/types';
+
 import { Star } from 'lucide-react';
+import { useMemo } from 'react';
 
 import {
   ColumnDef,
@@ -17,10 +22,14 @@ import { useTransactionFilter } from '../hooks/useTransactionFilter';
 import { useTransactionViewSetting } from '../hooks/useTransactionViewSetting';
 import { TransactionItem } from '../models/types';
 import { useTransactionListQuery } from '../models/useTransactionListQuery';
-import { apartAdditionalInfo } from '../services/calculator';
+import { calculateApartAdditionalInfo } from '../services/calculator';
 import { formatPrice, formatSizeWithPyeong } from '../services/formatter';
 
-const columns: ColumnDef<TransactionItem>[] = [
+const createColumns = ({
+  onToggleFavorite,
+}: {
+  onToggleFavorite: (item: TransactionItem) => void;
+}): ColumnDef<TransactionItem>[] => [
   {
     accessorKey: 'favorite',
     header: () => <></>,
@@ -28,8 +37,7 @@ const columns: ColumnDef<TransactionItem>[] = [
       const isFavorite = row.getValue('favorite') as boolean;
 
       const handleToggleFavorite = () => {
-        // TODO: 즐겨찾기 토글 로직 구현
-        console.log('즐겨찾기 토글:', row.original);
+        onToggleFavorite(row.original);
       };
 
       return (
@@ -79,7 +87,11 @@ const columns: ColumnDef<TransactionItem>[] = [
       return (
         <>
           {apartName}{' '}
-          {apartAdditionalInfo(buildedYear, floor, householdsNumber)}
+          {calculateApartAdditionalInfo({
+            buildedYear,
+            floor,
+            householdsNumber,
+          })}
         </>
       );
     },
@@ -128,21 +140,80 @@ const columns: ColumnDef<TransactionItem>[] = [
 
 export function TransactionList() {
   const { isLoading, data } = useTransactionListQuery();
+  const { regionCode } = getSearchParams<TransactionPageSearchParams>();
   const transactions = data?.list ?? [];
+
+  const { favoriteApartList, addFavoriteApart, removeFavoriteApart } =
+    useFavoriteApartList();
 
   const {
     searchTerm,
     isNationalSizeOnly,
-    filteredTransactions,
+
     setSearchTerm,
     setIsNationalSizeOnly,
   } = useTransactionFilter(transactions);
+
+  const filteredTransactions = useMemo(() => {
+    const currentRegionFavorites = favoriteApartList.find(
+      region => region.regionCode === regionCode
+    );
+
+    return transactions
+      .filter(transaction => {
+        const matchesSearch = transaction.apartName
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+
+        if (isNationalSizeOnly) {
+          const matchesSize = transaction.size >= 84 && transaction.size < 85;
+          return matchesSearch && matchesSize;
+        }
+
+        return matchesSearch;
+      })
+      .map(transaction => {
+        const isFavorite =
+          currentRegionFavorites?.apartItems.some(
+            apartItem => apartItem.apartId === transaction.apartId
+          ) || false;
+
+        return {
+          ...transaction,
+          favorite: isFavorite,
+        };
+      });
+  }, [
+    transactions,
+    searchTerm,
+    isNationalSizeOnly,
+    favoriteApartList,
+    regionCode,
+  ]);
 
   const { totalCount, averagePricePerPyeong, fullRegionName } =
     useTransactionData(filteredTransactions);
 
   const { sorting, pageSize, updateSorting, updatePageSize } =
     useTransactionViewSetting();
+
+  const handleToggleFavorite = (item: TransactionItem) => {
+    if (!regionCode) return;
+
+    if (item.favorite) {
+      removeFavoriteApart(regionCode, item.apartId);
+    } else {
+      const apartItem = {
+        apartId: item.apartId,
+        apartName: item.apartName,
+      };
+      addFavoriteApart(regionCode, apartItem);
+    }
+  };
+
+  const columns = createColumns({
+    onToggleFavorite: handleToggleFavorite,
+  });
 
   return (
     <div className="w-full">

@@ -1,5 +1,5 @@
 interface TransactionItem {
-  id: string;
+  apartId: string;
   apartName: string;
   buildedYear: number | null;
   householdsNumber: number | null;

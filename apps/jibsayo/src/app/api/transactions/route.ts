@@ -105,10 +105,10 @@ const parseRowData = (
   const secondCellitems = parseSecondCellData(row.find('td:nth-child(2)'));
   const thirdCellitems = parseThirdCellData(row.find('td:nth-child(3)'));
 
-  const id = `${obfuscateKorean(area)}__${obfuscateKorean(firstCellItems.address)}__${obfuscateKorean(firstCellItems.apartName)}`;
+  const apartId = `${obfuscateKorean(area)}__${obfuscateKorean(firstCellItems.address)}__${obfuscateKorean(firstCellItems.apartName)}`;
 
   return {
-    id,
+    apartId,
     ...firstCellItems,
     ...secondCellitems,
     ...thirdCellitems,

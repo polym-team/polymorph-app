@@ -42,11 +42,15 @@ export const calculateAveragePricePerPyeong = (
   return Math.round(totalPricePerPyeong / validTransactions.length);
 };
 
-export const apartAdditionalInfo = (
-  buildedYear: number | null,
-  floor: number | null,
-  householdsNumber: number | null
-): string => {
+export const calculateApartAdditionalInfo = ({
+  buildedYear,
+  floor,
+  householdsNumber,
+}: {
+  buildedYear: number | null;
+  floor: number | null;
+  householdsNumber: number | null;
+}): string => {
   const additionalInfoArr: string[] = [];
 
   if (buildedYear) additionalInfoArr.push(`${buildedYear}년식`);
