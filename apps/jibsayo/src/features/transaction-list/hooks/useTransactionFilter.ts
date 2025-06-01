@@ -2,29 +2,36 @@ import { TransactionsResponse } from '@/app/api/transactions/types';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { TransactionItem } from '../models/types';
+
 export function useTransactionFilter(
   transactions: TransactionsResponse['list']
 ) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState<
-    TransactionsResponse['list']
+    TransactionItem[]
   >([]);
   const [isNationalSizeOnly, setIsNationalSizeOnly] = useState(false);
   const debounceTimer = useRef<NodeJS.Timeout>();
 
   const debouncedFilter = useCallback(() => {
-    const filtered = transactions.filter(transaction => {
-      const matchesSearch = transaction.apartName
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+    const filtered = transactions
+      .filter(transaction => {
+        const matchesSearch = transaction.apartName
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
 
-      if (isNationalSizeOnly) {
-        const matchesSize = transaction.size >= 84 && transaction.size < 85;
-        return matchesSearch && matchesSize;
-      }
+        if (isNationalSizeOnly) {
+          const matchesSize = transaction.size >= 84 && transaction.size < 85;
+          return matchesSearch && matchesSize;
+        }
 
-      return matchesSearch;
-    });
+        return matchesSearch;
+      })
+      .map(transaction => ({
+        ...transaction,
+        favorite: true,
+      }));
 
     setFilteredTransactions(filtered);
   }, [transactions, searchTerm, isNationalSizeOnly]);

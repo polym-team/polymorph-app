@@ -1,5 +1,7 @@
 import cheerio, { Cheerio } from 'cheerio';
 
+import { obfuscateKorean } from './utils';
+
 const calculateIsTradeListTable = (table: Cheerio<any>): boolean =>
   !!table.find(`td:contains("단지명")`).text();
 
@@ -95,19 +97,28 @@ const parseThirdCellData = (
   };
 };
 
-const parseRowData = (row: Cheerio<any>): Record<string, unknown> => {
+const parseRowData = (
+  row: Cheerio<any>,
+  area: string
+): Record<string, unknown> => {
   const firstCellItems = parseFirstCellData(row.find('td:nth-child(1)'));
   const secondCellitems = parseSecondCellData(row.find('td:nth-child(2)'));
   const thirdCellitems = parseThirdCellData(row.find('td:nth-child(3)'));
 
+  const id = `${obfuscateKorean(area)}__${obfuscateKorean(firstCellItems.address)}__${obfuscateKorean(firstCellItems.apartName)}`;
+
   return {
+    id,
     ...firstCellItems,
     ...secondCellitems,
     ...thirdCellitems,
   };
 };
 
-const parseTradeListData = (html: string): Record<string, unknown>[] => {
+const parseTradeListData = (
+  html: string,
+  area: string
+): Record<string, unknown>[] => {
   const $ = cheerio.load(html);
   const tables = $('table');
 
@@ -123,7 +134,7 @@ const parseTradeListData = (html: string): Record<string, unknown>[] => {
     $(table)
       .find('tr:not(:first-child)')
       .each((_, row) => {
-        list.push(parseRowData($(row)));
+        list.push(parseRowData($(row), area));
       });
   });
 
@@ -156,7 +167,7 @@ async function* createTradeListPerPage({
   page: number;
 }): AsyncGenerator<Record<string, unknown>[], void, unknown> {
   const html = await fetchTradeList({ area, createDt, page });
-  const parsedList = parseTradeListData(html);
+  const parsedList = parseTradeListData(html, area);
 
   if (parsedList.length > 0) {
     yield parsedList;

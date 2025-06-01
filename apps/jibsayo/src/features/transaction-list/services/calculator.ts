@@ -4,15 +4,15 @@ import { formatSizeWithPyeong } from './formatter';
 
 const extractPyeong = (exclusiveAreaInSquareMeters: number): number => {
   const formatted = formatSizeWithPyeong(exclusiveAreaInSquareMeters);
-  // "25평(84.59㎡)" 형태에서 숫자만 추출
   const pyeongMatch = formatted.match(/^(\d+)평/);
+
   return pyeongMatch ? parseInt(pyeongMatch[1], 10) : 0;
 };
 
 export const calculateAveragePrice = (
   transactions: TransactionsResponse['list']
 ): number => {
-  if (!transactions || transactions.length === 0) return 0;
+  if (transactions.length === 0) return 0;
 
   const total = transactions.reduce(
     (sum, transaction) => sum + transaction.tradeAmount,
@@ -42,11 +42,18 @@ export const calculateAveragePricePerPyeong = (
   return Math.round(totalPricePerPyeong / validTransactions.length);
 };
 
-export const calculatePricePerPyeong = (
-  tradeAmount: number,
-  size: number
-): number => {
-  if (!size || size <= 0) return 0;
-  const pyeong = extractPyeong(size);
-  return Math.round(tradeAmount / pyeong);
+export const apartAdditionalInfo = (
+  buildedYear: number | null,
+  floor: number | null,
+  householdsNumber: number | null
+): string => {
+  const additionalInfoArr: string[] = [];
+
+  if (buildedYear) additionalInfoArr.push(`${buildedYear}년식`);
+  if (householdsNumber) additionalInfoArr.push(`${householdsNumber}세대`);
+  if (floor) additionalInfoArr.push(`${floor}층`);
+
+  if (additionalInfoArr.length === 0) return '';
+
+  return `(${additionalInfoArr.join('/')})`;
 };

@@ -7,18 +7,21 @@ import { SortingState } from '@package/ui';
 
 import { TransactionViewSetting } from '../models/types';
 
-const defaultSettings: TransactionViewSetting = {
-  sorting: [],
-  pageSize: 10,
-};
+interface Return {
+  sorting: SortingState;
+  pageSize: number;
+  updateSorting: (sorting: SortingState) => void;
+  updatePageSize: (pageSize: number) => void;
+}
 
-export const useTransactionViewSetting = () => {
-  const [settings, setSettings] =
-    useState<TransactionViewSetting>(defaultSettings);
+export const useTransactionViewSetting = (): Return => {
   const [isMounted, setIsMounted] = useState(false);
+  const [settings, setSettings] = useState<TransactionViewSetting>({
+    sorting: [],
+    pageSize: 10,
+  });
 
   useEffect(() => {
-    // 클라이언트에서만 localStorage에 접근
     const loadSettings = async () => {
       setIsMounted(true);
 
@@ -39,7 +42,6 @@ export const useTransactionViewSetting = () => {
 
     setSettings(updatedSettings);
 
-    // isMounted 상태에서만 localStorage에 저장
     if (isMounted) {
       setItem(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS, updatedSettings);
     }
@@ -54,10 +56,9 @@ export const useTransactionViewSetting = () => {
   };
 
   return {
-    sorting: settings.sorting,
-    pageSize: settings.pageSize,
+    sorting: isMounted ? settings.sorting : [],
+    pageSize: isMounted ? settings.pageSize : 10,
     updateSorting,
     updatePageSize,
-    isMounted, // 클라이언트 마운트 여부를 알려주는 플래그
   };
 };

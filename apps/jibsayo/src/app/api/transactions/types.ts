@@ -1,11 +1,12 @@
 interface TransactionItem {
+  id: string;
   apartName: string;
-  buildedYear: number;
-  householdsNumber: number;
+  buildedYear: number | null;
+  householdsNumber: number | null;
   address: string;
   tradeDate: string;
   size: number;
-  floor: number;
+  floor: number | null;
   isNewRecord: boolean;
   tradeAmount: number;
   maxTradeAmount: number;
