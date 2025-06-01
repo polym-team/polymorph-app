@@ -17,5 +17,5 @@ export const formatSizeWithPyeong = (
   // 공급면적 = 전용면적 × 1.35 (일반적인 계수)
   const supplyArea = exclusiveAreaInSquareMeters * 1.35;
   const pyeong = Math.round(supplyArea / 3.3);
-  return `${pyeong}평(${exclusiveAreaInSquareMeters}㎡)`;
+  return `${pyeong}평`;
 };

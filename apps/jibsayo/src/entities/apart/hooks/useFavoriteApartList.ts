@@ -10,6 +10,7 @@ import {
   findRegionIndex,
   isDuplicateApart,
   removeApartFromRegion,
+  sortFavoriteApartList,
 } from '../services/utils';
 
 interface Return {
@@ -24,8 +25,9 @@ export const useFavoriteApartList = (): Return => {
   >(getItem(STORAGE_KEY.FAVORITE_APART_LIST) ?? []);
 
   const updateAndSave = (newList: FavoriteApartItem[]): void => {
-    setFavoriteApartList(newList);
-    setItem(STORAGE_KEY.FAVORITE_APART_LIST, newList);
+    const sortedList = sortFavoriteApartList(newList);
+    setFavoriteApartList(sortedList);
+    setItem(STORAGE_KEY.FAVORITE_APART_LIST, sortedList);
   };
 
   const addFavoriteApart = (regionCode: string, apartItem: ApartItem) => {

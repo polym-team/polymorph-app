@@ -24,6 +24,7 @@ import { TransactionItem } from '../models/types';
 import { useTransactionListQuery } from '../models/useTransactionListQuery';
 import { calculateApartAdditionalInfo } from '../services/calculator';
 import { formatPrice, formatSizeWithPyeong } from '../services/formatter';
+import { mapTransactionsWithFavorites } from '../services/mapper';
 
 const createColumns = ({
   onToggleFavorite,
@@ -85,14 +86,16 @@ const createColumns = ({
       const floor = row.original.floor;
       const householdsNumber = row.original.householdsNumber;
       return (
-        <>
+        <div className="flex items-center gap-x-1">
           {apartName}{' '}
-          {calculateApartAdditionalInfo({
-            buildedYear,
-            floor,
-            householdsNumber,
-          })}
-        </>
+          <Typography variant="muted">
+            {calculateApartAdditionalInfo({
+              buildedYear,
+              floor,
+              householdsNumber,
+            })}
+          </Typography>
+        </div>
       );
     },
     size: 250,
@@ -104,7 +107,12 @@ const createColumns = ({
     ),
     cell: ({ row }) => {
       const size = row.getValue('size') as number;
-      return <div>{formatSizeWithPyeong(size)}</div>;
+      return (
+        <div className="flex items-center gap-x-1">
+          {formatSizeWithPyeong(size)}
+          <Typography variant="muted">({size}㎡)</Typography>
+        </div>
+      );
     },
     size: 120,
   },
@@ -146,56 +154,38 @@ export function TransactionList() {
   const { favoriteApartList, addFavoriteApart, removeFavoriteApart } =
     useFavoriteApartList();
 
+  const { sorting, pageSize, updateSorting, updatePageSize } =
+    useTransactionViewSetting();
+
   const {
     searchTerm,
     isNationalSizeOnly,
-
+    isFavoriteOnly,
     setSearchTerm,
     setIsNationalSizeOnly,
-  } = useTransactionFilter(transactions);
+    setIsFavoriteOnly,
+  } = useTransactionFilter();
 
   const filteredTransactions = useMemo(() => {
-    const currentRegionFavorites = favoriteApartList.find(
-      region => region.regionCode === regionCode
-    );
-
-    return transactions
-      .filter(transaction => {
-        const matchesSearch = transaction.apartName
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-
-        if (isNationalSizeOnly) {
-          const matchesSize = transaction.size >= 84 && transaction.size < 85;
-          return matchesSearch && matchesSize;
-        }
-
-        return matchesSearch;
-      })
-      .map(transaction => {
-        const isFavorite =
-          currentRegionFavorites?.apartItems.some(
-            apartItem => apartItem.apartId === transaction.apartId
-          ) || false;
-
-        return {
-          ...transaction,
-          favorite: isFavorite,
-        };
-      });
+    return mapTransactionsWithFavorites({
+      transactions,
+      searchTerm,
+      isNationalSizeOnly,
+      isFavoriteOnly,
+      favoriteApartList,
+      regionCode,
+    });
   }, [
     transactions,
     searchTerm,
     isNationalSizeOnly,
+    isFavoriteOnly,
     favoriteApartList,
     regionCode,
   ]);
 
   const { totalCount, averagePricePerPyeong, fullRegionName } =
     useTransactionData(filteredTransactions);
-
-  const { sorting, pageSize, updateSorting, updatePageSize } =
-    useTransactionViewSetting();
 
   const handleToggleFavorite = (item: TransactionItem) => {
     if (!regionCode) return;
@@ -242,8 +232,8 @@ export function TransactionList() {
         </div>
         <div className="flex items-center gap-x-2">
           <LabelCheckbox
-            checked={false}
-            onCheckedChange={() => {}}
+            checked={isFavoriteOnly}
+            onCheckedChange={setIsFavoriteOnly}
             title="저장된 아파트"
           />
           <LabelCheckbox

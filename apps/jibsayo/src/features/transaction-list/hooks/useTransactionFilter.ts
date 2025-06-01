@@ -1,68 +1,25 @@
-import { TransactionsResponse } from '@/app/api/transactions/types';
+import { useState } from 'react';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+interface Return {
+  searchTerm: string;
+  isNationalSizeOnly: boolean;
+  isFavoriteOnly: boolean;
+  setSearchTerm: (value: string) => void;
+  setIsNationalSizeOnly: (value: boolean) => void;
+  setIsFavoriteOnly: (value: boolean) => void;
+}
 
-import { TransactionItem } from '../models/types';
-
-export function useTransactionFilter(
-  transactions: TransactionsResponse['list']
-) {
+export function useTransactionFilter(): Return {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredTransactions, setFilteredTransactions] = useState<
-    TransactionItem[]
-  >([]);
   const [isNationalSizeOnly, setIsNationalSizeOnly] = useState(false);
-  const debounceTimer = useRef<NodeJS.Timeout>();
-
-  const debouncedFilter = useCallback(() => {
-    const filtered = transactions
-      .filter(transaction => {
-        const matchesSearch = transaction.apartName
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-
-        if (isNationalSizeOnly) {
-          const matchesSize = transaction.size >= 84 && transaction.size < 85;
-          return matchesSearch && matchesSize;
-        }
-
-        return matchesSearch;
-      })
-      .map(transaction => ({
-        ...transaction,
-        favorite: true,
-      }));
-
-    setFilteredTransactions(filtered);
-  }, [transactions, searchTerm, isNationalSizeOnly]);
-
-  useEffect(() => {
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-
-    debounceTimer.current = setTimeout(() => {
-      debouncedFilter();
-    }, 200);
-
-    return () => {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
-    };
-  }, [debouncedFilter]);
-
-  useEffect(() => {
-    if (transactions.length > 0) {
-      debouncedFilter();
-    }
-  }, [transactions, debouncedFilter]);
+  const [isFavoriteOnly, setIsFavoriteOnly] = useState(false);
 
   return {
     searchTerm,
     isNationalSizeOnly,
-    filteredTransactions,
+    isFavoriteOnly,
     setSearchTerm,
     setIsNationalSizeOnly,
+    setIsFavoriteOnly,
   };
 }

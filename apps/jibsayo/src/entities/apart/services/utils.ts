@@ -1,3 +1,8 @@
+import {
+  getCityNameWithRegionCode,
+  getRegionNameWithRegionCode,
+} from '@/entities/region/lib/region';
+
 import { ApartItem, FavoriteApartItem } from '../models/types';
 
 export const findRegionIndex = (
@@ -52,4 +57,21 @@ export const removeApartFromRegion = (
     ...region,
     apartItems: region.apartItems.filter(item => item.apartId !== apartId),
   };
+};
+
+export const sortFavoriteApartList = (
+  list: FavoriteApartItem[]
+): FavoriteApartItem[] => {
+  return list
+    .map(region => ({
+      ...region,
+      apartItems: [...region.apartItems].sort((a, b) =>
+        a.apartName.localeCompare(b.apartName, 'ko')
+      ),
+    }))
+    .sort((a, b) => {
+      const nameA = `${getCityNameWithRegionCode(a.regionCode)}${getRegionNameWithRegionCode(a.regionCode)}`;
+      const nameB = `${getCityNameWithRegionCode(b.regionCode)}${getRegionNameWithRegionCode(b.regionCode)}`;
+      return nameA.localeCompare(nameB, 'ko');
+    });
 };
