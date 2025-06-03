@@ -47,23 +47,29 @@ export function ApartList() {
               </strong>
             </Typography>
             <hr className="my-0 border-gray-200" />
-            <div className="flex gap-2 p-4">
+            <div className="flex flex-wrap gap-2 p-4">
               {apart.apartItems.map(item => (
-                <div key={item.apartId} className="flex">
+                <div
+                  key={item.apartId}
+                  className="border-input bg-background flex flex-shrink-0 rounded-md border"
+                >
                   <Button
-                    variant="outline"
-                    className="rounded-r-none"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => handleClickApart(item.apartName)}
+                    className="whitespace-nowrap rounded-r-none border-0 px-3 py-1.5 text-sm"
                   >
-                    {item.apartName}
+                    <span className="translate-y-[-0.5px]">
+                      {item.apartName}
+                    </span>
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    className="rounded-l-none border-l-0 px-2"
                     onClick={() =>
                       handleRemoveApart(apart.regionCode, item.apartId)
                     }
+                    className="h-full min-w-0 rounded-l-none border-0 px-2 py-1.5"
                   >
                     <X className="h-3 w-3" />
                   </Button>
