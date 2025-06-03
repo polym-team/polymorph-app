@@ -44,6 +44,7 @@ interface DataTableProps<TData, TValue> {
   sorting?: SortingState;
   onSortingChange?: (sorting: SortingState) => void;
   onPageSizeChange?: (pageSize: number) => void;
+  mobileColumnTitles?: Record<string, string>;
 }
 
 export function DataTable<TData, TValue>({
@@ -55,6 +56,7 @@ export function DataTable<TData, TValue>({
   sorting: externalSorting,
   onSortingChange,
   onPageSizeChange,
+  mobileColumnTitles,
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
 
@@ -107,7 +109,8 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="w-full space-y-4">
-      <div className="overflow-x-auto">
+      {/* 데스크톱 테이블 뷰 */}
+      <div className="hidden overflow-x-auto sm:block">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
@@ -162,6 +165,57 @@ export function DataTable<TData, TValue>({
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* 모바일 카드 리스트 뷰 */}
+      <div className="space-y-3 sm:hidden">
+        {table.getRowModel().rows?.length ? (
+          table.getRowModel().rows.map(row => (
+            <div
+              key={row.id}
+              className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+            >
+              {row.getVisibleCells().map((cell, index) => {
+                const header = table.getHeaderGroups()[0]?.headers[index];
+                let headerText = '';
+
+                if (header) {
+                  const accessorKey = header.column.id;
+
+                  // mobileColumnTitles에서 우선 찾기
+                  if (mobileColumnTitles && mobileColumnTitles[accessorKey]) {
+                    headerText = mobileColumnTitles[accessorKey];
+                  }
+                  // 문자열 헤더인 경우
+                  else if (typeof header.column.columnDef.header === 'string') {
+                    headerText = header.column.columnDef.header;
+                  }
+                }
+
+                return (
+                  <div
+                    key={cell.id}
+                    className="flex items-start justify-between py-1.5 first:pt-0 last:pb-0"
+                  >
+                    <span className="mr-3 flex-shrink-0 text-sm font-medium text-gray-600">
+                      {headerText}
+                    </span>
+                    <div className="text-right text-sm">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))
+        ) : (
+          <div className="flex h-24 items-center justify-center text-center text-gray-500">
+            {emptyMessage}
+          </div>
+        )}
       </div>
 
       {showPagination && data.length > 0 && (

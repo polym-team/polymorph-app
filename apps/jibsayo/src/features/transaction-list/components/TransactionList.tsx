@@ -83,7 +83,6 @@ export function TransactionList() {
   return (
     <div className="flex flex-col gap-y-2">
       <TransactionListHeader
-        hasTransactions={transactions.length > 0}
         fullRegionName={fullRegionName}
         filteredTransactionsLength={filteredTransactions.length}
         totalCount={totalCount}

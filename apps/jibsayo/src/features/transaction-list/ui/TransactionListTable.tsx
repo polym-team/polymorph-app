@@ -154,6 +154,16 @@ export function TransactionListTable({
 }: TransactionListTableProps) {
   const columns = createColumns({ onToggleFavorite });
 
+  const mobileColumnTitles = {
+    favorite: '',
+    tradeDate: '거래일',
+    address: '주소지',
+    apartName: '아파트명',
+    size: '평수',
+    tradeAmount: '거래가격',
+    isNewRecord: '신고가',
+  };
+
   return (
     <DataTable
       columns={columns}
@@ -167,6 +177,7 @@ export function TransactionListTable({
       pageSize={pageSize}
       onSortingChange={onSortingChange}
       onPageSizeChange={onPageSizeChange}
+      mobileColumnTitles={mobileColumnTitles}
     />
   );
 }

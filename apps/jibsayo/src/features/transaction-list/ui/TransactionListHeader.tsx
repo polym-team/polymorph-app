@@ -3,7 +3,6 @@ import { Input, LabelCheckbox, Typography } from '@package/ui';
 import { formatPrice } from '../services/formatter';
 
 interface TransactionListHeaderProps {
-  hasTransactions: boolean;
   fullRegionName: string;
   filteredTransactionsLength: number;
   totalCount: number;
@@ -17,7 +16,6 @@ interface TransactionListHeaderProps {
 }
 
 export function TransactionListHeader({
-  hasTransactions,
   fullRegionName,
   filteredTransactionsLength,
   totalCount,
@@ -35,23 +33,21 @@ export function TransactionListHeader({
         <Typography className="text-sm font-bold sm:text-base">
           {fullRegionName}
         </Typography>
-        {filteredTransactionsLength > 0 && (
-          <Typography variant="small" className="text-xs sm:text-sm">
-            (총 거래 건수{' '}
-            <span className="text-primary font-bold">
-              {filteredTransactionsLength}건
-            </span>
-            {totalCount !== filteredTransactionsLength && (
-              <span className="text-gray-500">/{totalCount}건</span>
-            )}
-            <span className="mx-1 text-gray-400">·</span>
-            평당 거래가격{' '}
-            <span className="text-primary font-bold">
-              {formatPrice(averagePricePerPyeong)}
-            </span>
-            )
-          </Typography>
-        )}
+        <Typography variant="small" className="text-xs sm:text-sm">
+          (총 거래 건수{' '}
+          <span className="text-primary font-bold">
+            {filteredTransactionsLength}건
+          </span>
+          {totalCount !== filteredTransactionsLength && (
+            <span className="text-gray-500">/{totalCount}건</span>
+          )}
+          <span className="mx-1 text-gray-400">·</span>
+          평당 거래가격{' '}
+          <span className="text-primary font-bold">
+            {formatPrice(averagePricePerPyeong)}
+          </span>
+          )
+        </Typography>
       </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-x-2">
         <div className="flex gap-2 sm:items-center sm:gap-x-2">
