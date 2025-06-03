@@ -16,6 +16,8 @@ const buttonVariants = cva(
           'border-transparent bg-primary text-primary-foreground hover:bg-primary/90',
         danger:
           'border-transparent bg-danger text-danger-foreground hover:bg-danger/90',
+        warning:
+          'border-transparent bg-warning text-warning-foreground hover:bg-warning/90',
         outline:
           'border-input bg-background hover:bg-accent hover:text-accent-foreground',
         secondary:

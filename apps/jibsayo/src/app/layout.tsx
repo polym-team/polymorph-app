@@ -1,5 +1,5 @@
-import { Header } from '@/components/Header';
-import { QueryProvider } from '@/components/QueryProvider';
+import { Header } from '@/wigets/ui/Header';
+import { QueryProvider } from '@/wigets/ui/QueryProvider';
 
 import type { Metadata } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';

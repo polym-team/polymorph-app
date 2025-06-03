@@ -36,8 +36,8 @@ export function Header() {
               실거래가 조회
             </Link>
             <Link
-              href="/saved-apart"
-              className={getLinkClassName('/saved-apart')}
+              href="/favorite-apart"
+              className={getLinkClassName('/favorite-apart')}
             >
               저장된 아파트
             </Link>

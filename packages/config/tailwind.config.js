@@ -33,6 +33,10 @@ module.exports = (contentPaths = []) => ({
           DEFAULT: 'hsl(0 84.2% 60.2%)',
           foreground: 'hsl(210 40% 98%)',
         },
+        warning: {
+          DEFAULT: 'hsl(45 93% 63%)',
+          foreground: 'hsl(222.2 84% 4.9%)',
+        },
         muted: {
           DEFAULT: 'hsl(210 40% 96%)',
           foreground: 'hsl(215.4 16.3% 46.9%)',

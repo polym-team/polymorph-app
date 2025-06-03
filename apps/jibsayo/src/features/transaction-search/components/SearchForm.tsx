@@ -72,7 +72,7 @@ export function SearchForm({ onAddFavoriteRegion }: Props) {
       </Button>
       <Button
         type="button"
-        variant="outline"
+        variant="warning"
         onClick={() => onAddFavoriteRegion(form.regionCode)}
       >
         즐겨찾기
