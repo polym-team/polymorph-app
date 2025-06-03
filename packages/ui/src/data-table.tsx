@@ -168,7 +168,53 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* 모바일 카드 리스트 뷰 */}
-      <div className="space-y-3 sm:hidden">
+      <div className="space-y-2 sm:hidden">
+        {/* 모바일 정렬 UI */}
+        <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <Select
+              value={table.getState().sorting[0]?.id || 'tradeDate'}
+              onValueChange={value => {
+                const currentSort = table.getState().sorting[0];
+                const currentDesc = currentSort?.desc || false;
+                const newSorting = [{ id: value, desc: currentDesc }];
+                setSorting(newSorting);
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="정렬 컬럼" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="tradeDate">거래일</SelectItem>
+                <SelectItem value="tradeAmount">거래가격</SelectItem>
+                <SelectItem value="size">평수</SelectItem>
+                <SelectItem value="apartName">아파트명</SelectItem>
+                <SelectItem value="address">주소지</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex-1">
+            <Select
+              value={table.getState().sorting[0]?.desc ? 'desc' : 'asc'}
+              onValueChange={value => {
+                const currentSort = table.getState().sorting[0];
+                const currentId = currentSort?.id || 'tradeDate';
+                const newSorting = [{ id: currentId, desc: value === 'desc' }];
+                setSorting(newSorting);
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="정렬 순서" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="desc">내림차순 ↓</SelectItem>
+                <SelectItem value="asc">오름차순 ↑</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         {table.getRowModel().rows?.length ? (
           table.getRowModel().rows.map(row => (
             <div
