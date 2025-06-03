@@ -1,6 +1,8 @@
 import { TransactionList } from '@/features/transaction-list';
 import { TransactionSearch } from '@/features/transaction-search';
 
+import { Suspense } from 'react';
+
 export default function TransactionPage() {
   return (
     <section>

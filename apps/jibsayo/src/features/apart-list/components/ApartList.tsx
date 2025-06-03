@@ -6,7 +6,7 @@ import {
   getRegionNameWithRegionCode,
 } from '@/entities/region';
 
-import { FolderOpen, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button, Card, Typography } from '@package/ui';
@@ -35,7 +35,7 @@ export function ApartList() {
   }
 
   return (
-    <div>
+    <div className="flex flex-col gap-y-5">
       {favoriteApartList.map(apart => (
         <div key={apart.regionCode}>
           <Card className="flex flex-col">

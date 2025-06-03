@@ -6,8 +6,11 @@ import {
   getRegionNameWithRegionCode,
 } from '@/entities/region';
 
+import { Search } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
+
+import { Card, Typography } from '@package/ui';
 
 import { useTransactionFilter } from '../hooks/useTransactionFilter';
 import { useTransactionViewSetting } from '../hooks/useTransactionViewSetting';
@@ -19,9 +22,9 @@ import { TransactionListHeader } from '../ui/TransactionListHeader';
 import { TransactionListTable } from '../ui/TransactionListTable';
 
 export function TransactionList() {
-  const { isLoading, data } = useTransactionListQuery();
+  const { isLoading, isFetched, data } = useTransactionListQuery();
   const searchParams = useSearchParams();
-  const regionCode = searchParams.get('regionCode') || '';
+  const regionCode = searchParams.get('regionCode') ?? undefined;
   const transactions = data?.list ?? [];
 
   const { favoriteApartList, addFavoriteApart, removeFavoriteApart } =
@@ -96,6 +99,7 @@ export function TransactionList() {
       />
       <TransactionListTable
         isLoading={isLoading}
+        isFetched={isFetched}
         data={filteredTransactions}
         sorting={sorting}
         pageSize={pageSize}

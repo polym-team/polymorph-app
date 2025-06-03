@@ -11,6 +11,8 @@ import {
 } from '@tanstack/react-table';
 
 import {
+  ArrowDown,
+  ArrowUp,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -225,8 +227,18 @@ export function DataTable<TData, TValue>({
                 <SelectValue placeholder="정렬 순서" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="desc">내림차순 ↓</SelectItem>
-                <SelectItem value="asc">오름차순 ↑</SelectItem>
+                <SelectItem value="desc">
+                  <div className="flex items-center gap-2">
+                    내림차순
+                    <ArrowDown className="h-4 w-4" />
+                  </div>
+                </SelectItem>
+                <SelectItem value="asc">
+                  <div className="flex items-center gap-2">
+                    오름차순
+                    <ArrowUp className="h-4 w-4" />
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -303,9 +315,9 @@ export function DataTable<TData, TValue>({
           ))
         ) : (
           <div className="rounded border border-gray-200 bg-white p-8 shadow-sm">
-            <div className="flex flex-col items-center justify-center gap-2 text-center">
+            <div className="flex flex-col items-center justify-center gap-3 text-center">
               <SearchX className="h-6 w-6 text-gray-500" />
-              <span className="text-gray-500">{emptyMessage}</span>
+              <span className="text-sm text-gray-500">{emptyMessage}</span>
             </div>
           </div>
         )}

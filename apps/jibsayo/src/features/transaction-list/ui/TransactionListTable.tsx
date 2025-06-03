@@ -15,6 +15,7 @@ import { formatPrice, formatSizeWithPyeong } from '../services/formatter';
 
 interface TransactionListTableProps {
   isLoading: boolean;
+  isFetched: boolean;
   data: TransactionItem[];
   sorting: SortingState;
   pageSize: number;
@@ -145,6 +146,7 @@ const createColumns = ({
 
 export function TransactionListTable({
   isLoading,
+  isFetched,
   data,
   sorting,
   pageSize,
@@ -169,7 +171,11 @@ export function TransactionListTable({
       columns={columns}
       data={data}
       loading={isLoading}
-      emptyMessage="검색 조건에 맞는 실거래가 데이터가 없습니다."
+      emptyMessage={
+        isFetched
+          ? '검색 조건에 맞는 실거래가 데이터가 없습니다.'
+          : '조건을 선택한 후 검색해주세요.'
+      }
       sorting={sorting}
       pageSize={pageSize}
       onSortingChange={onSortingChange}
