@@ -155,7 +155,7 @@ export function TransactionListTable({
   const columns = createColumns({ onToggleFavorite });
 
   const mobileColumnTitles = {
-    favorite: '',
+    favorite: '즐겨찾기',
     tradeDate: '거래일',
     address: '주소지',
     apartName: '아파트명',
@@ -168,11 +168,8 @@ export function TransactionListTable({
     <DataTable
       columns={columns}
       data={data}
-      emptyMessage={
-        isLoading
-          ? '데이터를 불러오는 중입니다.'
-          : '검색 조건에 맞는 실거래가 데이터가 없습니다.'
-      }
+      loading={isLoading}
+      emptyMessage="검색 조건에 맞는 실거래가 데이터가 없습니다."
       sorting={sorting}
       pageSize={pageSize}
       onSortingChange={onSortingChange}

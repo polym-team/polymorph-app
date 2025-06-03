@@ -15,6 +15,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  SearchX,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -45,6 +46,7 @@ interface DataTableProps<TData, TValue> {
   onSortingChange?: (sorting: SortingState) => void;
   onPageSizeChange?: (pageSize: number) => void;
   mobileColumnTitles?: Record<string, string>;
+  loading?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -57,6 +59,7 @@ export function DataTable<TData, TValue>({
   onSortingChange,
   onPageSizeChange,
   mobileColumnTitles,
+  loading = false,
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
 
@@ -134,7 +137,18 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {loading ? (
+              // 스켈레톤 UI - 3개 행 생성
+              Array.from({ length: 3 }, (_, index) => (
+                <TableRow key={index} className="hover:bg-transparent">
+                  {columns.map((_, colIndex) => (
+                    <TableCell key={colIndex}>
+                      <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map(row => (
                 <TableRow
                   key={row.id}
@@ -154,12 +168,15 @@ export function DataTable<TData, TValue>({
                 </TableRow>
               ))
             ) : (
-              <TableRow>
+              <TableRow className="hover:bg-transparent">
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-[120px] text-center"
                 >
-                  {emptyMessage}
+                  <div className="flex flex-col items-center gap-2">
+                    <SearchX className="h-6 w-6 text-gray-400" />
+                    <span className="text-gray-500">{emptyMessage}</span>
+                  </div>
                 </TableCell>
               </TableRow>
             )}
@@ -215,7 +232,34 @@ export function DataTable<TData, TValue>({
           </div>
         </div>
 
-        {table.getRowModel().rows?.length ? (
+        {loading ? (
+          // 스켈레톤 UI - 3개 카드 생성
+          Array.from({ length: 3 }, (_, index) => (
+            <div
+              key={index}
+              className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+            >
+              <div className="space-y-3">
+                <div className="flex items-start justify-between">
+                  <div className="h-4 w-16 animate-pulse rounded bg-gray-200"></div>
+                  <div className="h-4 w-24 animate-pulse rounded bg-gray-200"></div>
+                </div>
+                <div className="flex items-start justify-between">
+                  <div className="h-4 w-20 animate-pulse rounded bg-gray-200"></div>
+                  <div className="h-4 w-32 animate-pulse rounded bg-gray-200"></div>
+                </div>
+                <div className="flex items-start justify-between">
+                  <div className="h-4 w-14 animate-pulse rounded bg-gray-200"></div>
+                  <div className="h-4 w-28 animate-pulse rounded bg-gray-200"></div>
+                </div>
+                <div className="flex items-start justify-between">
+                  <div className="h-4 w-12 animate-pulse rounded bg-gray-200"></div>
+                  <div className="h-4 w-20 animate-pulse rounded bg-gray-200"></div>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : table.getRowModel().rows?.length ? (
           table.getRowModel().rows.map(row => (
             <div
               key={row.id}
@@ -258,13 +302,16 @@ export function DataTable<TData, TValue>({
             </div>
           ))
         ) : (
-          <div className="flex h-24 items-center justify-center text-center text-gray-500">
-            {emptyMessage}
+          <div className="rounded border border-gray-200 bg-white p-8 shadow-sm">
+            <div className="flex flex-col items-center justify-center gap-2 text-center">
+              <SearchX className="h-6 w-6 text-gray-500" />
+              <span className="text-gray-500">{emptyMessage}</span>
+            </div>
           </div>
         )}
       </div>
 
-      {showPagination && data.length > 0 && (
+      {showPagination && !loading && data.length > 0 && (
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:px-2">
           <div className="hidden justify-center sm:flex sm:flex-1 sm:justify-start">
             <div className="rounded-full bg-gray-50">
