@@ -22,6 +22,7 @@ interface TransactionListTableProps {
   onToggleFavorite: (item: TransactionItem) => void;
   onSortingChange: (sorting: SortingState) => void;
   onPageSizeChange: (pageSize: number) => void;
+  preservePageIndex?: boolean;
 }
 
 const createColumns = ({
@@ -35,14 +36,15 @@ const createColumns = ({
     cell: ({ row }) => {
       const isFavorite = row.getValue('favorite') as boolean;
 
-      const handleToggleFavorite = () => {
-        onToggleFavorite(row.original);
-      };
-
       return (
         <div className="flex translate-x-[1.5px] justify-center">
           <button
-            onClick={handleToggleFavorite}
+            type="button"
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleFavorite(row.original);
+            }}
             className="h-[14px] w-[14px] transition-transform hover:scale-110"
           >
             <Star
@@ -153,11 +155,12 @@ export function TransactionListTable({
   onToggleFavorite,
   onSortingChange,
   onPageSizeChange,
+  preservePageIndex = false,
 }: TransactionListTableProps) {
   const columns = createColumns({ onToggleFavorite });
 
   const mobileColumnTitles = {
-    favorite: '즐겨찾기',
+    favorite: '저장',
     tradeDate: '거래일',
     address: '주소지',
     apartName: '아파트명',
@@ -181,6 +184,7 @@ export function TransactionListTable({
       onSortingChange={onSortingChange}
       onPageSizeChange={onPageSizeChange}
       mobileColumnTitles={mobileColumnTitles}
+      preservePageIndex={preservePageIndex}
     />
   );
 }

@@ -49,6 +49,18 @@ interface DataTableProps<TData, TValue> {
   onPageSizeChange?: (pageSize: number) => void;
   mobileColumnTitles?: Record<string, string>;
   loading?: boolean;
+  preservePageIndex?: boolean;
+}
+
+// useIsClient 훅 - SSR 호환성을 위해
+function useIsClient() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  return isClient;
 }
 
 export function DataTable<TData, TValue>({
@@ -62,8 +74,10 @@ export function DataTable<TData, TValue>({
   onPageSizeChange,
   mobileColumnTitles,
   loading = false,
+  preservePageIndex = false,
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
+  const isClient = useIsClient();
 
   // 외부에서 sorting이 제공되면 그것을 사용, 아니면 내부 상태 사용
   const sorting = externalSorting ?? internalSorting;
@@ -87,6 +101,7 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
+    autoResetPageIndex: !preservePageIndex,
     state: {
       sorting,
     },
@@ -111,6 +126,13 @@ export function DataTable<TData, TValue>({
     table.setPageSize(size);
     onPageSizeChange?.(size);
   };
+
+  // 기본 정렬 컬럼 값 (SSR 호환)
+  const defaultSortColumn = isClient
+    ? table.getState().sorting[0]?.id ||
+      table.getAllColumns().find(col => col.getCanSort())?.id ||
+      ''
+    : '';
 
   return (
     <div className="w-full space-y-4">
@@ -192,7 +214,7 @@ export function DataTable<TData, TValue>({
         <div className="flex items-center gap-2">
           <div className="flex-1">
             <Select
-              value={table.getState().sorting[0]?.id || 'tradeDate'}
+              value={defaultSortColumn}
               onValueChange={value => {
                 const currentSort = table.getState().sorting[0];
                 const currentDesc = currentSort?.desc || false;
@@ -204,21 +226,52 @@ export function DataTable<TData, TValue>({
                 <SelectValue placeholder="정렬 컬럼" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="tradeDate">거래일</SelectItem>
-                <SelectItem value="tradeAmount">거래가격</SelectItem>
-                <SelectItem value="size">평수</SelectItem>
-                <SelectItem value="apartName">아파트명</SelectItem>
-                <SelectItem value="address">주소지</SelectItem>
+                {isClient &&
+                  table
+                    .getAllColumns()
+                    .filter(column => column.getCanSort())
+                    .map(column => {
+                      const header = column.columnDef.header;
+                      let displayName = '';
+
+                      // mobileColumnTitles에서 우선 찾기
+                      if (mobileColumnTitles && mobileColumnTitles[column.id]) {
+                        displayName = mobileColumnTitles[column.id];
+                      }
+                      // 문자열 헤더인 경우
+                      else if (typeof header === 'string') {
+                        displayName = header;
+                      }
+                      // columnDef.id 또는 accessorKey 사용
+                      else {
+                        displayName = column.id;
+                      }
+
+                      return (
+                        <SelectItem key={column.id} value={column.id}>
+                          {displayName}
+                        </SelectItem>
+                      );
+                    })}
               </SelectContent>
             </Select>
           </div>
 
           <div className="flex-1">
             <Select
-              value={table.getState().sorting[0]?.desc ? 'desc' : 'asc'}
+              value={
+                isClient
+                  ? table.getState().sorting[0]?.desc
+                    ? 'desc'
+                    : 'asc'
+                  : ''
+              }
               onValueChange={value => {
                 const currentSort = table.getState().sorting[0];
-                const currentId = currentSort?.id || 'tradeDate';
+                const currentId =
+                  currentSort?.id ||
+                  table.getAllColumns().find(col => col.getCanSort())?.id ||
+                  '';
                 const newSorting = [{ id: currentId, desc: value === 'desc' }];
                 setSorting(newSorting);
               }}
@@ -227,18 +280,22 @@ export function DataTable<TData, TValue>({
                 <SelectValue placeholder="정렬 순서" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="desc">
-                  <div className="flex items-center gap-2">
-                    내림차순
-                    <ArrowDown className="h-4 w-4" />
-                  </div>
-                </SelectItem>
-                <SelectItem value="asc">
-                  <div className="flex items-center gap-2">
-                    오름차순
-                    <ArrowUp className="h-4 w-4" />
-                  </div>
-                </SelectItem>
+                {isClient && (
+                  <>
+                    <SelectItem value="desc">
+                      <div className="flex items-center gap-2">
+                        내림차순
+                        <ArrowDown className="h-4 w-4" />
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="asc">
+                      <div className="flex items-center gap-2">
+                        오름차순
+                        <ArrowUp className="h-4 w-4" />
+                      </div>
+                    </SelectItem>
+                  </>
+                )}
               </SelectContent>
             </Select>
           </div>

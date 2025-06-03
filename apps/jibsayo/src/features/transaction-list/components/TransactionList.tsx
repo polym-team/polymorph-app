@@ -6,11 +6,8 @@ import {
   getRegionNameWithRegionCode,
 } from '@/entities/region';
 
-import { Search } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useMemo } from 'react';
-
-import { Card, Typography } from '@package/ui';
+import { useMemo, useRef } from 'react';
 
 import { useTransactionFilter } from '../hooks/useTransactionFilter';
 import { useTransactionViewSetting } from '../hooks/useTransactionViewSetting';
@@ -42,6 +39,9 @@ export function TransactionList() {
     setIsFavoriteOnly,
   } = useTransactionFilter();
 
+  // 즐겨찾기 토글 중인지 추적
+  const isTogglingFavorite = useRef(false);
+
   const filteredTransactions = useMemo(() => {
     return mapTransactionsWithFavorites({
       transactions,
@@ -72,6 +72,9 @@ export function TransactionList() {
   const handleToggleFavorite = (item: TransactionItem) => {
     if (!regionCode) return;
 
+    // 즐겨찾기 토글 시작
+    isTogglingFavorite.current = true;
+
     if (item.favorite) {
       removeFavoriteApart(regionCode, item.apartId);
     } else {
@@ -81,6 +84,11 @@ export function TransactionList() {
       };
       addFavoriteApart(regionCode, apartItem);
     }
+
+    // 다음 렌더링 후 플래그 리셋
+    setTimeout(() => {
+      isTogglingFavorite.current = false;
+    }, 0);
   };
 
   return (
@@ -106,6 +114,7 @@ export function TransactionList() {
         onToggleFavorite={handleToggleFavorite}
         onSortingChange={updateSorting}
         onPageSizeChange={updatePageSize}
+        preservePageIndex={isTogglingFavorite.current}
       />
     </div>
   );
