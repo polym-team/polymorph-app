@@ -1,17 +1,21 @@
 'use client';
 
+import { ROUTE_PATH } from '@/shared/consts/route';
+
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
+import { Button, Typography } from '@package/ui';
+
 export function Header() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const menuItems = [
-    { href: '/transaction', label: '실거래가 조회' },
-    { href: '/favorite-apart', label: '저장된 아파트' },
+  const navItems = [
+    { href: ROUTE_PATH.TRANSACTIONS, label: '실거래가 조회' },
+    { href: ROUTE_PATH.FAVORITE_APARTS, label: '저장된 아파트' },
   ];
 
   const getLinkClassName = (href: string) => {
@@ -46,7 +50,7 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link
-            href="/transaction"
+            href={ROUTE_PATH.TRANSACTIONS}
             className="flex items-center space-x-2 transition-all duration-200"
             onClick={closeMenu}
           >
@@ -60,9 +64,9 @@ export function Header() {
 
           {/* 데스크톱 네비게이션 */}
           <nav className="hidden items-center space-x-6 sm:flex">
-            {menuItems.map(item => (
+            {navItems.map((item, index) => (
               <Link
-                key={item.href}
+                key={index}
                 href={item.href}
                 className={getLinkClassName(item.href)}
               >
@@ -98,9 +102,9 @@ export function Header() {
           }`}
         >
           <nav>
-            {menuItems.map(item => (
+            {navItems.map((item, index) => (
               <Link
-                key={item.href}
+                key={index}
                 href={item.href}
                 className={getMobileLinkClassName(item.href)}
                 onClick={closeMenu}

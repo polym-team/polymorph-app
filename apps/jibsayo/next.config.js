@@ -1,14 +1,15 @@
-const createNextConfig = require('../../packages/config/next.config.js');
-
-module.exports = createNextConfig({
-  // 앱별 추가 설정
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  transpilePackages: ['@package/ui', '@package/utils'],
   async redirects() {
     return [
       {
         source: '/',
-        destination: '/transaction',
-        permanent: false,
+        destination: '/transactions',
+        permanent: true,
       },
     ];
   },
-});
+};
+
+module.exports = nextConfig;

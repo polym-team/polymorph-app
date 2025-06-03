@@ -4,6 +4,7 @@ import {
   getCityNameWithRegionCode,
   getRegionNameWithRegionCode,
 } from '@/entities/region';
+import { ROUTE_PATH } from '@/shared/consts/route';
 import { useIsClient } from '@/shared/hooks/useIsClient';
 
 import { X } from 'lucide-react';
@@ -36,7 +37,7 @@ export function FavoriteRegionList({
       params.set('tradeDate', `${year}${month}`);
     }
 
-    router.push(`/transaction?${params.toString()}`);
+    router.push(`${ROUTE_PATH.TRANSACTIONS}?${params.toString()}`);
   };
 
   const handleRemoveRegion = (region: string) => {

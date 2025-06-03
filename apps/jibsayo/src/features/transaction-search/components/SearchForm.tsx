@@ -5,6 +5,7 @@ import {
   getRegionNameWithRegionCode,
   getRegionsWithCityName,
 } from '@/entities/region';
+import { ROUTE_PATH } from '@/shared/consts/route';
 
 import { useRouter } from 'next/navigation';
 
@@ -40,7 +41,7 @@ export function SearchForm({ onAddFavoriteRegion }: Props) {
     const month = String(form.date.getMonth() + 1).padStart(2, '0');
 
     router.push(
-      `/transaction?regionCode=${form.regionCode}&tradeDate=${year + month}`
+      `${ROUTE_PATH.TRANSACTIONS}?regionCode=${form.regionCode}&tradeDate=${year + month}`
     );
   };
 

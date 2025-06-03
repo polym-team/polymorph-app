@@ -5,6 +5,7 @@ import {
   getCityNameWithRegionCode,
   getRegionNameWithRegionCode,
 } from '@/entities/region';
+import { ROUTE_PATH } from '@/shared/consts/route';
 import { useIsClient } from '@/shared/hooks/useIsClient';
 
 import { Home, X } from 'lucide-react';
@@ -56,7 +57,7 @@ export function ApartList() {
         <Button
           variant="outline"
           className="mt-5"
-          onClick={() => router.push('/transaction')}
+          onClick={() => router.push(ROUTE_PATH.TRANSACTIONS)}
         >
           실거래가 목록 보기
         </Button>
