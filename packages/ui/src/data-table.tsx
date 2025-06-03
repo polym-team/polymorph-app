@@ -20,6 +20,13 @@ import { useEffect, useState } from 'react';
 
 import { Button } from './button';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './select';
+import {
   Table,
   TableBody,
   TableCell,
@@ -92,135 +99,160 @@ export function DataTable<TData, TValue>({
     }
   }, [pageSize, table]);
 
-  const handlePageSizeChange = (newPageSize: number) => {
-    table.setPageSize(newPageSize);
-    onPageSizeChange?.(newPageSize);
+  const handlePageSizeChange = (newPageSize: string) => {
+    const size = Number(newPageSize);
+    table.setPageSize(size);
+    onPageSizeChange?.(size);
   };
 
   return (
     <div className="w-full space-y-4">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map(headerGroup => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map(header => {
-                return (
-                  <TableHead
-                    key={header.id}
-                    style={{ width: header.getSize() }}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map(row => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && 'selected'}
-              >
-                {row.getVisibleCells().map(cell => (
-                  <TableCell
-                    key={cell.id}
-                    style={{ width: cell.column.getSize() }}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map(headerGroup => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map(header => {
+                  return (
+                    <TableHead
+                      key={header.id}
+                      style={{ width: header.getSize() }}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                {emptyMessage}
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map(row => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                >
+                  {row.getVisibleCells().map(cell => (
+                    <TableCell
+                      key={cell.id}
+                      style={{ width: cell.column.getSize() }}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  {emptyMessage}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       {showPagination && data.length > 0 && (
-        <div className="flex items-center justify-between px-2">
-          <div className="text-muted-foreground flex-1 text-sm">
-            총 {table.getFilteredRowModel().rows.length}개 중{' '}
-            {table.getState().pagination.pageIndex *
-              table.getState().pagination.pageSize +
-              1}
-            -
-            {Math.min(
-              (table.getState().pagination.pageIndex + 1) *
-                table.getState().pagination.pageSize,
-              table.getFilteredRowModel().rows.length
-            )}{' '}
-            번째 항목
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:px-2">
+          <div className="hidden justify-center sm:flex sm:flex-1 sm:justify-start">
+            <div className="rounded-full bg-gray-50">
+              <span className="text-xs font-medium text-gray-700 sm:text-sm">
+                총{' '}
+                <span className="text-primary font-bold">
+                  {table.getFilteredRowModel().rows.length}
+                </span>
+                건 중{' '}
+                <span className="text-primary font-bold">
+                  {table.getState().pagination.pageIndex *
+                    table.getState().pagination.pageSize +
+                    1}
+                  -
+                  {Math.min(
+                    (table.getState().pagination.pageIndex + 1) *
+                      table.getState().pagination.pageSize,
+                    table.getFilteredRowModel().rows.length
+                  )}
+                </span>{' '}
+                번째 항목
+              </span>
+            </div>
           </div>
-          <div className="flex items-center space-x-6 lg:space-x-8">
-            <div className="flex items-center space-x-2">
-              <p className="text-sm font-medium">페이지당 행 수</p>
-              <select
-                value={table.getState().pagination.pageSize}
-                onChange={e => {
-                  handlePageSizeChange(Number(e.target.value));
-                }}
-                className="border-input bg-background ring-offset-background focus:ring-ring h-8 w-[70px] rounded border px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
+
+          <div className="flex items-center justify-between gap-x-3">
+            <div className="flex items-center gap-2 rounded-lg bg-gray-50">
+              <Select
+                value={table.getState().pagination.pageSize.toString()}
+                onValueChange={handlePageSizeChange}
               >
-                {[10, 20, 30, 40, 50].map(pageSize => (
-                  <option key={pageSize} value={pageSize}>
-                    {pageSize}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="h-8 w-[120px] text-sm">
+                  <SelectValue>
+                    페이지당 {table.getState().pagination.pageSize}개
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {[10, 20, 30, 40, 50].map(pageSize => (
+                    <SelectItem key={pageSize} value={pageSize.toString()}>
+                      {pageSize}개
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-              페이지 {table.getState().pagination.pageIndex + 1} /{' '}
-              {table.getPageCount()}
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
-                onClick={() => table.setPageIndex(0)}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">첫 페이지로</span>
-                <ChevronsLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">이전 페이지</span>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">다음 페이지</span>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">마지막 페이지로</span>
-                <ChevronsRight className="h-4 w-4" />
-              </Button>
+
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 rounded px-3 py-1">
+                <span className="text-primary text-xs font-bold sm:text-sm">
+                  {table.getState().pagination.pageIndex + 1} /{' '}
+                  {table.getPageCount()}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  className="hover:bg-primary/10 h-8 w-8 p-0"
+                  onClick={() => table.setPageIndex(0)}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="hover:bg-primary/10 h-8 w-8 p-0"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="hover:bg-primary/10 h-8 w-8 p-0"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="hover:bg-primary/10 h-8 w-8 p-0"
+                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
