@@ -4,6 +4,7 @@ import {
   getCityNameWithRegionCode,
   getRegionNameWithRegionCode,
 } from '@/entities/region';
+import { useIsClient } from '@/shared/hooks/useIsClient';
 
 import { X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -22,6 +23,7 @@ export function FavoriteRegionList({
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const isClient = useIsClient();
 
   const handleSelectRegion = (regionCode: string) => {
     const params = new URLSearchParams(searchParams);
@@ -41,9 +43,23 @@ export function FavoriteRegionList({
     onRemoveFavoriteRegion(region);
   };
 
+  if (!isClient) {
+    return (
+      <div className="flex gap-x-1">
+        {Array.from({ length: 3 }, (_, index) => (
+          <div
+            key={index}
+            className="flex h-[30px] flex-shrink-0 animate-pulse rounded-md bg-gray-200"
+            style={{ width: `${80 + index * 20}px` }}
+          ></div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div
-      className="flex min-h-[34px] gap-x-1 overflow-x-auto [&::-webkit-scrollbar]:hidden"
+      className="flex gap-x-1 overflow-x-auto [&::-webkit-scrollbar]:hidden"
       style={{
         scrollbarWidth: 'none' /* Firefox */,
         msOverflowStyle: 'none' /* IE and Edge */,

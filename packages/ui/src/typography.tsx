@@ -84,7 +84,7 @@ function getVariantClasses(variant: TypographyProps['variant']) {
     case 'h4':
       return 'scroll-m-20 text-xl font-semibold tracking-tight';
     case 'p':
-      return 'leading-7 [&:not(:first-child)]:mt-6';
+      return 'leading-7';
     case 'blockquote':
       return 'mt-6 border-l-2 pl-6 italic';
     case 'code':
@@ -98,6 +98,6 @@ function getVariantClasses(variant: TypographyProps['variant']) {
     case 'muted':
       return 'text-sm text-muted-foreground';
     default:
-      return 'leading-7 [&:not(:first-child)]:mt-6';
+      return 'leading-7';
   }
 }

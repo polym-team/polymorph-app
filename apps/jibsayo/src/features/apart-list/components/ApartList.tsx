@@ -5,8 +5,9 @@ import {
   getCityNameWithRegionCode,
   getRegionNameWithRegionCode,
 } from '@/entities/region';
+import { useIsClient } from '@/shared/hooks/useIsClient';
 
-import { X } from 'lucide-react';
+import { Home, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button, Card, Typography } from '@package/ui';
@@ -14,6 +15,7 @@ import { Button, Card, Typography } from '@package/ui';
 export function ApartList() {
   const router = useRouter();
   const { favoriteApartList, removeFavoriteApart } = useFavoriteApartList();
+  const isClient = useIsClient();
 
   const handleClickApart = (apartName: string) => {
     router.push(`/apart/${apartName}`);
@@ -23,11 +25,39 @@ export function ApartList() {
     removeFavoriteApart(regionCode, apartId);
   };
 
+  if (!isClient) {
+    return (
+      <div className="flex flex-col gap-y-5">
+        {Array.from({ length: 1 }, (_, index) => (
+          <Card key={index} className="flex flex-col">
+            <div className="p-5">
+              <div className="h-4 w-32 animate-pulse rounded bg-gray-200"></div>
+            </div>
+            <hr className="my-0 border-gray-200" />
+            <div className="flex flex-wrap gap-2 p-4">
+              {Array.from({ length: 3 }, (_, btnIndex) => (
+                <div
+                  key={btnIndex}
+                  className="h-8 w-20 animate-pulse rounded bg-gray-200"
+                ></div>
+              ))}
+            </div>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
   if (favoriteApartList.length === 0) {
     return (
       <Card className="flex flex-col items-center justify-center gap-4 py-16">
+        <Home className="h-8 w-8 text-gray-400" />
         <Typography>저장된 아파트가 없습니다.</Typography>
-        <Button variant="outline" onClick={() => router.push('/transaction')}>
+        <Button
+          variant="outline"
+          className="mt-5"
+          onClick={() => router.push('/transaction')}
+        >
           실거래가 목록 보기
         </Button>
       </Card>

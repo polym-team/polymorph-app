@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { SearchForm } from '../models/types';
+import { parseTradeDate } from '../services/date';
 
 interface Return {
   form: SearchForm;
@@ -18,15 +19,21 @@ interface Return {
 
 export const useSearchForm = (): Return => {
   const searchParams = useSearchParams();
+  const regionCode = searchParams.get('regionCode');
+  const tradeDate = searchParams.get('tradeDate');
 
   const [form, setForm] = useState<SearchForm>(() => {
-    const defaultCityName = cityNameList[0];
-    const defaultRegionCode = getRegionsWithCityName(defaultCityName)[0].code;
+    const defaultCityName = regionCode
+      ? getCityNameWithRegionCode(regionCode)
+      : cityNameList[0];
+    const defaultRegionCode =
+      regionCode ?? getRegionsWithCityName(defaultCityName)[0].code;
+    const defaultDate = tradeDate ? parseTradeDate(tradeDate) : new Date();
 
     return {
       cityName: defaultCityName,
       regionCode: defaultRegionCode,
-      date: new Date(),
+      date: defaultDate,
     };
   });
 
@@ -54,18 +61,15 @@ export const useSearchForm = (): Return => {
   };
 
   useEffect(() => {
-    const regionCode = searchParams.get('regionCode');
-    const tradeDate = searchParams.get('tradeDate');
-
     if (regionCode && tradeDate) {
       setForm(prev => ({
         ...prev,
-        tradeDate: new Date(tradeDate),
+        date: parseTradeDate(tradeDate),
         cityName: getCityNameWithRegionCode(regionCode),
         regionCode: regionCode,
       }));
     }
-  }, [searchParams]);
+  }, [regionCode, tradeDate]);
 
   return {
     form,
