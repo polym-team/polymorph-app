@@ -1,7 +1,7 @@
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
 import { getItem, setItem } from '@/shared/lib/localStorage';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ApartItem, FavoriteApartItem } from '../models/types';
 import {
@@ -22,7 +22,14 @@ interface Return {
 export const useFavoriteApartList = (): Return => {
   const [favoriteApartList, setFavoriteApartList] = useState<
     FavoriteApartItem[]
-  >(getItem(STORAGE_KEY.FAVORITE_APART_LIST) ?? []);
+  >([]);
+
+  // 클라이언트에서만 localStorage에서 데이터 로드
+  useEffect(() => {
+    const savedList =
+      (getItem(STORAGE_KEY.FAVORITE_APART_LIST) as FavoriteApartItem[]) ?? [];
+    setFavoriteApartList(savedList);
+  }, []);
 
   const updateAndSave = (newList: FavoriteApartItem[]): void => {
     const sortedList = sortFavoriteApartList(newList);
