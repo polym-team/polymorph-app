@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "scaffolding": "pnpm --filter scaffolding",
-    "jibsayo": "pnpm --filter jibsayo"
+    "jibsayo": "pnpm --filter jibsayo",
+    "jibsayo-react-native": "pnpm --filter jibsayo-react-native"
   },
   "engines": {
     "node": ">=18.0.0",
