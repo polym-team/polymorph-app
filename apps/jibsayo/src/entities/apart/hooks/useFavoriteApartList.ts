@@ -27,7 +27,8 @@ export const useFavoriteApartList = (): Return => {
   // 클라이언트에서만 localStorage에서 데이터 로드
   useEffect(() => {
     const savedList =
-      (getItem(STORAGE_KEY.FAVORITE_APART_LIST) as FavoriteApartItem[]) ?? [];
+      getItem<FavoriteApartItem[]>(STORAGE_KEY.FAVORITE_APART_LIST) ?? [];
+
     setFavoriteApartList(savedList);
   }, []);
 

@@ -13,13 +13,15 @@ import { useRouter } from 'next/navigation';
 
 import { Button, Card, Typography } from '@package/ui';
 
-export function ApartList() {
+export function FavoriteApartList() {
   const router = useRouter();
   const { favoriteApartList, removeFavoriteApart } = useFavoriteApartList();
   const isClient = useIsClient();
 
   const handleClickApart = (apartName: string) => {
-    router.push(`/apart/${apartName}`);
+    router.push(
+      `${ROUTE_PATH.APART}?apartName=${encodeURIComponent(apartName)}`
+    );
   };
 
   const handleRemoveApart = (regionCode: string, apartId: string) => {
