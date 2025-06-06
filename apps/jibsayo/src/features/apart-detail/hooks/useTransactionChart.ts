@@ -199,7 +199,7 @@ export function useTransactionChart({
         .line<ChartData>()
         .x(d => xScale(d.date))
         .y(d => yScale(d.averagePrice))
-        .curve(d3.curveMonotoneX);
+        .curve(d3.curveLinear);
 
       chartContainer
         .append('path')

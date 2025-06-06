@@ -12,15 +12,33 @@ interface Props {
   };
 }
 
+async function TransactionListWithData({
+  regionCode,
+  tradeDate,
+}: {
+  regionCode: string;
+  tradeDate: string;
+}) {
+  const data = await getTransactions(regionCode, tradeDate);
+  return (
+    <TransactionList
+      regionCode={regionCode}
+      data={data || { list: [], count: 0 }}
+      isLoading={false}
+      isFetched={true}
+    />
+  );
+}
+
 export default async function TransactionsPage({ searchParams }: Props) {
   const { regionCode, tradeDate } = searchParams;
 
   return (
-    <main className="container mx-auto py-8">
-      <div className="flex flex-col gap-y-5">
-        <TransactionSearch />
-
+    <div className="flex flex-col gap-y-5">
+      <TransactionSearch />
+      {regionCode && tradeDate ? (
         <Suspense
+          key={`${regionCode}-${tradeDate}`}
           fallback={
             <TransactionList
               regionCode={regionCode}
@@ -30,31 +48,26 @@ export default async function TransactionsPage({ searchParams }: Props) {
             />
           }
         >
-          <div>
-            regionCode: {regionCode} / tradeDate: {tradeDate}
-          </div>
-          {regionCode && tradeDate ? (
-            <TransactionList
-              regionCode={regionCode}
-              data={
-                (await getTransactions(regionCode, tradeDate)) || {
-                  list: [],
-                  count: 0,
-                }
-              }
-              isLoading={false}
-              isFetched={true}
-            />
-          ) : (
-            <TransactionList
-              regionCode={regionCode}
-              data={{ list: [], count: 0 }}
-              isLoading={false}
-              isFetched={false}
-            />
-          )}
+          {(async () => {
+            const data = await getTransactions(regionCode, tradeDate);
+            return (
+              <TransactionList
+                regionCode={regionCode}
+                data={data || { list: [], count: 0 }}
+                isLoading={false}
+                isFetched={true}
+              />
+            );
+          })()}
         </Suspense>
-      </div>
-    </main>
+      ) : (
+        <TransactionList
+          regionCode={regionCode}
+          data={{ list: [], count: 0 }}
+          isLoading={false}
+          isFetched={false}
+        />
+      )}
+    </div>
   );
 }

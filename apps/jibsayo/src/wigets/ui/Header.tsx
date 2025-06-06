@@ -15,7 +15,7 @@ export function Header() {
 
   const navItems = [
     { href: ROUTE_PATH.TRANSACTIONS, label: '실거래가 조회' },
-    { href: ROUTE_PATH.FAVORITE_APARTS, label: '저장된 아파트' },
+    { href: ROUTE_PATH.APARTS, label: '저장된 아파트' },
   ];
 
   const getLinkClassName = (href: string) => {
@@ -24,7 +24,7 @@ export function Header() {
     const activeClass = 'text-gray-900 after:scale-x-100';
     const inactiveClass = 'after:scale-x-0';
 
-    return pathname === href
+    return pathname.startsWith(href)
       ? `${baseClass} ${activeClass}`
       : `${baseClass} ${inactiveClass}`;
   };

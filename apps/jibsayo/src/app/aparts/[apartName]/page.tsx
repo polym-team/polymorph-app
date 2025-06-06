@@ -1,8 +1,9 @@
+import { ApartDetail } from '@/features/apart-detail';
 import { LoadingFallback } from '@/features/apart-detail/ui/LoadingFallback';
 
 import { Suspense } from 'react';
 
-import { ApartDetailContainer } from './ApartDetailContainer';
+import { getApartDetail } from './service';
 
 interface Props {
   params: {
@@ -20,7 +21,15 @@ export default function ApartDetailPage({ params }: Props) {
 
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <ApartDetailContainer apartName={decodedApartName} />
+      {(async () => {
+        const data = await getApartDetail(apartName);
+
+        if (!data) {
+          return null;
+        }
+
+        return <ApartDetail data={data} apartName={decodedApartName} />;
+      })()}
     </Suspense>
   );
 }

@@ -18,11 +18,18 @@ import { TransactionListHeader } from '../ui/TransactionListHeader';
 import { TransactionListTable } from '../ui/TransactionListTable';
 
 interface Props {
-  regionCode: string;
+  isLoading: boolean;
+  isFetched: boolean;
+  regionCode: string | undefined;
   data: TransactionsResponse;
 }
 
-export function TransactionList({ regionCode, data }: Props) {
+export function TransactionList({
+  isLoading,
+  isFetched,
+  regionCode,
+  data,
+}: Props) {
   const { favoriteApartList, addFavoriteApart, removeFavoriteApart } =
     useFavoriteApartList();
 
@@ -105,8 +112,8 @@ export function TransactionList({ regionCode, data }: Props) {
         onSearchTermChange={setSearchTerm}
       />
       <TransactionListTable
-        isLoading={false}
-        isFetched={false}
+        isLoading={isLoading}
+        isFetched={isFetched}
         data={filteredTransactions}
         sorting={sorting}
         pageSize={pageSize}
