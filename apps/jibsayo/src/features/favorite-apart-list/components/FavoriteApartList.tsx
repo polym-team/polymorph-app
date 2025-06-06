@@ -20,7 +20,7 @@ export function FavoriteApartList() {
 
   const handleClickApart = (apartName: string) => {
     router.push(
-      `${ROUTE_PATH.APART}?apartName=${encodeURIComponent(apartName)}`
+      `${ROUTE_PATH.APARTS}?apartName=${encodeURIComponent(apartName)}`
     );
   };
 

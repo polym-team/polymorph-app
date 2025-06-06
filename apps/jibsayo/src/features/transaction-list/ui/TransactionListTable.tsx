@@ -1,4 +1,7 @@
+import { ROUTE_PATH } from '@/shared/consts/route';
+
 import { Star } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import {
   ColumnDef,
@@ -157,8 +160,8 @@ export function TransactionListTable({
   onPageSizeChange,
   preservePageIndex = false,
 }: TransactionListTableProps) {
+  const router = useRouter();
   const columns = createColumns({ onToggleFavorite });
-
   const mobileColumnTitles = {
     favorite: '저장',
     tradeDate: '거래일',
@@ -167,6 +170,10 @@ export function TransactionListTable({
     size: '평수',
     tradeAmount: '거래가격',
     isNewRecord: '신고가',
+  };
+
+  const handleClick = (row: TransactionItem) => {
+    router.push(`${ROUTE_PATH.APARTS}/${encodeURIComponent(row.apartName)}`);
   };
 
   return (
@@ -185,6 +192,7 @@ export function TransactionListTable({
       onPageSizeChange={onPageSizeChange}
       mobileColumnTitles={mobileColumnTitles}
       preservePageIndex={preservePageIndex}
+      onRowClick={handleClick}
     />
   );
 }
