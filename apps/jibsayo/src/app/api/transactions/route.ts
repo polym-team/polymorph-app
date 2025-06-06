@@ -1,6 +1,6 @@
 import cheerio, { Cheerio } from 'cheerio';
 
-import { obfuscateKorean } from './utils';
+import { obfuscateKorean } from '../utils';
 
 const calculateIsTradeListTable = (table: Cheerio<any>): boolean =>
   !!table.find(`td:contains("단지명")`).text();

@@ -1,6 +1,7 @@
 import { ApartDetailResponse } from '@/app/api/apart/types';
 
 import { ApartInfo } from '../ui/ApartInfo';
+import { TransactionChart } from './TransactionChart';
 import TransactionHistory from './TransactionHistory';
 
 interface Props {
@@ -17,6 +18,7 @@ export function ApartDetail({ data }: Props) {
         floorAreaRatio={data.floorAreaRatio}
         buildingCoverageRatio={data.buildingCoverageRatio}
       />
+      <TransactionChart items={data.tradeItems} />
       <TransactionHistory items={data.tradeItems} />
     </div>
   );
