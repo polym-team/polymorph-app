@@ -148,12 +148,12 @@ export function DataTable<TData, TValue>({
                       key={header.id}
                       style={{ width: header.getSize() }}
                     >
-                      {String(
+                      {
                         flexRender(
                           header.column.columnDef.header,
                           header.getContext()
-                        )
-                      )}
+                        ) as any
+                      }
                     </TableHead>
                   );
                 })}
@@ -183,12 +183,12 @@ export function DataTable<TData, TValue>({
                       key={cell.id}
                       style={{ width: cell.column.getSize() }}
                     >
-                      {String(
+                      {
                         flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
-                        )
-                      )}
+                        ) as any
+                      }
                     </TableCell>
                   ))}
                 </TableRow>
@@ -362,12 +362,12 @@ export function DataTable<TData, TValue>({
                       {headerText}
                     </span>
                     <div className="text-right text-sm">
-                      {String(
+                      {
                         flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
-                        )
-                      )}
+                        ) as any
+                      }
                     </div>
                   </div>
                 );
