@@ -1,29 +1,28 @@
 'use client';
 
+import { TransactionsResponse } from '@/app/api/transactions/types';
 import { useFavoriteApartList } from '@/entities/apart';
 import {
   getCityNameWithRegionCode,
   getRegionNameWithRegionCode,
 } from '@/entities/region';
 
-import { useSearchParams } from 'next/navigation';
 import { useMemo, useRef } from 'react';
 
 import { useTransactionFilter } from '../hooks/useTransactionFilter';
 import { useTransactionViewSetting } from '../hooks/useTransactionViewSetting';
 import { TransactionItem } from '../models/types';
-import { useTransactionListQuery } from '../models/useTransactionListQuery';
 import { calculateAveragePricePerPyeong } from '../services/calculator';
 import { mapTransactionsWithFavorites } from '../services/mapper';
 import { TransactionListHeader } from '../ui/TransactionListHeader';
 import { TransactionListTable } from '../ui/TransactionListTable';
 
-export function TransactionList() {
-  const { isLoading, isFetched, data } = useTransactionListQuery();
-  const searchParams = useSearchParams();
-  const regionCode = searchParams.get('regionCode') ?? undefined;
-  const transactions = data?.list ?? [];
+interface Props {
+  regionCode: string;
+  data: TransactionsResponse;
+}
 
+export function TransactionList({ regionCode, data }: Props) {
   const { favoriteApartList, addFavoriteApart, removeFavoriteApart } =
     useFavoriteApartList();
 
@@ -44,7 +43,7 @@ export function TransactionList() {
 
   const filteredTransactions = useMemo(() => {
     return mapTransactionsWithFavorites({
-      transactions,
+      transactions: data.list,
       searchTerm,
       isNationalSizeOnly,
       isFavoriteOnly,
@@ -52,7 +51,7 @@ export function TransactionList() {
       regionCode,
     });
   }, [
-    transactions,
+    data.list,
     searchTerm,
     isNationalSizeOnly,
     isFavoriteOnly,
@@ -106,8 +105,8 @@ export function TransactionList() {
         onSearchTermChange={setSearchTerm}
       />
       <TransactionListTable
-        isLoading={isLoading}
-        isFetched={isFetched}
+        isLoading={false}
+        isFetched={false}
         data={filteredTransactions}
         sorting={sorting}
         pageSize={pageSize}

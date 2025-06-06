@@ -5,7 +5,6 @@ import {
   getRegionNameWithRegionCode,
 } from '@/entities/region';
 import { ROUTE_PATH } from '@/shared/consts/route';
-import { useIsClient } from '@/shared/hooks/useIsClient';
 
 import { X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -24,7 +23,6 @@ export function FavoriteRegionList({
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isClient = useIsClient();
 
   const handleSelectRegion = (regionCode: string) => {
     const params = new URLSearchParams(searchParams);
@@ -43,20 +41,6 @@ export function FavoriteRegionList({
   const handleRemoveRegion = (region: string) => {
     onRemoveFavoriteRegion(region);
   };
-
-  if (!isClient) {
-    return (
-      <div className="flex gap-x-1">
-        {Array.from({ length: 3 }, (_, index) => (
-          <div
-            key={index}
-            className="flex h-[30px] flex-shrink-0 animate-pulse rounded-md bg-gray-200"
-            style={{ width: `${80 + index * 20}px` }}
-          ></div>
-        ))}
-      </div>
-    );
-  }
 
   return (
     <div
