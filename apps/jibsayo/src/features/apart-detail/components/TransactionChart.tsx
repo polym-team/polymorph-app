@@ -7,7 +7,6 @@ import { useRef } from 'react';
 import { Card, Typography } from '@package/ui';
 
 import { useTransactionChart } from '../hooks/useTransactionChart';
-import { ChartSkeleton } from '../ui/ChartSkeleton';
 
 interface Props {
   items: ApartDetailResponse['tradeItems'];
@@ -43,15 +42,21 @@ export function TransactionChart({ items }: Props) {
             width: '100%',
           }}
         >
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/80">
+              <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
+            </div>
+          )}
           <svg
             ref={svgRef}
             style={{
               width: '100%',
               height: '100%',
+              position: 'absolute',
+              left: 0,
+              top: 0,
             }}
-          >
-            {isLoading ? <ChartSkeleton /> : null}
-          </svg>
+          />
         </div>
       </div>
     </Card>
