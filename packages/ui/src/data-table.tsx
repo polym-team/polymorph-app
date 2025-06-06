@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { cn } from '../lib/utils';
 import { Button } from './button';
 import {
   Select,
@@ -49,7 +50,9 @@ interface DataTableProps<TData, TValue> {
   onPageSizeChange?: (pageSize: number) => void;
   mobileColumnTitles?: Record<string, string>;
   loading?: boolean;
+  loadingMessage?: string;
   preservePageIndex?: boolean;
+  onRowClick?: (row: TData) => void;
 }
 
 // useIsClient 훅 - SSR 호환성을 위해
@@ -75,6 +78,8 @@ export function DataTable<TData, TValue>({
   mobileColumnTitles,
   loading = false,
   preservePageIndex = false,
+  loadingMessage = '데이터를 불러오고 있어요.',
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
   const isClient = useIsClient();
@@ -162,21 +167,26 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {loading ? (
-              // 스켈레톤 UI - 3개 행 생성
-              Array.from({ length: 3 }, (_, index) => (
-                <TableRow key={index} className="hover:bg-transparent">
-                  {columns.map((_, colIndex) => (
-                    <TableCell key={colIndex}>
-                      <div className="h-4 animate-pulse rounded bg-gray-200"></div>
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              <TableRow className="hover:bg-transparent">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-[120px] text-center"
+                >
+                  <div className="flex flex-col items-center gap-5">
+                    <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
+                    <span className="text-gray-500">{loadingMessage}</span>
+                  </div>
+                </TableCell>
+              </TableRow>
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map(row => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
+                  className={
+                    onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''
+                  }
+                  onClick={() => onRowClick?.(row.original)}
                 >
                   {row.getVisibleCells().map(cell => (
                     <TableCell
@@ -334,7 +344,10 @@ export function DataTable<TData, TValue>({
           table.getRowModel().rows.map(row => (
             <div
               key={row.id}
-              className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+              className={`border-b border-gray-200 bg-white p-4 ${
+                onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''
+              }`}
+              onClick={() => onRowClick?.(row.original)}
             >
               {row.getVisibleCells().map((cell, index) => {
                 const header = table.getHeaderGroups()[0]?.headers[index];
