@@ -5,6 +5,7 @@ import {
   getCityNameWithRegionCode,
   getRegionNameWithRegionCode,
 } from '@/entities/region';
+import { LoadingFallback } from '@/features/apart-detail/ui/LoadingFallback';
 import { ROUTE_PATH } from '@/shared/consts/route';
 import { useIsClient } from '@/shared/hooks/useIsClient';
 
@@ -19,9 +20,7 @@ export function FavoriteApartList() {
   const isClient = useIsClient();
 
   const handleClickApart = (apartName: string) => {
-    router.push(
-      `${ROUTE_PATH.APARTS}?apartName=${encodeURIComponent(apartName)}`
-    );
+    router.push(`${ROUTE_PATH.APARTS}/${encodeURIComponent(apartName)}`);
   };
 
   const handleRemoveApart = (regionCode: string, apartId: string) => {
@@ -29,26 +28,7 @@ export function FavoriteApartList() {
   };
 
   if (!isClient) {
-    return (
-      <div className="flex flex-col gap-y-5">
-        {Array.from({ length: 1 }, (_, index) => (
-          <Card key={index} className="flex flex-col">
-            <div className="p-5">
-              <div className="h-4 w-32 animate-pulse rounded bg-gray-200"></div>
-            </div>
-            <hr className="my-0 border-gray-200" />
-            <div className="flex flex-wrap gap-2 p-4">
-              {Array.from({ length: 3 }, (_, btnIndex) => (
-                <div
-                  key={btnIndex}
-                  className="h-8 w-20 animate-pulse rounded bg-gray-200"
-                ></div>
-              ))}
-            </div>
-          </Card>
-        ))}
-      </div>
-    );
+    return <LoadingFallback />;
   }
 
   if (favoriteApartList.length === 0) {
