@@ -1,6 +1,7 @@
 import { Card, Typography } from '@package/ui';
 
 interface Props {
+  apartName: string;
   address: string;
   housholdsCount: string;
   parking: string;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function ApartInfo({
+  apartName,
   address,
   housholdsCount,
   parking,
@@ -28,7 +30,7 @@ export function ApartInfo({
   return (
     <Card className="p-5">
       <Typography variant="large" className="mb-5 font-semibold">
-        아파트 정보
+        {apartName}
       </Typography>
 
       {infoItems.map((item, index) => (

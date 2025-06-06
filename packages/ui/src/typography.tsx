@@ -76,13 +76,13 @@ export function Typography({
 function getVariantClasses(variant: TypographyProps['variant']) {
   switch (variant) {
     case 'h1':
-      return 'scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl';
+      return 'scroll-m-20 text-2xl font-extrabold tracking-tight lg:text-5xl';
     case 'h2':
-      return 'scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0';
+      return 'scroll-m-20 pb-2 text-xl font-semibold tracking-tight first:mt-0';
     case 'h3':
-      return 'scroll-m-20 text-2xl font-semibold tracking-tight';
+      return 'scroll-m-20 text-lg font-semibold tracking-tight';
     case 'h4':
-      return 'scroll-m-20 text-xl font-semibold tracking-tight';
+      return 'scroll-m-20 text-base font-semibold tracking-tight';
     case 'p':
       return 'leading-7';
     case 'blockquote':

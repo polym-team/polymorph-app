@@ -1,3 +1,5 @@
+'use client';
+
 import { ApartDetailResponse } from '@/app/api/apart/types';
 
 import * as d3 from 'd3';
@@ -31,7 +33,7 @@ export function useTransactionChart({
   margin: initialMargin,
 }: Props) {
   const [isLoading, setIsLoading] = useState(true);
-  const [containerWidth, setContainerWidth] = useState(window.innerWidth);
+  const [containerWidth, setContainerWidth] = useState(1024);
 
   // 컨테이너 너비 감지
   useEffect(() => {
@@ -41,7 +43,6 @@ export function useTransactionChart({
       const parentElement = svgRef.current?.parentElement;
       if (parentElement) {
         const parentWidth = parentElement.clientWidth;
-        // 실제 너비가 1024px 미만일 때만 최소값 적용
         setContainerWidth(parentWidth < 1024 ? 1024 : parentWidth);
       }
     };

@@ -3,10 +3,6 @@ import { Card, Typography } from '@package/ui';
 export function ApartDetailSkeleton() {
   return (
     <div className="space-y-5">
-      <Typography variant="h2" className="text-2xl font-bold">
-        <div className="h-8 w-64 animate-pulse rounded-md bg-slate-200" />
-      </Typography>
-
       {/* 아파트 정보 스켈레톤 */}
       <Card className="p-5">
         <Typography variant="large" className="mb-5 font-semibold">

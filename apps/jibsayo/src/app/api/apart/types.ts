@@ -1,4 +1,5 @@
 export interface ApartDetailResponse {
+  apartName: string;
   address: string;
   housholdsCount: string;
   parking: string;
