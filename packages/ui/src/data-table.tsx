@@ -443,11 +443,11 @@ export function DataTable<TData, TValue>({
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="bg-primary/10 rounded px-3 py-1">
-                <span className="text-primary text-xs font-bold sm:text-sm">
-                  {table.getState().pagination.pageIndex + 1} /{' '}
-                  {table.getPageCount()}
-                </span>
+              <div className="border-input rounded border bg-white px-3 py-1 pb-[5px] text-sm">
+                <strong className="text-primary">
+                  {table.getState().pagination.pageIndex + 1}
+                </strong>{' '}
+                / {table.getPageCount()}
               </div>
 
               <div className="flex items-center gap-1">

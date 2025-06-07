@@ -3,21 +3,22 @@ import {
   getCityNameWithRegionCode,
   getRegionsWithCityName,
 } from '@/entities/region';
+import { ROUTE_PATH } from '@/shared/consts/route';
 
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Dispatch, SetStateAction, useState } from 'react';
 
 import { SearchForm } from '../models/types';
 import { parseTradeDate } from '../services/date';
 
 interface Return {
   form: SearchForm;
-  handleChangeCityName: (nextCityName: string) => void;
-  handleChangeRegionCode: (nextRegionCode: string) => void;
-  handleChangeDate: (nextDate: Date | undefined) => void;
+  setForm: Dispatch<SetStateAction<SearchForm>>;
+  onSubmit: (nextForm?: Partial<SearchForm>) => void;
 }
 
 export const useSearchForm = (): Return => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const regionCode = searchParams.get('regionCode');
   const tradeDate = searchParams.get('tradeDate');
@@ -37,44 +38,24 @@ export const useSearchForm = (): Return => {
     };
   });
 
-  const handleChangeCityName = (nextCityName: string) => {
-    const regions = getRegionsWithCityName(nextCityName);
-    const firstRegionCode = regions[0]?.code ?? '';
+  const onSubmit = (nextForm?: Partial<SearchForm>) => {
+    const changedForm = { ...form, ...nextForm };
 
-    setForm(prev => ({
-      ...prev,
-      cityName: nextCityName,
-      regionCode: firstRegionCode,
-    }));
-  };
-
-  const handleChangeRegionCode = (nextRegionCode: string) => {
-    if (nextRegionCode) {
-      setForm(prev => ({ ...prev, regionCode: nextRegionCode }));
+    if (nextForm) {
+      setForm(changedForm);
     }
-  };
 
-  const handleChangeDate = (nextDate: Date | undefined) => {
-    if (nextDate) {
-      setForm(prev => ({ ...prev, date: nextDate }));
-    }
-  };
+    const year = changedForm.date.getFullYear();
+    const month = String(changedForm.date.getMonth() + 1).padStart(2, '0');
 
-  useEffect(() => {
-    if (regionCode && tradeDate) {
-      setForm(prev => ({
-        ...prev,
-        date: parseTradeDate(tradeDate),
-        cityName: getCityNameWithRegionCode(regionCode),
-        regionCode: regionCode,
-      }));
-    }
-  }, [regionCode, tradeDate]);
+    router.push(
+      `${ROUTE_PATH.TRANSACTIONS}?regionCode=${changedForm.regionCode}&tradeDate=${year + month}`
+    );
+  };
 
   return {
     form,
-    handleChangeCityName,
-    handleChangeRegionCode,
-    handleChangeDate,
+    setForm,
+    onSubmit,
   };
 };

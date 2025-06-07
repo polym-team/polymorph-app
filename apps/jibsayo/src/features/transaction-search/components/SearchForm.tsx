@@ -5,9 +5,8 @@ import {
   getRegionNameWithRegionCode,
   getRegionsWithCityName,
 } from '@/entities/region';
-import { ROUTE_PATH } from '@/shared/consts/route';
 
-import { useRouter } from 'next/navigation';
+import { Dispatch, SetStateAction } from 'react';
 
 import {
   Button,
@@ -19,30 +18,41 @@ import {
   SelectValue,
 } from '@package/ui';
 
-import { useSearchForm } from '../hooks/useSearchForm';
+import { SearchForm as SearchFormType } from '../models/types';
 
 interface Props {
-  onAddFavoriteRegion: (regionCode: string) => void;
+  form: SearchFormType;
+  setForm: Dispatch<SetStateAction<SearchFormType>>;
+  onSubmit: () => void;
 }
 
-export function SearchForm({ onAddFavoriteRegion }: Props) {
-  const router = useRouter();
-  const {
-    form,
-    handleChangeCityName,
-    handleChangeRegionCode,
-    handleChangeDate,
-  } = useSearchForm();
+export function SearchForm({ form, setForm, onSubmit }: Props) {
+  const handleChangeCityName = (nextCityName: string) => {
+    const regions = getRegionsWithCityName(nextCityName);
+    const firstRegionCode = regions[0]?.code ?? '';
+
+    setForm(prev => ({
+      ...prev,
+      cityName: nextCityName,
+      regionCode: firstRegionCode,
+    }));
+  };
+
+  const handleChangeRegionCode = (nextRegionCode: string) => {
+    if (nextRegionCode) {
+      setForm(prev => ({ ...prev, regionCode: nextRegionCode }));
+    }
+  };
+
+  const handleChangeDate = (nextDate: Date | undefined) => {
+    if (nextDate) {
+      setForm(prev => ({ ...prev, date: nextDate }));
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    const year = form.date.getFullYear();
-    const month = String(form.date.getMonth() + 1).padStart(2, '0');
-
-    router.push(
-      `${ROUTE_PATH.TRANSACTIONS}?regionCode=${form.regionCode}&tradeDate=${year + month}`
-    );
+    onSubmit();
   };
 
   return (
@@ -86,19 +96,9 @@ export function SearchForm({ onAddFavoriteRegion }: Props) {
         </div>
         <MonthPicker value={form.date} onChange={handleChangeDate} />
       </div>
-      <div className="flex gap-2 sm:gap-x-2">
-        <Button type="submit" variant="primary" className="flex-1 sm:flex-none">
-          검색
-        </Button>
-        <Button
-          type="button"
-          variant="warning"
-          className="flex-1 sm:flex-none"
-          onClick={() => onAddFavoriteRegion(form.regionCode)}
-        >
-          즐겨찾기
-        </Button>
-      </div>
+      <Button type="submit" variant="primary" className="flex-1 sm:flex-none">
+        검색
+      </Button>
     </form>
   );
 }
