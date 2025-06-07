@@ -135,6 +135,8 @@ export function DataTable<TData, TValue>({
       ''
     : '';
 
+  const showLoading = loading || !isClient;
+
   return (
     <div className="w-full space-y-4">
       {/* 데스크톱 테이블 뷰 */}
@@ -162,7 +164,7 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {loading ? (
+            {showLoading ? (
               <TableRow className="hover:bg-transparent">
                 <TableCell
                   colSpan={columns.length}
@@ -309,7 +311,7 @@ export function DataTable<TData, TValue>({
           </div>
         </div>
 
-        {loading ? (
+        {showLoading ? (
           // 스켈레톤 UI - 3개 카드 생성
           Array.from({ length: 3 }, (_, index) => (
             <div
@@ -393,7 +395,7 @@ export function DataTable<TData, TValue>({
         )}
       </div>
 
-      {showPagination && !loading && data.length > 0 && (
+      {showPagination && !showLoading && data.length > 0 && (
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:px-2">
           <div className="hidden justify-center sm:flex sm:flex-1 sm:justify-start">
             <div className="rounded-full bg-gray-50">
