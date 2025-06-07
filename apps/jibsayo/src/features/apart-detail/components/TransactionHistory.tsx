@@ -4,11 +4,16 @@ import { ApartDetailResponse } from '@/app/api/apart/types';
 import { formatPrice } from '@/features/transaction-list/services/formatter';
 import { TransactionItem } from '@/shared/models/types';
 
+import { Info as LucideInfo } from 'lucide-react';
+
 import {
   Card,
   ColumnDef,
   DataTable,
   DataTableColumnHeader,
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
   Typography,
 } from '@package/ui';
 
@@ -81,7 +86,19 @@ const columns: ColumnDef<TransactionItem>[] = [
   {
     accessorKey: 'priceChange',
     header: () => (
-      <Typography className="font-semibold text-gray-700">가격변동</Typography>
+      <div className="font-semibold text-gray-700">
+        가격변동
+        <HoverCard openDelay={0} closeDelay={0}>
+          <HoverCardTrigger asChild>
+            <div className="ml-1 inline-block translate-y-[2px]">
+              <LucideInfo className="text-primary h-4 w-4 cursor-help" />
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-80">
+            <p className="text-sm font-light">같은 평수 기준 변동된 실거래가</p>
+          </HoverCardContent>
+        </HoverCard>
+      </div>
     ),
     cell: ({ row }) => {
       const priceChange = row.original.priceChange;

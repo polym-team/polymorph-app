@@ -43,3 +43,8 @@ export { DataTableColumnHeader } from './src/data-table-column-header';
 export { DataTable } from './src/data-table';
 export type { ColumnDef, SortingState } from '@tanstack/react-table';
 export { Toaster, toast } from './src/sonner';
+export {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from './src/hover-card';
