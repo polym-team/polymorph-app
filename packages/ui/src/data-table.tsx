@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { cn } from '../lib/utils';
 import { Button } from './button';
 import {
   Select,
@@ -55,15 +54,8 @@ interface DataTableProps<TData, TValue> {
   onRowClick?: (row: TData) => void;
 }
 
-// useIsClient 훅 - SSR 호환성을 위해
 function useIsClient() {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  return isClient;
+  return typeof window !== 'undefined';
 }
 
 export function DataTable<TData, TValue>({
