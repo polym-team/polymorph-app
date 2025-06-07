@@ -1,6 +1,10 @@
 import cheerio, { Cheerio } from 'cheerio';
+import pLimit from 'p-limit';
 
 import { obfuscateKorean } from '../utils';
+
+// 동시 요청 수 제한 (서버 부하 방지)
+const limit = pLimit(3);
 
 const calculateIsTradeListTable = (table: Cheerio<any>): boolean =>
   !!table.find(`td:contains("단지명")`).text();
@@ -151,29 +155,40 @@ const fetchTradeList = async ({
   page: number;
 }): Promise<string> => {
   const response = await fetch(
-    `https://apt2.me/apt/AptMonth.jsp?area=${area}&createDt=${createDt}&pages=${page}`
+    `https://apt2.me/apt/AptMonth.jsp?area=${area}&createDt=${createDt}&pages=${page}`,
+    {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+    }
   );
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
 
   return await response.text();
 };
 
-async function* createTradeListPerPage({
-  area,
-  createDt,
-  page,
-}: {
-  area: string;
-  createDt: string;
-  page: number;
-}): AsyncGenerator<Record<string, unknown>[], void, unknown> {
-  const html = await fetchTradeList({ area, createDt, page });
-  const parsedList = parseTradeListData(html, area);
+// 첫 페이지에서 총 페이지 수를 확인하는 함수
+const getTotalPages = async (
+  area: string,
+  createDt: string
+): Promise<number> => {
+  const html = await fetchTradeList({ area, createDt, page: 1 });
+  const $ = cheerio.load(html);
+  const paginationText = $('a:contains("맨위로")').prev().text();
+  const match = paginationText.match(/(\d+)\s*\/\s*(\d+)/);
 
-  if (parsedList.length > 0) {
-    yield parsedList;
-    yield* createTradeListPerPage({ area, createDt, page: page + 1 });
+  if (match) {
+    return parseInt(match[2], 10);
   }
-}
+
+  // 페이지네이션 정보가 없는 경우, 데이터가 있는지 확인
+  const list = parseTradeListData(html, area);
+  return list.length > 0 ? 1 : 0;
+};
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -188,20 +203,39 @@ export async function GET(request: Request) {
   }
 
   try {
-    let count: number = 0;
-    let list: Record<string, unknown>[] = [];
+    // 총 페이지 수 확인
+    const totalPages = await getTotalPages(area, createDt);
 
-    for await (const result of createTradeListPerPage({
-      area: area,
-      createDt: createDt,
-      page: 1,
-    })) {
-      count += result.length;
-      list = list.concat(result);
+    if (totalPages === 0) {
+      return Response.json({ count: 0, list: [] });
     }
+
+    // 병렬로 모든 페이지 크롤링
+    const pagePromises = Array.from(
+      { length: totalPages },
+      (_, i) => i + 1
+    ).map(page =>
+      limit(async () => {
+        try {
+          const html = await fetchTradeList({ area, createDt, page });
+          return parseTradeListData(html, area);
+        } catch (error) {
+          console.error(`Error fetching page ${page}:`, error);
+          return [];
+        }
+      })
+    );
+
+    // 모든 페이지의 결과를 기다림
+    const results = await Promise.all(pagePromises);
+
+    // 결과 합치기
+    const list = results.flat();
+    const count = list.length;
 
     return Response.json({ count, list });
   } catch (error) {
+    console.error('Crawling error:', error);
     return Response.json(
       { message: '서버 오류가 발생했습니다.' },
       { status: 500 }
