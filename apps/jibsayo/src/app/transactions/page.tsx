@@ -12,24 +12,6 @@ interface Props {
   };
 }
 
-async function TransactionListWithData({
-  regionCode,
-  tradeDate,
-}: {
-  regionCode: string;
-  tradeDate: string;
-}) {
-  const data = await getTransactions(regionCode, tradeDate);
-  return (
-    <TransactionList
-      regionCode={regionCode}
-      data={data || { list: [], count: 0 }}
-      isLoading={false}
-      isFetched={true}
-    />
-  );
-}
-
 export default async function TransactionsPage({ searchParams }: Props) {
   const { regionCode, tradeDate } = searchParams;
 
