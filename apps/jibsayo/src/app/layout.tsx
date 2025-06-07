@@ -3,6 +3,8 @@ import { Header } from '@/wigets/ui/Header';
 import type { Metadata } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
 
+import { Toaster } from '@package/ui';
+
 import '../../../../packages/styles/globals.css';
 
 const notoSansKr = Noto_Sans_KR({
@@ -32,6 +34,7 @@ export default function RootLayout({
             </section>
           </main>
         </div>
+        <Toaster />
       </body>
     </html>
   );

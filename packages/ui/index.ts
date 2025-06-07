@@ -2,7 +2,7 @@ export * from './src/button';
 export { Typography } from './src/typography';
 export { Input } from './src/input';
 export { Checkbox } from './src/checkbox';
-export { Label } from './src/components/ui/label';
+export { Label } from './src/label';
 export { LabelCheckbox } from './src/label-checkbox';
 export {
   Select,
@@ -42,3 +42,4 @@ export {
 export { DataTableColumnHeader } from './src/data-table-column-header';
 export { DataTable } from './src/data-table';
 export type { ColumnDef, SortingState } from '@tanstack/react-table';
+export { Toaster, toast } from './src/sonner';

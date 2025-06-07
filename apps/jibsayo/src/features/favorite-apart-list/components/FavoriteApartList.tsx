@@ -1,6 +1,7 @@
 'use client';
 
 import { useFavoriteApartList } from '@/entities/apart';
+import { ApartItem } from '@/entities/apart/models/types';
 import {
   getCityNameWithRegionCode,
   getRegionNameWithRegionCode,
@@ -23,8 +24,8 @@ export function FavoriteApartList() {
     router.push(`${ROUTE_PATH.APARTS}/${encodeURIComponent(apartName)}`);
   };
 
-  const handleRemoveApart = (regionCode: string, apartId: string) => {
-    removeFavoriteApart(regionCode, apartId);
+  const handleRemoveApart = (regionCode: string, apartItem: ApartItem) => {
+    removeFavoriteApart(regionCode, apartItem);
   };
 
   if (!isClient) {
@@ -79,9 +80,7 @@ export function FavoriteApartList() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() =>
-                      handleRemoveApart(apart.regionCode, item.apartId)
-                    }
+                    onClick={() => handleRemoveApart(apart.regionCode, item)}
                     className="h-full min-w-0 rounded-l-none border-0 px-2 py-1.5"
                   >
                     <X className="h-3 w-3" />

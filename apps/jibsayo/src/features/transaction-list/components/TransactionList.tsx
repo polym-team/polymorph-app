@@ -82,7 +82,7 @@ export function TransactionList({
     isTogglingFavorite.current = true;
 
     if (item.favorite) {
-      removeFavoriteApart(regionCode, item.apartId);
+      removeFavoriteApart(regionCode, item);
     } else {
       const apartItem = {
         apartId: item.apartId,

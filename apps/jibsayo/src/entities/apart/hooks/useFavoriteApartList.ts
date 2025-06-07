@@ -3,6 +3,8 @@ import { getItem, setItem } from '@/shared/lib/localStorage';
 
 import { useEffect, useState } from 'react';
 
+import { toast } from '@package/ui';
+
 import { ApartItem, FavoriteApartItem } from '../models/types';
 import {
   addApartToExistingRegion,
@@ -16,7 +18,7 @@ import {
 interface Return {
   favoriteApartList: FavoriteApartItem[];
   addFavoriteApart: (regionCode: string, apartItem: ApartItem) => void;
-  removeFavoriteApart: (regionCode: string, apartId: string) => void;
+  removeFavoriteApart: (regionCode: string, apartItem: ApartItem) => void;
 }
 
 export const useFavoriteApartList = (): Return => {
@@ -56,9 +58,11 @@ export const useFavoriteApartList = (): Return => {
       const newList = createNewRegion(favoriteApartList, regionCode, apartItem);
       updateAndSave(newList);
     }
+
+    toast.success(`즐겨찾기에 추가되었습니다. (${apartItem.apartName})`);
   };
 
-  const removeFavoriteApart = (regionCode: string, apartId: string) => {
+  const removeFavoriteApart = (regionCode: string, apartItem: ApartItem) => {
     const regionIndex = findRegionIndex(favoriteApartList, regionCode);
 
     if (regionIndex < 0) {
@@ -67,7 +71,7 @@ export const useFavoriteApartList = (): Return => {
 
     const updatedRegion = removeApartFromRegion(
       favoriteApartList[regionIndex],
-      apartId
+      apartItem.apartId
     );
 
     if (updatedRegion.apartItems.length === 0) {
@@ -80,6 +84,8 @@ export const useFavoriteApartList = (): Return => {
       updatedList[regionIndex] = updatedRegion;
       updateAndSave(updatedList);
     }
+
+    toast.success(`즐겨찾기에서 삭제되었습니다. (${apartItem.apartName})`);
   };
 
   return {

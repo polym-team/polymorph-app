@@ -1,8 +1,12 @@
 'use client';
 
 import { ApartDetailResponse } from '@/app/api/apart/types';
+import { ROUTE_PATH } from '@/shared/consts/route';
 
-import { Typography } from '@package/ui';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+import { toast, Typography } from '@package/ui';
 
 import { ApartInfo } from '../ui/ApartInfo';
 import { TransactionChart } from './TransactionChart';
@@ -14,6 +18,20 @@ interface Props {
 }
 
 export function ApartDetail({ data, apartName }: Props) {
+  const hasError = !data.tradeItems.length;
+  const router = useRouter();
+
+  useEffect(() => {
+    if (hasError) {
+      toast.error(`아파트 상세 정보를 불러오는데 실패했습니다. (${apartName})`);
+      router.push(ROUTE_PATH.APARTS);
+    }
+  }, []);
+
+  if (hasError) {
+    return null;
+  }
+
   return (
     <div className="space-y-5">
       <ApartInfo

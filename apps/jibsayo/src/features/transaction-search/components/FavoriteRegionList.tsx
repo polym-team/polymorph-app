@@ -36,11 +36,11 @@ export function FavoriteRegionList({ form, onSubmit }: Props) {
       <Button
         variant="outline"
         size="sm"
-        className="flex-shrink-0 whitespace-nowrap px-3 py-1.5 text-sm"
+        className="border-primary flex-shrink-0 whitespace-nowrap px-3 py-1.5 text-sm"
         onClick={() => addFavoriteRegion(form.regionCode)}
       >
         <Star className="h-3 w-3 translate-y-[0.5px]" />
-        즐겨찾기에 추가
+        지역 저장
       </Button>
       {favoriteRegions.map(regionCode => (
         <div
