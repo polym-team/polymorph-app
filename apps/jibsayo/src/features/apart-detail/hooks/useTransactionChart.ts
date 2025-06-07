@@ -3,6 +3,7 @@
 import { ApartDetailResponse } from '@/app/api/apart/types';
 
 import * as d3 from 'd3';
+import { subMonths } from 'date-fns';
 import {
   MutableRefObject,
   RefObject,
@@ -23,6 +24,7 @@ interface Props {
   tooltipRef: MutableRefObject<HTMLDivElement | null>;
   height: number;
   margin: { top: number; right: number; bottom: number; left: number };
+  period: number;
 }
 
 export function useTransactionChart({
@@ -31,6 +33,7 @@ export function useTransactionChart({
   tooltipRef,
   height: containerHeight,
   margin: initialMargin,
+  period,
 }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [containerWidth, setContainerWidth] = useState(1024);
@@ -71,7 +74,17 @@ export function useTransactionChart({
   const chartData = useMemo(() => {
     if (!items.length) return [];
 
-    const monthlyData = d3.group(items, d =>
+    // 기간 필터링
+    const now = new Date();
+    const filteredItems =
+      period === 0
+        ? items
+        : items.filter(item => {
+            const tradeDate = new Date(item.tradeDate);
+            return tradeDate >= subMonths(now, period);
+          });
+
+    const monthlyData = d3.group(filteredItems, d =>
       d3.timeMonth(new Date(d.tradeDate))
     );
 
@@ -80,7 +93,7 @@ export function useTransactionChart({
       averagePrice: d3.mean(items, d => d.tradeAmount) || 0,
       count: items.length,
     }));
-  }, [items]);
+  }, [items, period]);
 
   // 차트 영역 크기 계산
   const chartWidth = Math.max(containerWidth - margin.left - margin.right, 0);
