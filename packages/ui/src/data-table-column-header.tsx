@@ -1,3 +1,5 @@
+import { Column } from '@tanstack/react-table';
+
 import { ArrowDown, ArrowUp, ChevronsUpDown, EyeOff } from 'lucide-react';
 
 import { cn } from '@package/utils';
@@ -6,7 +8,7 @@ import { Button } from './button';
 
 interface DataTableColumnHeaderProps
   extends React.HTMLAttributes<HTMLDivElement> {
-  column: any; // TanStack Table Column type
+  column: Column<any, unknown>;
   title: string;
 }
 
