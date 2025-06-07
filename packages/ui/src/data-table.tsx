@@ -55,7 +55,11 @@ interface DataTableProps<TData, TValue> {
 }
 
 function useIsClient() {
-  return typeof window !== 'undefined';
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  return isClient;
 }
 
 export function DataTable<TData, TValue>({
