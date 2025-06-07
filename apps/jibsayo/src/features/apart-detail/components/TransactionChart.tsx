@@ -5,13 +5,6 @@ import { ApartDetailResponse } from '@/app/api/apart/types';
 import { useRef, useState } from 'react';
 
 import { Button, Card, Typography } from '@package/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@package/ui';
 
 import { useTransactionChart } from '../hooks/useTransactionChart';
 
@@ -34,7 +27,6 @@ export function TransactionChart({ items }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [period, setPeriod] = useState<PeriodValue>('12');
-  const [customPeriod, setCustomPeriod] = useState<number>(12);
 
   const margin = { top: 20, right: 20, bottom: 30, left: 60 };
   const height = 400;
