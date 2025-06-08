@@ -36,14 +36,7 @@ export function TransactionList({
   const { sorting, pageSize, updateSorting, updatePageSize } =
     useTransactionViewSetting();
 
-  const {
-    searchTerm,
-    isNationalSizeOnly,
-    isFavoriteOnly,
-    setSearchTerm,
-    setIsNationalSizeOnly,
-    setIsFavoriteOnly,
-  } = useTransactionFilter();
+  const { filter, setFilter } = useTransactionFilter();
 
   // 즐겨찾기 토글 중인지 추적
   const isTogglingFavorite = useRef(false);
@@ -51,20 +44,11 @@ export function TransactionList({
   const filteredTransactions = useMemo(() => {
     return mapTransactionsWithFavorites({
       transactions: data.list,
-      searchTerm,
-      isNationalSizeOnly,
-      isFavoriteOnly,
       favoriteApartList,
+      filter,
       regionCode,
     });
-  }, [
-    data.list,
-    searchTerm,
-    isNationalSizeOnly,
-    isFavoriteOnly,
-    favoriteApartList,
-    regionCode,
-  ]);
+  }, [data.list, favoriteApartList, filter, regionCode]);
 
   const totalCount = filteredTransactions.length;
   const averagePricePerPyeong =
@@ -104,12 +88,8 @@ export function TransactionList({
         filteredTransactionsLength={filteredTransactions.length}
         totalCount={totalCount}
         averagePricePerPyeong={averagePricePerPyeong}
-        isFavoriteOnly={isFavoriteOnly}
-        isNationalSizeOnly={isNationalSizeOnly}
-        searchTerm={searchTerm}
-        onFavoriteOnlyChange={setIsFavoriteOnly}
-        onNationalSizeOnlyChange={setIsNationalSizeOnly}
-        onSearchTermChange={setSearchTerm}
+        filter={filter}
+        setFilter={setFilter}
       />
       <TransactionListTable
         isLoading={isLoading}

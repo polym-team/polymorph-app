@@ -1,5 +1,6 @@
 import { TransactionsResponse } from '@/app/api/transactions/types';
 
+import { TransactionItem } from '../models/types';
 import { formatSizeWithPyeong } from './formatter';
 
 const extractPyeong = (exclusiveAreaInSquareMeters: number): number => {
@@ -23,7 +24,7 @@ export const calculateAveragePrice = (
 };
 
 export const calculateAveragePricePerPyeong = (
-  transactions: TransactionsResponse['list']
+  transactions: TransactionItem[]
 ): number => {
   if (transactions.length === 0) return 0;
 

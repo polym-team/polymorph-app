@@ -1,20 +1,16 @@
 import { TransactionsResponse } from '@/app/api/transactions/types';
 import { FavoriteApartItem } from '@/entities/apart/models/types';
 
-import { TransactionItem } from '../models/types';
+import { TransactionFilter, TransactionItem } from '../models/types';
 
 export const mapTransactionsWithFavorites = ({
   transactions,
-  searchTerm,
-  isNationalSizeOnly,
-  isFavoriteOnly,
+  filter,
   favoriteApartList,
   regionCode,
 }: {
   transactions: TransactionsResponse['list'];
-  searchTerm: string;
-  isNationalSizeOnly: boolean;
-  isFavoriteOnly: boolean;
+  filter: TransactionFilter;
   favoriteApartList: FavoriteApartItem[];
   regionCode?: string;
 }): TransactionItem[] => {
@@ -38,11 +34,13 @@ export const mapTransactionsWithFavorites = ({
     .filter(transaction => {
       const isMatched = transaction.apartName
         .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      const isMatchedSize = isNationalSizeOnly
+        .includes(filter.apartName.toLowerCase());
+      const isMatchedSize = filter.isNationalSizeOnly
         ? transaction.size >= 84 && transaction.size < 85
         : true;
-      const isMatchedFavorite = isFavoriteOnly ? transaction.favorite : true;
+      const isMatchedFavorite = filter.isFavoriteOnly
+        ? transaction.favorite
+        : true;
 
       return isMatched && isMatchedSize && isMatchedFavorite;
     });

@@ -1,5 +1,6 @@
 import { Input, LabelCheckbox, Typography } from '@package/ui';
 
+import { TransactionFilter } from '../models/types';
 import { formatPrice } from '../services/formatter';
 
 interface TransactionListHeaderProps {
@@ -7,12 +8,8 @@ interface TransactionListHeaderProps {
   filteredTransactionsLength: number;
   totalCount: number;
   averagePricePerPyeong: number;
-  isFavoriteOnly: boolean;
-  isNationalSizeOnly: boolean;
-  searchTerm: string;
-  onFavoriteOnlyChange: (checked: boolean) => void;
-  onNationalSizeOnlyChange: (checked: boolean) => void;
-  onSearchTermChange: (term: string) => void;
+  filter: TransactionFilter;
+  setFilter: (filter: Partial<TransactionFilter>) => void;
 }
 
 export function TransactionListHeader({
@@ -20,12 +17,8 @@ export function TransactionListHeader({
   filteredTransactionsLength,
   totalCount,
   averagePricePerPyeong,
-  isFavoriteOnly,
-  isNationalSizeOnly,
-  searchTerm,
-  onFavoriteOnlyChange,
-  onNationalSizeOnlyChange,
-  onSearchTermChange,
+  filter,
+  setFilter,
 }: TransactionListHeaderProps) {
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -57,23 +50,27 @@ export function TransactionListHeader({
         <div className="flex gap-2 sm:items-center sm:gap-x-2">
           <div className="flex-1 sm:flex-none">
             <LabelCheckbox
-              checked={isFavoriteOnly}
-              onCheckedChange={onFavoriteOnlyChange}
+              checked={filter.isFavoriteOnly}
+              onCheckedChange={() =>
+                setFilter({ isFavoriteOnly: !filter.isFavoriteOnly })
+              }
               title="저장된 아파트"
             />
           </div>
           <div className="flex-1 sm:flex-none">
             <LabelCheckbox
-              checked={isNationalSizeOnly}
-              onCheckedChange={onNationalSizeOnlyChange}
+              checked={filter.isNationalSizeOnly}
+              onCheckedChange={() =>
+                setFilter({ isNationalSizeOnly: !filter.isNationalSizeOnly })
+              }
               title="국민평수"
             />
           </div>
         </div>
         <Input
           placeholder="아파트명 검색"
-          value={searchTerm}
-          onChange={e => onSearchTermChange(e.target.value)}
+          value={filter.apartName}
+          onChange={e => setFilter({ apartName: e.target.value })}
           className="w-full sm:w-64"
         />
       </div>
