@@ -1,9 +1,8 @@
-import { ROUTE_PATH } from '@/shared/consts/route';
-
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { TransactionFilter } from '../models/types';
+
+const STORAGE_KEY = 'transaction-filter';
 
 interface Return {
   filter: TransactionFilter;
@@ -11,30 +10,25 @@ interface Return {
 }
 
 export function useTransactionFilter(): Return {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
   const [filterState, setFilterState] = useState<TransactionFilter>(() => {
+    const storedFilter = sessionStorage.getItem(STORAGE_KEY);
+    if (storedFilter) {
+      return JSON.parse(storedFilter);
+    }
     return {
-      apartName: searchParams.get('apartName') ?? '',
-      isNationalSizeOnly: searchParams.get('isNationalSizeOnly') === 'true',
-      isFavoriteOnly: searchParams.get('isFavoriteOnly') === 'true',
+      apartName: '',
+      isNationalSizeOnly: false,
+      isFavoriteOnly: false,
     };
   });
 
-  const updateSearchParams = (nextFilter: TransactionFilter) => {
-    const params = new URLSearchParams(searchParams);
-    params.set('apartName', nextFilter.apartName);
-    params.set('isNationalSizeOnly', nextFilter.isNationalSizeOnly?.toString());
-    params.set('isFavoriteOnly', nextFilter.isFavoriteOnly?.toString());
-    router.push(`${ROUTE_PATH.TRANSACTIONS}?${params.toString()}`);
-  };
+  useEffect(() => {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(filterState));
+  }, [filterState]);
 
   const setFilter = (nextFilter: Partial<TransactionFilter>) => {
     const changedFilter = { ...filterState, ...nextFilter };
-
     setFilterState(changedFilter);
-    updateSearchParams(changedFilter);
   };
 
   return {
