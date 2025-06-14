@@ -11,7 +11,7 @@ import { toast } from '@package/ui';
 
 interface Return {
   favoriteRegions: string[];
-  addFavoriteRegion: (regionCode: string) => void;
+  toggleFavoriteRegion: (regionCode: string) => void;
   removeFavoriteRegion: (regionCode: string) => void;
 }
 
@@ -26,11 +26,6 @@ export const useFavoriteRegion = (): Return => {
   }, []);
 
   const addFavoriteRegion = (regionCode: string) => {
-    if (favoriteRegions.includes(regionCode)) {
-      toast.error('이미 저장된 지역입니다.');
-      return;
-    }
-
     setFavoriteRegions(prev => {
       const newRegions = [...prev, regionCode];
       setItem(STORAGE_KEY.FAVORITE_REGION_LIST, newRegions);
@@ -59,5 +54,13 @@ export const useFavoriteRegion = (): Return => {
     );
   };
 
-  return { favoriteRegions, addFavoriteRegion, removeFavoriteRegion };
+  const toggleFavoriteRegion = (regionCode: string) => {
+    if (favoriteRegions.includes(regionCode)) {
+      removeFavoriteRegion(regionCode);
+    } else {
+      addFavoriteRegion(regionCode);
+    }
+  };
+
+  return { favoriteRegions, toggleFavoriteRegion, removeFavoriteRegion };
 };

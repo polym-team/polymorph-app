@@ -18,7 +18,7 @@ interface Props {
 }
 
 export function FavoriteRegionList({ form, onSubmit }: Props) {
-  const { favoriteRegions, addFavoriteRegion, removeFavoriteRegion } =
+  const { favoriteRegions, toggleFavoriteRegion, removeFavoriteRegion } =
     useFavoriteRegion();
 
   const handleSelect = (regionCode: string) => {
@@ -36,11 +36,16 @@ export function FavoriteRegionList({ form, onSubmit }: Props) {
       <Button
         variant="outline"
         size="sm"
-        className="border-primary flex-shrink-0 whitespace-nowrap px-3 py-1.5 text-sm"
-        onClick={() => addFavoriteRegion(form.regionCode)}
+        className="w-[30px] flex-shrink-0 whitespace-nowrap px-3 py-1.5 text-sm"
+        onClick={() => toggleFavoriteRegion(form.regionCode)}
       >
-        <Star className="h-3 w-3 translate-y-[0.5px]" />
-        지역 저장
+        <Star
+          className={`h-3 w-3 translate-y-[0.5px] ${
+            favoriteRegions.includes(form.regionCode)
+              ? 'fill-warning text-warning'
+              : ''
+          }`}
+        />
       </Button>
       {favoriteRegions.map(regionCode => (
         <div
