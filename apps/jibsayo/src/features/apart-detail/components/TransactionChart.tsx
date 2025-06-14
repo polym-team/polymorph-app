@@ -26,7 +26,7 @@ type PeriodValue = (typeof PERIODS)[number]['value'];
 export function TransactionChart({ items }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
-  const [period, setPeriod] = useState<PeriodValue>('12');
+  const [period, setPeriod] = useState<PeriodValue>('60');
 
   const margin = { top: 20, right: 20, bottom: 30, left: 60 };
   const height = 400;

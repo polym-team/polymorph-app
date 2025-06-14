@@ -22,20 +22,18 @@ export const useSearchForm = (): Return => {
   const { searchParams, setSearchParams } = useSearchParams();
 
   const [form, setForm] = useState<SearchForm>(() => {
-    const defaultCityName = searchParams.regionCode
-      ? getCityNameWithRegionCode(searchParams.regionCode)
-      : cityNameList[0];
-    const defaultRegionCode =
-      searchParams.regionCode ??
-      getRegionsWithCityName(defaultCityName)[0].code;
-    const defaultDate = searchParams.tradeDate
-      ? parseTradeDate(searchParams.tradeDate)
-      : new Date();
+    if (searchParams.regionCode && searchParams.tradeDate) {
+      return {
+        cityName: getCityNameWithRegionCode(searchParams.regionCode),
+        regionCode: searchParams.regionCode,
+        date: parseTradeDate(searchParams.tradeDate),
+      };
+    }
 
     return {
-      cityName: defaultCityName,
-      regionCode: defaultRegionCode,
-      date: defaultDate,
+      cityName: cityNameList[0],
+      regionCode: getRegionsWithCityName(cityNameList[0])[0].code,
+      date: new Date(),
     };
   });
 
