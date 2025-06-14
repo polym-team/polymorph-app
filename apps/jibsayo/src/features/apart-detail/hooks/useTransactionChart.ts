@@ -12,10 +12,19 @@ import {
   useState,
 } from 'react';
 
+import { calculatePyeong } from '../services/calculator';
+
 export interface ChartData {
   date: Date;
   averagePrice: number;
   count: number;
+  size: number;
+  sizes?: number[];
+}
+
+interface ChartDataResult {
+  result: ChartData[];
+  allSizes: number[];
 }
 
 interface Props {
@@ -66,7 +75,7 @@ export function useTransactionChart({
   const margin = {
     top: 20,
     right: 20,
-    bottom: 30,
+    bottom: 70,
     left: 60,
   };
 
@@ -84,15 +93,32 @@ export function useTransactionChart({
             return tradeDate >= subMonths(now, period);
           });
 
-    const monthlyData = d3.group(filteredItems, d =>
-      d3.timeMonth(new Date(d.tradeDate))
-    );
+    // 평형별로 그룹화
+    const sizeGroups = d3.group(filteredItems, d => Math.floor(d.size));
+    const result: ChartData[] = [];
 
-    return Array.from(monthlyData, ([date, items]) => ({
-      date: date,
-      averagePrice: d3.mean(items, d => d.tradeAmount) || 0,
-      count: items.length,
-    }));
+    sizeGroups.forEach((items, size) => {
+      const monthlyData = d3.group(items, d =>
+        d3.timeMonth(new Date(d.tradeDate))
+      );
+
+      // 해당 평형의 제곱미터 값들을 수집
+      const sizes = Array.from(new Set(items.map(item => item.size))).sort(
+        (a, b) => a - b
+      );
+
+      Array.from(monthlyData, ([date, items]) => {
+        result.push({
+          date: date,
+          averagePrice: d3.mean(items, d => d.tradeAmount) || 0,
+          count: items.length,
+          size: size,
+          sizes: sizes,
+        });
+      });
+    });
+
+    return result;
   }, [items, period]);
 
   // 차트 영역 크기 계산
@@ -208,28 +234,95 @@ export function useTransactionChart({
         .attr('class', 'chart-container')
         .style('opacity', 0);
 
-      const line = d3
-        .line<ChartData>()
-        .x(d => xScale(d.date))
-        .y(d => yScale(d.averagePrice))
-        .curve(d3.curveLinear);
+      // 평형별로 데이터 그룹화
+      const sizeGroups = d3.group(chartData, d => d.size) as Map<
+        number,
+        ChartData[]
+      >;
 
-      chartContainer
-        .append('path')
-        .datum(chartData)
-        .attr('fill', 'none')
-        .attr('stroke', 'hsl(238 75% 65% / 1)')
-        .attr('stroke-width', 2)
-        .attr('d', line);
+      // 색상 스케일 생성
+      const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
-      chartContainer
-        .selectAll('circle')
-        .data(chartData)
-        .join('circle')
-        .attr('cx', d => xScale(d.date))
-        .attr('cy', d => yScale(d.averagePrice))
-        .attr('r', 3)
-        .attr('fill', 'hsl(238 75% 65% / 1)');
+      // 각 평형별로 라인 생성
+      sizeGroups.forEach((data, size) => {
+        const line = d3
+          .line<ChartData>()
+          .x(d => xScale(d.date))
+          .y(d => yScale(d.averagePrice))
+          .curve(d3.curveLinear);
+
+        chartContainer
+          .append('path')
+          .datum(data)
+          .attr('fill', 'none')
+          .attr('stroke', colorScale(size.toString()))
+          .attr('stroke-width', 2)
+          .attr('d', line);
+
+        chartContainer
+          .selectAll(`circle.size-${size}`)
+          .data(data)
+          .join('circle')
+          .attr('class', `size-${size}`)
+          .attr('cx', d => xScale(d.date))
+          .attr('cy', d => yScale(d.averagePrice))
+          .attr('r', 3)
+          .attr('fill', colorScale(size.toString()));
+      });
+
+      // 범례 간격 계산 (전체 너비를 범례 수로 나누어 균등 분배)
+      const legendItemWidth = 100; // 각 범례 아이템의 예상 너비
+      const totalLegendWidth = legendItemWidth * sizeGroups.size;
+      const chartWidth = containerWidth - margin.left - margin.right;
+      const legendStartX = margin.left; // 범례 컨테이너 시작점을 x축 시작점으로 설정
+
+      // 범례 컨테이너 위치 조정
+      const legend = svg
+        .append('g')
+        .attr('class', 'legend')
+        .attr(
+          'transform',
+          `translate(${legendStartX}, ${containerHeight - margin.bottom + 40})`
+        );
+
+      // 범례 아이템들을 담을 그룹 생성 (중앙 정렬용)
+      const legendItemsGroup = legend
+        .append('g')
+        .attr(
+          'transform',
+          `translate(${(chartWidth - totalLegendWidth) / 2}, 0)`
+        );
+
+      // size 기준으로 오름차순 정렬
+      const sortedSizes = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
+
+      let index = 0;
+      sortedSizes.forEach(size => {
+        const data = sizeGroups.get(size)!;
+        const sizes = Array.from(new Set(data.map(d => d.size))).sort(
+          (a, b) => a - b
+        );
+        const legendItem = legendItemsGroup
+          .append('g')
+          .attr('transform', `translate(${index * legendItemWidth}, 0)`);
+
+        legendItem
+          .append('rect')
+          .attr('width', 10)
+          .attr('height', 10)
+          .attr('fill', colorScale(size.toString()));
+
+        legendItem
+          .append('text')
+          .attr('x', 15)
+          .attr('y', 10)
+          .attr('font-size', '12px')
+          .text(
+            `${calculatePyeong(size)}평 (${sizes.map(s => `${s}㎡`).join(', ')})`
+          );
+
+        index += 1;
+      });
 
       // fade-in 애니메이션
       chartContainer.transition().duration(600).style('opacity', 1);
