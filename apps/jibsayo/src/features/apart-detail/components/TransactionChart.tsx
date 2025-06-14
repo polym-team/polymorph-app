@@ -72,6 +72,11 @@ export function TransactionChart({ items }: Props) {
             maxWidth: '100%',
             width: '100%',
           }}
+          ref={containerRef => {
+            if (containerRef) {
+              containerRef.scrollLeft = containerRef.scrollWidth;
+            }
+          }}
         >
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/80">
