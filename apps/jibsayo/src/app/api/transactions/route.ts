@@ -171,25 +171,6 @@ const fetchTradeList = async ({
   return await response.text();
 };
 
-// 첫 페이지에서 총 페이지 수를 확인하는 함수
-const getTotalPages = async (
-  area: string,
-  createDt: string
-): Promise<number> => {
-  const html = await fetchTradeList({ area, createDt, page: 1 });
-  const $ = cheerio.load(html);
-  const paginationText = $('a:contains("맨위로")').prev().text();
-  const match = paginationText.match(/(\d+)\s*\/\s*(\d+)/);
-
-  if (match) {
-    return parseInt(match[2], 10);
-  }
-
-  // 페이지네이션 정보가 없는 경우, 데이터가 있는지 확인
-  const list = parseTradeListData(html, area);
-  return list.length > 0 ? 1 : 0;
-};
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const area = searchParams.get('area');
@@ -203,34 +184,46 @@ export async function GET(request: Request) {
   }
 
   try {
-    // 총 페이지 수 확인
-    const totalPages = await getTotalPages(area, createDt);
+    const results = [];
+    let page = 1;
+    let hasMoreData = true;
 
-    if (totalPages === 0) {
-      return Response.json({ count: 0, list: [] });
+    while (hasMoreData) {
+      // 3페이지씩 병렬로 조회
+      const pagePromises = [page, page + 1, page + 2].map(pageNum =>
+        limit(async () => {
+          try {
+            const html = await fetchTradeList({
+              area,
+              createDt,
+              page: pageNum,
+            });
+            const data = parseTradeListData(html, area);
+            return { page: pageNum, data };
+          } catch (error) {
+            console.error(`Error fetching page ${pageNum}:`, error);
+            return { page: pageNum, data: [] };
+          }
+        })
+      );
+
+      const pageResults = await Promise.all(pagePromises);
+
+      // 결과가 있는 페이지만 추가
+      const validResults = pageResults.filter(result => result.data.length > 0);
+      results.push(...validResults);
+
+      // 다음 페이지로 이동
+      page += 3;
+
+      // 모든 페이지에서 데이터가 없으면 종료
+      if (validResults.length === 0) {
+        hasMoreData = false;
+      }
     }
 
-    // 병렬로 모든 페이지 크롤링
-    const pagePromises = Array.from(
-      { length: totalPages },
-      (_, i) => i + 1
-    ).map(page =>
-      limit(async () => {
-        try {
-          const html = await fetchTradeList({ area, createDt, page });
-          return parseTradeListData(html, area);
-        } catch (error) {
-          console.error(`Error fetching page ${page}:`, error);
-          return [];
-        }
-      })
-    );
-
-    // 모든 페이지의 결과를 기다림
-    const results = await Promise.all(pagePromises);
-
     // 결과 합치기
-    const list = results.flat();
+    const list = results.flatMap(result => result.data);
     const count = list.length;
 
     return Response.json({ count, list });
