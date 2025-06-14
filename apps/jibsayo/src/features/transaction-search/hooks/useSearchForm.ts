@@ -4,8 +4,10 @@ import {
   getRegionsWithCityName,
 } from '@/entities/region';
 import { useSearchParams } from '@/entities/transaction';
+import { STORAGE_KEY } from '@/shared/consts/storageKey';
+import { getItem, setItem } from '@/shared/lib/sessionStorage';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { SearchForm } from '../models/types';
 import { parseTradeDate } from '../services/date';
@@ -76,11 +78,29 @@ export const useSearchForm = (): Return => {
     updateRegionCode(changedForm.regionCode);
     updateDate(changedForm.date);
 
+    setItem(STORAGE_KEY.TRANSACTION_SEARCH_FORM, {
+      regionCode: changedForm.regionCode,
+      tradeDate: changedForm.regionCode,
+    });
+
     setSearchParams({
       regionCode: changedForm.regionCode,
       tradeDate,
     });
   };
+
+  useEffect(() => {
+    if (searchParams.regionCode && searchParams.tradeDate) return;
+
+    const savedSearchForm = getItem<SearchForm>(
+      STORAGE_KEY.TRANSACTION_SEARCH_FORM
+    );
+
+    console.log('savedSearchForm: ', savedSearchForm);
+    if (savedSearchForm) {
+      onSubmit(savedSearchForm);
+    }
+  }, []);
 
   return {
     form,
