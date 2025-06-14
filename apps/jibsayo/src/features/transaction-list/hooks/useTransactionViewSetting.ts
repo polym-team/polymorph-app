@@ -10,8 +10,10 @@ import { TransactionViewSetting } from '../models/types';
 interface Return {
   sorting: SortingState;
   pageSize: number;
+  page: number;
   updateSorting: (sorting: SortingState) => void;
   updatePageSize: (pageSize: number) => void;
+  updatePage: (page: number) => void;
 }
 
 export const useTransactionViewSetting = (): Return => {
@@ -19,6 +21,7 @@ export const useTransactionViewSetting = (): Return => {
   const [settings, setSettings] = useState<TransactionViewSetting>({
     sorting: [],
     pageSize: 10,
+    page: 0,
   });
 
   useEffect(() => {
@@ -55,10 +58,16 @@ export const useTransactionViewSetting = (): Return => {
     saveSettings({ pageSize });
   };
 
+  const updatePage = (page: number) => {
+    saveSettings({ page });
+  };
+
   return {
     sorting: isMounted ? settings.sorting : [],
     pageSize: isMounted ? settings.pageSize : 10,
+    page: isMounted ? settings.page : 0,
     updateSorting,
     updatePageSize,
+    updatePage,
   };
 };

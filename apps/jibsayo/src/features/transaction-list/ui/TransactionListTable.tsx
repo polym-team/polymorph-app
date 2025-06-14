@@ -22,9 +22,11 @@ interface TransactionListTableProps {
   data: TransactionItem[];
   sorting: SortingState;
   pageSize: number;
+  page: number;
   onToggleFavorite: (item: TransactionItem) => void;
   onSortingChange: (sorting: SortingState) => void;
   onPageSizeChange: (pageSize: number) => void;
+  onPageChange: (page: number) => void;
   preservePageIndex?: boolean;
 }
 
@@ -155,9 +157,11 @@ export function TransactionListTable({
   data,
   sorting,
   pageSize,
+  page,
   onToggleFavorite,
   onSortingChange,
   onPageSizeChange,
+  onPageChange,
   preservePageIndex = false,
 }: TransactionListTableProps) {
   const router = useRouter();
@@ -188,8 +192,10 @@ export function TransactionListTable({
       }
       sorting={sorting}
       pageSize={pageSize}
+      page={page}
       onSortingChange={onSortingChange}
       onPageSizeChange={onPageSizeChange}
+      onPageChange={onPageChange}
       mobileColumnTitles={mobileColumnTitles}
       preservePageIndex={preservePageIndex}
       onRowClick={handleClick}

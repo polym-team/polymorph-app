@@ -52,6 +52,8 @@ interface DataTableProps<TData, TValue> {
   loadingMessage?: string;
   preservePageIndex?: boolean;
   onRowClick?: (row: TData) => void;
+  page?: number;
+  onPageChange?: (page: number) => void;
 }
 
 function useIsClient() {
@@ -76,8 +78,11 @@ export function DataTable<TData, TValue>({
   preservePageIndex = false,
   loadingMessage = '데이터를 불러오고 있어요.',
   onRowClick,
+  page: externalPage,
+  onPageChange,
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
+  const [internalPage, setInternalPage] = useState(0);
   const isClient = useIsClient();
 
   // 외부에서 sorting이 제공되면 그것을 사용, 아니면 내부 상태 사용
@@ -95,6 +100,16 @@ export function DataTable<TData, TValue>({
     }
   };
 
+  // 외부에서 page가 제공되면 그것을 사용, 아니면 내부 상태 사용
+  const page = externalPage ?? internalPage;
+  const setPage = (newPage: number) => {
+    if (onPageChange) {
+      onPageChange(newPage);
+    } else {
+      setInternalPage(newPage);
+    }
+  };
+
   const table = useReactTable({
     data,
     columns,
@@ -105,11 +120,21 @@ export function DataTable<TData, TValue>({
     autoResetPageIndex: !preservePageIndex,
     state: {
       sorting,
-    },
-    initialState: {
       pagination: {
+        pageIndex: page,
         pageSize,
       },
+    },
+    onPaginationChange: updater => {
+      if (typeof updater === 'function') {
+        const newState = updater({
+          pageIndex: page,
+          pageSize,
+        });
+        setPage(newState.pageIndex);
+      } else {
+        setPage(updater.pageIndex);
+      }
     },
     enableColumnResizing: false,
     columnResizeMode: 'onChange',
