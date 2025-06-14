@@ -18,9 +18,9 @@ export function Header() {
 
   const getLinkClassName = (href: string) => {
     const baseClass =
-      'relative text-gray-600 transition-colors hover:text-gray-900 py-5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-primary after:transition-transform after:duration-300 after:origin-center';
-    const activeClass = 'text-gray-900 after:scale-x-100';
-    const inactiveClass = 'after:scale-x-0';
+      'relative text-gray-600 transition-colors hover:text-gray-900 py-2 px-3 rounded-md';
+    const activeClass = 'text-gray-900 bg-gray-100';
+    const inactiveClass = 'hover:bg-gray-50';
 
     return pathname.startsWith(href)
       ? `${baseClass} ${activeClass}`
@@ -60,54 +60,15 @@ export function Header() {
             </span>
           </Link>
 
-          {/* 데스크톱 네비게이션 */}
-          <nav className="hidden items-center space-x-6 sm:flex">
+          {/* 네비게이션 */}
+          <nav className="flex items-center space-x-2">
             {navItems.map((item, index) => (
               <Link
                 key={index}
                 href={item.href}
                 className={getLinkClassName(item.href)}
               >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          {/* 모바일 햄버거 버튼 */}
-          <button
-            onClick={toggleMenu}
-            className="p-2 text-gray-600 transition-colors duration-200 hover:text-gray-900 sm:hidden"
-          >
-            <div className="relative h-6 w-6">
-              <Menu
-                className={`absolute h-6 w-6 transition-all duration-300 ${
-                  isMenuOpen ? 'rotate-90 opacity-0' : 'rotate-0 opacity-100'
-                }`}
-              />
-              <X
-                className={`absolute h-6 w-6 transition-all duration-300 ${
-                  isMenuOpen ? 'rotate-0 opacity-100' : '-rotate-90 opacity-0'
-                }`}
-              />
-            </div>
-          </button>
-        </div>
-
-        {/* 모바일 메뉴 */}
-        <div
-          className={`-mx-4 overflow-hidden border-t bg-white transition-all duration-300 ease-in-out sm:hidden ${
-            isMenuOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
-          }`}
-        >
-          <nav>
-            {navItems.map((item, index) => (
-              <Link
-                key={index}
-                href={item.href}
-                className={getMobileLinkClassName(item.href)}
-                onClick={closeMenu}
-              >
-                {item.label}
+                <span className="text-sm sm:text-base">{item.label}</span>
               </Link>
             ))}
           </nav>
