@@ -1,5 +1,12 @@
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
-import { getItem, setItem } from '@/shared/lib/localStorage';
+import {
+  getItem as getLocalItem,
+  setItem as setLocalItem,
+} from '@/shared/lib/localStorage';
+import {
+  getItem as getSessionItem,
+  setItem as setSessionItem,
+} from '@/shared/lib/sessionStorage';
 
 import { useEffect, useState } from 'react';
 
@@ -10,10 +17,10 @@ import { TransactionViewSetting } from '../models/types';
 interface Return {
   sorting: SortingState;
   pageSize: number;
-  page: number;
+  pageIndex: number;
   updateSorting: (sorting: SortingState) => void;
   updatePageSize: (pageSize: number) => void;
-  updatePage: (page: number) => void;
+  updatePageIndex: (pageIndex: number) => void;
 }
 
 export const useTransactionViewSetting = (): Return => {
@@ -21,19 +28,34 @@ export const useTransactionViewSetting = (): Return => {
   const [settings, setSettings] = useState<TransactionViewSetting>({
     sorting: [],
     pageSize: 10,
-    page: 0,
+    pageIndex: 0,
   });
 
   useEffect(() => {
     const loadSettings = async () => {
       setIsMounted(true);
 
-      const savedSettings = getItem<TransactionViewSetting>(
-        STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS
+      const savedSettings = getLocalItem<
+        Omit<TransactionViewSetting, 'pageIndex'>
+      >(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS);
+
+      const savedPageIndex = getSessionItem<number>(
+        STORAGE_KEY.TRANSACTION_LIST_PAGE
       );
 
       if (savedSettings) {
-        setSettings(savedSettings);
+        setSettings(prev => ({
+          ...prev,
+          sorting: savedSettings.sorting,
+          pageSize: savedSettings.pageSize,
+        }));
+      }
+
+      if (savedPageIndex !== null) {
+        setSettings(prev => ({
+          ...prev,
+          pageIndex: savedPageIndex,
+        }));
       }
     };
 
@@ -42,11 +64,24 @@ export const useTransactionViewSetting = (): Return => {
 
   const saveSettings = (newSettings: Partial<TransactionViewSetting>) => {
     const updatedSettings = { ...settings, ...newSettings };
-
     setSettings(updatedSettings);
 
     if (isMounted) {
-      setItem(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS, updatedSettings);
+      // sorting과 pageSize는 localStorage에 저장
+      if ('sorting' in newSettings || 'pageSize' in newSettings) {
+        setLocalItem(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS, {
+          sorting: updatedSettings.sorting,
+          pageSize: updatedSettings.pageSize,
+        });
+      }
+
+      // pageIndex는 sessionStorage에 저장
+      if ('pageIndex' in newSettings) {
+        setSessionItem(
+          STORAGE_KEY.TRANSACTION_LIST_PAGE,
+          updatedSettings.pageIndex
+        );
+      }
     }
   };
 
@@ -58,16 +93,16 @@ export const useTransactionViewSetting = (): Return => {
     saveSettings({ pageSize });
   };
 
-  const updatePage = (page: number) => {
-    saveSettings({ page });
+  const updatePageIndex = (pageIndex: number) => {
+    saveSettings({ pageIndex });
   };
 
   return {
     sorting: isMounted ? settings.sorting : [],
     pageSize: isMounted ? settings.pageSize : 10,
-    page: isMounted ? settings.page : 0,
+    pageIndex: isMounted ? settings.pageIndex : 0,
     updateSorting,
     updatePageSize,
-    updatePage,
+    updatePageIndex,
   };
 };

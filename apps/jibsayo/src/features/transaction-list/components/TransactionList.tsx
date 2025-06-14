@@ -33,8 +33,14 @@ export function TransactionList({
   const { favoriteApartList, addFavoriteApart, removeFavoriteApart } =
     useFavoriteApartList();
 
-  const { sorting, pageSize, page, updateSorting, updatePageSize, updatePage } =
-    useTransactionViewSetting();
+  const {
+    sorting,
+    pageSize,
+    pageIndex,
+    updateSorting,
+    updatePageSize,
+    updatePageIndex,
+  } = useTransactionViewSetting();
 
   const { filter, setFilter } = useTransactionFilter();
 
@@ -97,11 +103,11 @@ export function TransactionList({
         data={filteredTransactions}
         sorting={sorting}
         pageSize={pageSize}
-        page={page}
+        pageIndex={pageIndex}
         onToggleFavorite={handleToggleFavorite}
         onSortingChange={updateSorting}
         onPageSizeChange={updatePageSize}
-        onPageChange={updatePage}
+        onPageIndexChange={updatePageIndex}
         preservePageIndex={isTogglingFavorite.current}
       />
     </div>

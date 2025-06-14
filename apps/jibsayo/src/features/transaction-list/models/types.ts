@@ -23,7 +23,7 @@ export interface TransactionItem extends Transaction {
 export interface TransactionViewSetting {
   sorting: SortingState;
   pageSize: number;
-  page: number;
+  pageIndex: number;
 }
 
 export interface TransactionFilter {

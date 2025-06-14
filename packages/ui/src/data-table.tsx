@@ -53,7 +53,7 @@ interface DataTableProps<TData, TValue> {
   preservePageIndex?: boolean;
   onRowClick?: (row: TData) => void;
   page?: number;
-  onPageChange?: (page: number) => void;
+  onPageIndexChange?: (pageIndex: number) => void;
 }
 
 function useIsClient() {
@@ -79,7 +79,7 @@ export function DataTable<TData, TValue>({
   loadingMessage = '데이터를 불러오고 있어요.',
   onRowClick,
   page: externalPage,
-  onPageChange,
+  onPageIndexChange,
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
   const [internalPage, setInternalPage] = useState(0);
@@ -103,8 +103,8 @@ export function DataTable<TData, TValue>({
   // 외부에서 page가 제공되면 그것을 사용, 아니면 내부 상태 사용
   const page = externalPage ?? internalPage;
   const setPage = (newPage: number) => {
-    if (onPageChange) {
-      onPageChange(newPage);
+    if (onPageIndexChange) {
+      onPageIndexChange(newPage);
     } else {
       setInternalPage(newPage);
     }
