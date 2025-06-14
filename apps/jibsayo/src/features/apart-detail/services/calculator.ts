@@ -43,8 +43,7 @@ export function calculatePriceChangeRate(
  */
 export function calculatePriceChange(
   currentPricePerPyeong: number,
-  previousPricePerPyeong: number,
-  threshold: number = 1
+  previousPricePerPyeong: number
 ): {
   change: string;
   isUp: boolean;
@@ -55,13 +54,9 @@ export function calculatePriceChange(
     previousPricePerPyeong
   );
 
-  if (Math.abs(changeRate) >= threshold) {
-    return {
-      change: changeRate.toFixed(1),
-      isUp: changeRate > 0,
-      isDown: changeRate < 0,
-    };
-  }
-
-  return null;
+  return {
+    change: changeRate.toFixed(2),
+    isUp: changeRate > 0,
+    isDown: changeRate < 0,
+  };
 }

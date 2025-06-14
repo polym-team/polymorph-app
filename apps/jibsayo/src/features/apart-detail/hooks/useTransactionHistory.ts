@@ -35,14 +35,9 @@ export function useTransactionHistory(
             .find(prevItem => Math.abs(prevItem.size - item.size) <= 5); // 5㎡ 오차 허용
 
           if (prevSimilarItem) {
-            const prevPricePerPyeong = calculatePricePerPyeong(
-              prevSimilarItem.tradeAmount,
-              prevSimilarItem.size
-            );
-
             priceChange = calculatePriceChange(
-              pricePerPyeong,
-              prevPricePerPyeong
+              item.tradeAmount,
+              prevSimilarItem.tradeAmount
             );
           }
 

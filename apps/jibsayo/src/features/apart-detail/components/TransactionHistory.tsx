@@ -95,14 +95,14 @@ const columns: ColumnDef<TransactionItem>[] = [
             </div>
           </HoverCardTrigger>
           <HoverCardContent className="w-80">
-            <p className="text-sm font-light">같은 평수 기준 변동된 실거래가</p>
+            <p className="text-sm font-light">같은 평수 기준 변동 실거래가</p>
           </HoverCardContent>
         </HoverCard>
       </div>
     ),
     cell: ({ row }) => {
       const priceChange = row.original.priceChange;
-      if (!priceChange) return null;
+      if (!priceChange || !Number(priceChange.change)) return '-';
 
       return (
         <div
@@ -114,7 +114,7 @@ const columns: ColumnDef<TransactionItem>[] = [
                 : 'bg-gray-100 text-gray-700'
           }`}
         >
-          {priceChange.isUp ? '↗' : priceChange.isDown ? '↘' : '→'}{' '}
+          {priceChange.isUp ? '↗' : '↘'}{' '}
           {Math.abs(Number(priceChange.change))}%
         </div>
       );
