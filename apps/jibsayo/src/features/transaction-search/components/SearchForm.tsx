@@ -6,8 +6,6 @@ import {
   getRegionsWithCityName,
 } from '@/entities/region';
 
-import { Dispatch, SetStateAction } from 'react';
-
 import {
   Button,
   MonthPicker,
@@ -22,34 +20,19 @@ import { SearchForm as SearchFormType } from '../models/types';
 
 interface Props {
   form: SearchFormType;
-  setForm: Dispatch<SetStateAction<SearchFormType>>;
+  updateCityName: (nextCityName: string) => void;
+  updateRegionCode: (nextRegionCode: string) => void;
+  updateDate: (nextDate: Date) => void;
   onSubmit: () => void;
 }
 
-export function SearchForm({ form, setForm, onSubmit }: Props) {
-  const handleChangeCityName = (nextCityName: string) => {
-    const regions = getRegionsWithCityName(nextCityName);
-    const firstRegionCode = regions[0]?.code ?? '';
-
-    setForm(prev => ({
-      ...prev,
-      cityName: nextCityName,
-      regionCode: firstRegionCode,
-    }));
-  };
-
-  const handleChangeRegionCode = (nextRegionCode: string) => {
-    if (nextRegionCode) {
-      setForm(prev => ({ ...prev, regionCode: nextRegionCode }));
-    }
-  };
-
-  const handleChangeDate = (nextDate: Date | undefined) => {
-    if (nextDate) {
-      setForm(prev => ({ ...prev, date: nextDate }));
-    }
-  };
-
+export function SearchForm({
+  form,
+  updateCityName,
+  updateRegionCode,
+  updateDate,
+  onSubmit,
+}: Props) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmit();
@@ -62,7 +45,10 @@ export function SearchForm({ form, setForm, onSubmit }: Props) {
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:gap-x-2">
         <div className="flex gap-2">
-          <Select value={form.cityName} onValueChange={handleChangeCityName}>
+          <Select
+            value={form.cityName}
+            onValueChange={value => updateCityName(value)}
+          >
             <SelectTrigger className="flex-1 sm:w-[150px]">
               <SelectValue placeholder="시/도 선택">
                 {form.cityName}
@@ -78,7 +64,7 @@ export function SearchForm({ form, setForm, onSubmit }: Props) {
           </Select>
           <Select
             value={form.regionCode}
-            onValueChange={handleChangeRegionCode}
+            onValueChange={value => updateRegionCode(value)}
           >
             <SelectTrigger className="flex-1 sm:w-[150px]">
               <SelectValue placeholder="시/군/구 선택">
@@ -94,7 +80,10 @@ export function SearchForm({ form, setForm, onSubmit }: Props) {
             </SelectContent>
           </Select>
         </div>
-        <MonthPicker value={form.date} onChange={handleChangeDate} />
+        <MonthPicker
+          value={form.date}
+          onChange={nextDate => updateDate(nextDate ?? new Date())}
+        />
       </div>
       <Button type="submit" variant="primary" className="flex-1 sm:flex-none">
         검색

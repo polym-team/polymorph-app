@@ -6,6 +6,7 @@ import { Noto_Sans_KR } from 'next/font/google';
 import { Toaster } from '@package/ui';
 
 import '../../../../packages/styles/globals.css';
+import { Providers } from './providers';
 
 const notoSansKr = Noto_Sans_KR({
   weight: ['400', '500', '700'],
@@ -29,9 +30,11 @@ export default function RootLayout({
         <div className="flex min-h-screen flex-col">
           <Header />
           <main className="flex-1 bg-gray-50">
-            <section className="container mx-auto px-4 pb-10 pt-5">
-              {children}
-            </section>
+            <Providers>
+              <section className="container mx-auto px-4 pb-10 pt-5">
+                {children}
+              </section>
+            </Providers>
           </main>
         </div>
         <Toaster />

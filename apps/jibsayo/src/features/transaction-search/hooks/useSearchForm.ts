@@ -3,33 +3,34 @@ import {
   getCityNameWithRegionCode,
   getRegionsWithCityName,
 } from '@/entities/region';
-import { ROUTE_PATH } from '@/shared/consts/route';
+import { useSearchParams } from '@/entities/transaction';
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Dispatch, SetStateAction, useState } from 'react';
+import { useState } from 'react';
 
 import { SearchForm } from '../models/types';
 import { parseTradeDate } from '../services/date';
 
 interface Return {
   form: SearchForm;
-  setForm: Dispatch<SetStateAction<SearchForm>>;
+  updateCityName: (nextCityName: string) => void;
+  updateRegionCode: (nextRegionCode: string) => void;
+  updateDate: (nextDate: Date) => void;
   onSubmit: (nextForm?: Partial<SearchForm>) => void;
 }
 
 export const useSearchForm = (): Return => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const regionCode = searchParams.get('regionCode');
-  const tradeDate = searchParams.get('tradeDate');
+  const { searchParams, setSearchParams } = useSearchParams();
 
   const [form, setForm] = useState<SearchForm>(() => {
-    const defaultCityName = regionCode
-      ? getCityNameWithRegionCode(regionCode)
+    const defaultCityName = searchParams.regionCode
+      ? getCityNameWithRegionCode(searchParams.regionCode)
       : cityNameList[0];
     const defaultRegionCode =
-      regionCode ?? getRegionsWithCityName(defaultCityName)[0].code;
-    const defaultDate = tradeDate ? parseTradeDate(tradeDate) : new Date();
+      searchParams.regionCode ??
+      getRegionsWithCityName(defaultCityName)[0].code;
+    const defaultDate = searchParams.tradeDate
+      ? parseTradeDate(searchParams.tradeDate)
+      : new Date();
 
     return {
       cityName: defaultCityName,
@@ -38,24 +39,56 @@ export const useSearchForm = (): Return => {
     };
   });
 
+  const updateCityName = (nextCityName: string) => {
+    if (!nextCityName) return;
+
+    const regions = getRegionsWithCityName(nextCityName);
+    const firstRegionCode = regions[0]?.code ?? '';
+
+    setForm(prev => ({
+      ...prev,
+      cityName: nextCityName,
+      regionCode: firstRegionCode,
+    }));
+  };
+
+  const updateRegionCode = (nextRegionCode: string) => {
+    if (!nextRegionCode) return;
+
+    const cityName = getCityNameWithRegionCode(nextRegionCode);
+
+    setForm(prev => ({
+      ...prev,
+      cityName,
+      regionCode: nextRegionCode,
+    }));
+  };
+
+  const updateDate = (nextDate: Date) => {
+    setForm(prev => ({ ...prev, date: nextDate }));
+  };
+
   const onSubmit = (nextForm?: Partial<SearchForm>) => {
     const changedForm = { ...form, ...nextForm };
-
-    if (nextForm) {
-      setForm(changedForm);
-    }
-
     const year = changedForm.date.getFullYear();
     const month = String(changedForm.date.getMonth() + 1).padStart(2, '0');
+    const tradeDate = year + month;
 
-    router.push(
-      `${ROUTE_PATH.TRANSACTIONS}?regionCode=${changedForm.regionCode}&tradeDate=${year + month}`
-    );
+    updateCityName(changedForm.cityName);
+    updateRegionCode(changedForm.regionCode);
+    updateDate(changedForm.date);
+
+    setSearchParams({
+      regionCode: changedForm.regionCode,
+      tradeDate,
+    });
   };
 
   return {
     form,
-    setForm,
+    updateCityName,
+    updateRegionCode,
+    updateDate,
     onSubmit,
   };
 };

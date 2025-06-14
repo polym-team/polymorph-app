@@ -1,11 +1,14 @@
 'use client';
 
-import { TransactionsResponse } from '@/app/api/transactions/types';
 import { useFavoriteApartList } from '@/entities/apart';
 import {
   getCityNameWithRegionCode,
   getRegionNameWithRegionCode,
 } from '@/entities/region';
+import {
+  useSearchParams,
+  useTransactionListQuery,
+} from '@/entities/transaction';
 
 import { useMemo, useRef } from 'react';
 
@@ -17,19 +20,10 @@ import { mapTransactionsWithFavorites } from '../services/mapper';
 import { TransactionListHeader } from '../ui/TransactionListHeader';
 import { TransactionListTable } from '../ui/TransactionListTable';
 
-interface Props {
-  isLoading: boolean;
-  isFetched: boolean;
-  regionCode: string | undefined;
-  data: TransactionsResponse;
-}
+export function TransactionList() {
+  const { searchParams } = useSearchParams();
+  const { isLoading, isFetched, data } = useTransactionListQuery();
 
-export function TransactionList({
-  isLoading,
-  isFetched,
-  regionCode,
-  data,
-}: Props) {
   const { favoriteApartList, addFavoriteApart, removeFavoriteApart } =
     useFavoriteApartList();
 
@@ -49,36 +43,40 @@ export function TransactionList({
 
   const filteredTransactions = useMemo(() => {
     return mapTransactionsWithFavorites({
-      transactions: data.list,
+      transactions: data?.list ?? [],
       favoriteApartList,
       filter,
-      regionCode,
+      regionCode: searchParams.regionCode,
     });
-  }, [data.list, favoriteApartList, filter, regionCode]);
+  }, [data?.list, favoriteApartList, filter, searchParams.regionCode]);
 
   const totalCount = filteredTransactions.length;
   const averagePricePerPyeong =
     calculateAveragePricePerPyeong(filteredTransactions);
 
-  const cityName = regionCode ? getCityNameWithRegionCode(regionCode) : '';
-  const regionName = regionCode ? getRegionNameWithRegionCode(regionCode) : '';
+  const cityName = searchParams.regionCode
+    ? getCityNameWithRegionCode(searchParams.regionCode)
+    : '';
+  const regionName = searchParams.regionCode
+    ? getRegionNameWithRegionCode(searchParams.regionCode)
+    : '';
   const fullRegionName =
     cityName && regionName ? `${cityName} ${regionName}` : '';
 
   const handleToggleFavorite = (item: TransactionItem) => {
-    if (!regionCode) return;
+    if (!searchParams.regionCode) return;
 
     // 즐겨찾기 토글 시작
     isTogglingFavorite.current = true;
 
     if (item.favorite) {
-      removeFavoriteApart(regionCode, item);
+      removeFavoriteApart(searchParams.regionCode, item);
     } else {
       const apartItem = {
         apartId: item.apartId,
         apartName: item.apartName,
       };
-      addFavoriteApart(regionCode, apartItem);
+      addFavoriteApart(searchParams.regionCode, apartItem);
     }
 
     // 다음 렌더링 후 플래그 리셋
