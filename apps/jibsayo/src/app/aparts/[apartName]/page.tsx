@@ -1,14 +1,34 @@
+import { ApartDetailResponse } from '@/app/api/apart/types';
 import { ApartDetail } from '@/features/apart-detail';
 import { LoadingFallback } from '@/features/apart-detail/ui/LoadingFallback';
 
 import { Suspense } from 'react';
 
-import { getApartDetail } from './service';
-
 interface Props {
   params: {
     apartName: string;
   };
+}
+
+async function getApartDetail(
+  apartName: string
+): Promise<ApartDetailResponse | null> {
+  try {
+    const response = await fetch(
+      `${process.env.BASE_URL}/api/apart?apartName=${encodeURIComponent(
+        apartName
+      )}`
+    );
+
+    if (response.ok) {
+      return response.json();
+    }
+
+    return null;
+  } catch (error) {
+    console.error('아파트 데이터 조회 실패:', error);
+    return null;
+  }
 }
 
 export default function ApartDetailPage({ params }: Props) {

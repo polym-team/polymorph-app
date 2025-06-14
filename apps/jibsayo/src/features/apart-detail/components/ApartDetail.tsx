@@ -1,12 +1,11 @@
 'use client';
 
 import { ApartDetailResponse } from '@/app/api/apart/types';
-import { ROUTE_PATH } from '@/shared/consts/route';
 
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
-import { toast, Typography } from '@package/ui';
+import { toast } from '@package/ui';
 
 import { ApartInfo } from '../ui/ApartInfo';
 import { TransactionChart } from './TransactionChart';
@@ -24,7 +23,7 @@ export function ApartDetail({ data, apartName }: Props) {
   useEffect(() => {
     if (hasError) {
       toast.error(`아파트 상세 정보를 불러오는데 실패했습니다. (${apartName})`);
-      router.push(ROUTE_PATH.APARTS);
+      router.back();
     }
   }, []);
 
