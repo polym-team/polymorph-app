@@ -1,10 +1,8 @@
-const isBrowser = typeof window !== 'undefined';
-
 export const getItem = <T>(key: string): T | null => {
-  if (!isBrowser) return null;
+  if (typeof window === 'undefined') return null;
 
   try {
-    const item = localStorage.getItem(key);
+    const item = sessionStorage.getItem(key);
     return item ? (JSON.parse(item) as T) : null;
   } catch (error) {
     return null;
@@ -12,13 +10,13 @@ export const getItem = <T>(key: string): T | null => {
 };
 
 export const setItem = (key: string, value: any): void => {
-  if (!isBrowser) return;
+  if (typeof window === 'undefined') return;
 
-  localStorage.setItem(key, JSON.stringify(value));
+  sessionStorage.setItem(key, JSON.stringify(value));
 };
 
 export const removeItem = (key: string): void => {
-  if (!isBrowser) return;
+  if (typeof window === 'undefined') return;
 
-  localStorage.removeItem(key);
+  sessionStorage.removeItem(key);
 };
