@@ -1,8 +1,8 @@
 'use client';
 
+import logo from '@/assets/logo.png';
 import { ROUTE_PATH } from '@/shared/consts/route';
 
-import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -49,15 +49,14 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           <Link
             href={ROUTE_PATH.TRANSACTIONS}
-            className="flex items-center space-x-2 transition-all duration-200"
+            className="flex h-[56px] items-center space-x-2 overflow-hidden transition-all duration-200"
             onClick={closeMenu}
           >
-            <div className="bg-primary flex h-6 w-6 items-center justify-center rounded-full sm:h-8 sm:w-8">
-              <span className="text-xs font-bold text-white">집</span>
-            </div>
-            <span className="text-primary text-xl font-bold sm:text-2xl">
-              집사요
-            </span>
+            <img
+              src={logo.src}
+              alt="집사요"
+              className="h-[120px] w-auto translate-y-[4px]"
+            />
           </Link>
 
           {/* 네비게이션 */}
