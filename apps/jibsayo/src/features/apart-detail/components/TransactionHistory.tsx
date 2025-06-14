@@ -2,10 +2,19 @@
 
 import { ApartDetailResponse } from '@/app/api/apart/types';
 import { formatPrice } from '@/features/transaction-list/services/formatter';
+import { formatSizeWithPyeong } from '@/features/transaction-list/services/formatter';
 import { TransactionItem } from '@/shared/models/types';
 
 import { Info as LucideInfo } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@package/ui';
 import {
   Card,
   ColumnDef,
@@ -18,9 +27,10 @@ import {
 } from '@package/ui';
 
 import { useTransactionHistory } from '../hooks/useTransactionHistory';
+import { calculatePyeong } from '../services/calculator';
 
 interface Props {
-  items: ApartDetailResponse['tradeItems'];
+  items: TransactionItem[];
 }
 
 const columns: ColumnDef<TransactionItem>[] = [
@@ -132,33 +142,78 @@ const mobileColumnTitles = {
   priceChange: '가격변동',
 };
 
-function TransactionHistory({ items }: Props) {
+export function TransactionHistory({ items }: Props) {
+  const [selectedSize, setSelectedSize] = useState<string>('all');
   const { processedItems, sorting, setSorting, pageSize, setPageSize } =
     useTransactionHistory(items);
 
-  if (!items || items.length === 0) {
-    return (
-      <Card className="p-6">
-        <Typography variant="large" className="mb-4 font-semibold">
-          거래 내역
-        </Typography>
-        <div className="py-8 text-center text-gray-500">
-          거래 내역이 없습니다.
-        </div>
-      </Card>
+  // 평형 옵션 생성
+  const sizeOptions = useMemo(() => {
+    const sizes = new Set(processedItems.map(item => item.size));
+    const sizeGroups = Array.from(sizes).reduce(
+      (acc, size) => {
+        const pyeong = calculatePyeong(size); // 평수 소수점 버림
+        if (!acc[pyeong]) {
+          acc[pyeong] = [];
+        }
+        acc[pyeong].push(size);
+        return acc;
+      },
+      {} as Record<number, number[]>
     );
+
+    return [
+      { value: 'all', label: '전체' },
+      ...Object.entries(sizeGroups)
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .map(([pyeong, sizes]) => ({
+          value: sizes.join(','),
+          label: `${pyeong}평 (${sizes.map(size => `${size}㎡`).join(', ')})`,
+        })),
+    ];
+  }, [processedItems]);
+
+  // 평형 필터링
+  const filteredItems = useMemo(() => {
+    if (selectedSize === 'all') return processedItems;
+    const selectedSizes = selectedSize.split(',').map(Number);
+    return processedItems.filter(item => selectedSizes.includes(item.size));
+  }, [processedItems, selectedSize]);
+
+  if (!items || items.length === 0) {
+    return null;
   }
 
   return (
     <Card className="p-5">
-      <Typography variant="large" className="mb-5 font-semibold">
-        거래 내역{' '}
-        <strong className="text-primary">({processedItems.length}건)</strong>
-      </Typography>
+      <div className="mb-5 flex items-center justify-between">
+        <Typography variant="large" className="font-semibold">
+          거래 내역{' '}
+          <strong className="text-primary text-base">
+            ({filteredItems.length}건)
+          </strong>
+        </Typography>
+        <Select value={selectedSize} onValueChange={setSelectedSize}>
+          <SelectTrigger className="h-8 w-[120px] text-sm">
+            <SelectValue placeholder="평형 선택" />
+          </SelectTrigger>
+          <SelectContent>
+            {sizeOptions.map(option => (
+              <SelectItem
+                key={option.value}
+                value={option.value}
+                className="text-sm"
+              >
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <DataTable
         columns={columns}
-        data={processedItems}
+        data={filteredItems}
         sorting={sorting}
         onSortingChange={setSorting}
         pageSize={pageSize}
