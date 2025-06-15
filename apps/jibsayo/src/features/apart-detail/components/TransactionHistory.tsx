@@ -30,7 +30,7 @@ import { useTransactionHistory } from '../hooks/useTransactionHistory';
 import { calculatePyeong } from '../services/calculator';
 
 interface Props {
-  items: TransactionItem[];
+  items: ApartDetailResponse['tradeItems'];
 }
 
 const columns: ColumnDef<TransactionItem>[] = [

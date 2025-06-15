@@ -35,7 +35,7 @@ export const calculateAveragePricePerPyeong = (
   if (validTransactions.length === 0) return 0;
 
   const totalPricePerPyeong = validTransactions.reduce((sum, transaction) => {
-    const pyeong = extractPyeong(transaction.size);
+    const pyeong = extractPyeong(transaction.size ?? 0);
     const pricePerPyeong = transaction.tradeAmount / pyeong;
     return sum + pricePerPyeong;
   }, 0);
