@@ -5,11 +5,9 @@ import { ROUTE_PATH } from '@/shared/consts/route';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
 
 export function Header() {
   const pathname = usePathname();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
     { href: ROUTE_PATH.TRANSACTIONS, label: '실거래가 조회' },
@@ -18,29 +16,13 @@ export function Header() {
 
   const getLinkClassName = (href: string) => {
     const baseClass =
-      'relative text-gray-600 transition-colors hover:text-gray-900 py-2 px-3 rounded-md';
+      'relative text-gray-600 transition-colors hover:text-gray-900 py-2 px-3 rounded-md ';
     const activeClass = 'text-gray-900 bg-gray-100';
     const inactiveClass = 'hover:bg-gray-50';
 
     return pathname.startsWith(href)
       ? `${baseClass} ${activeClass}`
       : `${baseClass} ${inactiveClass}`;
-  };
-
-  const getMobileLinkClassName = (href: string) => {
-    const baseClass =
-      'block px-4 py-3 text-sm text-gray-600 transition-colors hover:text-gray-900 hover:bg-gray-50';
-    const activeClass = 'text-primary bg-primary/5';
-
-    return pathname === href ? `${baseClass} ${activeClass}` : baseClass;
-  };
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const closeMenu = () => {
-    setIsMenuOpen(false);
   };
 
   return (
@@ -50,7 +32,6 @@ export function Header() {
           <Link
             href={ROUTE_PATH.TRANSACTIONS}
             className="flex h-[56px] items-center space-x-2 overflow-hidden transition-all duration-200"
-            onClick={closeMenu}
           >
             <img
               src={logo.src}
