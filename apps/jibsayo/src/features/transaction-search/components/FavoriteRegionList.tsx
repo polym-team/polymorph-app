@@ -36,7 +36,7 @@ export function FavoriteRegionList({ form, onSubmit }: Props) {
       <Button
         variant="outline"
         size="sm"
-        className="w-[30px] flex-shrink-0 whitespace-nowrap px-3 py-1.5 text-sm"
+        className="h-[30px] w-[30px] flex-shrink-0 whitespace-nowrap px-3 py-1.5 text-sm"
         onClick={() => toggleFavoriteRegion(form.regionCode)}
       >
         <Star
