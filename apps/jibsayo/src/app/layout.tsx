@@ -15,8 +15,9 @@ const notoSansKr = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: '집사요 - 당신의 집사를 찾아드립니다',
-  description: '집사요에서 신뢰할 수 있는 집사 서비스를 만나보세요',
+  title: '집사요 - 실거래가 기반 부동산 정보 플랫폼',
+  description:
+    '실시간 실거래가 데이터로 신뢰할 수 있는 부동산 정보를 확인하세요',
 };
 
 export default function RootLayout({
