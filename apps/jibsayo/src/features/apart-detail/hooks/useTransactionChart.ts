@@ -127,15 +127,20 @@ export function useTransactionChart({
 
   // 스케일 계산
   const xScale = useMemo(() => {
-    return d3
-      .scaleTime()
-      .domain(
-        chartData.length
-          ? (d3.extent(chartData, d => d.date) as [Date, Date])
-          : [new Date(2020, 0), new Date(2024, 0)]
-      )
-      .range([0, chartWidth])
-      .nice();
+    if (!chartData.length) {
+      return d3
+        .scaleTime()
+        .domain([new Date(2020, 0), new Date(2024, 0)])
+        .range([0, chartWidth])
+        .nice();
+    }
+
+    const dates = chartData.map(d => d.date);
+    const minDate = d3.min(dates)!;
+    const maxDate = d3.max(dates)!;
+
+    // 시작점과 끝점을 정확히 맞추기 위해 nice() 제거
+    return d3.scaleTime().domain([minDate, maxDate]).range([0, chartWidth]);
   }, [chartData, chartWidth]);
 
   const yScale = useMemo(() => {
