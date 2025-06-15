@@ -96,7 +96,6 @@ export const useSearchForm = (): Return => {
       STORAGE_KEY.TRANSACTION_SEARCH_FORM
     );
 
-    console.log('savedSearchForm: ', savedSearchForm);
     if (savedSearchForm) {
       onSubmit(savedSearchForm);
     }
