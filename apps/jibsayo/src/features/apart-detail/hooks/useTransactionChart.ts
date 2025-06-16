@@ -242,7 +242,7 @@ export function useTransactionChart({
       if (yearData.length === 0) return '';
 
       const firstTradeMonth = yearData[0].date.getMonth();
-      return month === firstTradeMonth ? `${year}년` : '';
+      return month === firstTradeMonth ? `${year}` : '';
     });
 
     g.append('g')
