@@ -76,7 +76,7 @@ export function useTransactionChart({
     top: 20,
     right: 0,
     bottom: 70,
-    left: 40,
+    left: 35,
   };
 
   // 차트 데이터 계산
@@ -275,7 +275,7 @@ export function useTransactionChart({
       .ticks(5)
       .tickFormat((domainValue: d3.NumberValue) => {
         const value = +domainValue;
-        return value === 0 ? '' : `${Math.round(value / 100000000)}억원`;
+        return value === 0 ? '' : `${Math.round(value / 100000000)}억`;
       });
 
     g.append('g').attr('class', 'y-axis').call(yAxis).attr('color', '#475569');
