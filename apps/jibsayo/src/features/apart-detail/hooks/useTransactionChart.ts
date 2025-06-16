@@ -158,17 +158,24 @@ export function useTransactionChart({
       .scalePoint()
       .domain(uniqueDates)
       .range([0, chartWidth])
-      .padding(0.1);
+      .padding(0)
+      .align(0);
   }, [chartData, chartWidth]);
 
   const yScale = useMemo(() => {
+    if (!chartData.length) {
+      return d3.scaleLinear().domain([0, 100]).nice().range([chartHeight, 0]);
+    }
+
+    const maxPrice = d3.max(chartData, d => d.averagePrice) as number;
+    const lastPrice = chartData[chartData.length - 1].averagePrice;
+
+    // 마지막 데이터의 가격이 최대값보다 작으면 최대값으로 설정
+    const domainMax = Math.max(maxPrice, lastPrice);
+
     return d3
       .scaleLinear()
-      .domain(
-        chartData.length
-          ? [0, d3.max(chartData, d => d.averagePrice) as number]
-          : [0, 100]
-      )
+      .domain([0, domainMax])
       .nice()
       .range([chartHeight, 0]);
   }, [chartData, chartHeight]);
@@ -227,14 +234,40 @@ export function useTransactionChart({
     // X축 생성
     const xAxis = d3.axisBottom(xScale).tickFormat((domainValue: string) => {
       const [year, month] = domainValue.split('-').map(Number);
-      return `${year}년 ${month + 1}월`;
+      // 해당 년도의 첫 번째 거래 데이터인지 확인
+      const yearData = chartData
+        .filter(d => d.date.getFullYear() === year && d.count > 0)
+        .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+      if (yearData.length === 0) return '';
+
+      const firstTradeMonth = yearData[0].date.getMonth();
+      return month === firstTradeMonth ? `${year}년` : '';
     });
 
     g.append('g')
       .attr('transform', `translate(0,${chartHeight})`)
       .attr('class', 'x-axis')
       .call(xAxis)
-      .attr('color', '#475569');
+      .attr('color', '#475569')
+      .selectAll('.tick')
+      .each(function (d) {
+        const [year, month] = String(d).split('-').map(Number);
+        // 해당 년도의 첫 번째 거래 데이터인지 확인
+        const yearData = chartData
+          .filter(d => d.date.getFullYear() === year && d.count > 0)
+          .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+        if (yearData.length === 0) {
+          d3.select(this).select('line').remove();
+          return;
+        }
+
+        const firstTradeMonth = yearData[0].date.getMonth();
+        if (month !== firstTradeMonth) {
+          d3.select(this).select('line').remove();
+        }
+      });
 
     // Y축 생성
     const yAxis = d3
@@ -399,7 +432,7 @@ export function useTransactionChart({
           isMouseOver = true;
           tooltip.style('opacity', 1);
         })
-        .on('mousemove', (event: any) => {
+        .on('mousemove', event => {
           if (!isMouseOver) return;
 
           const [x] = d3.pointer(event);
@@ -463,22 +496,80 @@ export function useTransactionChart({
 
             lastTooltipContent = tooltipContent;
             lastMonth = date;
-          } else {
-            verticalLine.style('opacity', 0);
-            if (lastTooltipContent !== '') {
-              tooltip.html('');
-              lastTooltipContent = '';
-              lastMonth = null;
-            }
           }
         })
         .on('mouseleave', () => {
           isMouseOver = false;
-          verticalLine.style('opacity', 0);
-          tooltip.style('opacity', 0);
-          lastTooltipContent = '';
-          lastMonth = null;
+          // 마우스가 차트 영역을 벗어나도 마지막 상태 유지
+          if (lastMonth) {
+            const dateStr = `${lastMonth.getFullYear()}-${lastMonth.getMonth()}`;
+            verticalLine
+              .attr('x1', xScale(dateStr)!)
+              .attr('x2', xScale(dateStr)!)
+              .attr('y1', 0)
+              .attr('y2', chartHeight)
+              .style('opacity', 1);
+            tooltip.html(lastTooltipContent);
+          }
         });
+
+      // 초기 상태 설정 (가장 최근 데이터 표시)
+      if (chartData.length > 0) {
+        const lastData = chartData[chartData.length - 1];
+        const dateStr = `${lastData.date.getFullYear()}-${lastData.date.getMonth()}`;
+        const monthData = chartData.filter(
+          d =>
+            d.date.getFullYear() === lastData.date.getFullYear() &&
+            d.date.getMonth() === lastData.date.getMonth() &&
+            d.count > 0
+        );
+
+        if (monthData.length > 0) {
+          // 세로선 표시
+          verticalLine
+            .attr('x1', xScale(dateStr)!)
+            .attr('x2', xScale(dateStr)!)
+            .attr('y1', 0)
+            .attr('y2', chartHeight)
+            .style('opacity', 1);
+
+          // 툴팁 내용 생성
+          const tooltipContent = `
+            <div class="space-y-1">
+              <div>${d3.timeFormat('%Y년 %m월')(lastData.date)}</div>
+              ${monthData
+                .map(
+                  data => `
+                <div>· ${calculatePyeong(data.size)}평 평균 ${Math.round(
+                  data.averagePrice / 100000000
+                )}억 (${data.count}건)</div>
+              `
+                )
+                .join('')}
+            </div>
+          `;
+
+          // 툴팁 위치 계산
+          const tooltipWidth = 200;
+          const x = xScale(dateStr)!;
+          const rightSpace = containerWidth - margin.left - margin.right - x;
+          const shouldShowOnLeft = rightSpace < tooltipWidth + 20;
+
+          tooltip
+            .style('opacity', 1)
+            .style(
+              'left',
+              shouldShowOnLeft
+                ? `${x + margin.left - tooltipWidth + 25}px`
+                : `${x + margin.left + 10}px`
+            )
+            .style('top', `${margin.top + 10}px`)
+            .html(tooltipContent);
+
+          lastTooltipContent = tooltipContent;
+          lastMonth = lastData.date;
+        }
+      }
     }
 
     return () => {
