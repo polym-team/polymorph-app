@@ -457,6 +457,127 @@ export function useTransactionChart({
         .style('transition', 'opacity 0.1s');
 
       let isMouseOver = false;
+      let isDragging = false;
+      let lastX: number | null = null;
+
+      // 모바일 환경에서의 드래그 이벤트 처리
+      if (windowWidth <= 640) {
+        mouseArea
+          .style('touch-action', 'none')
+          .on('touchstart', event => {
+            event.preventDefault();
+            isDragging = true;
+            const touch = event.touches[0];
+            const rect = svg.node()!.getBoundingClientRect();
+            const x = touch.clientX - rect.left - margin.left;
+            lastX = x;
+            updateTooltip(x);
+          })
+          .on('touchmove', event => {
+            event.preventDefault();
+            if (!isDragging) return;
+            const touch = event.touches[0];
+            const rect = svg.node()!.getBoundingClientRect();
+            const x = touch.clientX - rect.left - margin.left;
+            lastX = x;
+            updateTooltip(x);
+          })
+          .on('touchend', event => {
+            event.preventDefault();
+            isDragging = false;
+            lastX = null;
+            verticalLine.style('opacity', 0);
+            tooltip.style('opacity', 0);
+            // 터치가 끝나면 모든 라벨 숨기기
+            g.selectAll('.x-axis .tick text').style('opacity', 0);
+          })
+          .on('touchcancel', event => {
+            event.preventDefault();
+            isDragging = false;
+            lastX = null;
+            verticalLine.style('opacity', 0);
+            tooltip.style('opacity', 0);
+            // 터치가 취소되면 모든 라벨 숨기기
+            g.selectAll('.x-axis .tick text').style('opacity', 0);
+          });
+      }
+
+      // 툴팁 업데이트 함수
+      const updateTooltip = (x: number) => {
+        const domain = xScale.domain();
+        const step = xScale.step();
+        const index = Math.min(
+          Math.max(0, Math.round(x / step)),
+          domain.length - 1
+        );
+        const dateStr = domain[index];
+        const [year, month] = dateStr.split('-').map(Number);
+        const date = new Date(year, month);
+
+        // 해당 월의 데이터 필터링
+        const monthData = chartData.filter(
+          d =>
+            d.date.getFullYear() === date.getFullYear() &&
+            d.date.getMonth() === date.getMonth() &&
+            d.count > 0
+        );
+
+        if (monthData.length > 0) {
+          // 세로선 표시
+          verticalLine
+            .attr('x1', xScale(dateStr)!)
+            .attr('x2', xScale(dateStr)!)
+            .attr('y1', 0)
+            .attr('y2', chartHeight)
+            .style('opacity', 1);
+
+          // 툴팁 내용 생성
+          const tooltipContent = `
+            <div class="space-y-1">
+              <div>${d3.timeFormat('%Y년 %m월')(date)}</div>
+              ${monthData
+                .map(
+                  data => `
+                <div>· ${calculatePyeong(data.size)}평 평균 ${Math.round(
+                  data.averagePrice / 100000000
+                )}억 (${data.count}건)</div>
+              `
+                )
+                .join('')}
+            </div>
+          `;
+
+          // 툴팁 위치 계산
+          const tooltipWidth = 200;
+          const rightSpace = containerWidth - margin.left - margin.right - x;
+          const shouldShowOnLeft = rightSpace < tooltipWidth + 20;
+
+          tooltip
+            .style('opacity', 1)
+            .style(
+              'left',
+              shouldShowOnLeft
+                ? `${x + margin.left - tooltipWidth + 25}px`
+                : `${x + margin.left + 10}px`
+            )
+            .style('top', `${margin.top + 10}px`)
+            .html(tooltipContent);
+
+          // X축 라벨 업데이트 - 현재 터치 포인트의 월에 해당하는 라벨만 표시
+          g.selectAll('.x-axis .tick').each(function (d) {
+            const [tickYear, tickMonth] = String(d).split('-').map(Number);
+            const tickElement = d3.select(this);
+            const textElement = tickElement.select('text');
+
+            // 현재 터치 포인트의 년도와 월이 같은 경우에만 라벨 표시
+            if (tickYear === year && tickMonth === month) {
+              textElement.style('opacity', 1);
+            } else {
+              textElement.style('opacity', 0);
+            }
+          });
+        }
+      };
 
       // 마우스 이벤트 처리
       mouseArea
@@ -466,82 +587,14 @@ export function useTransactionChart({
         })
         .on('mousemove', event => {
           if (!isMouseOver) return;
-
           const [x] = d3.pointer(event);
-          const domain = xScale.domain();
-          const step = xScale.step();
-          const index = Math.min(
-            Math.max(0, Math.round(x / step)),
-            domain.length - 1
-          );
-          const dateStr = domain[index];
-          const [year, month] = dateStr.split('-').map(Number);
-          const date = new Date(year, month);
-
-          // 해당 월의 데이터 필터링
-          const monthData = chartData.filter(
-            d =>
-              d.date.getFullYear() === date.getFullYear() &&
-              d.date.getMonth() === date.getMonth() &&
-              d.count > 0
-          );
-
-          if (monthData.length > 0) {
-            // 세로선 표시
-            verticalLine
-              .attr('x1', xScale(dateStr)!)
-              .attr('x2', xScale(dateStr)!)
-              .attr('y1', 0)
-              .attr('y2', chartHeight)
-              .style('opacity', 1);
-
-            // 툴팁 내용 생성
-            const tooltipContent = `
-              <div class="space-y-1">
-                <div>${d3.timeFormat('%Y년 %m월')(date)}</div>
-                ${monthData
-                  .map(
-                    data => `
-                  <div>· ${calculatePyeong(data.size)}평 평균 ${Math.round(
-                    data.averagePrice / 100000000
-                  )}억 (${data.count}건)</div>
-                `
-                  )
-                  .join('')}
-              </div>
-            `;
-
-            // 툴팁 위치 계산
-            const tooltipWidth = 200;
-            const rightSpace = containerWidth - margin.left - margin.right - x;
-            const shouldShowOnLeft = rightSpace < tooltipWidth + 20;
-
-            tooltip
-              .style(
-                'left',
-                shouldShowOnLeft
-                  ? `${x + margin.left - tooltipWidth + 25}px`
-                  : `${x + margin.left + 10}px`
-              )
-              .style('top', `${margin.top + 10}px`)
-              .html(tooltipContent);
-
-            lastTooltipContent = tooltipContent;
-            lastMonth = date;
-          }
+          updateTooltip(x);
         })
         .on('mouseleave', () => {
           isMouseOver = false;
           // 마우스가 차트 영역을 벗어나도 마지막 상태 유지
-          if (lastMonth) {
-            const dateStr = `${lastMonth.getFullYear()}-${lastMonth.getMonth()}`;
-            verticalLine
-              .attr('x1', xScale(dateStr)!)
-              .attr('x2', xScale(dateStr)!)
-              .attr('y1', 0)
-              .attr('y2', chartHeight)
-              .style('opacity', 1);
-            tooltip.html(lastTooltipContent);
+          if (lastX !== null) {
+            updateTooltip(lastX);
           }
         });
 
