@@ -332,51 +332,136 @@ export function useTransactionChart({
       // fade-in 애니메이션
       chartContainer.transition().duration(600).style('opacity', 1);
 
-      // 툴크 설정
+      // 툴팁 설정
       if (!tooltipRef.current) {
         tooltipRef.current = d3
           .select(svgRef.current.parentElement!)
           .append('div')
           .attr(
             'class',
-            'absolute hidden bg-slate-800 text-white px-3 py-2 rounded-md text-sm shadow-lg'
+            'absolute bg-slate-800 text-white px-3 py-2 rounded-md text-sm shadow-lg'
           )
           .style('pointer-events', 'none')
+          .style('opacity', 0)
+          .style('transition', 'opacity 0.1s')
           .node();
       }
 
       const tooltip = d3.select(tooltipRef.current);
+      let lastTooltipContent = '';
+      let lastMonth: Date | null = null;
 
-      // 포인트에 마우스 이벤트 추가
-      chartContainer
-        .selectAll('circle')
-        .on('mouseover', (event: any, d: any) => {
-          const [x, y] = d3.pointer(event);
-          const tooltipWidth = 150;
-          const rightSpace = containerWidth - margin.left - margin.right - x;
-          const shouldShowOnLeft = rightSpace < tooltipWidth + 20;
+      // 마우스 이벤트를 위한 투명한 영역 추가
+      const mouseArea = g
+        .append('rect')
+        .attr('width', chartWidth)
+        .attr('height', chartHeight)
+        .attr('fill', 'transparent')
+        .style('cursor', 'crosshair');
 
-          tooltip
-            .style(
-              'left',
-              shouldShowOnLeft
-                ? `${x + margin.left - tooltipWidth + 25}px`
-                : `${x + margin.left + 10}px`
-            )
-            .style('top', `${y + margin.top - 10}px`)
-            .html(
-              `
-              <div class="space-y-1">
-                <div>${d3.timeFormat('%Y년 %m월')(d.date)}</div>
-                <div>평균 ${Math.round(d.averagePrice / 100000000)}억원</div>
-                <div>거래 ${d.count}건</div>
-              </div>
-              `
-            )
-            .classed('hidden', false);
+      // 세로선 추가
+      const verticalLine = g
+        .append('line')
+        .attr('class', 'vertical-line')
+        .attr('stroke', '#94a3b8')
+        .attr('stroke-width', 1)
+        .attr('stroke-dasharray', '4,4')
+        .style('opacity', 0)
+        .style('transition', 'opacity 0.1s');
+
+      let isMouseOver = false;
+
+      // 마우스 이벤트 처리
+      mouseArea
+        .on('mouseenter', () => {
+          isMouseOver = true;
+          tooltip.style('opacity', 1);
         })
-        .on('mouseout', () => {
-          tooltip.classed('hidden', true);
+        .on('mousemove', (event: any) => {
+          if (!isMouseOver) return;
+
+          const [x] = d3.pointer(event);
+          const date = xScale.invert(x);
+          const month = d3.timeMonth(date);
+
+          // 같은 월이면 업데이트하지 않음
+          if (
+            lastMonth &&
+            lastMonth.getFullYear() === month.getFullYear() &&
+            lastMonth.getMonth() === month.getMonth()
+          ) {
+            return;
+          }
+
+          // 해당 월의 데이터 필터링
+          const monthData = chartData.filter(
+            d =>
+              d.date.getFullYear() === month.getFullYear() &&
+              d.date.getMonth() === month.getMonth()
+          );
+
+          if (monthData.length > 0) {
+            // 세로선 표시
+            verticalLine
+              .attr('x1', x)
+              .attr('x2', x)
+              .attr('y1', 0)
+              .attr('y2', chartHeight)
+              .style('opacity', 1);
+
+            // 툴팁 내용 생성
+            const tooltipContent = `
+              <div class="space-y-1">
+                <div>${d3.timeFormat('%Y년 %m월')(month)}</div>
+                ${monthData
+                  .map(
+                    data => `
+                  <div>· ${calculatePyeong(data.size)}평 평균 ${Math.round(
+                    data.averagePrice / 100000000
+                  )}억 (${data.count}건)</div>
+                `
+                  )
+                  .join('')}
+              </div>
+            `;
+
+            // 내용이 같으면 업데이트하지 않음
+            if (tooltipContent === lastTooltipContent) {
+              return;
+            }
+
+            // 툴팁 위치 계산
+            const tooltipWidth = 200;
+            const rightSpace = containerWidth - margin.left - margin.right - x;
+            const shouldShowOnLeft = rightSpace < tooltipWidth + 20;
+
+            tooltip
+              .style(
+                'left',
+                shouldShowOnLeft
+                  ? `${x + margin.left - tooltipWidth + 25}px`
+                  : `${x + margin.left + 10}px`
+              )
+              .style('top', `${margin.top + 10}px`)
+              .html(tooltipContent);
+
+            lastTooltipContent = tooltipContent;
+            lastMonth = month;
+          } else {
+            verticalLine.style('opacity', 0);
+            if (lastTooltipContent !== '') {
+              tooltip.html('');
+              lastTooltipContent = '';
+              lastMonth = null;
+            }
+          }
+        })
+        .on('mouseleave', () => {
+          isMouseOver = false;
+          verticalLine.style('opacity', 0);
+          tooltip.style('opacity', 0);
+          lastTooltipContent = '';
+          lastMonth = null;
         });
     }
 
