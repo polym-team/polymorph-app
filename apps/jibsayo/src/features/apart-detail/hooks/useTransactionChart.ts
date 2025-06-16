@@ -98,27 +98,35 @@ export function useTransactionChart({
     const result: ChartData[] = [];
 
     sizeGroups.forEach((items, size) => {
-      const monthlyData = d3.group(items, d =>
+      // 거래가 있는 데이터만 필터링
+      const validItems = items.filter(item => item.tradeAmount > 0);
+
+      // 월별로 그룹화
+      const monthlyData = d3.group(validItems, d =>
         d3.timeMonth(new Date(d.tradeDate))
       );
 
       // 해당 평형의 제곱미터 값들을 수집
-      const sizes = Array.from(new Set(items.map(item => item.size))).sort(
+      const sizes = Array.from(new Set(validItems.map(item => item.size))).sort(
         (a, b) => a - b
       );
 
+      // 거래가 있는 월만 데이터 추가
       Array.from(monthlyData, ([date, items]) => {
-        result.push({
-          date: date,
-          averagePrice: d3.mean(items, d => d.tradeAmount) || 0,
-          count: items.length,
-          size: size,
-          sizes: sizes,
-        });
+        if (items.length > 0) {
+          result.push({
+            date: date,
+            averagePrice: d3.mean(items, d => d.tradeAmount) || 0,
+            count: items.length,
+            size: size,
+            sizes: sizes,
+          });
+        }
       });
     });
 
-    return result;
+    // 날짜순으로 정렬
+    return result.sort((a, b) => a.date.getTime() - b.date.getTime());
   }, [items, period]);
 
   // 차트 영역 크기 계산
@@ -128,19 +136,29 @@ export function useTransactionChart({
   // 스케일 계산
   const xScale = useMemo(() => {
     if (!chartData.length) {
-      return d3
-        .scaleTime()
-        .domain([new Date(2020, 0), new Date(2024, 0)])
-        .range([0, chartWidth])
-        .nice();
+      return d3.scalePoint().domain([]).range([0, chartWidth]);
     }
 
-    const dates = chartData.map(d => d.date);
-    const minDate = d3.min(dates)!;
-    const maxDate = d3.max(dates)!;
+    // 거래가 있는 데이터만 필터링하고 중복 제거
+    const uniqueDates = Array.from(
+      new Set(
+        chartData
+          .filter(d => d.count > 0)
+          .map(d => `${d.date.getFullYear()}-${d.date.getMonth()}`)
+      )
+    )
+      .map(dateStr => {
+        const [year, month] = dateStr.split('-').map(Number);
+        return new Date(year, month);
+      })
+      .sort((a, b) => a.getTime() - b.getTime())
+      .map(date => `${date.getFullYear()}-${date.getMonth()}`);
 
-    // 시작점과 끝점을 정확히 맞추기 위해 nice() 제거
-    return d3.scaleTime().domain([minDate, maxDate]).range([0, chartWidth]);
+    return d3
+      .scalePoint()
+      .domain(uniqueDates)
+      .range([0, chartWidth])
+      .padding(0.1);
   }, [chartData, chartWidth]);
 
   const yScale = useMemo(() => {
@@ -207,14 +225,10 @@ export function useTransactionChart({
       .style('stroke-dasharray', '2,2');
 
     // X축 생성
-    const xAxis = d3
-      .axisBottom(xScale)
-      .ticks(d3.timeYear.every(1))
-      .tickFormat((domainValue: Date | d3.NumberValue) => {
-        const date =
-          domainValue instanceof Date ? domainValue : new Date(+domainValue);
-        return `${date.getFullYear()}년`;
-      });
+    const xAxis = d3.axisBottom(xScale).tickFormat((domainValue: string) => {
+      const [year, month] = domainValue.split('-').map(Number);
+      return `${year}년 ${month + 1}월`;
+    });
 
     g.append('g')
       .attr('transform', `translate(0,${chartHeight})`)
@@ -250,15 +264,20 @@ export function useTransactionChart({
 
       // 각 평형별로 라인 생성
       sizeGroups.forEach((data, size) => {
+        // 해당 평형의 데이터만 필터링하고 날짜순으로 정렬
+        const sizeData = data
+          .filter(d => d.count > 0)
+          .sort((a, b) => a.date.getTime() - b.date.getTime());
+
         const line = d3
           .line<ChartData>()
-          .x(d => xScale(d.date))
+          .x(d => xScale(`${d.date.getFullYear()}-${d.date.getMonth()}`)!)
           .y(d => yScale(d.averagePrice))
           .curve(d3.curveLinear);
 
         chartContainer
           .append('path')
-          .datum(data)
+          .datum(sizeData)
           .attr('fill', 'none')
           .attr('stroke', colorScale(size.toString()))
           .attr('stroke-width', 2)
@@ -266,10 +285,13 @@ export function useTransactionChart({
 
         chartContainer
           .selectAll(`circle.size-${size}`)
-          .data(data)
+          .data(sizeData)
           .join('circle')
           .attr('class', `size-${size}`)
-          .attr('cx', d => xScale(d.date))
+          .attr(
+            'cx',
+            d => xScale(`${d.date.getFullYear()}-${d.date.getMonth()}`)!
+          )
           .attr('cy', d => yScale(d.averagePrice))
           .attr('r', 3)
           .attr('fill', colorScale(size.toString()));
@@ -381,30 +403,29 @@ export function useTransactionChart({
           if (!isMouseOver) return;
 
           const [x] = d3.pointer(event);
-          const date = xScale.invert(x);
-          const month = d3.timeMonth(date);
-
-          // 같은 월이면 업데이트하지 않음
-          if (
-            lastMonth &&
-            lastMonth.getFullYear() === month.getFullYear() &&
-            lastMonth.getMonth() === month.getMonth()
-          ) {
-            return;
-          }
+          const domain = xScale.domain();
+          const step = xScale.step();
+          const index = Math.min(
+            Math.max(0, Math.round(x / step)),
+            domain.length - 1
+          );
+          const dateStr = domain[index];
+          const [year, month] = dateStr.split('-').map(Number);
+          const date = new Date(year, month);
 
           // 해당 월의 데이터 필터링
           const monthData = chartData.filter(
             d =>
-              d.date.getFullYear() === month.getFullYear() &&
-              d.date.getMonth() === month.getMonth()
+              d.date.getFullYear() === date.getFullYear() &&
+              d.date.getMonth() === date.getMonth() &&
+              d.count > 0
           );
 
           if (monthData.length > 0) {
             // 세로선 표시
             verticalLine
-              .attr('x1', x)
-              .attr('x2', x)
+              .attr('x1', xScale(dateStr)!)
+              .attr('x2', xScale(dateStr)!)
               .attr('y1', 0)
               .attr('y2', chartHeight)
               .style('opacity', 1);
@@ -412,7 +433,7 @@ export function useTransactionChart({
             // 툴팁 내용 생성
             const tooltipContent = `
               <div class="space-y-1">
-                <div>${d3.timeFormat('%Y년 %m월')(month)}</div>
+                <div>${d3.timeFormat('%Y년 %m월')(date)}</div>
                 ${monthData
                   .map(
                     data => `
@@ -424,11 +445,6 @@ export function useTransactionChart({
                   .join('')}
               </div>
             `;
-
-            // 내용이 같으면 업데이트하지 않음
-            if (tooltipContent === lastTooltipContent) {
-              return;
-            }
 
             // 툴팁 위치 계산
             const tooltipWidth = 200;
@@ -446,7 +462,7 @@ export function useTransactionChart({
               .html(tooltipContent);
 
             lastTooltipContent = tooltipContent;
-            lastMonth = month;
+            lastMonth = date;
           } else {
             verticalLine.style('opacity', 0);
             if (lastTooltipContent !== '') {
