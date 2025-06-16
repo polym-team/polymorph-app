@@ -62,19 +62,12 @@ export function TransactionChart({ items }: Props) {
           ))}
         </div>
       </div>
-      <div className="relative w-full overflow-x-auto">
+      <div className="relative w-full">
         <div
-          className="relative mx-auto"
+          className="relative"
           style={{
             height: '400px',
-            minWidth: '1024px',
-            maxWidth: '100%',
             width: '100%',
-          }}
-          ref={containerRef => {
-            if (containerRef) {
-              containerRef.scrollLeft = containerRef.scrollWidth;
-            }
           }}
         >
           {isLoading && (
@@ -87,9 +80,6 @@ export function TransactionChart({ items }: Props) {
             style={{
               width: '100%',
               height: '100%',
-              position: 'absolute',
-              left: 0,
-              top: 0,
             }}
           />
         </div>
