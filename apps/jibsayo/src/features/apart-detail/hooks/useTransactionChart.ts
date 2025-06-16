@@ -55,7 +55,7 @@ export function useTransactionChart({
       const parentElement = svgRef.current?.parentElement;
       if (parentElement) {
         const parentWidth = parentElement.clientWidth;
-        setContainerWidth(parentWidth < 1024 ? 1024 : parentWidth);
+        setContainerWidth(parentWidth);
       }
     };
 
@@ -74,9 +74,9 @@ export function useTransactionChart({
   // margin 설정
   const margin = {
     top: 20,
-    right: 20,
+    right: 0,
     bottom: 70,
-    left: 60,
+    left: 40,
   };
 
   // 차트 데이터 계산
@@ -198,7 +198,7 @@ export function useTransactionChart({
       .style('width', '100%')
       .style('height', '100%')
       .attr('viewBox', `0 0 ${containerWidth} ${containerHeight}`)
-      .attr('preserveAspectRatio', 'xMidYMid meet');
+      .attr('preserveAspectRatio', 'xMinYMid meet');
 
     // 차트 영역 설정
     const g = svg
@@ -315,19 +315,6 @@ export function useTransactionChart({
           .attr('stroke', colorScale(size.toString()))
           .attr('stroke-width', 2)
           .attr('d', line);
-
-        chartContainer
-          .selectAll(`circle.size-${size}`)
-          .data(sizeData)
-          .join('circle')
-          .attr('class', `size-${size}`)
-          .attr(
-            'cx',
-            d => xScale(`${d.date.getFullYear()}-${d.date.getMonth()}`)!
-          )
-          .attr('cy', d => yScale(d.averagePrice))
-          .attr('r', 3)
-          .attr('fill', colorScale(size.toString()));
       });
 
       // 범례 간격 계산 (전체 너비를 범례 수로 나누어 균등 분배)
