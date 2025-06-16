@@ -46,6 +46,24 @@ export function useTransactionChart({
 }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [containerWidth, setContainerWidth] = useState(1024);
+  const [windowWidth, setWindowWidth] = useState(1024);
+
+  // 윈도우 너비 감지
+  useEffect(() => {
+    const updateWindowWidth = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    // 초기 너비 설정
+    updateWindowWidth();
+
+    // 리사이즈 감지
+    window.addEventListener('resize', updateWindowWidth);
+
+    return () => {
+      window.removeEventListener('resize', updateWindowWidth);
+    };
+  }, []);
 
   // 컨테이너 너비 감지
   useEffect(() => {
@@ -75,7 +93,7 @@ export function useTransactionChart({
   const margin = {
     top: 20,
     right: 0,
-    bottom: 70,
+    bottom: windowWidth <= 640 ? 30 : 70, // 모바일에서는 하단 마진 축소
     left: 35,
   };
 
@@ -242,6 +260,20 @@ export function useTransactionChart({
       if (yearData.length === 0) return '';
 
       const firstTradeMonth = yearData[0].date.getMonth();
+
+      // 윈도우 너비가 640px 이하일 때
+      if (windowWidth <= 640) {
+        // 가장 최근 년도는 항상 표시
+        const lastYear = chartData[chartData.length - 1].date.getFullYear();
+        if (year === lastYear) {
+          return month === firstTradeMonth ? `${year}` : '';
+        }
+        // 그 외는 가장 최근 년도와의 차이가 짝수인 년도만 표시
+        return month === firstTradeMonth && (lastYear - year) % 2 === 0
+          ? `${year}`
+          : '';
+      }
+
       return month === firstTradeMonth ? `${year}` : '';
     });
 
@@ -266,6 +298,16 @@ export function useTransactionChart({
         const firstTradeMonth = yearData[0].date.getMonth();
         if (month !== firstTradeMonth) {
           d3.select(this).select('line').remove();
+        }
+
+        // 윈도우 너비가 640px 이하일 때 라벨 회전
+        if (windowWidth <= 640) {
+          d3.select(this)
+            .select('text')
+            .attr('transform', 'rotate(-45)')
+            .attr('text-anchor', 'end')
+            .attr('dx', '-.8em')
+            .attr('dy', '.15em');
         }
       });
 
@@ -323,53 +365,56 @@ export function useTransactionChart({
       const chartWidth = containerWidth - margin.left - margin.right;
       const legendStartX = margin.left; // 범례 컨테이너 시작점을 x축 시작점으로 설정
 
-      // 범례 컨테이너 위치 조정
-      const legend = svg
-        .append('g')
-        .attr('class', 'legend')
-        .attr(
-          'transform',
-          `translate(${legendStartX}, ${containerHeight - margin.bottom + 40})`
-        );
-
-      // 범례 아이템들을 담을 그룹 생성 (중앙 정렬용)
-      const legendItemsGroup = legend
-        .append('g')
-        .attr(
-          'transform',
-          `translate(${(chartWidth - totalLegendWidth) / 2}, 0)`
-        );
-
-      // size 기준으로 오름차순 정렬
-      const sortedSizes = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
-
-      let index = 0;
-      sortedSizes.forEach(size => {
-        const data = sizeGroups.get(size)!;
-        const sizes = Array.from(new Set(data.map(d => d.size))).sort(
-          (a, b) => a - b
-        );
-        const legendItem = legendItemsGroup
+      // 모바일이 아닐 때만 범례 표시
+      if (windowWidth > 640) {
+        // 범례 컨테이너 위치 조정
+        const legend = svg
           .append('g')
-          .attr('transform', `translate(${index * legendItemWidth}, 0)`);
-
-        legendItem
-          .append('rect')
-          .attr('width', 10)
-          .attr('height', 10)
-          .attr('fill', colorScale(size.toString()));
-
-        legendItem
-          .append('text')
-          .attr('x', 15)
-          .attr('y', 10)
-          .attr('font-size', '12px')
-          .text(
-            `${calculatePyeong(size)}평 (${sizes.map(s => `${s}㎡`).join(', ')})`
+          .attr('class', 'legend')
+          .attr(
+            'transform',
+            `translate(${legendStartX}, ${containerHeight - margin.bottom + 40})`
           );
 
-        index += 1;
-      });
+        // 범례 아이템들을 담을 그룹 생성 (중앙 정렬용)
+        const legendItemsGroup = legend
+          .append('g')
+          .attr(
+            'transform',
+            `translate(${(chartWidth - totalLegendWidth) / 2}, 0)`
+          );
+
+        // size 기준으로 오름차순 정렬
+        const sortedSizes = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
+
+        let index = 0;
+        sortedSizes.forEach(size => {
+          const data = sizeGroups.get(size)!;
+          const sizes = Array.from(new Set(data.map(d => d.size))).sort(
+            (a, b) => a - b
+          );
+          const legendItem = legendItemsGroup
+            .append('g')
+            .attr('transform', `translate(${index * legendItemWidth}, 0)`);
+
+          legendItem
+            .append('rect')
+            .attr('width', 10)
+            .attr('height', 10)
+            .attr('fill', colorScale(size.toString()));
+
+          legendItem
+            .append('text')
+            .attr('x', 15)
+            .attr('y', 10)
+            .attr('font-size', '12px')
+            .text(
+              `${calculatePyeong(size)}평 (${sizes.map(s => `${s}㎡`).join(', ')})`
+            );
+
+          index += 1;
+        });
+      }
 
       // fade-in 애니메이션
       chartContainer.transition().duration(600).style('opacity', 1);
@@ -573,6 +618,7 @@ export function useTransactionChart({
     margin,
     xScale,
     yScale,
+    windowWidth,
   ]);
 
   return {
