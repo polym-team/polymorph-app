@@ -437,6 +437,7 @@ export function useTransactionChart({
       const tooltip = d3.select(tooltipRef.current);
       let lastTooltipContent = '';
       let lastMonth: Date | null = null;
+      let lastDate: string | null = null;
 
       // 마우스 이벤트를 위한 투명한 영역 추가
       const mouseArea = g
@@ -458,7 +459,6 @@ export function useTransactionChart({
 
       let isMouseOver = false;
       let isDragging = false;
-      let lastX: number | null = null;
 
       // 모바일 환경에서의 드래그 이벤트 처리
       if (windowWidth <= 640) {
@@ -470,7 +470,6 @@ export function useTransactionChart({
             const touch = event.touches[0];
             const rect = svg.node()!.getBoundingClientRect();
             const x = touch.clientX - rect.left - margin.left;
-            lastX = x;
             updateTooltip(x);
           })
           .on('touchmove', event => {
@@ -479,28 +478,60 @@ export function useTransactionChart({
             const touch = event.touches[0];
             const rect = svg.node()!.getBoundingClientRect();
             const x = touch.clientX - rect.left - margin.left;
-            lastX = x;
             updateTooltip(x);
           })
           .on('touchend', event => {
             event.preventDefault();
             isDragging = false;
-            lastX = null;
             verticalLine.style('opacity', 0);
             tooltip.style('opacity', 0);
-            // 터치가 끝나면 모든 라벨 숨기기
-            g.selectAll('.x-axis .tick text').style('opacity', 0);
           })
           .on('touchcancel', event => {
             event.preventDefault();
             isDragging = false;
-            lastX = null;
             verticalLine.style('opacity', 0);
             tooltip.style('opacity', 0);
-            // 터치가 취소되면 모든 라벨 숨기기
-            g.selectAll('.x-axis .tick text').style('opacity', 0);
           });
       }
+
+      // 마우스 이벤트 처리
+      mouseArea
+        .on('mouseenter', () => {
+          isMouseOver = true;
+          tooltip.style('opacity', 1);
+        })
+        .on('mousemove', event => {
+          if (!isMouseOver) return;
+          const [x] = d3.pointer(event);
+          updateTooltip(x);
+        })
+        .on('mouseleave', () => {
+          isMouseOver = false;
+          verticalLine.style('opacity', 0);
+          tooltip.style('opacity', 0);
+
+          // 마지막으로 보여주던 라벨 고정 노출
+          if (lastDate) {
+            const [year, month] = lastDate.split('-').map(Number);
+            g.selectAll('.x-axis .tick').each(function (d) {
+              const [tickYear, tickMonth] = String(d).split('-').map(Number);
+              const tickElement = d3.select(this);
+              const textElement = tickElement.select('text');
+
+              // 년도 라벨은 항상 표시
+              if (tickMonth === 0) {
+                textElement.style('opacity', 1);
+              } else {
+                // 마지막으로 보여주던 월 라벨만 표시
+                if (tickYear === year && tickMonth === month) {
+                  textElement.style('opacity', 1);
+                } else {
+                  textElement.style('opacity', 0);
+                }
+              }
+            });
+          }
+        });
 
       // 툴팁 업데이트 함수
       const updateTooltip = (x: number) => {
@@ -511,6 +542,7 @@ export function useTransactionChart({
           domain.length - 1
         );
         const dateStr = domain[index];
+        lastDate = dateStr; // 마지막 날짜 저장
         const [year, month] = dateStr.split('-').map(Number);
         const date = new Date(year, month);
 
@@ -563,40 +595,26 @@ export function useTransactionChart({
             .style('top', `${margin.top + 10}px`)
             .html(tooltipContent);
 
-          // X축 라벨 업데이트 - 현재 터치 포인트의 월에 해당하는 라벨만 표시
+          // X축 라벨 업데이트
           g.selectAll('.x-axis .tick').each(function (d) {
             const [tickYear, tickMonth] = String(d).split('-').map(Number);
             const tickElement = d3.select(this);
             const textElement = tickElement.select('text');
 
-            // 현재 터치 포인트의 년도와 월이 같은 경우에만 라벨 표시
-            if (tickYear === year && tickMonth === month) {
+            // 년도 라벨은 항상 표시
+            if (tickMonth === 0) {
               textElement.style('opacity', 1);
             } else {
-              textElement.style('opacity', 0);
+              // 현재 터치 포인트의 월에 해당하는 라벨만 표시
+              if (tickYear === year && tickMonth === month) {
+                textElement.style('opacity', 1);
+              } else {
+                textElement.style('opacity', 0);
+              }
             }
           });
         }
       };
-
-      // 마우스 이벤트 처리
-      mouseArea
-        .on('mouseenter', () => {
-          isMouseOver = true;
-          tooltip.style('opacity', 1);
-        })
-        .on('mousemove', event => {
-          if (!isMouseOver) return;
-          const [x] = d3.pointer(event);
-          updateTooltip(x);
-        })
-        .on('mouseleave', () => {
-          isMouseOver = false;
-          // 마우스가 차트 영역을 벗어나도 마지막 상태 유지
-          if (lastX !== null) {
-            updateTooltip(lastX);
-          }
-        });
 
       // 초기 상태 설정 (가장 최근 데이터 표시)
       if (chartData.length > 0) {

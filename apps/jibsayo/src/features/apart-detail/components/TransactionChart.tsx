@@ -2,7 +2,7 @@
 
 import { ApartDetailResponse } from '@/app/api/apart/types';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Button, Card, Typography } from '@package/ui';
 
@@ -26,9 +26,20 @@ export function TransactionChart({ items }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [period, setPeriod] = useState<PeriodValue>('60');
+  const [windowWidth, setWindowWidth] = useState<number>(0);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const margin = { top: 20, right: 20, bottom: 30, left: 60 };
-  const height = 400;
+  const height = windowWidth <= 640 ? 250 : 400;
 
   const { isLoading } = useTransactionChart({
     items,
@@ -66,7 +77,7 @@ export function TransactionChart({ items }: Props) {
         <div
           className="relative"
           style={{
-            height: '400px',
+            height: windowWidth <= 640 ? '250px' : '400px',
             width: '100%',
           }}
         >
