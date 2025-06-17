@@ -578,18 +578,25 @@ export function useTransactionChart({
 
           // 툴팁 위치 계산 - 세로선 위치 기준으로 고정
           const tooltipWidth = 200;
-          const rightSpace =
-            containerWidth - margin.left - margin.right - lineX;
-          const shouldShowOnLeft = rightSpace < tooltipWidth + 20;
+          const chartAreaWidth = containerWidth - margin.left - margin.right;
+          const chartCenter = chartAreaWidth / 2;
+          const rightSpace = chartAreaWidth - lineX;
+          const leftSpace = lineX;
+
+          // 차트 중앙을 기준으로 세로선 위치에 따라 툴팁 위치 결정
+          let tooltipLeft: number;
+
+          if (lineX < chartCenter) {
+            // 세로선이 차트 중앙보다 좌측에 있으면 툴팁을 우측에 표시
+            tooltipLeft = lineX + margin.left + 10;
+          } else {
+            // 세로선이 차트 중앙보다 우측에 있으면 툴팁을 좌측에 표시
+            tooltipLeft = lineX + margin.left - tooltipWidth + 25;
+          }
 
           tooltip
             .style('opacity', 1)
-            .style(
-              'left',
-              shouldShowOnLeft
-                ? `${lineX + margin.left - tooltipWidth + 25}px`
-                : `${lineX + margin.left + 10}px`
-            )
+            .style('left', `${tooltipLeft}px`)
             .style('top', `${margin.top + 10}px`)
             .html(tooltipContent);
 
