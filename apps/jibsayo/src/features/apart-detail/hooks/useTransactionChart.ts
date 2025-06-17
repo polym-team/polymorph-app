@@ -483,14 +483,12 @@ export function useTransactionChart({
           .on('touchend', event => {
             event.preventDefault();
             isDragging = false;
-            verticalLine.style('opacity', 0);
-            tooltip.style('opacity', 0);
+            // 터치 종료 후에도 세로선과 툴팁 유지
           })
           .on('touchcancel', event => {
             event.preventDefault();
             isDragging = false;
-            verticalLine.style('opacity', 0);
-            tooltip.style('opacity', 0);
+            // 터치 취소 후에도 세로선과 툴팁 유지
           });
       }
 
@@ -507,9 +505,7 @@ export function useTransactionChart({
         })
         .on('mouseleave', () => {
           isMouseOver = false;
-          verticalLine.style('opacity', 0);
-          tooltip.style('opacity', 0);
-
+          // 마우스가 차트 영역을 벗어나도 세로선과 툴팁 유지
           // 마지막으로 보여주던 라벨 고정 노출
           if (lastDate) {
             const [year, month] = lastDate.split('-').map(Number);
