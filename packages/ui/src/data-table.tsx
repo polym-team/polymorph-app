@@ -264,7 +264,9 @@ export function DataTable<TData, TValue>({
                 {isClient &&
                   table
                     .getAllColumns()
-                    .filter(column => column.getCanSort())
+                    .filter(
+                      column => column.getCanSort() && column.id !== 'favorite'
+                    )
                     .map(column => {
                       const header = column.columnDef.header;
                       let displayName = '';
@@ -344,22 +346,15 @@ export function DataTable<TData, TValue>({
               className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm"
             >
               <div className="space-y-2">
-                <div className="flex items-start justify-between">
-                  <div className="h-3 w-16 animate-pulse rounded bg-gray-200"></div>
-                  <div className="h-3 w-24 animate-pulse rounded bg-gray-200"></div>
-                </div>
-                <div className="flex items-start justify-between">
-                  <div className="h-3 w-20 animate-pulse rounded bg-gray-200"></div>
-                  <div className="h-3 w-32 animate-pulse rounded bg-gray-200"></div>
-                </div>
-                <div className="flex items-start justify-between">
-                  <div className="h-3 w-14 animate-pulse rounded bg-gray-200"></div>
-                  <div className="h-3 w-28 animate-pulse rounded bg-gray-200"></div>
-                </div>
-                <div className="flex items-start justify-between">
-                  <div className="h-3 w-12 animate-pulse rounded bg-gray-200"></div>
-                  <div className="h-3 w-20 animate-pulse rounded bg-gray-200"></div>
-                </div>
+                {Array.from({ length: columns.length }, (_, colIndex) => (
+                  <div
+                    key={colIndex}
+                    className="flex items-start justify-between"
+                  >
+                    <div className="h-3 w-16 animate-pulse rounded bg-gray-200"></div>
+                    <div className="h-3 w-24 animate-pulse rounded bg-gray-200"></div>
+                  </div>
+                ))}
               </div>
             </div>
           ))
