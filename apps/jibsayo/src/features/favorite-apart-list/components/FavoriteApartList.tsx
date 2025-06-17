@@ -53,7 +53,7 @@ export function FavoriteApartList() {
       {favoriteApartList.map(apart => (
         <div key={apart.regionCode}>
           <Card className="flex flex-col">
-            <Typography variant="small" className="p-5">
+            <Typography variant="small" className="p-3 md:p-5">
               {getCityNameWithRegionCode(apart.regionCode)}{' '}
               {getRegionNameWithRegionCode(apart.regionCode)}{' '}
               <strong className="text-primary">
@@ -61,7 +61,7 @@ export function FavoriteApartList() {
               </strong>
             </Typography>
             <hr className="my-0 border-gray-200" />
-            <div className="flex flex-wrap gap-2 p-4">
+            <div className="flex flex-wrap gap-2 p-3 md:p-4">
               {apart.apartItems.map(item => (
                 <div
                   key={item.apartId}
