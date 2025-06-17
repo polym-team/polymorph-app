@@ -556,9 +556,10 @@ export function useTransactionChart({
 
         if (monthData.length > 0) {
           // 세로선 표시
+          const lineX = xScale(dateStr)!;
           verticalLine
-            .attr('x1', xScale(dateStr)!)
-            .attr('x2', xScale(dateStr)!)
+            .attr('x1', lineX)
+            .attr('x2', lineX)
             .attr('y1', 0)
             .attr('y2', chartHeight)
             .style('opacity', 1);
@@ -579,9 +580,10 @@ export function useTransactionChart({
             </div>
           `;
 
-          // 툴팁 위치 계산
+          // 툴팁 위치 계산 - 세로선 위치 기준으로 고정
           const tooltipWidth = 200;
-          const rightSpace = containerWidth - margin.left - margin.right - x;
+          const rightSpace =
+            containerWidth - margin.left - margin.right - lineX;
           const shouldShowOnLeft = rightSpace < tooltipWidth + 20;
 
           tooltip
@@ -589,8 +591,8 @@ export function useTransactionChart({
             .style(
               'left',
               shouldShowOnLeft
-                ? `${x + margin.left - tooltipWidth + 25}px`
-                : `${x + margin.left + 10}px`
+                ? `${lineX + margin.left - tooltipWidth + 25}px`
+                : `${lineX + margin.left + 10}px`
             )
             .style('top', `${margin.top + 10}px`)
             .html(tooltipContent);
