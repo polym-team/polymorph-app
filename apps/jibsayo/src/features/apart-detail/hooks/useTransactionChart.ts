@@ -93,7 +93,7 @@ export function useTransactionChart({
   const margin = {
     top: 20,
     right: 0,
-    bottom: windowWidth <= 640 ? 30 : 70, // 모바일에서는 하단 마진 축소
+    bottom: 70,
     left: 35,
   };
 
@@ -360,61 +360,68 @@ export function useTransactionChart({
       });
 
       // 범례 간격 계산 (전체 너비를 범례 수로 나누어 균등 분배)
-      const legendItemWidth = 100; // 각 범례 아이템의 예상 너비
+      const legendItemWidth = windowWidth <= 640 ? 45 : 100; // 모바일에서는 간격을 절반으로 줄임
+      const legendItemHeight = windowWidth <= 640 ? 20 : 25; // 모바일에서는 더 작게
       const totalLegendWidth = legendItemWidth * sizeGroups.size;
       const chartWidth = containerWidth - margin.left - margin.right;
-      const legendStartX = margin.left; // 범례 컨테이너 시작점을 x축 시작점으로 설정
+      const legendStartX = margin.left;
 
-      // 모바일이 아닐 때만 범례 표시
-      if (windowWidth > 640) {
-        // 범례 컨테이너 위치 조정
-        const legend = svg
+      // 범례 표시 (모바일과 데스크톱 모두)
+      const legend = svg
+        .append('g')
+        .attr('class', 'legend')
+        .attr(
+          'transform',
+          `translate(${legendStartX}, ${containerHeight - margin.bottom + (windowWidth <= 640 ? 50 : 40)})`
+        );
+
+      // 범례 아이템들을 담을 그룹 생성 (중앙 정렬용)
+      const legendItemsGroup = legend
+        .append('g')
+        .attr(
+          'transform',
+          `translate(${(chartWidth - totalLegendWidth) / 2}, 0)`
+        );
+
+      // size 기준으로 오름차순 정렬
+      const sortedSizes = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
+
+      sortedSizes.forEach((size, index) => {
+        const data = sizeGroups.get(size)!;
+        const sizes = Array.from(new Set(data.map(d => d.size))).sort(
+          (a, b) => a - b
+        );
+
+        // 모든 범례를 한 줄에 배치
+        const row = 0;
+        const col = index;
+
+        const legendItem = legendItemsGroup
           .append('g')
-          .attr('class', 'legend')
           .attr(
             'transform',
-            `translate(${legendStartX}, ${containerHeight - margin.bottom + 40})`
+            `translate(${col * legendItemWidth}, ${row * legendItemHeight})`
           );
 
-        // 범례 아이템들을 담을 그룹 생성 (중앙 정렬용)
-        const legendItemsGroup = legend
-          .append('g')
-          .attr(
-            'transform',
-            `translate(${(chartWidth - totalLegendWidth) / 2}, 0)`
-          );
+        legendItem
+          .append('rect')
+          .attr('width', windowWidth <= 640 ? 8 : 10) // 모바일에서 사각형도 더 작게
+          .attr('height', windowWidth <= 640 ? 8 : 10)
+          .attr('fill', colorScale(size.toString()));
 
-        // size 기준으로 오름차순 정렬
-        const sortedSizes = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
+        // 모바일에서는 텍스트를 더 간단하게
+        const legendText =
+          windowWidth <= 640
+            ? `${calculatePyeong(size)}평`
+            : `${calculatePyeong(size)}평 (${sizes.map(s => `${s}㎡`).join(', ')})`;
 
-        let index = 0;
-        sortedSizes.forEach(size => {
-          const data = sizeGroups.get(size)!;
-          const sizes = Array.from(new Set(data.map(d => d.size))).sort(
-            (a, b) => a - b
-          );
-          const legendItem = legendItemsGroup
-            .append('g')
-            .attr('transform', `translate(${index * legendItemWidth}, 0)`);
-
-          legendItem
-            .append('rect')
-            .attr('width', 10)
-            .attr('height', 10)
-            .attr('fill', colorScale(size.toString()));
-
-          legendItem
-            .append('text')
-            .attr('x', 15)
-            .attr('y', 10)
-            .attr('font-size', '12px')
-            .text(
-              `${calculatePyeong(size)}평 (${sizes.map(s => `${s}㎡`).join(', ')})`
-            );
-
-          index += 1;
-        });
-      }
+        legendItem
+          .append('text')
+          .attr('x', windowWidth <= 640 ? 12 : 15) // 모바일에서 텍스트 간격도 줄임
+          .attr('y', windowWidth <= 640 ? 8 : 10) // 모바일에서 세로 위치 조정
+          .attr('font-size', windowWidth <= 640 ? '10px' : '12px') // 모바일에서 폰트 크기도 줄임
+          .text(legendText);
+      });
 
       // fade-in 애니메이션
       chartContainer.transition().duration(600).style('opacity', 1);
