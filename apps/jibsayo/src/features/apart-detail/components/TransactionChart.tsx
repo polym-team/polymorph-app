@@ -60,12 +60,13 @@ export function TransactionChart({ items }: Props) {
         <Typography variant="large" className="font-semibold">
           실거래가 차트
         </Typography>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1 sm:gap-2">
           {PERIODS.map(p => (
             <Button
               key={p.value}
               variant={p.value === period ? 'primary' : 'secondary'}
               size="sm"
+              className="min-w-0 flex-1 sm:flex-none"
               onClick={() => handlePeriodChange(p.value)}
             >
               {p.label}

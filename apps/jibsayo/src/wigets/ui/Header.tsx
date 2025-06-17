@@ -36,7 +36,7 @@ export function Header() {
             <img
               src={logo.src}
               alt="집사요"
-              className="h-[120px] w-auto translate-y-[4px]"
+              className="h-[120px] h-[96px] w-auto translate-y-[4px] md:h-[120px]"
             />
           </Link>
 
