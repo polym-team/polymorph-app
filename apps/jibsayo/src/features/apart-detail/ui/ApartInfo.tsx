@@ -28,8 +28,8 @@ export function ApartInfo({
   ];
 
   return (
-    <Card className="p-5">
-      <Typography variant="large" className="mb-5 font-semibold">
+    <Card className="p-3 md:p-5">
+      <Typography variant="large" className="text-primary mb-5 font-semibold">
         {apartName}
       </Typography>
 

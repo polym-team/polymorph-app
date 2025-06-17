@@ -55,7 +55,7 @@ export function TransactionChart({ items }: Props) {
   };
 
   return (
-    <Card className="p-5">
+    <Card className="p-3 md:p-5">
       <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Typography variant="large" className="font-semibold">
           실거래가 차트

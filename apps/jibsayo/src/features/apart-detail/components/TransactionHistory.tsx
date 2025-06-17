@@ -39,7 +39,7 @@ const columns: ColumnDef<TransactionItem>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="거래일" />
     ),
-    cell: ({ row }) => <Typography>{row.getValue('tradeDate')}</Typography>,
+    cell: ({ row }) => <div>{row.getValue('tradeDate')}</div>,
     size: 120,
   },
   {
@@ -52,8 +52,8 @@ const columns: ColumnDef<TransactionItem>[] = [
       const pyeong = row.original.pyeong;
       return (
         <div className="flex items-center gap-x-1">
-          <Typography>{pyeong}평</Typography>
-          <Typography className="text-sm text-gray-500">({size}㎡)</Typography>
+          <div>{pyeong}평</div>
+          <div className="text-sm text-gray-500">({size}㎡)</div>
         </div>
       );
     },
@@ -64,7 +64,7 @@ const columns: ColumnDef<TransactionItem>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="층" />
     ),
-    cell: ({ row }) => <Typography>{row.getValue('floor')}층</Typography>,
+    cell: ({ row }) => <div>{row.getValue('floor')}층</div>,
     size: 80,
   },
   {
@@ -75,9 +75,7 @@ const columns: ColumnDef<TransactionItem>[] = [
     cell: ({ row }) => {
       const amount = row.getValue('tradeAmount') as number;
       return (
-        <Typography className="text-primary font-bold">
-          {formatPrice(amount)}
-        </Typography>
+        <div className="text-primary font-bold">{formatPrice(amount)}</div>
       );
     },
     size: 150,
@@ -89,7 +87,7 @@ const columns: ColumnDef<TransactionItem>[] = [
     ),
     cell: ({ row }) => {
       const pricePerPyeong = row.getValue('pricePerPyeong') as number;
-      return <Typography>{formatPrice(pricePerPyeong)}</Typography>;
+      return <div>{formatPrice(pricePerPyeong)}</div>;
     },
     size: 130,
   },
@@ -185,7 +183,7 @@ export function TransactionHistory({ items }: Props) {
   }
 
   return (
-    <Card className="p-5">
+    <Card className="p-3 md:p-5">
       <div className="mb-5 flex items-center justify-between">
         <Typography variant="large" className="font-semibold">
           거래 내역{' '}
