@@ -92,7 +92,7 @@ export function useTransactionChart({
   // margin 설정
   const margin = {
     top: 20,
-    right: 0,
+    right: 20,
     bottom: 70,
     left: 35,
   };
@@ -350,6 +350,7 @@ export function useTransactionChart({
           .y(d => yScale(d.averagePrice))
           .curve(d3.curveLinear);
 
+        // 선 그리기
         chartContainer
           .append('path')
           .datum(sizeData)
@@ -357,6 +358,23 @@ export function useTransactionChart({
           .attr('stroke', colorScale(size.toString()))
           .attr('stroke-width', 2)
           .attr('d', line);
+
+        // 각 데이터 포인트에 점 추가
+        chartContainer
+          .selectAll(`.point-${size}`)
+          .data(sizeData)
+          .enter()
+          .append('circle')
+          .attr('class', `point-${size}`)
+          .attr(
+            'cx',
+            d => xScale(`${d.date.getFullYear()}-${d.date.getMonth()}`)!
+          )
+          .attr('cy', d => yScale(d.averagePrice))
+          .attr('r', 3) // 선보다 1px 굵게 (선: 2px, 점: 3px)
+          .attr('fill', colorScale(size.toString()))
+          .attr('stroke', 'white')
+          .attr('stroke-width', 1);
       });
 
       // 범례 간격 계산 (전체 너비를 범례 수로 나누어 균등 분배)
