@@ -433,11 +433,12 @@ export function useTransactionChart({
           .append('div')
           .attr(
             'class',
-            'absolute bg-slate-800 text-white px-3 py-2 rounded-md text-sm shadow-lg'
+            'absolute bg-white/70 text-gray-800 px-3 py-2 rounded-md text-sm shadow-lg border border-gray-200'
           )
           .style('pointer-events', 'none')
           .style('opacity', 0)
           .style('transition', 'opacity 0.1s')
+          .style('backdrop-filter', 'blur(2px)')
           .node();
       }
 
@@ -513,27 +514,7 @@ export function useTransactionChart({
         .on('mouseleave', () => {
           isMouseOver = false;
           // 마우스가 차트 영역을 벗어나도 세로선과 툴팁 유지
-          // 마지막으로 보여주던 라벨 고정 노출
-          if (lastDate) {
-            const [year, month] = lastDate.split('-').map(Number);
-            g.selectAll('.x-axis .tick').each(function (d) {
-              const [tickYear, tickMonth] = String(d).split('-').map(Number);
-              const tickElement = d3.select(this);
-              const textElement = tickElement.select('text');
-
-              // 년도 라벨은 항상 표시
-              if (tickMonth === 0) {
-                textElement.style('opacity', 1);
-              } else {
-                // 마지막으로 보여주던 월 라벨만 표시
-                if (tickYear === year && tickMonth === month) {
-                  textElement.style('opacity', 1);
-                } else {
-                  textElement.style('opacity', 0);
-                }
-              }
-            });
-          }
+          // X축 라벨은 항상 표시되므로 업데이트 제거
         });
 
       // 툴팁 업데이트 함수
@@ -607,24 +588,7 @@ export function useTransactionChart({
             .style('top', `${margin.top + 10}px`)
             .html(tooltipContent);
 
-          // X축 라벨 업데이트
-          g.selectAll('.x-axis .tick').each(function (d) {
-            const [tickYear, tickMonth] = String(d).split('-').map(Number);
-            const tickElement = d3.select(this);
-            const textElement = tickElement.select('text');
-
-            // 년도 라벨은 항상 표시
-            if (tickMonth === 0) {
-              textElement.style('opacity', 1);
-            } else {
-              // 현재 터치 포인트의 월에 해당하는 라벨만 표시
-              if (tickYear === year && tickMonth === month) {
-                textElement.style('opacity', 1);
-              } else {
-                textElement.style('opacity', 0);
-              }
-            }
-          });
+          // X축 라벨은 항상 표시되므로 업데이트 제거
         }
       };
 
@@ -680,6 +644,8 @@ export function useTransactionChart({
             )
             .style('top', `${margin.top + 10}px`)
             .html(tooltipContent);
+
+          // X축 라벨은 항상 표시되므로 업데이트 제거
 
           lastTooltipContent = tooltipContent;
           lastMonth = lastData.date;
