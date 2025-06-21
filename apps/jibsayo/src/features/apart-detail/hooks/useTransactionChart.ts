@@ -18,7 +18,7 @@ export interface ChartData {
   date: Date;
   averagePrice: number;
   count: number;
-  size: number;
+  size: number; // 실제 면적 값 (㎡)
   sizes?: number[];
 }
 
@@ -112,10 +112,10 @@ export function useTransactionChart({
           });
 
     // 평형별로 그룹화
-    const sizeGroups = d3.group(filteredItems, d => Math.floor(d.size));
+    const sizeGroups = d3.group(filteredItems, d => calculatePyeong(d.size));
     const result: ChartData[] = [];
 
-    sizeGroups.forEach((items, size) => {
+    sizeGroups.forEach((items, pyeong) => {
       // 거래가 있는 데이터만 필터링
       const validItems = items.filter(item => item.tradeAmount > 0);
 
@@ -136,7 +136,7 @@ export function useTransactionChart({
             date: date,
             averagePrice: d3.mean(items, d => d.tradeAmount) || 0,
             count: items.length,
-            size: size,
+            size: sizes[0], // 대표 면적 값 (첫 번째 값 사용)
             sizes: sizes,
           });
         }
@@ -329,16 +329,15 @@ export function useTransactionChart({
         .style('opacity', 0);
 
       // 평형별로 데이터 그룹화
-      const sizeGroups = d3.group(chartData, d => d.size) as Map<
-        number,
-        ChartData[]
-      >;
+      const sizeGroups = d3.group(chartData, d =>
+        calculatePyeong(d.size)
+      ) as Map<number, ChartData[]>;
 
       // 색상 스케일 생성
       const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
       // 각 평형별로 라인 생성
-      sizeGroups.forEach((data, size) => {
+      sizeGroups.forEach((data, pyeong) => {
         // 해당 평형의 데이터만 필터링하고 날짜순으로 정렬
         const sizeData = data
           .filter(d => d.count > 0)
@@ -355,24 +354,24 @@ export function useTransactionChart({
           .append('path')
           .datum(sizeData)
           .attr('fill', 'none')
-          .attr('stroke', colorScale(size.toString()))
+          .attr('stroke', colorScale(pyeong.toString()))
           .attr('stroke-width', 2)
           .attr('d', line);
 
         // 각 데이터 포인트에 점 추가
         chartContainer
-          .selectAll(`.point-${size}`)
+          .selectAll(`.point-${pyeong}`)
           .data(sizeData)
           .enter()
           .append('circle')
-          .attr('class', `point-${size}`)
+          .attr('class', `point-${pyeong}`)
           .attr(
             'cx',
             d => xScale(`${d.date.getFullYear()}-${d.date.getMonth()}`)!
           )
           .attr('cy', d => yScale(d.averagePrice))
           .attr('r', 3) // 선보다 1px 굵게 (선: 2px, 점: 3px)
-          .attr('fill', colorScale(size.toString()))
+          .attr('fill', colorScale(pyeong.toString()))
           .attr('stroke', 'white')
           .attr('stroke-width', 1);
       });
@@ -401,11 +400,11 @@ export function useTransactionChart({
           `translate(${(chartWidth - totalLegendWidth) / 2}, 0)`
         );
 
-      // size 기준으로 오름차순 정렬
-      const sortedSizes = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
+      // 평수 기준으로 오름차순 정렬
+      const sortedPyeongs = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
 
-      sortedSizes.forEach((size, index) => {
-        const data = sizeGroups.get(size)!;
+      sortedPyeongs.forEach((pyeong, index) => {
+        const data = sizeGroups.get(pyeong)!;
         const sizes = Array.from(new Set(data.map(d => d.size))).sort(
           (a, b) => a - b
         );
@@ -425,13 +424,13 @@ export function useTransactionChart({
           .append('rect')
           .attr('width', windowWidth <= 640 ? 8 : 10) // 모바일에서 사각형도 더 작게
           .attr('height', windowWidth <= 640 ? 8 : 10)
-          .attr('fill', colorScale(size.toString()));
+          .attr('fill', colorScale(pyeong.toString()));
 
         // 모바일에서는 텍스트를 더 간단하게
         const legendText =
           windowWidth <= 640
-            ? `${calculatePyeong(size)}평`
-            : `${calculatePyeong(size)}평 (${sizes.map(s => `${s}㎡`).join(', ')})`;
+            ? `${pyeong}평`
+            : `${pyeong}평 (${sizes.map(s => `${s}㎡`).join(', ')})`;
 
         legendItem
           .append('text')
