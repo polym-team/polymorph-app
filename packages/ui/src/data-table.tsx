@@ -160,7 +160,7 @@ export function DataTable<TData, TValue>({
       ''
     : '';
 
-  const showLoading = loading || !isClient;
+  const showLoading = loading;
 
   return (
     <div className="w-full space-y-4">
@@ -201,7 +201,7 @@ export function DataTable<TData, TValue>({
                   </div>
                 </TableCell>
               </TableRow>
-            ) : table.getRowModel().rows?.length ? (
+            ) : isClient && table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map(row => (
                 <TableRow
                   key={row.id}
@@ -358,7 +358,7 @@ export function DataTable<TData, TValue>({
               </div>
             </div>
           ))
-        ) : table.getRowModel().rows?.length ? (
+        ) : isClient && table.getRowModel().rows?.length ? (
           table.getRowModel().rows.map(row => (
             <div
               key={row.id}
