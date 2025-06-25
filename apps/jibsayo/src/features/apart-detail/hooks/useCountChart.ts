@@ -97,7 +97,7 @@ export function useCountChart({
     top: 20,
     right: 20,
     bottom: 30,
-    left: -10,
+    left: 35,
   };
 
   // 차트 데이터 계산
@@ -398,18 +398,15 @@ export function useCountChart({
       // 바 너비 동적 계산
       const totalBars = chartData.filter(d => d.count > 0).length;
       const availableWidth = chartWidth;
-      const maxBarWidth = 20; // 최대 바 너비
-      const minBarWidth = 4; // 최소 바 너비
-      const barSpacing = 2; // 바 사이 간격
+      const maxBarWidth = windowWidth <= 640 ? 8 : 20; // 모바일에서는 얇게
+      const minBarWidth = 2; // 최소 바 너비
+      const barSpacing = windowWidth <= 640 ? 1 : 2; // 모바일에서는 간격 줄임
 
-      // 전체 기간일 때는 바 너비를 줄임
-      const dynamicBarWidth =
-        period === 0
-          ? Math.max(
-              minBarWidth,
-              Math.min(maxBarWidth, availableWidth / totalBars - barSpacing)
-            )
-          : maxBarWidth;
+      // 10년 기간이므로 바 너비를 동적으로 계산
+      const dynamicBarWidth = Math.max(
+        minBarWidth,
+        Math.min(maxBarWidth, availableWidth / totalBars - barSpacing)
+      );
 
       // 월별로 데이터 그룹화하여 스택 바 생성
       const monthlyGroups = d3.group(

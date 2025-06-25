@@ -4,28 +4,17 @@ import { ApartDetailResponse } from '@/app/api/apart/types';
 
 import { useEffect, useRef, useState } from 'react';
 
-import { Button, Card, Typography } from '@package/ui';
+import { Card, Typography } from '@package/ui';
 
-import { LegendItem, useCountChart } from '../hooks/useCountChart';
+import { useCountChart } from '../hooks/useCountChart';
 
 interface Props {
   items: ApartDetailResponse['tradeItems'];
 }
 
-const PERIODS = [
-  { value: '0', label: '전체' },
-  { value: '12', label: '최근 1년' },
-  { value: '24', label: '최근 2년' },
-  { value: '36', label: '최근 3년' },
-  { value: '60', label: '최근 5년' },
-] as const;
-
-type PeriodValue = (typeof PERIODS)[number]['value'];
-
 export function CountChart({ items }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
-  const [period, setPeriod] = useState<PeriodValue>('60');
   const [windowWidth, setWindowWidth] = useState<number>(
     typeof window !== 'undefined' ? window.innerWidth : 1024
   );
@@ -49,32 +38,15 @@ export function CountChart({ items }: Props) {
     tooltipRef,
     height,
     margin,
-    period: Number(period),
+    period: 120, // 최근 10년
   });
-
-  const handlePeriodChange = (value: PeriodValue) => {
-    setPeriod(value);
-  };
 
   return (
     <Card className="p-3 md:p-5">
-      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-5">
         <Typography variant="large" className="font-semibold">
           거래건수 차트
         </Typography>
-        <div className="flex flex-wrap gap-1 sm:gap-2">
-          {PERIODS.map(p => (
-            <Button
-              key={p.value}
-              variant={p.value === period ? 'primary' : 'secondary'}
-              size="sm"
-              className="min-w-0 flex-1 sm:flex-none"
-              onClick={() => handlePeriodChange(p.value)}
-            >
-              {p.label}
-            </Button>
-          ))}
-        </div>
       </div>
       <div className="relative w-full">
         <div
