@@ -215,6 +215,29 @@ export function useTransactionChart({
       .range([chartHeight, 0]);
   }, [chartData, chartHeight]);
 
+  // 색상 스케일 생성 (범례와 차트에서 공유)
+  const colorScale = useMemo(() => {
+    if (!items.length) return d3.scaleOrdinal(d3.schemeCategory10);
+
+    // 기간 필터링
+    const now = new Date();
+    const filteredItems =
+      period === 0
+        ? items
+        : items.filter(item => {
+            const tradeDate = new Date(item.tradeDate);
+            return tradeDate >= subMonths(now, period);
+          });
+
+    // 평형별로 그룹화
+    const sizeGroups = d3.group(filteredItems, d => calculatePyeong(d.size));
+    const sortedPyeongs = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
+
+    return d3
+      .scaleOrdinal(d3.schemeCategory10)
+      .domain(sortedPyeongs.map(p => p.toString()));
+  }, [items, period]);
+
   // 데이터가 변경될 때마다 로딩 상태 초기화
   useEffect(() => {
     setIsLoading(true);
@@ -239,9 +262,6 @@ export function useTransactionChart({
     // 평형별로 그룹화
     const sizeGroups = d3.group(filteredItems, d => calculatePyeong(d.size));
 
-    // 색상 스케일 생성
-    const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
-
     // 평수 기준으로 오름차순 정렬
     const sortedPyeongs = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
 
@@ -258,7 +278,7 @@ export function useTransactionChart({
         sizes,
       };
     });
-  }, [items, period]);
+  }, [items, period, colorScale]);
 
   // 선택된 평형이 없으면 모든 평형을 선택
   useEffect(() => {
@@ -416,9 +436,6 @@ export function useTransactionChart({
       const sizeGroups = d3.group(chartData, d =>
         calculatePyeong(d.size)
       ) as Map<number, ChartData[]>;
-
-      // 색상 스케일 생성
-      const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
       // 각 평형별로 라인 생성
       sizeGroups.forEach((data, pyeong) => {
@@ -705,6 +722,7 @@ export function useTransactionChart({
     xScale,
     yScale,
     windowWidth,
+    colorScale,
   ]);
 
   return {
