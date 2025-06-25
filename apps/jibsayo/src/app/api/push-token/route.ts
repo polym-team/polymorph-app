@@ -33,7 +33,6 @@ export async function GET(
     // 디바이스의 모든 푸시토큰 조회
     const documents = await firestoreClient.getDocuments({
       where: [{ field: 'deviceId', operator: '==', value: deviceId }],
-      orderBy: { field: 'createdAt', direction: 'desc' },
     });
 
     const tokens = documents.map(doc => mapFirestoreToPushToken(doc));

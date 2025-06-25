@@ -1,28 +1,29 @@
 # @polymorph/firebase
 
-Firebase Firestore 연결을 위한 가장 낮은 레이어의 코드입니다. 실제 컬렉션 이름, 인증키 등은 각 앱에서 주입하여 사용합니다.
+Firebase Firestore 연결을 위한 가장 낮은 레이어의 코드입니다. 서버 사이드에서 Admin SDK를 사용하여 Firestore에 접근합니다.
 
 ## 설치
 
 ```bash
-pnpm add @polymorph/firebase firebase
+pnpm add @polymorph/firebase firebase-admin
 ```
 
 ## 기본 사용법
 
-### 1. FirestoreClient 초기화
+### 1. AdminFirestoreClient 초기화
 
 ```typescript
-import { FirestoreClient } from '@polymorph/firebase';
+import { AdminFirestoreClient } from '@polymorph/firebase';
 
-const firestoreClient = new FirestoreClient({
+const firestoreClient = new AdminFirestoreClient({
   collectionName: 'users', // 컬렉션 이름
   projectId: 'your-project-id',
-  apiKey: 'your-api-key',
-  authDomain: 'your-project.firebaseapp.com',
-  storageBucket: 'your-project.appspot.com',
-  messagingSenderId: '123456789',
-  appId: 'your-app-id',
+  // 서비스 계정 키 (선택사항)
+  serviceAccount: {
+    // 서비스 계정 정보
+  },
+  // 또는 서비스 계정 키 파일 경로 (선택사항)
+  serviceAccountPath: '/path/to/service-account-key.json',
 });
 ```
 
@@ -183,7 +184,6 @@ const documentWithTimestamps = convertDatesToTimestamps(documentData);
 ```typescript
 import {
   FirestoreBatchResult,
-  FirestoreConfig,
   FirestoreDocument,
   FirestoreQueryOptions,
   FirestoreTransactionResult,
@@ -227,9 +227,25 @@ try {
 }
 ```
 
+## 인증 설정
+
+### 로컬 개발 환경
+
+1. Firebase 콘솔에서 서비스 계정 키 다운로드
+2. 환경변수 설정:
+
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account-key.json"
+```
+
+### Vercel 배포 환경
+
+Vercel에서는 자동으로 Firebase Admin SDK 인증이 설정됩니다. 별도 설정이 필요하지 않습니다.
+
 ## 주의사항
 
-1. **보안**: Firebase 설정 정보(API 키 등)는 환경 변수로 관리하세요.
+1. **보안**: 서비스 계정 키는 절대 클라이언트 사이드에 노출하지 마세요.
 2. **인덱스**: 복잡한 쿼리를 사용할 때는 Firestore 인덱스를 설정해야 할 수 있습니다.
 3. **비용**: Firestore 사용량에 따라 비용이 발생할 수 있습니다.
 4. **타입 안전성**: TypeScript를 사용하여 타입 안전성을 보장하세요.
+5. **서버 사이드 전용**: 이 클라이언트는 서버 사이드에서만 사용해야 합니다.

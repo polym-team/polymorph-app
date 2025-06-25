@@ -1,73 +1,62 @@
 import {
-  FirebaseApp,
-  FirebaseOptions,
+  cert,
   getApps,
   initializeApp,
-} from 'firebase/app';
+  ServiceAccount,
+} from 'firebase-admin/app';
 import {
-  addDoc,
-  collection,
-  CollectionReference,
-  deleteDoc,
-  doc,
   DocumentData,
-  DocumentReference,
-  DocumentSnapshot,
-  endBefore,
   Firestore,
-  getDoc,
-  getDocs,
   getFirestore,
-  limit,
-  orderBy,
-  query,
-  QueryConstraint,
-  QuerySnapshot,
-  runTransaction,
-  startAfter,
   Transaction,
-  updateDoc,
-  where,
-  writeBatch,
-  WriteBatch,
-  WithFieldValue,
-} from 'firebase/firestore';
+} from 'firebase-admin/firestore';
 
 import {
   FirestoreBatchResult,
-  FirestoreConfig,
   FirestoreDocument,
   FirestoreQueryOptions,
   FirestoreTransactionResult,
   FirestoreWriteResult,
 } from './types';
 
-export class FirestoreClient {
-  private app: FirebaseApp;
+export interface AdminFirestoreConfig {
+  collectionName: string;
+  projectId?: string;
+  serviceAccount?: any;
+  serviceAccountPath?: string;
+}
+
+export class AdminFirestoreClient {
+  private app: any;
   private firestore: Firestore;
-  private collectionRef: CollectionReference;
+  private collectionRef: any;
 
-  constructor(config: FirestoreConfig) {
-    // Firebase 앱 초기화
-    const firebaseConfig: FirebaseOptions = {
-      projectId: config.projectId,
-      apiKey: config.apiKey,
-      authDomain: config.authDomain,
-      storageBucket: config.storageBucket,
-      messagingSenderId: config.messagingSenderId,
-      appId: config.appId,
-    };
-
-    // 이미 초기화된 앱이 있는지 확인
+  constructor(config: AdminFirestoreConfig) {
+    // Firebase Admin 앱 초기화
     const existingApps = getApps();
     if (existingApps.length > 0) {
       this.app = existingApps[0];
     } else {
-      this.app = initializeApp(firebaseConfig);
+      if (config.serviceAccount) {
+        this.app = initializeApp({
+          credential: cert(config.serviceAccount),
+          projectId: config.projectId,
+        });
+      } else if (config.serviceAccountPath) {
+        this.app = initializeApp({
+          credential: cert(config.serviceAccountPath),
+          projectId: config.projectId,
+        });
+      } else {
+        // 기본 인증 사용 (GOOGLE_APPLICATION_CREDENTIALS 환경변수)
+        this.app = initializeApp({
+          projectId: config.projectId,
+        });
+      }
     }
 
     this.firestore = getFirestore(this.app);
-    this.collectionRef = collection(this.firestore, config.collectionName);
+    this.collectionRef = this.firestore.collection(config.collectionName);
   }
 
   // 단일 문서 읽기
@@ -75,14 +64,14 @@ export class FirestoreClient {
     id: string
   ): Promise<FirestoreDocument<T> | null> {
     try {
-      const docRef = doc(this.collectionRef, id);
-      const docSnap = await getDoc(docRef);
+      const docRef = this.collectionRef.doc(id);
+      const docSnap = await docRef.get();
 
-      if (docSnap.exists()) {
+      if (docSnap.exists) {
         return {
           id: docSnap.id,
           data: docSnap.data() as T,
-          ref: docRef as DocumentReference<T>,
+          ref: docRef as any,
           exists: true,
         };
       }
@@ -98,41 +87,40 @@ export class FirestoreClient {
     options?: FirestoreQueryOptions
   ): Promise<FirestoreDocument<T>[]> {
     try {
-      const constraints: QueryConstraint[] = [];
+      let query: any = this.collectionRef;
 
       if (options?.where) {
         options.where.forEach(condition => {
-          constraints.push(
-            where(condition.field, condition.operator, condition.value)
+          query = query.where(
+            condition.field,
+            condition.operator,
+            condition.value
           );
         });
       }
 
       if (options?.orderBy) {
-        constraints.push(
-          orderBy(options.orderBy.field, options.orderBy.direction)
-        );
+        query = query.orderBy(options.orderBy.field, options.orderBy.direction);
       }
 
       if (options?.limit) {
-        constraints.push(limit(options.limit));
+        query = query.limit(options.limit);
       }
 
       if (options?.startAfter) {
-        constraints.push(startAfter(options.startAfter));
+        query = query.startAfter(options.startAfter);
       }
 
       if (options?.endBefore) {
-        constraints.push(endBefore(options.endBefore));
+        query = query.endBefore(options.endBefore);
       }
 
-      const q = query(this.collectionRef, ...constraints);
-      const querySnapshot = await getDocs(q);
+      const querySnapshot = await query.get();
 
-      return querySnapshot.docs.map(doc => ({
+      return querySnapshot.docs.map((doc: any) => ({
         id: doc.id,
         data: doc.data() as T,
-        ref: doc.ref as DocumentReference<T>,
+        ref: doc.ref as any,
         exists: true,
       }));
     } catch (error) {
@@ -146,7 +134,7 @@ export class FirestoreClient {
     data: T
   ): Promise<FirestoreWriteResult> {
     try {
-      const docRef = await addDoc(this.collectionRef, data as WithFieldValue<DocumentData>);
+      const docRef = await this.collectionRef.add(data);
       return {
         id: docRef.id,
         success: true,
@@ -167,8 +155,8 @@ export class FirestoreClient {
     data: Partial<T>
   ): Promise<FirestoreWriteResult> {
     try {
-      const docRef = doc(this.collectionRef, id);
-      await updateDoc(docRef, data as DocumentData);
+      const docRef = this.collectionRef.doc(id);
+      await docRef.update(data);
       return {
         id,
         success: true,
@@ -186,8 +174,8 @@ export class FirestoreClient {
   // 문서 삭제
   async deleteDocument(id: string): Promise<FirestoreWriteResult> {
     try {
-      const docRef = doc(this.collectionRef, id);
-      await deleteDoc(docRef);
+      const docRef = this.collectionRef.doc(id);
+      await docRef.delete();
       return {
         id,
         success: true,
@@ -203,18 +191,18 @@ export class FirestoreClient {
   }
 
   // 배치 작업 시작
-  startBatch(): WriteBatch {
-    return writeBatch(this.firestore);
+  startBatch(): any {
+    return this.firestore.batch();
   }
 
   // 배치에 문서 추가
   addToBatch(
-    batch: WriteBatch,
+    batch: any,
     operation: 'create' | 'update' | 'delete',
     id: string,
     data?: DocumentData
   ): void {
-    const docRef = doc(this.collectionRef, id);
+    const docRef = this.collectionRef.doc(id);
 
     switch (operation) {
       case 'create':
@@ -230,7 +218,7 @@ export class FirestoreClient {
   }
 
   // 배치 커밋
-  async commitBatch(batch: WriteBatch): Promise<FirestoreBatchResult> {
+  async commitBatch(batch: any): Promise<FirestoreBatchResult> {
     try {
       await batch.commit();
       return {
@@ -251,7 +239,7 @@ export class FirestoreClient {
     updateFunction: (transaction: Transaction) => Promise<T>
   ): Promise<FirestoreTransactionResult<T>> {
     try {
-      const result = await runTransaction(this.firestore, updateFunction);
+      const result = await this.firestore.runTransaction(updateFunction);
       return {
         success: true,
         data: result,
@@ -266,7 +254,7 @@ export class FirestoreClient {
   }
 
   // 컬렉션 참조 가져오기
-  getCollectionRef(): CollectionReference {
+  getCollectionRef(): any {
     return this.collectionRef;
   }
 
