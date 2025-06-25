@@ -1,0 +1,21 @@
+{
+  "name": "@polymorph/firebase",
+  "version": "1.0.0",
+  "description": "Firebase utilities for Polymorph App",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "firebase": "^10.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.9",
+    "typescript": "^5.7.2"
+  },
+  "peerDependencies": {
+    "firebase": "^10.7.0"
+  }
+}

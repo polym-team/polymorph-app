@@ -13,6 +13,7 @@
   "dependencies": {
     "@package/ui": "workspace:*",
     "@package/utils": "workspace:*",
+    "@polymorph/firebase": "workspace:*",
     "@types/d3": "^7.4.3",
     "cheerio": "1.0.0-rc.12",
     "d3": "^7.9.0"

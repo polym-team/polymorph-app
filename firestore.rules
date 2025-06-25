@@ -1,0 +1,16 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /push-token/{document} {
+      // 클라이언트 사이드 접근 (인증된 사용자 또는 특정 도메인)
+      allow read, write: if request.auth != null || 
+        (request.headers.origin != null && (
+          request.headers.origin.matches('https://jibsayo.vercel.app') ||
+          request.headers.origin.matches('http://localhost:3000')
+        )) ||
+        // 서버 사이드 API 접근 허용 (origin 헤더가 없는 경우)
+        !('origin' in request.headers);
+    }
+  }
+} 
