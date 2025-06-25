@@ -53,6 +53,9 @@ export function useTransactionChart({
   const [isLoading, setIsLoading] = useState(true);
   const [containerWidth, setContainerWidth] = useState(1024);
   const [windowWidth, setWindowWidth] = useState(1024);
+  const [selectedPyeongs, setSelectedPyeongs] = useState<Set<number>>(
+    new Set()
+  );
 
   // 윈도우 너비 감지
   useEffect(() => {
@@ -117,8 +120,16 @@ export function useTransactionChart({
             return tradeDate >= subMonths(now, period);
           });
 
+    // 선택된 평형만 필터링
+    const selectedItems =
+      selectedPyeongs.size > 0
+        ? filteredItems.filter(item =>
+            selectedPyeongs.has(calculatePyeong(item.size))
+          )
+        : filteredItems;
+
     // 평형별로 그룹화
-    const sizeGroups = d3.group(filteredItems, d => calculatePyeong(d.size));
+    const sizeGroups = d3.group(selectedItems, d => calculatePyeong(d.size));
     const result: ChartData[] = [];
 
     sizeGroups.forEach((items, pyeong) => {
@@ -151,7 +162,7 @@ export function useTransactionChart({
 
     // 날짜순으로 정렬
     return result.sort((a, b) => a.date.getTime() - b.date.getTime());
-  }, [items, period]);
+  }, [items, period, selectedPyeongs]);
 
   // 차트 영역 크기 계산
   const chartWidth = Math.max(containerWidth - margin.left - margin.right, 0);
@@ -213,13 +224,20 @@ export function useTransactionChart({
 
   // 범례 데이터 계산
   const legendData = useMemo(() => {
-    if (!chartData.length) return [];
+    if (!items.length) return [];
 
-    // 평형별로 데이터 그룹화
-    const sizeGroups = d3.group(chartData, d => calculatePyeong(d.size)) as Map<
-      number,
-      ChartData[]
-    >;
+    // 기간 필터링
+    const now = new Date();
+    const filteredItems =
+      period === 0
+        ? items
+        : items.filter(item => {
+            const tradeDate = new Date(item.tradeDate);
+            return tradeDate >= subMonths(now, period);
+          });
+
+    // 평형별로 그룹화
+    const sizeGroups = d3.group(filteredItems, d => calculatePyeong(d.size));
 
     // 색상 스케일 생성
     const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
@@ -229,6 +247,7 @@ export function useTransactionChart({
 
     return sortedPyeongs.map(pyeong => {
       const data = sizeGroups.get(pyeong)!;
+      // 해당 평형의 모든 면적 값들을 수집 (중복 제거)
       const sizes = Array.from(new Set(data.map(d => d.size))).sort(
         (a, b) => a - b
       );
@@ -239,7 +258,36 @@ export function useTransactionChart({
         sizes,
       };
     });
-  }, [chartData]);
+  }, [items, period]);
+
+  // 선택된 평형이 없으면 모든 평형을 선택
+  useEffect(() => {
+    if (legendData.length > 0 && selectedPyeongs.size === 0) {
+      setSelectedPyeongs(new Set(legendData.map(item => item.pyeong)));
+    }
+  }, [legendData, selectedPyeongs.size]);
+
+  // 평형 선택/해제 토글 함수
+  const togglePyeong = (pyeong: number) => {
+    setSelectedPyeongs(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(pyeong)) {
+        newSet.delete(pyeong);
+      } else {
+        newSet.add(pyeong);
+      }
+      return newSet;
+    });
+  };
+
+  // 모든 평형 선택/해제 토글 함수
+  const toggleAllPyeongs = () => {
+    if (selectedPyeongs.size === legendData.length) {
+      setSelectedPyeongs(new Set());
+    } else {
+      setSelectedPyeongs(new Set(legendData.map(item => item.pyeong)));
+    }
+  };
 
   // D3 차트 렌더링
   useEffect(() => {
@@ -662,5 +710,8 @@ export function useTransactionChart({
   return {
     isLoading,
     legendData,
+    selectedPyeongs,
+    togglePyeong,
+    toggleAllPyeongs,
   };
 }
