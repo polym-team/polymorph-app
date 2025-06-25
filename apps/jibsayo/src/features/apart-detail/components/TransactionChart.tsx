@@ -66,7 +66,7 @@ export function TransactionChart({ items }: Props) {
     <Card className="p-3 md:p-5">
       <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Typography variant="large" className="font-semibold">
-          실거래가
+          실거래가 차트
         </Typography>
         <div className="flex flex-wrap gap-1 sm:gap-2">
           {PERIODS.map(p => (
