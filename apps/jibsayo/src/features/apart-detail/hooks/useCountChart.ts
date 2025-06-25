@@ -464,18 +464,10 @@ export function useCountChart({
             'class',
             'absolute bg-white/70 text-gray-800 px-3 py-2 rounded-md text-sm shadow-lg border border-gray-200'
           )
-          .style('position', 'absolute')
           .style('pointer-events', 'none')
           .style('opacity', 0)
           .style('transition', 'opacity 0.1s')
           .style('backdrop-filter', 'blur(2px)')
-          .style('z-index', '1000')
-          .style('background-color', 'rgba(255, 255, 255, 0.9)')
-          .style('border', '1px solid #e5e7eb')
-          .style('border-radius', '6px')
-          .style('padding', '8px 12px')
-          .style('font-size', '12px')
-          .style('box-shadow', '0 4px 6px -1px rgba(0, 0, 0, 0.1)')
           .node();
       }
 
@@ -553,8 +545,7 @@ export function useCountChart({
             );
             const tooltipContent = `
               <div class="space-y-1">
-                <div>${d3.timeFormat('%Y년 %m월')(date)}</div>
-                <div class="font-semibold">총 ${totalCount}건</div>
+                <div>${d3.timeFormat('%Y년 %m월')(date)} <strong>(${totalCount}건)</strong></div>
                 ${sortedData
                   .map(
                     data => `
@@ -600,6 +591,16 @@ export function useCountChart({
           .attr('fill', 'transparent')
           .style('cursor', 'crosshair');
 
+        // 세로선 추가
+        const verticalLine = g
+          .append('line')
+          .attr('class', 'vertical-line')
+          .attr('stroke', '#94a3b8')
+          .attr('stroke-width', 1)
+          .attr('stroke-dasharray', '4,4')
+          .style('opacity', 0)
+          .style('transition', 'opacity 0.1s');
+
         let isDragging = false;
 
         mouseArea
@@ -623,10 +624,12 @@ export function useCountChart({
           .on('touchend', event => {
             event.preventDefault();
             isDragging = false;
+            // 터치 종료 후에도 세로선과 툴팁 유지
           })
           .on('touchcancel', event => {
             event.preventDefault();
             isDragging = false;
+            // 터치 취소 후에도 세로선과 툴팁 유지
           });
 
         // 툴팁 업데이트 함수
@@ -650,26 +653,124 @@ export function useCountChart({
           );
 
           if (monthData.length > 0) {
+            // 세로선 표시
+            const lineX = currentXScale(dateStr)!;
+            verticalLine
+              .attr('x1', lineX)
+              .attr('x2', lineX)
+              .attr('y1', 0)
+              .attr('y2', chartHeight)
+              .style('opacity', 1);
+
+            // 평형대별로 정렬
+            const sortedData = monthData.sort((a, b) => a.pyeong - b.pyeong);
+
+            const totalCount = sortedData.reduce(
+              (sum, data) => sum + data.count,
+              0
+            );
             const tooltipContent = `
               <div class="space-y-1">
-                <div>${d3.timeFormat('%Y년 %m월')(date)}</div>
-                ${monthData
+                <div>${d3.timeFormat('%Y년 %m월')(date)} <strong>(${totalCount}건)</strong></div>
+                ${sortedData
                   .map(
                     data => `
-                  <div>· ${calculatePyeong(data.size)}평 ${data.count}건</div>
+                  <div>· ${data.pyeong}평 ${data.count}건</div>
                 `
                   )
                   .join('')}
               </div>
             `;
 
+            // 툴팁 위치 계산
+            const tooltipWidth = 200;
+            const chartAreaWidth = containerWidth - margin.left - margin.right;
+            const chartCenter = chartAreaWidth / 2;
+
+            // 차트 중앙을 기준으로 세로선 위치에 따라 툴팁 위치 결정
+            let tooltipX: number;
+
+            if (lineX < chartCenter) {
+              // 세로선이 차트 중앙보다 좌측에 있으면 툴팁을 우측에 표시
+              tooltipX = lineX + margin.left + 10;
+            } else {
+              // 세로선이 차트 중앙보다 우측에 있으면 툴팁을 좌측에 표시
+              tooltipX = lineX + margin.left - tooltipWidth + 25;
+            }
+
             tooltip
               .style('opacity', 1)
-              .style('left', `${x + margin.left + 10}px`)
+              .style('position', 'absolute')
+              .style('left', `${tooltipX}px`)
               .style('top', `${margin.top + 10}px`)
+              .style('z-index', '1000')
               .html(tooltipContent);
           }
         };
+
+        // 초기 상태 설정 (가장 최근 데이터 표시)
+        if (chartData.length > 0) {
+          const lastData = chartData[chartData.length - 1];
+          const dateStr = `${lastData.date.getFullYear()}-${lastData.date.getMonth()}`;
+          const monthData = chartData.filter(
+            d =>
+              d.date.getFullYear() === lastData.date.getFullYear() &&
+              d.date.getMonth() === lastData.date.getMonth() &&
+              d.count > 0
+          );
+
+          if (monthData.length > 0) {
+            // 세로선 표시
+            const lineX = currentXScale(dateStr)!;
+            verticalLine
+              .attr('x1', lineX)
+              .attr('x2', lineX)
+              .attr('y1', 0)
+              .attr('y2', chartHeight)
+              .style('opacity', 1);
+
+            // 평형대별로 정렬
+            const sortedData = monthData.sort((a, b) => a.pyeong - b.pyeong);
+
+            const totalCount = sortedData.reduce(
+              (sum, data) => sum + data.count,
+              0
+            );
+            const tooltipContent = `
+              <div class="space-y-1">
+                <div>${d3.timeFormat('%Y년 %m월')(lastData.date)} <strong>(${totalCount}건)</strong></div>
+                ${sortedData
+                  .map(
+                    data => `
+                  <div>· ${data.pyeong}평 ${data.count}건</div>
+                `
+                  )
+                  .join('')}
+              </div>
+            `;
+
+            // 툴팁 위치 계산
+            const tooltipWidth = 200;
+            const chartAreaWidth = containerWidth - margin.left - margin.right;
+            const chartCenter = chartAreaWidth / 2;
+
+            let tooltipX: number;
+
+            if (lineX < chartCenter) {
+              tooltipX = lineX + margin.left + 10;
+            } else {
+              tooltipX = lineX + margin.left - tooltipWidth + 25;
+            }
+
+            tooltip
+              .style('opacity', 1)
+              .style('position', 'absolute')
+              .style('left', `${tooltipX}px`)
+              .style('top', `${margin.top + 10}px`)
+              .style('z-index', '1000')
+              .html(tooltipContent);
+          }
+        }
       }
     }
 
