@@ -42,7 +42,7 @@ interface Props {
   period: number;
 }
 
-export function useTransactionChart({
+export function useAmountChart({
   items,
   svgRef,
   tooltipRef,

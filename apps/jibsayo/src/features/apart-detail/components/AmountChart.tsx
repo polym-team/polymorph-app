@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Button, Card, Typography } from '@package/ui';
 
-import { LegendItem, useTransactionChart } from '../hooks/useTransactionChart';
+import { LegendItem, useAmountChart } from '../hooks/useAmountChart';
 
 interface Props {
   items: ApartDetailResponse['tradeItems'];
@@ -22,7 +22,7 @@ const PERIODS = [
 
 type PeriodValue = (typeof PERIODS)[number]['value'];
 
-export function TransactionChart({ items }: Props) {
+export function AmountChart({ items }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [period, setPeriod] = useState<PeriodValue>('60');
@@ -49,7 +49,7 @@ export function TransactionChart({ items }: Props) {
     selectedPyeongs,
     togglePyeong,
     toggleAllPyeongs,
-  } = useTransactionChart({
+  } = useAmountChart({
     items,
     svgRef,
     tooltipRef,

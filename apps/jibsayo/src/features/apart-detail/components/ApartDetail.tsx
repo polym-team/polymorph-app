@@ -8,7 +8,8 @@ import { useEffect } from 'react';
 import { toast } from '@package/ui';
 
 import { ApartInfo } from '../ui/ApartInfo';
-import { TransactionChart } from './TransactionChart';
+import { AmountChart } from './AmountChart';
+import { CountChart } from './CountChart';
 import TransactionHistory from './TransactionHistory';
 
 interface Props {
@@ -41,7 +42,8 @@ export function ApartDetail({ data, apartName }: Props) {
         floorAreaRatio={data.floorAreaRatio}
         buildingCoverageRatio={data.buildingCoverageRatio}
       />
-      <TransactionChart items={data.tradeItems} />
+      <AmountChart items={data.tradeItems} />
+      <CountChart items={data.tradeItems} />
       <TransactionHistory items={data.tradeItems} />
     </div>
   );
