@@ -41,7 +41,7 @@ export function AmountChart({ items }: Props) {
   }, []);
 
   const margin = { top: 20, right: 20, bottom: 30, left: 60 };
-  const height = windowWidth <= 640 ? 250 : 400;
+  const height = windowWidth <= 640 ? 200 : 300;
 
   const {
     isLoading,
@@ -84,7 +84,7 @@ export function AmountChart({ items }: Props) {
       </div>
       <div className="relative w-full">
         <div
-          className="relative h-[250px] sm:h-[400px]"
+          className="relative h-[200px] sm:h-[300px]"
           style={{
             width: '100%',
           }}

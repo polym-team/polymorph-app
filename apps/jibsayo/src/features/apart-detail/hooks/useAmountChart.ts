@@ -12,6 +12,7 @@ import {
   useState,
 } from 'react';
 
+import { CHART_COLORS } from '../consts/colors';
 import { calculatePyeong } from '../services/calculator';
 
 export interface ChartData {
@@ -101,7 +102,7 @@ export function useAmountChart({
   // margin 설정
   const margin = {
     top: 20,
-    right: 20,
+    right: 0,
     bottom: 30, // 범례를 HTML로 분리하므로 bottom margin 줄임
     left: 35,
   };
@@ -234,8 +235,9 @@ export function useAmountChart({
     const sortedPyeongs = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
 
     return d3
-      .scaleOrdinal(d3.schemeCategory10)
-      .domain(sortedPyeongs.map(p => p.toString()));
+      .scaleOrdinal<string, string>()
+      .domain(sortedPyeongs.map(p => p.toString()))
+      .range(CHART_COLORS);
   }, [items, period]);
 
   // 데이터가 변경될 때마다 로딩 상태 초기화

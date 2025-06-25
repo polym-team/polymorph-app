@@ -41,7 +41,7 @@ export function CountChart({ items }: Props) {
   }, []);
 
   const margin = { top: 20, right: 20, bottom: 30, left: 60 };
-  const height = windowWidth <= 640 ? 250 : 400;
+  const height = 200;
 
   const { isLoading } = useCountChart({
     items,
@@ -78,7 +78,7 @@ export function CountChart({ items }: Props) {
       </div>
       <div className="relative w-full">
         <div
-          className="relative h-[250px] sm:h-[400px]"
+          className="relative h-[200px]"
           style={{
             width: '100%',
           }}

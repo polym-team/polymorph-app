@@ -13,6 +13,7 @@ import {
   useState,
 } from 'react';
 
+import { CHART_COLORS } from '../consts/colors';
 import { calculatePyeong } from '../services/calculator';
 
 export interface CountChartData {
@@ -20,6 +21,7 @@ export interface CountChartData {
   count: number;
   size: number; // 실제 면적 값 (㎡)
   sizes?: number[];
+  pyeong: number;
 }
 
 export interface LegendItem {
@@ -98,29 +100,6 @@ export function useCountChart({
     left: 35,
   };
 
-  // 색상 스케일 생성
-  const colorScale = useMemo(() => {
-    if (!items.length) return d3.scaleOrdinal(d3.schemeCategory10);
-
-    // 기간 필터링
-    const now = new Date();
-    const filteredItems =
-      period === 0
-        ? items
-        : items.filter(item => {
-            const tradeDate = new Date(item.tradeDate);
-            return tradeDate >= subMonths(now, period);
-          });
-
-    // 평형별로 그룹화
-    const sizeGroups = d3.group(filteredItems, d => calculatePyeong(d.size));
-    const sortedPyeongs = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
-
-    return d3
-      .scaleOrdinal(d3.schemeCategory10)
-      .domain(sortedPyeongs.map(p => p.toString()));
-  }, [items, period]);
-
   // 차트 데이터 계산
   const chartData = useMemo(() => {
     if (!items.length) return [];
@@ -135,35 +114,34 @@ export function useCountChart({
             return tradeDate >= subMonths(now, period);
           });
 
-    // 평형별로 그룹화
-    const sizeGroups = d3.group(filteredItems, d => calculatePyeong(d.size));
+    // 월별로 그룹화
+    const monthlyData = d3.group(filteredItems, d =>
+      d3.timeMonth(new Date(d.tradeDate))
+    );
+
     const result: CountChartData[] = [];
 
-    sizeGroups.forEach((items, pyeong) => {
-      // 거래가 있는 데이터만 필터링
-      const validItems = items.filter(item => item.tradeAmount > 0);
+    // 각 월별로 평형대별 거래건수를 분리하여 데이터 생성
+    Array.from(monthlyData, ([date, items]) => {
+      if (items.length > 0) {
+        // 평형대별로 그룹화
+        const pyeongGroups = d3.group(items, d => calculatePyeong(d.size));
 
-      // 월별로 그룹화
-      const monthlyData = d3.group(validItems, d =>
-        d3.timeMonth(new Date(d.tradeDate))
-      );
+        // 평형대별로 데이터 생성
+        Array.from(pyeongGroups, ([pyeong, pyeongItems]) => {
+          const allSizes = Array.from(
+            new Set(pyeongItems.map(item => item.size))
+          ).sort((a, b) => a - b);
 
-      // 해당 평형의 제곱미터 값들을 수집
-      const sizes = Array.from(new Set(validItems.map(item => item.size))).sort(
-        (a, b) => a - b
-      );
-
-      // 거래가 있는 월만 데이터 추가
-      Array.from(monthlyData, ([date, items]) => {
-        if (items.length > 0) {
           result.push({
             date: date,
-            count: items.length,
-            size: sizes[0], // 대표 면적 값 (첫 번째 값 사용)
-            sizes: sizes,
+            count: pyeongItems.length,
+            size: allSizes[0], // 대표 면적 값 (첫 번째 값 사용)
+            sizes: allSizes,
+            pyeong: pyeong, // 평형 정보 추가
           });
-        }
-      });
+        });
+      }
     });
 
     // 날짜순으로 정렬
@@ -173,6 +151,21 @@ export function useCountChart({
   // 차트 영역 크기 계산
   const chartWidth = Math.max(containerWidth - margin.left - margin.right, 0);
   const chartHeight = containerHeight - margin.top - margin.bottom;
+
+  // 색상 스케일 생성
+  const colorScale = useMemo(() => {
+    if (!chartData.length) return d3.scaleOrdinal(d3.schemeCategory10);
+
+    // chartData에서 실제 표시되는 평형만 추출
+    const actualPyeongs = Array.from(
+      new Set(chartData.map(d => calculatePyeong(d.size)))
+    ).sort((a, b) => a - b);
+
+    return d3
+      .scaleOrdinal<string, string>()
+      .domain(actualPyeongs.map(p => p.toString()))
+      .range(CHART_COLORS);
+  }, [chartData]);
 
   // 스케일 계산
   const xScale = useMemo(() => {
@@ -198,7 +191,7 @@ export function useCountChart({
     return d3
       .scalePoint()
       .domain(uniqueDates)
-      .range([0, chartWidth])
+      .range([10, chartWidth - 10])
       .padding(0.1)
       .align(0);
   }, [chartData, chartWidth]);
@@ -208,7 +201,18 @@ export function useCountChart({
       return d3.scaleLinear().domain([0, 10]).nice().range([chartHeight, 0]);
     }
 
-    const maxCount = d3.max(chartData, d => d.count) as number;
+    // 월별로 그룹화하여 각 월의 총 거래건수 계산
+    const monthlyGroups = d3.group(
+      chartData,
+      d => `${d.date.getFullYear()}-${d.date.getMonth()}`
+    );
+
+    // 각 월의 총 거래건수 계산
+    const monthlyTotals = Array.from(monthlyGroups, ([monthKey, monthData]) => {
+      return monthData.reduce((sum, data) => sum + data.count, 0);
+    });
+
+    const maxCount = d3.max(monthlyTotals) as number;
     return d3
       .scaleLinear()
       .domain([0, maxCount])
@@ -229,7 +233,9 @@ export function useCountChart({
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
-    const containerWidth = svgRef.current.clientWidth;
+    // SVG의 실제 너비를 가져오기 위해 부모 요소의 너비 사용
+    const parentElement = svgRef.current.parentElement;
+    const containerWidth = parentElement ? parentElement.clientWidth : 1024;
     const margin = { ...initialMargin };
 
     // SVG 크기 업데이트
@@ -242,6 +248,35 @@ export function useCountChart({
     // 차트 영역 설정
     const chartWidth = containerWidth - margin.left - margin.right;
     const chartHeight = containerHeight - margin.top - margin.bottom;
+
+    // xScale을 현재 chartWidth로 다시 계산
+    const currentXScale = (() => {
+      if (!chartData.length) {
+        return d3.scalePoint().domain([]).range([0, chartWidth]);
+      }
+
+      // 거래가 있는 데이터만 필터링하고 중복 제거
+      const uniqueDates = Array.from(
+        new Set(
+          chartData
+            .filter(d => d.count > 0)
+            .map(d => `${d.date.getFullYear()}-${d.date.getMonth()}`)
+        )
+      )
+        .map(dateStr => {
+          const [year, month] = dateStr.split('-').map(Number);
+          return new Date(year, month);
+        })
+        .sort((a, b) => a.getTime() - b.getTime())
+        .map(date => `${date.getFullYear()}-${date.getMonth()}`);
+
+      return d3
+        .scalePoint()
+        .domain(uniqueDates)
+        .range([10, chartWidth - 10])
+        .padding(0.1)
+        .align(0);
+    })();
 
     const g = svg
       .append('g')
@@ -266,7 +301,7 @@ export function useCountChart({
       .attr('opacity', 0.1)
       .call(
         d3
-          .axisBottom(xScale)
+          .axisBottom(currentXScale)
           .ticks(5)
           .tickSize(-chartHeight)
           .tickFormat(() => '')
@@ -274,32 +309,34 @@ export function useCountChart({
       .style('stroke-dasharray', '2,2');
 
     // X축 생성
-    const xAxis = d3.axisBottom(xScale).tickFormat((domainValue: string) => {
-      const [year, month] = domainValue.split('-').map(Number);
-      // 해당 년도의 첫 번째 거래 데이터인지 확인
-      const yearData = chartData
-        .filter(d => d.date.getFullYear() === year && d.count > 0)
-        .sort((a, b) => a.date.getTime() - b.date.getTime());
+    const xAxis = d3
+      .axisBottom(currentXScale)
+      .tickFormat((domainValue: string) => {
+        const [year, month] = domainValue.split('-').map(Number);
+        // 해당 년도의 첫 번째 거래 데이터인지 확인
+        const yearData = chartData
+          .filter(d => d.date.getFullYear() === year && d.count > 0)
+          .sort((a, b) => a.date.getTime() - b.date.getTime());
 
-      if (yearData.length === 0) return '';
+        if (yearData.length === 0) return '';
 
-      const firstTradeMonth = yearData[0].date.getMonth();
+        const firstTradeMonth = yearData[0].date.getMonth();
 
-      // 윈도우 너비가 640px 이하일 때
-      if (windowWidth <= 640) {
-        // 가장 최근 년도는 항상 표시
-        const lastYear = chartData[chartData.length - 1].date.getFullYear();
-        if (year === lastYear) {
-          return month === firstTradeMonth ? `${year}` : '';
+        // 윈도우 너비가 640px 이하일 때
+        if (windowWidth <= 640) {
+          // 가장 최근 년도는 항상 표시
+          const lastYear = chartData[chartData.length - 1].date.getFullYear();
+          if (year === lastYear) {
+            return month === firstTradeMonth ? `${year}` : '';
+          }
+          // 그 외는 가장 최근 년도와의 차이가 짝수인 년도만 표시
+          return month === firstTradeMonth && (lastYear - year) % 2 === 0
+            ? `${year}`
+            : '';
         }
-        // 그 외는 가장 최근 년도와의 차이가 짝수인 년도만 표시
-        return month === firstTradeMonth && (lastYear - year) % 2 === 0
-          ? `${year}`
-          : '';
-      }
 
-      return month === firstTradeMonth ? `${year}` : '';
-    });
+        return month === firstTradeMonth ? `${year}` : '';
+      });
 
     g.append('g')
       .attr('transform', `translate(0,${chartHeight})`)
@@ -307,31 +344,11 @@ export function useCountChart({
       .call(xAxis)
       .attr('color', '#475569')
       .selectAll('.tick')
-      .each(function (d) {
-        const [year, month] = String(d).split('-').map(Number);
-        // 해당 년도의 첫 번째 거래 데이터인지 확인
-        const yearData = chartData
-          .filter(d => d.date.getFullYear() === year && d.count > 0)
-          .sort((a, b) => a.date.getTime() - b.date.getTime());
-
-        if (yearData.length === 0) {
+      .each(function (d: any) {
+        const value = +d;
+        // y축 맨 아래 틱(0값) 제거
+        if (value === 0) {
           d3.select(this).select('line').remove();
-          return;
-        }
-
-        const firstTradeMonth = yearData[0].date.getMonth();
-        if (month !== firstTradeMonth) {
-          d3.select(this).select('line').remove();
-        }
-
-        // 윈도우 너비가 640px 이하일 때 라벨 회전
-        if (windowWidth <= 640) {
-          d3.select(this)
-            .select('text')
-            .attr('transform', 'rotate(-45)')
-            .attr('text-anchor', 'end')
-            .attr('dx', '-.8em')
-            .attr('dy', '.15em');
         }
       });
 
@@ -344,18 +361,39 @@ export function useCountChart({
         return value === 0 ? '' : `${value}건`;
       });
 
-    g.append('g').attr('class', 'y-axis').call(yAxis).attr('color', '#475569');
+    g.append('g')
+      .attr('class', 'y-axis')
+      .call(yAxis)
+      .attr('color', '#475569')
+      .selectAll('.tick')
+      .each(function (d: any) {
+        const value = +d;
+        // y축 맨 아래 틱(0값) 제거
+        if (value === 0) {
+          d3.select(this).select('line').remove();
+        }
+      });
+
+    // x축 첫 번째 틱과 y축 사이의 빈틈을 메우는 가짜 선 추가
+    const firstTickX =
+      currentXScale.domain().length > 0
+        ? currentXScale(currentXScale.domain()[0])!
+        : 0;
+    if (firstTickX > 0) {
+      g.append('line')
+        .attr('x1', 0)
+        .attr('x2', firstTickX)
+        .attr('y1', chartHeight)
+        .attr('y2', chartHeight)
+        .attr('stroke', '#475569')
+        .attr('stroke-width', 1);
+    }
 
     if (chartData.length) {
       const chartContainer = g
         .append('g')
         .attr('class', 'chart-container')
         .style('opacity', 0);
-
-      // 평형별로 데이터 그룹화
-      const sizeGroups = d3.group(chartData, d =>
-        calculatePyeong(d.size)
-      ) as Map<number, CountChartData[]>;
 
       // 바 너비 동적 계산
       const totalBars = chartData.filter(d => d.count > 0).length;
@@ -373,32 +411,48 @@ export function useCountChart({
             )
           : maxBarWidth;
 
-      // 각 평형별로 바 생성
-      sizeGroups.forEach((data, pyeong) => {
-        // 해당 평형의 데이터만 필터링하고 날짜순으로 정렬
-        const sizeData = data
-          .filter(d => d.count > 0)
-          .sort((a, b) => a.date.getTime() - b.date.getTime());
+      // 월별로 데이터 그룹화하여 스택 바 생성
+      const monthlyGroups = d3.group(
+        chartData,
+        d => `${d.date.getFullYear()}-${d.date.getMonth()}`
+      );
 
-        // 바 그리기
-        chartContainer
-          .selectAll(`.bar-${pyeong}`)
-          .data(sizeData)
-          .enter()
-          .append('rect')
-          .attr('class', `bar-${pyeong}`)
-          .attr(
-            'x',
-            d =>
-              xScale(`${d.date.getFullYear()}-${d.date.getMonth()}`)! -
-              dynamicBarWidth / 2
-          )
-          .attr('y', d => yScale(d.count))
-          .attr('width', dynamicBarWidth)
-          .attr('height', d => chartHeight - yScale(d.count))
-          .attr('fill', colorScale(pyeong.toString()))
-          .attr('opacity', 0.8)
-          .style('cursor', 'pointer');
+      // 각 월별로 스택 바 생성
+      monthlyGroups.forEach((monthData, monthKey) => {
+        // 평형대별로 정렬
+        const sortedData = monthData
+          .filter(d => d.count > 0)
+          .sort((a, b) => a.pyeong - b.pyeong);
+
+        if (sortedData.length === 0) return;
+
+        // 스택 계산
+        let currentY = 0;
+        const [year, month] = monthKey.split('-').map(Number);
+        const date = new Date(year, month);
+
+        // 각 평형대별로 바 세그먼트 생성
+        sortedData.forEach((data, index) => {
+          const segmentHeight =
+            yScale(currentY) - yScale(currentY + data.count);
+
+          chartContainer
+            .append('rect')
+            .attr('class', `bar-segment-${data.pyeong}`)
+            .attr(
+              'x',
+              currentXScale(`${date.getFullYear()}-${date.getMonth()}`)! -
+                dynamicBarWidth / 2
+            )
+            .attr('y', yScale(currentY + data.count))
+            .attr('width', dynamicBarWidth)
+            .attr('height', segmentHeight)
+            .attr('fill', colorScale(data.pyeong.toString()))
+            .attr('opacity', 0.8)
+            .style('cursor', 'pointer');
+
+          currentY += data.count;
+        });
       });
 
       // fade-in 애니메이션
@@ -465,8 +519,8 @@ export function useCountChart({
 
         // 툴팁 업데이트 함수
         const updateTooltip = (x: number) => {
-          const domain = xScale.domain();
-          const step = xScale.step();
+          const domain = currentXScale.domain();
+          const step = currentXScale.step();
           const index = Math.min(
             Math.max(0, Math.round(x / step)),
             domain.length - 1
@@ -485,7 +539,7 @@ export function useCountChart({
 
           if (monthData.length > 0) {
             // 세로선 표시
-            const lineX = xScale(dateStr)!;
+            const lineX = currentXScale(dateStr)!;
             verticalLine
               .attr('x1', lineX)
               .attr('x2', lineX)
@@ -493,13 +547,21 @@ export function useCountChart({
               .attr('y2', chartHeight)
               .style('opacity', 1);
 
+            // 평형대별로 정렬
+            const sortedData = monthData.sort((a, b) => a.pyeong - b.pyeong);
+
+            const totalCount = sortedData.reduce(
+              (sum, data) => sum + data.count,
+              0
+            );
             const tooltipContent = `
               <div class="space-y-1">
                 <div>${d3.timeFormat('%Y년 %m월')(date)}</div>
-                ${monthData
+                <div class="font-semibold">총 ${totalCount}건</div>
+                ${sortedData
                   .map(
                     data => `
-                  <div>· ${calculatePyeong(data.size)}평 ${data.count}건</div>
+                  <div>· ${data.pyeong}평 ${data.count}건</div>
                 `
                   )
                   .join('')}
@@ -572,8 +634,8 @@ export function useCountChart({
 
         // 툴팁 업데이트 함수
         const updateTooltip = (x: number) => {
-          const domain = xScale.domain();
-          const step = xScale.step();
+          const domain = currentXScale.domain();
+          const step = currentXScale.step();
           const index = Math.min(
             Math.max(0, Math.round(x / step)),
             domain.length - 1
