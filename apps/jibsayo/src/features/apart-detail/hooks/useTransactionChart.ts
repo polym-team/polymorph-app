@@ -22,6 +22,12 @@ export interface ChartData {
   sizes?: number[];
 }
 
+export interface LegendItem {
+  pyeong: number;
+  color: string;
+  sizes: number[];
+}
+
 interface ChartDataResult {
   result: ChartData[];
   allSizes: number[];
@@ -93,7 +99,7 @@ export function useTransactionChart({
   const margin = {
     top: 20,
     right: 20,
-    bottom: 70,
+    bottom: 30, // 범례를 HTML로 분리하므로 bottom margin 줄임
     left: 35,
   };
 
@@ -204,6 +210,36 @@ export function useTransactionChart({
     const timer = setTimeout(() => setIsLoading(false), 300);
     return () => clearTimeout(timer);
   }, [items]);
+
+  // 범례 데이터 계산
+  const legendData = useMemo(() => {
+    if (!chartData.length) return [];
+
+    // 평형별로 데이터 그룹화
+    const sizeGroups = d3.group(chartData, d => calculatePyeong(d.size)) as Map<
+      number,
+      ChartData[]
+    >;
+
+    // 색상 스케일 생성
+    const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+    // 평수 기준으로 오름차순 정렬
+    const sortedPyeongs = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
+
+    return sortedPyeongs.map(pyeong => {
+      const data = sizeGroups.get(pyeong)!;
+      const sizes = Array.from(new Set(data.map(d => d.size))).sort(
+        (a, b) => a - b
+      );
+
+      return {
+        pyeong,
+        color: colorScale(pyeong.toString()),
+        sizes,
+      };
+    });
+  }, [chartData]);
 
   // D3 차트 렌더링
   useEffect(() => {
@@ -374,70 +410,6 @@ export function useTransactionChart({
           .attr('fill', colorScale(pyeong.toString()))
           .attr('stroke', 'white')
           .attr('stroke-width', 1);
-      });
-
-      // 범례 간격 계산 (전체 너비를 범례 수로 나누어 균등 분배)
-      const legendItemWidth = windowWidth <= 640 ? 45 : 100; // 모바일에서는 간격을 절반으로 줄임
-      const legendItemHeight = windowWidth <= 640 ? 20 : 25; // 모바일에서는 더 작게
-      const totalLegendWidth = legendItemWidth * sizeGroups.size;
-      const chartWidth = containerWidth - margin.left - margin.right;
-      const legendStartX = margin.left;
-
-      // 범례 표시 (모바일과 데스크톱 모두)
-      const legend = svg
-        .append('g')
-        .attr('class', 'legend')
-        .attr(
-          'transform',
-          `translate(${legendStartX}, ${containerHeight - margin.bottom + (windowWidth <= 640 ? 50 : 40)})`
-        );
-
-      // 범례 아이템들을 담을 그룹 생성 (중앙 정렬용)
-      const legendItemsGroup = legend
-        .append('g')
-        .attr(
-          'transform',
-          `translate(${(chartWidth - totalLegendWidth) / 2}, 0)`
-        );
-
-      // 평수 기준으로 오름차순 정렬
-      const sortedPyeongs = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
-
-      sortedPyeongs.forEach((pyeong, index) => {
-        const data = sizeGroups.get(pyeong)!;
-        const sizes = Array.from(new Set(data.map(d => d.size))).sort(
-          (a, b) => a - b
-        );
-
-        // 모든 범례를 한 줄에 배치
-        const row = 0;
-        const col = index;
-
-        const legendItem = legendItemsGroup
-          .append('g')
-          .attr(
-            'transform',
-            `translate(${col * legendItemWidth}, ${row * legendItemHeight})`
-          );
-
-        legendItem
-          .append('rect')
-          .attr('width', windowWidth <= 640 ? 8 : 10) // 모바일에서 사각형도 더 작게
-          .attr('height', windowWidth <= 640 ? 8 : 10)
-          .attr('fill', colorScale(pyeong.toString()));
-
-        // 모바일에서는 텍스트를 더 간단하게
-        const legendText =
-          windowWidth <= 640
-            ? `${pyeong}평`
-            : `${pyeong}평 (${sizes.map(s => `${s}㎡`).join(', ')})`;
-
-        legendItem
-          .append('text')
-          .attr('x', windowWidth <= 640 ? 12 : 15) // 모바일에서 텍스트 간격도 줄임
-          .attr('y', windowWidth <= 640 ? 8 : 10) // 모바일에서 세로 위치 조정
-          .attr('font-size', windowWidth <= 640 ? '10px' : '12px') // 모바일에서 폰트 크기도 줄임
-          .text(legendText);
       });
 
       // fade-in 애니메이션
@@ -689,5 +661,6 @@ export function useTransactionChart({
 
   return {
     isLoading,
+    legendData,
   };
 }

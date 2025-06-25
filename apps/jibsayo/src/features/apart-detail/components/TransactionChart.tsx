@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Button, Card, Typography } from '@package/ui';
 
-import { useTransactionChart } from '../hooks/useTransactionChart';
+import { LegendItem, useTransactionChart } from '../hooks/useTransactionChart';
 
 interface Props {
   items: ApartDetailResponse['tradeItems'];
@@ -41,7 +41,7 @@ export function TransactionChart({ items }: Props) {
   const margin = { top: 20, right: 20, bottom: 30, left: 60 };
   const height = windowWidth <= 640 ? 250 : 400;
 
-  const { isLoading } = useTransactionChart({
+  const { isLoading, legendData } = useTransactionChart({
     items,
     svgRef,
     tooltipRef,
@@ -95,6 +95,28 @@ export function TransactionChart({ items }: Props) {
             }}
           />
         </div>
+
+        {/* HTML 범례 */}
+        {legendData.length > 0 && (
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {legendData.map((item: LegendItem) => (
+              <div
+                key={item.pyeong}
+                className="flex items-center gap-2 rounded-md bg-gray-50 px-2 py-1"
+              >
+                <div
+                  className="h-3 w-3 rounded-sm"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span className="text-sm text-gray-700">
+                  {windowWidth <= 640
+                    ? `${item.pyeong}평`
+                    : `${item.pyeong}평 (${item.sizes.map(s => `${s}㎡`).join(', ')})`}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </Card>
   );
