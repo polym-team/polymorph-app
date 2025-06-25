@@ -97,7 +97,7 @@ export function useCountChart({
     top: 20,
     right: 20,
     bottom: 30,
-    left: 35,
+    left: -10,
   };
 
   // 차트 데이터 계산

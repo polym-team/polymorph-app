@@ -40,7 +40,7 @@ export function CountChart({ items }: Props) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const margin = { top: 20, right: 20, bottom: 30, left: 60 };
+  const margin = { top: 20, right: 0, bottom: 30, left: 35 };
   const height = 200;
 
   const { isLoading } = useCountChart({
