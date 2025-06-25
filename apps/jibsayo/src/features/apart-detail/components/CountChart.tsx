@@ -78,9 +78,8 @@ export function CountChart({ items }: Props) {
       </div>
       <div className="relative w-full">
         <div
-          className="relative"
+          className="relative h-[250px] sm:h-[400px]"
           style={{
-            height: windowWidth <= 640 ? '250px' : '400px',
             width: '100%',
           }}
         >

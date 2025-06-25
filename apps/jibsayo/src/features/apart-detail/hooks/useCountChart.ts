@@ -7,6 +7,7 @@ import { subMonths } from 'date-fns';
 import {
   MutableRefObject,
   RefObject,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -222,13 +223,16 @@ export function useCountChart({
     return () => clearTimeout(timer);
   }, [items]);
 
-  // D3 차트 렌더링
-  useEffect(() => {
-    if (!svgRef.current || isLoading) return;
+  const updateChart = useCallback(() => {
+    if (!svgRef.current || !chartData.length) return;
 
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
+    const containerWidth = svgRef.current.clientWidth;
+    const margin = { ...initialMargin };
+
+    // SVG 크기 업데이트
     svg
       .style('width', '100%')
       .style('height', '100%')
@@ -236,6 +240,9 @@ export function useCountChart({
       .attr('preserveAspectRatio', 'xMinYMid meet');
 
     // 차트 영역 설정
+    const chartWidth = containerWidth - margin.left - margin.right;
+    const chartHeight = containerHeight - margin.top - margin.bottom;
+
     const g = svg
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
@@ -350,6 +357,22 @@ export function useCountChart({
         calculatePyeong(d.size)
       ) as Map<number, CountChartData[]>;
 
+      // 바 너비 동적 계산
+      const totalBars = chartData.filter(d => d.count > 0).length;
+      const availableWidth = chartWidth;
+      const maxBarWidth = 20; // 최대 바 너비
+      const minBarWidth = 4; // 최소 바 너비
+      const barSpacing = 2; // 바 사이 간격
+
+      // 전체 기간일 때는 바 너비를 줄임
+      const dynamicBarWidth =
+        period === 0
+          ? Math.max(
+              minBarWidth,
+              Math.min(maxBarWidth, availableWidth / totalBars - barSpacing)
+            )
+          : maxBarWidth;
+
       // 각 평형별로 바 생성
       sizeGroups.forEach((data, pyeong) => {
         // 해당 평형의 데이터만 필터링하고 날짜순으로 정렬
@@ -366,10 +389,12 @@ export function useCountChart({
           .attr('class', `bar-${pyeong}`)
           .attr(
             'x',
-            d => xScale(`${d.date.getFullYear()}-${d.date.getMonth()}`)! - 10
+            d =>
+              xScale(`${d.date.getFullYear()}-${d.date.getMonth()}`)! -
+              dynamicBarWidth / 2
           )
           .attr('y', d => yScale(d.count))
-          .attr('width', 20)
+          .attr('width', dynamicBarWidth)
           .attr('height', d => chartHeight - yScale(d.count))
           .attr('fill', colorScale(pyeong.toString()))
           .attr('opacity', 0.8)
@@ -606,6 +631,12 @@ export function useCountChart({
     windowWidth,
     colorScale,
   ]);
+
+  // D3 차트 렌더링
+  useEffect(() => {
+    if (!svgRef.current || isLoading) return;
+    updateChart();
+  }, [chartData, isLoading, updateChart]);
 
   return {
     isLoading,
