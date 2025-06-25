@@ -113,17 +113,19 @@ const columns: ColumnDef<TransactionItem>[] = [
       if (!priceChange || !Number(priceChange.change)) return '-';
 
       return (
-        <div
-          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-            priceChange.isUp
-              ? 'bg-red-100 text-red-700'
-              : priceChange.isDown
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-gray-100 text-gray-700'
-          }`}
-        >
-          {priceChange.isUp ? '↗' : '↘'}{' '}
-          {Math.abs(Number(priceChange.change))}%
+        <div className="flex items-center gap-x-1">
+          <div
+            className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+              priceChange.isUp
+                ? 'bg-red-100 text-red-700'
+                : priceChange.isDown
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-gray-100 text-gray-700'
+            }`}
+          >
+            {priceChange.isUp ? '↗' : '↘'}{' '}
+            {Math.abs(Number(priceChange.change))}%
+          </div>
         </div>
       );
     },

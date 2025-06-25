@@ -35,10 +35,18 @@ export function useTransactionHistory(
             .find(prevItem => Math.abs(prevItem.size - item.size) <= 5); // 5㎡ 오차 허용
 
           if (prevSimilarItem) {
-            priceChange = calculatePriceChange(
+            const changeInfo = calculatePriceChange(
               item.tradeAmount,
               prevSimilarItem.tradeAmount
             );
+
+            if (changeInfo) {
+              priceChange = {
+                ...changeInfo,
+                previousPrice: prevSimilarItem.tradeAmount,
+                previousDate: prevSimilarItem.tradeDate,
+              };
+            }
           }
 
           return {

@@ -14,5 +14,7 @@ export interface TransactionItem {
     change: string;
     isUp: boolean;
     isDown: boolean;
+    previousPrice?: number;
+    previousDate?: string;
   } | null;
 }
