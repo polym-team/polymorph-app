@@ -2,33 +2,6 @@ import { AdminFirestoreClient } from '@polymorph/firebase';
 
 import { PushToken } from './types';
 
-// 환경변수 디버깅
-console.log('Firebase 환경변수 확인:');
-console.log(
-  'FIREBASE_PROJECT_ID:',
-  process.env.FIREBASE_PROJECT_ID ? '설정됨' : '설정안됨'
-);
-console.log(
-  'FIREBASE_PRIVATE_KEY_ID:',
-  process.env.FIREBASE_PRIVATE_KEY_ID ? '설정됨' : '설정안됨'
-);
-console.log(
-  'FIREBASE_PRIVATE_KEY:',
-  process.env.FIREBASE_PRIVATE_KEY ? '설정됨' : '설정안됨'
-);
-console.log(
-  'FIREBASE_CLIENT_EMAIL:',
-  process.env.FIREBASE_CLIENT_EMAIL ? '설정됨' : '설정안됨'
-);
-console.log(
-  'FIREBASE_CLIENT_ID:',
-  process.env.FIREBASE_CLIENT_ID ? '설정됨' : '설정안됨'
-);
-console.log(
-  'FIREBASE_CLIENT_CERT_URL:',
-  process.env.FIREBASE_CLIENT_CERT_URL ? '설정됨' : '설정안됨'
-);
-
 // Firestore Admin 클라이언트 초기화 (서버 사이드용)
 const firestoreClient = new AdminFirestoreClient({
   collectionName: 'push-token',

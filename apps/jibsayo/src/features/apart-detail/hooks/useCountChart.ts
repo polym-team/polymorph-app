@@ -212,7 +212,7 @@ export function useCountChart({
       .scalePoint()
       .domain(uniqueDates)
       .range([10, chartWidth - 10])
-      .padding(0.1)
+      .padding(0.5)
       .align(0);
   }, [chartData, chartWidth]);
 
@@ -358,7 +358,7 @@ export function useCountChart({
         .scalePoint()
         .domain(uniqueDates)
         .range([10, chartWidth - 10])
-        .padding(0.1)
+        .padding(0.5)
         .align(0);
     })();
 
@@ -484,12 +484,12 @@ export function useCountChart({
       const availableWidth = chartWidth;
       const maxBarWidth = windowWidth <= 640 ? 8 : 20; // 모바일에서는 얇게
       const minBarWidth = 2; // 최소 바 너비
-      const barSpacing = windowWidth <= 640 ? 1 : 2; // 모바일에서는 간격 줄임
 
-      // 10년 기간이므로 바 너비를 동적으로 계산
+      // xScale의 step을 사용하여 바 너비 계산 (간격은 xScale의 padding으로 처리)
+      const step = currentXScale.step();
       const dynamicBarWidth = Math.max(
         minBarWidth,
-        Math.min(maxBarWidth, availableWidth / totalBars - barSpacing)
+        Math.min(maxBarWidth, step * 0.8) // step의 80%를 바 너비로 사용
       );
 
       // 월별로 데이터 그룹화하여 스택 바 생성
