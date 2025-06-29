@@ -1,236 +1,411 @@
-import cheerio, { Cheerio } from 'cheerio';
+import cheerio from 'cheerio';
 import pLimit from 'p-limit';
 
 import { obfuscateKorean } from '../utils';
 
-// 동시 요청 수 제한 (서버 부하 방지)
-const limit = pLimit(3);
+// 성능 최적화를 위한 상수 정의
+const CONCURRENT_REQUESTS = 5; // 동시 요청 수 증가
+const BATCH_SIZE = 5; // 배치 크기 증가
+const REQUEST_TIMEOUT = 10000; // 타임아웃 10초
+const MAX_RETRIES = 3; // 최대 재시도 횟수
 
-const calculateIsTradeListTable = (table: Cheerio<any>): boolean =>
-  !!table.find(`td:contains("단지명")`).text();
+// 동시 요청 수 제한
+const limit = pLimit(CONCURRENT_REQUESTS);
 
-const splitCellText = (text: string): string[] =>
-  text.replace(/^\s+|\s+$/gm, '').split('\n');
+// 정규표현식을 미리 컴파일하여 성능 최적화
+const REGEXES = {
+  whitespace: /^\s+|\s+$/gm,
+  numbers: /[^0-9]/g,
+  year: /(\d{4})년/,
+  households: /(\d+)세대/,
+  size: /(\d+(?:\.\d+)?)㎡/,
+  floor: /(\d+)층/,
+  newRecord: /\(신\)/,
+  amount: /(\d+)억?\s*(\d+)?천?\s*(\d+)?/,
+  date: /(\d{2})\.(\d{2})\.(\d{2})/,
+  dong: /\S+동/,
+} as const;
 
-const formatToNumber = (str: string | undefined): number =>
-  str ? Number(str.replace(/[^0-9]/g, '')) : 0;
+// 타입 정의
+interface ApartmentTransaction {
+  apartId: string;
+  apartName: string;
+  buildedYear: number | null;
+  householdsNumber: number | null;
+  address: string;
+  tradeDate: string;
+  size: number | null;
+  floor: number | null;
+  isNewRecord: boolean;
+  tradeAmount: number;
+  maxTradeAmount: number;
+}
 
-const formatToAmount = (amountText: string): number => {
-  let amount: number = 0;
-  let restText: string = amountText;
+interface ParsedPageResult {
+  page: number;
+  data: ApartmentTransaction[];
+  hasData: boolean;
+}
 
-  if (amountText.includes('억')) {
-    amount += Number(amountText.split('억')[0]) * 100_000_000;
-    restText = amountText.split('억')[1];
-  }
+interface CrawlResult {
+  count: number;
+  list: ApartmentTransaction[];
+  totalPages: number;
+  processingTime: number;
+}
 
-  if (amountText.includes('천')) {
-    amount += Number(restText.split('천')[0]) * 10_000_000;
-    restText = restText.split('천')[1];
-  }
+// 메모리 효율적인 문자열 처리
+const optimizedSplitCellText = (text: string): string[] => {
+  return text.replace(REGEXES.whitespace, '').split('\n').filter(Boolean);
+};
 
-  if (restText) {
-    amount += Number(restText) * 10_000;
-  }
+// 숫자 추출 최적화
+const extractNumber = (str: string | undefined): number => {
+  if (!str) return 0;
+  const match = str.match(/\d+/);
+  return match ? parseInt(match[0], 10) : 0;
+};
+
+// 금액 파싱 최적화
+const parseAmount = (amountText: string): number => {
+  if (!amountText) return 0;
+
+  const cleanText = amountText.replace(REGEXES.newRecord, '').trim();
+  const match = cleanText.match(REGEXES.amount);
+
+  if (!match) return 0;
+
+  let amount = 0;
+  const [, eok, cheon, man] = match;
+
+  if (eok) amount += parseInt(eok, 10) * 100_000_000;
+  if (cheon) amount += parseInt(cheon, 10) * 10_000_000;
+  if (man) amount += parseInt(man, 10) * 10_000;
 
   return amount;
 };
 
-const parseFirstCellData = (
-  cell: Cheerio<any>
+// 날짜 파싱 최적화
+const parseDate = (dateText: string): string => {
+  const match = dateText.match(REGEXES.date);
+  if (!match) return '';
+
+  const [, year, month, day] = match;
+  return `20${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+};
+
+// 첫 번째 셀 데이터 파싱 최적화
+const parseFirstCell = (
+  cellText: string
 ): {
   apartName: string;
   buildedYear: number | null;
   householdsNumber: number | null;
   address: string;
 } => {
-  const texts = splitCellText(cell.text());
+  const lines = optimizedSplitCellText(cellText);
+  const apartName = lines[0] || '';
 
-  const buildedYearText = texts.find(text => text.includes('년'));
-  const householdsNumberText = texts.find(text => text.includes('세대'));
-  const addressText = texts.find((text, i) => i > 0 && text.includes('동'));
+  let buildedYear: number | null = null;
+  let householdsNumber: number | null = null;
+  let address = '';
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (!buildedYear) {
+      const yearMatch = line.match(REGEXES.year);
+      if (yearMatch) {
+        buildedYear = parseInt(yearMatch[1], 10);
+        continue;
+      }
+    }
+
+    if (!householdsNumber) {
+      const householdsMatch = line.match(REGEXES.households);
+      if (householdsMatch) {
+        householdsNumber = parseInt(householdsMatch[1], 10);
+        continue;
+      }
+    }
+
+    if (!address) {
+      const dongMatch = line.match(REGEXES.dong);
+      if (dongMatch) {
+        address = line;
+        break;
+      }
+    }
+  }
 
   return {
-    apartName: texts[0],
-    buildedYear: buildedYearText
-      ? formatToNumber(buildedYearText.split(' ')[0])
-      : null,
-    householdsNumber: householdsNumberText
-      ? formatToNumber(householdsNumberText.split(' / ')[0])
-      : null,
-    address: addressText ?? '',
+    apartName,
+    buildedYear,
+    householdsNumber,
+    address,
   };
 };
 
-const parseSecondCellData = (
-  cell: Cheerio<any>
+// 두 번째 셀 데이터 파싱 최적화
+const parseSecondCell = (
+  cellText: string
 ): {
   tradeDate: string;
   size: number | null;
   floor: number | null;
 } => {
-  const texts = splitCellText(cell.text());
+  const lines = optimizedSplitCellText(cellText);
 
-  const sizeText = texts.find(text => text.includes('㎡'));
-  const floorText = texts.find(text => text.includes('층'));
+  const tradeDate = parseDate(lines[0] || '');
+
+  let size: number | null = null;
+  let floor: number | null = null;
+
+  for (const line of lines) {
+    if (!size) {
+      const sizeMatch = line.match(REGEXES.size);
+      if (sizeMatch) {
+        size = parseFloat(sizeMatch[1]);
+        continue;
+      }
+    }
+
+    if (!floor) {
+      const floorMatch = line.match(REGEXES.floor);
+      if (floorMatch) {
+        floor = parseInt(floorMatch[1], 10);
+        continue;
+      }
+    }
+
+    if (size && floor) break;
+  }
 
   return {
-    tradeDate: '20' + texts[0].split(' ')[0].replace(/\./g, '-'),
-    size: sizeText ? Number(sizeText.split('㎡')[0]) : null,
-    floor: floorText ? formatToNumber(floorText.replace(/층/g, '')) : null,
+    tradeDate,
+    size,
+    floor,
   };
 };
 
-const parseThirdCellData = (
-  cell: Cheerio<any>
+// 세 번째 셀 데이터 파싱 최적화
+const parseThirdCell = (
+  cellText: string
 ): {
   isNewRecord: boolean;
   tradeAmount: number;
   maxTradeAmount: number;
 } => {
-  const texts = splitCellText(cell.text());
+  const lines = optimizedSplitCellText(cellText);
+  const isNewRecord = REGEXES.newRecord.test(cellText);
 
-  const isNewRecord = texts.some(text => text.includes('(신)'));
-  const tradeAmountText = texts[0];
-  const maxTradeAmountText = texts.length === 4 ? texts[2] : texts[1];
+  const tradeAmount = parseAmount(lines[0] || '');
+  const maxTradeAmount = parseAmount(lines[1] || lines[2] || '');
 
   return {
     isNewRecord,
-    tradeAmount: formatToAmount(tradeAmountText.split(' (신)')[0]),
-    maxTradeAmount: formatToAmount(maxTradeAmountText.split(' ')[0]),
+    tradeAmount,
+    maxTradeAmount,
   };
 };
 
-const parseRowData = (
-  row: Cheerio<any>,
-  area: string
-): Record<string, unknown> => {
-  const firstCellItems = parseFirstCellData(row.find('td:nth-child(1)'));
-  const secondCellitems = parseSecondCellData(row.find('td:nth-child(2)'));
-  const thirdCellitems = parseThirdCellData(row.find('td:nth-child(3)'));
+// 행 데이터 파싱 최적화
+const parseRowData = (row: any, area: string): ApartmentTransaction => {
+  const cells = row.find('td');
 
-  const apartId = `${obfuscateKorean(area)}__${obfuscateKorean(firstCellItems.address)}__${obfuscateKorean(firstCellItems.apartName)}`;
+  const firstCellData = parseFirstCell(cells.eq(0).text());
+  const secondCellData = parseSecondCell(cells.eq(1).text());
+  const thirdCellData = parseThirdCell(cells.eq(2).text());
+
+  const apartId = `${obfuscateKorean(area)}__${obfuscateKorean(firstCellData.address)}__${obfuscateKorean(firstCellData.apartName)}`;
 
   return {
     apartId,
-    ...firstCellItems,
-    ...secondCellitems,
-    ...thirdCellitems,
+    ...firstCellData,
+    ...secondCellData,
+    ...thirdCellData,
   };
 };
 
-const parseTradeListData = (
-  html: string,
-  area: string
-): Record<string, unknown>[] => {
-  const $ = cheerio.load(html);
-  const tables = $('table');
+// HTML 파싱 최적화
+const parseHtmlData = (html: string, area: string): ApartmentTransaction[] => {
+  const $ = cheerio.load(html, {
+    decodeEntities: true,
+  });
 
-  const list: Record<string, unknown>[] = [];
+  const transactions: ApartmentTransaction[] = [];
 
-  tables.each((_, table) => {
-    const isTradeListTable = calculateIsTradeListTable($(table));
+  // 테이블 직접 선택으로 성능 향상
+  $('table').each((_, table) => {
+    const $table = $(table);
+    const hasTradeData = $table.find('td:contains("단지명")').length > 0;
 
-    if (!isTradeListTable) {
-      return;
-    }
+    if (!hasTradeData) return;
 
-    $(table)
-      .find('tr:not(:first-child)')
+    $table
+      .find('tr')
+      .slice(1)
       .each((_, row) => {
-        list.push(parseRowData($(row), area));
+        try {
+          const transaction = parseRowData($(row), area);
+          if (transaction.apartName) {
+            transactions.push(transaction);
+          }
+        } catch (error) {
+          console.warn('Row parsing error:', error);
+        }
       });
   });
 
-  return list;
+  return transactions;
 };
 
-const fetchTradeList = async ({
-  area,
-  createDt,
-  page,
-}: {
-  area: string;
-  createDt: string;
-  page: number;
-}): Promise<string> => {
-  const response = await fetch(
-    `https://apt2.me/apt/AptMonth.jsp?area=${area}&createDt=${createDt}&pages=${page}`,
-    {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
+// 재시도 로직이 포함된 fetch 함수
+const fetchWithRetry = async (
+  url: string,
+  retries = MAX_RETRIES
+): Promise<string> => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          Accept:
+            'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
+          'Cache-Control': 'no-cache',
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.text();
+    } catch (error) {
+      console.warn(`Attempt ${attempt} failed:`, error);
+
+      if (attempt === retries) {
+        throw error;
+      }
+
+      // 지수 백오프 대기
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
-  );
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
   }
 
-  return await response.text();
+  throw new Error('Max retries exceeded');
 };
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const area = searchParams.get('area');
-  const createDt = searchParams.get('createDt');
+// 페이지 데이터 가져오기
+const fetchPageData = async (
+  area: string,
+  createDt: string,
+  page: number
+): Promise<ParsedPageResult> => {
+  try {
+    const url = `https://apt2.me/apt/AptMonth.jsp?area=${area}&createDt=${createDt}&pages=${page}`;
+    const html = await fetchWithRetry(url);
+    const data = parseHtmlData(html, area);
 
-  if (!area || !createDt) {
-    return Response.json(
-      { message: '필수 파라미터가 누락되었습니다.' },
-      { status: 400 }
-    );
+    return {
+      page,
+      data,
+      hasData: data.length > 0,
+    };
+  } catch (error) {
+    console.error(`Error fetching page ${page}:`, error);
+    return {
+      page,
+      data: [],
+      hasData: false,
+    };
   }
+};
+
+// 조기 종료 최적화
+const checkIfMorePagesExist = (results: ParsedPageResult[]): boolean => {
+  const lastBatch = results.slice(-BATCH_SIZE);
+  return lastBatch.some(result => result.hasData);
+};
+
+export async function GET(request: Request): Promise<Response> {
+  const startTime = Date.now();
 
   try {
-    const results = [];
-    let page = 1;
+    const { searchParams } = new URL(request.url);
+    const area = searchParams.get('area');
+    const createDt = searchParams.get('createDt');
+
+    if (!area || !createDt) {
+      return Response.json(
+        { message: '필수 파라미터가 누락되었습니다.' },
+        { status: 400 }
+      );
+    }
+
+    const allResults: ParsedPageResult[] = [];
+    let currentPage = 1;
     let hasMoreData = true;
 
     while (hasMoreData) {
-      // 3페이지씩 병렬로 조회
-      const pagePromises = [page, page + 1, page + 2].map(pageNum =>
-        limit(async () => {
-          try {
-            const html = await fetchTradeList({
-              area,
-              createDt,
-              page: pageNum,
-            });
-            const data = parseTradeListData(html, area);
-            return { page: pageNum, data };
-          } catch (error) {
-            console.error(`Error fetching page ${pageNum}:`, error);
-            return { page: pageNum, data: [] };
-          }
-        })
+      // 배치 단위로 병렬 처리
+      const batchPages = Array.from(
+        { length: BATCH_SIZE },
+        (_, i) => currentPage + i
       );
 
-      const pageResults = await Promise.all(pagePromises);
+      const batchPromises = batchPages.map(page =>
+        limit(() => fetchPageData(area, createDt, page))
+      );
 
-      // 결과가 있는 페이지만 추가
-      const validResults = pageResults.filter(result => result.data.length > 0);
-      results.push(...validResults);
+      const batchResults = await Promise.all(batchPromises);
+      allResults.push(...batchResults);
 
-      // 다음 페이지로 이동
-      page += 3;
+      // 조기 종료 조건 확인
+      hasMoreData = checkIfMorePagesExist(batchResults);
+      currentPage += BATCH_SIZE;
 
-      // 모든 페이지에서 데이터가 없으면 종료
-      if (validResults.length === 0) {
-        hasMoreData = false;
+      // 무한 루프 방지 (최대 100페이지)
+      if (currentPage > 100) {
+        console.warn('Maximum page limit reached');
+        break;
       }
     }
 
-    // 결과 합치기
-    const list = results.flatMap(result => result.data);
-    const count = list.length;
+    // 결과 집계
+    const validResults = allResults.filter(result => result.hasData);
+    const allTransactions = validResults.flatMap(result => result.data);
+    const totalPages = validResults.length;
+    const processingTime = Date.now() - startTime;
 
-    return Response.json({ count, list });
+    console.log(
+      `크롤링 완료: ${allTransactions.length}건, ${totalPages}페이지, ${processingTime}ms`
+    );
+
+    const result: CrawlResult = {
+      count: allTransactions.length,
+      list: allTransactions,
+      totalPages,
+      processingTime,
+    };
+
+    return Response.json(result);
   } catch (error) {
-    console.error('Crawling error:', error);
+    console.error('크롤링 오류:', error);
     return Response.json(
-      { message: '서버 오류가 발생했습니다.' },
+      {
+        message: '서버 오류가 발생했습니다.',
+        error: error instanceof Error ? error.message : '알 수 없는 오류',
+      },
       { status: 500 }
     );
   }
