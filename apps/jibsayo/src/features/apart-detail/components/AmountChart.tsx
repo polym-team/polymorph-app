@@ -127,9 +127,7 @@ export function AmountChart({ items }: Props) {
                         isSelected ? 'text-gray-800' : 'text-gray-600'
                       }`}
                     >
-                      {windowWidth <= 640
-                        ? `${item.pyeong}평`
-                        : `${item.pyeong}평 (${item.sizes.map(s => s.toFixed(2)).join('㎡, ')}㎡)`}
+                      {item.pyeong}평
                     </span>
                   </button>
                 );

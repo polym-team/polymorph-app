@@ -50,6 +50,9 @@ export function useCountChart({
   const [isLoading, setIsLoading] = useState(true);
   const [containerWidth, setContainerWidth] = useState(1024);
   const [windowWidth, setWindowWidth] = useState(1024);
+  const [selectedPyeongs, setSelectedPyeongs] = useState<Set<number>>(
+    new Set()
+  );
 
   // 윈도우 너비 감지
   useEffect(() => {
@@ -114,8 +117,16 @@ export function useCountChart({
             return tradeDate >= subMonths(now, period);
           });
 
+    // 선택된 평형만 필터링
+    const selectedItems =
+      selectedPyeongs.size > 0
+        ? filteredItems.filter(item =>
+            selectedPyeongs.has(calculatePyeong(item.size))
+          )
+        : filteredItems;
+
     // 월별로 그룹화
-    const monthlyData = d3.group(filteredItems, d =>
+    const monthlyData = d3.group(selectedItems, d =>
       d3.timeMonth(new Date(d.tradeDate))
     );
 
@@ -146,26 +157,35 @@ export function useCountChart({
 
     // 날짜순으로 정렬
     return result.sort((a, b) => a.date.getTime() - b.date.getTime());
-  }, [items, period]);
+  }, [items, period, selectedPyeongs]);
 
   // 차트 영역 크기 계산
   const chartWidth = Math.max(containerWidth - margin.left - margin.right, 0);
   const chartHeight = containerHeight - margin.top - margin.bottom;
 
-  // 색상 스케일 생성
+  // 색상 스케일 생성 (범례와 차트에서 공유)
   const colorScale = useMemo(() => {
-    if (!chartData.length) return d3.scaleOrdinal(d3.schemeCategory10);
+    if (!items.length) return d3.scaleOrdinal(d3.schemeCategory10);
 
-    // chartData에서 실제 표시되는 평형만 추출
-    const actualPyeongs = Array.from(
-      new Set(chartData.map(d => calculatePyeong(d.size)))
-    ).sort((a, b) => a - b);
+    // 기간 필터링
+    const now = new Date();
+    const filteredItems =
+      period === 0
+        ? items
+        : items.filter(item => {
+            const tradeDate = new Date(item.tradeDate);
+            return tradeDate >= subMonths(now, period);
+          });
+
+    // 평형별로 그룹화
+    const sizeGroups = d3.group(filteredItems, d => calculatePyeong(d.size));
+    const sortedPyeongs = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
 
     return d3
       .scaleOrdinal<string, string>()
-      .domain(actualPyeongs.map(p => p.toString()))
+      .domain(sortedPyeongs.map(p => p.toString()))
       .range(CHART_COLORS);
-  }, [chartData]);
+  }, [items, period]);
 
   // 스케일 계산
   const xScale = useMemo(() => {
@@ -226,6 +246,70 @@ export function useCountChart({
     const timer = setTimeout(() => setIsLoading(false), 300);
     return () => clearTimeout(timer);
   }, [items]);
+
+  // 범례 데이터 계산
+  const legendData = useMemo(() => {
+    if (!items.length) return [];
+
+    // 기간 필터링
+    const now = new Date();
+    const filteredItems =
+      period === 0
+        ? items
+        : items.filter(item => {
+            const tradeDate = new Date(item.tradeDate);
+            return tradeDate >= subMonths(now, period);
+          });
+
+    // 평형별로 그룹화
+    const sizeGroups = d3.group(filteredItems, d => calculatePyeong(d.size));
+
+    // 평수 기준으로 오름차순 정렬
+    const sortedPyeongs = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
+
+    return sortedPyeongs.map((pyeong, index) => {
+      const data = sizeGroups.get(pyeong)!;
+      // 해당 평형의 모든 면적 값들을 수집 (중복 제거)
+      const sizes = Array.from(new Set(data.map(d => d.size))).sort(
+        (a, b) => a - b
+      );
+
+      return {
+        pyeong,
+        color: CHART_COLORS[index % CHART_COLORS.length],
+        sizes,
+      };
+    });
+  }, [items, period]);
+
+  // 선택된 평형이 없으면 모든 평형을 선택
+  useEffect(() => {
+    if (legendData.length > 0 && selectedPyeongs.size === 0) {
+      setSelectedPyeongs(new Set(legendData.map(item => item.pyeong)));
+    }
+  }, [legendData, selectedPyeongs.size]);
+
+  // 평형 선택/해제 토글 함수
+  const togglePyeong = (pyeong: number) => {
+    setSelectedPyeongs(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(pyeong)) {
+        newSet.delete(pyeong);
+      } else {
+        newSet.add(pyeong);
+      }
+      return newSet;
+    });
+  };
+
+  // 모든 평형 선택/해제 토글 함수
+  const toggleAllPyeongs = () => {
+    if (selectedPyeongs.size === legendData.length) {
+      setSelectedPyeongs(new Set());
+    } else {
+      setSelectedPyeongs(new Set(legendData.map(item => item.pyeong)));
+    }
+  };
 
   const updateChart = useCallback(() => {
     if (!svgRef.current || !chartData.length) return;
@@ -433,6 +517,14 @@ export function useCountChart({
           const segmentHeight =
             yScale(currentY) - yScale(currentY + data.count);
 
+          // legendData에서 해당 평형의 색상 찾기
+          const legendItem = legendData.find(
+            item => item.pyeong === data.pyeong
+          );
+          const color = legendItem
+            ? legendItem.color
+            : CHART_COLORS[index % CHART_COLORS.length];
+
           chartContainer
             .append('rect')
             .attr('class', `bar-segment-${data.pyeong}`)
@@ -444,7 +536,7 @@ export function useCountChart({
             .attr('y', yScale(currentY + data.count))
             .attr('width', dynamicBarWidth)
             .attr('height', segmentHeight)
-            .attr('fill', colorScale(data.pyeong.toString()))
+            .attr('fill', color)
             .attr('opacity', 0.8)
             .style('cursor', 'pointer');
 
@@ -493,21 +585,31 @@ export function useCountChart({
           .style('opacity', 0)
           .style('transition', 'opacity 0.1s');
 
+        let lastSelectedDate: string | null = null;
+
         mouseArea
           .on('mouseenter', () => {
             tooltip.style('opacity', 1);
           })
           .on('mousemove', event => {
             const [x] = d3.pointer(event);
-            updateTooltip(x);
+            const selectedDate = updateTooltip(x);
+            if (selectedDate) {
+              lastSelectedDate = selectedDate;
+            }
           })
           .on('mouseleave', () => {
-            verticalLine.style('opacity', 0);
-            tooltip.style('opacity', 0);
+            // 마우스가 영역을 벗어나도 마지막 선택된 데이터 계속 표시
+            if (lastSelectedDate) {
+              updateTooltipByDate(lastSelectedDate);
+            } else {
+              // 마지막 선택된 데이터가 없으면 초기 상태로
+              showInitialTooltip();
+            }
           });
 
         // 툴팁 업데이트 함수
-        const updateTooltip = (x: number) => {
+        const updateTooltip = (x: number): string | null => {
           const domain = currentXScale.domain();
           const step = currentXScale.step();
           const index = Math.min(
@@ -570,7 +672,70 @@ export function useCountChart({
               tooltipX = lineX + margin.left + 10;
             } else {
               // 세로선이 차트 중앙보다 우측에 있으면 툴팁을 좌측에 표시
-              tooltipX = lineX + margin.left - tooltipWidth + 80;
+              tooltipX = lineX + margin.left - tooltipWidth + 45;
+            }
+
+            tooltip
+              .style('opacity', 1)
+              .style('position', 'absolute')
+              .style('left', `${tooltipX}px`)
+              .style('top', `${margin.top + 10}px`)
+              .style('z-index', '1000')
+              .html(tooltipContent);
+
+            return dateStr;
+          }
+          return null;
+        };
+
+        // 날짜로 툴팁 업데이트하는 함수
+        const updateTooltipByDate = (dateStr: string) => {
+          const [year, month] = dateStr.split('-').map(Number);
+          const date = new Date(year, month);
+
+          const monthData = chartData.filter(
+            d =>
+              d.date.getFullYear() === date.getFullYear() &&
+              d.date.getMonth() === date.getMonth() &&
+              d.count > 0
+          );
+
+          if (monthData.length > 0) {
+            const lineX = currentXScale(dateStr)!;
+            verticalLine
+              .attr('x1', lineX)
+              .attr('x2', lineX)
+              .attr('y1', 0)
+              .attr('y2', chartHeight)
+              .style('opacity', 1);
+
+            const sortedData = monthData.sort((a, b) => a.pyeong - b.pyeong);
+            const totalCount = sortedData.reduce(
+              (sum, data) => sum + data.count,
+              0
+            );
+            const tooltipContent = `
+              <div class="space-y-1">
+                <div>${d3.timeFormat('%Y년 %m월')(date)} <strong>(${totalCount}건)</strong></div>
+                ${sortedData
+                  .map(
+                    data => `
+                  <div>· ${data.pyeong}평 ${data.count}건</div>
+                `
+                  )
+                  .join('')}
+              </div>
+            `;
+
+            const chartAreaWidth = containerWidth - margin.left - margin.right;
+            const chartCenter = chartAreaWidth / 2;
+            const tooltipWidth = 200;
+
+            let tooltipX: number;
+            if (lineX < chartCenter) {
+              tooltipX = lineX + margin.left + 10;
+            } else {
+              tooltipX = lineX + margin.left - tooltipWidth + 45;
             }
 
             tooltip
@@ -582,6 +747,19 @@ export function useCountChart({
               .html(tooltipContent);
           }
         };
+
+        // 초기 상태 설정 (가장 최근 데이터 표시)
+        const showInitialTooltip = () => {
+          if (chartData.length > 0) {
+            const lastData = chartData[chartData.length - 1];
+            const dateStr = `${lastData.date.getFullYear()}-${lastData.date.getMonth()}`;
+            lastSelectedDate = dateStr;
+            updateTooltipByDate(dateStr);
+          }
+        };
+
+        // 초기 상태 표시
+        showInitialTooltip();
       } else {
         // 모바일: 드래그 이벤트
         const mouseArea = g
@@ -602,6 +780,7 @@ export function useCountChart({
           .style('transition', 'opacity 0.1s');
 
         let isDragging = false;
+        let lastSelectedDate: string | null = null;
 
         mouseArea
           .style('touch-action', 'none')
@@ -611,7 +790,10 @@ export function useCountChart({
             const touch = event.touches[0];
             const rect = svg.node()!.getBoundingClientRect();
             const x = touch.clientX - rect.left - margin.left;
-            updateTooltip(x);
+            const selectedDate = updateTooltip(x);
+            if (selectedDate) {
+              lastSelectedDate = selectedDate;
+            }
           })
           .on('touchmove', event => {
             event.preventDefault();
@@ -619,21 +801,30 @@ export function useCountChart({
             const touch = event.touches[0];
             const rect = svg.node()!.getBoundingClientRect();
             const x = touch.clientX - rect.left - margin.left;
-            updateTooltip(x);
+            const selectedDate = updateTooltip(x);
+            if (selectedDate) {
+              lastSelectedDate = selectedDate;
+            }
           })
           .on('touchend', event => {
             event.preventDefault();
             isDragging = false;
-            // 터치 종료 후에도 세로선과 툴팁 유지
+            // 터치 종료 후에도 마지막 선택된 데이터 계속 표시
+            if (lastSelectedDate) {
+              updateTooltipByDate(lastSelectedDate);
+            }
           })
           .on('touchcancel', event => {
             event.preventDefault();
             isDragging = false;
-            // 터치 취소 후에도 세로선과 툴팁 유지
+            // 터치 취소 후에도 마지막 선택된 데이터 계속 표시
+            if (lastSelectedDate) {
+              updateTooltipByDate(lastSelectedDate);
+            }
           });
 
         // 툴팁 업데이트 함수
-        const updateTooltip = (x: number) => {
+        const updateTooltip = (x: number): string | null => {
           const domain = currentXScale.domain();
           const step = currentXScale.step();
           const index = Math.min(
@@ -705,22 +896,25 @@ export function useCountChart({
               .style('top', `${margin.top + 10}px`)
               .style('z-index', '1000')
               .html(tooltipContent);
+
+            return dateStr;
           }
+          return null;
         };
 
-        // 초기 상태 설정 (가장 최근 데이터 표시)
-        if (chartData.length > 0) {
-          const lastData = chartData[chartData.length - 1];
-          const dateStr = `${lastData.date.getFullYear()}-${lastData.date.getMonth()}`;
+        // 날짜로 툴팁 업데이트하는 함수
+        const updateTooltipByDate = (dateStr: string) => {
+          const [year, month] = dateStr.split('-').map(Number);
+          const date = new Date(year, month);
+
           const monthData = chartData.filter(
             d =>
-              d.date.getFullYear() === lastData.date.getFullYear() &&
-              d.date.getMonth() === lastData.date.getMonth() &&
+              d.date.getFullYear() === date.getFullYear() &&
+              d.date.getMonth() === date.getMonth() &&
               d.count > 0
           );
 
           if (monthData.length > 0) {
-            // 세로선 표시
             const lineX = currentXScale(dateStr)!;
             verticalLine
               .attr('x1', lineX)
@@ -729,16 +923,14 @@ export function useCountChart({
               .attr('y2', chartHeight)
               .style('opacity', 1);
 
-            // 평형대별로 정렬
             const sortedData = monthData.sort((a, b) => a.pyeong - b.pyeong);
-
             const totalCount = sortedData.reduce(
               (sum, data) => sum + data.count,
               0
             );
             const tooltipContent = `
               <div class="space-y-1">
-                <div>${d3.timeFormat('%Y년 %m월')(lastData.date)} <strong>(${totalCount}건)</strong></div>
+                <div>${d3.timeFormat('%Y년 %m월')(date)} <strong>(${totalCount}건)</strong></div>
                 ${sortedData
                   .map(
                     data => `
@@ -749,13 +941,11 @@ export function useCountChart({
               </div>
             `;
 
-            // 툴팁 위치 계산
             const tooltipWidth = 200;
             const chartAreaWidth = containerWidth - margin.left - margin.right;
             const chartCenter = chartAreaWidth / 2;
 
             let tooltipX: number;
-
             if (lineX < chartCenter) {
               tooltipX = lineX + margin.left + 10;
             } else {
@@ -770,6 +960,14 @@ export function useCountChart({
               .style('z-index', '1000')
               .html(tooltipContent);
           }
+        };
+
+        // 초기 상태 설정 (가장 최근 데이터 표시)
+        if (chartData.length > 0) {
+          const lastData = chartData[chartData.length - 1];
+          const dateStr = `${lastData.date.getFullYear()}-${lastData.date.getMonth()}`;
+          lastSelectedDate = dateStr;
+          updateTooltipByDate(dateStr);
         }
       }
     }
@@ -789,7 +987,7 @@ export function useCountChart({
     xScale,
     yScale,
     windowWidth,
-    colorScale,
+    legendData,
   ]);
 
   // D3 차트 렌더링
@@ -800,5 +998,9 @@ export function useCountChart({
 
   return {
     isLoading,
+    legendData,
+    selectedPyeongs,
+    togglePyeong,
+    toggleAllPyeongs,
   };
 }

@@ -32,7 +32,13 @@ export function CountChart({ items }: Props) {
   const margin = { top: 20, right: 0, bottom: 30, left: 35 };
   const height = 200;
 
-  const { isLoading } = useCountChart({
+  const {
+    isLoading,
+    legendData,
+    selectedPyeongs,
+    togglePyeong,
+    toggleAllPyeongs,
+  } = useCountChart({
     items,
     svgRef,
     tooltipRef,
@@ -67,6 +73,39 @@ export function CountChart({ items }: Props) {
               height: '100%',
             }}
           />
+        </div>
+
+        <div className="mt-4 flex min-h-[60px] flex-wrap items-center justify-center gap-2">
+          {!isLoading && legendData.length > 0 && (
+            <>
+              {legendData.map(item => {
+                const isSelected = selectedPyeongs.has(item.pyeong);
+                return (
+                  <button
+                    key={item.pyeong}
+                    onClick={() => togglePyeong(item.pyeong)}
+                    className={`flex items-center gap-2 rounded-md border px-2 py-1 transition-all ${
+                      isSelected
+                        ? 'border-gray-300 bg-gray-100 shadow-sm'
+                        : 'border-gray-200 bg-gray-50 opacity-50 hover:opacity-75'
+                    }`}
+                  >
+                    <div
+                      className="h-3 w-3 rounded-sm"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span
+                      className={`text-sm font-medium ${
+                        isSelected ? 'text-gray-800' : 'text-gray-600'
+                      }`}
+                    >
+                      {item.pyeong}평
+                    </span>
+                  </button>
+                );
+              })}
+            </>
+          )}
         </div>
       </div>
     </Card>
