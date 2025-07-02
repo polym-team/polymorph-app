@@ -24,7 +24,9 @@ export const useTransactionFilter = (): Return => {
   const [filterState, setFilterState] =
     useState<TransactionFilter>(initialState);
 
-  const prevRegionCode = useRef<string | undefined>(searchParams.regionCode);
+  const prevSearchParams = useRef<string | undefined>(
+    `${searchParams.regionCode}-${searchParams.tradeDate}`
+  );
 
   const setFilter = (nextFilter: Partial<TransactionFilter>) => {
     const changedFilter = { ...filterState, ...nextFilter };
@@ -43,14 +45,21 @@ export const useTransactionFilter = (): Return => {
   }, []);
 
   useEffect(() => {
-    if (!prevRegionCode.current) return;
+    const currentSearchParams = `${searchParams.regionCode}-${searchParams.tradeDate}`;
 
-    if (prevRegionCode.current !== searchParams.regionCode) {
-      setFilter({ apartName: '' });
+    if (!prevSearchParams.current) {
+      prevSearchParams.current = currentSearchParams;
+      return;
     }
 
-    prevRegionCode.current = searchParams.regionCode;
-  }, [searchParams.regionCode]);
+    if (prevSearchParams.current !== currentSearchParams) {
+      // 지역이나 날짜가 변경되면 필터 초기화
+      setFilterState(initialState);
+      setItem(STORAGE_KEY.TRANSACTION_LIST_FILTER, initialState);
+    }
+
+    prevSearchParams.current = currentSearchParams;
+  }, [searchParams.regionCode, searchParams.tradeDate]);
 
   return {
     filter: filterState,

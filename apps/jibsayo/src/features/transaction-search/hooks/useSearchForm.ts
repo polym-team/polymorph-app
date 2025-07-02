@@ -39,6 +39,18 @@ export const useSearchForm = (): Return => {
     };
   });
 
+  // searchParams가 변경되면 form도 업데이트
+  useEffect(() => {
+    if (searchParams.regionCode && searchParams.tradeDate) {
+      setForm(prev => ({
+        ...prev,
+        cityName: getCityNameWithRegionCode(searchParams.regionCode!),
+        regionCode: searchParams.regionCode!,
+        date: parseTradeDate(searchParams.tradeDate!),
+      }));
+    }
+  }, [searchParams.regionCode, searchParams.tradeDate]);
+
   const updateCityName = (nextCityName: string) => {
     if (!nextCityName) return;
 
@@ -80,7 +92,7 @@ export const useSearchForm = (): Return => {
 
     setItem(STORAGE_KEY.TRANSACTION_SEARCH_FORM, {
       regionCode: changedForm.regionCode,
-      tradeDate: changedForm.regionCode,
+      tradeDate,
     });
 
     setSearchParams({
@@ -92,12 +104,17 @@ export const useSearchForm = (): Return => {
   useEffect(() => {
     if (searchParams.regionCode && searchParams.tradeDate) return;
 
-    const savedSearchForm = getItem<SearchForm>(
-      STORAGE_KEY.TRANSACTION_SEARCH_FORM
-    );
+    const savedSearchForm = getItem<{
+      regionCode: string;
+      tradeDate: string;
+    }>(STORAGE_KEY.TRANSACTION_SEARCH_FORM);
 
     if (savedSearchForm) {
-      onSubmit(savedSearchForm);
+      // 저장된 tradeDate를 그대로 사용
+      setSearchParams({
+        regionCode: savedSearchForm.regionCode,
+        tradeDate: savedSearchForm.tradeDate,
+      });
     }
   }, []);
 
