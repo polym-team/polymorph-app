@@ -28,12 +28,15 @@ interface TransactionListTableProps {
   onPageSizeChange: (pageSize: number) => void;
   onPageIndexChange: (pageIndex: number) => void;
   preservePageIndex?: boolean;
+  newTransactionApartIds?: Set<string>;
 }
 
 const createColumns = ({
   onToggleFavorite,
+  newTransactionApartIds,
 }: {
   onToggleFavorite: (item: TransactionItem) => void;
+  newTransactionApartIds?: Set<string>;
 }): ColumnDef<TransactionItem>[] => [
   {
     accessorKey: 'favorite',
@@ -90,8 +93,19 @@ const createColumns = ({
       const buildedYear = row.original.buildedYear;
       const floor = row.original.floor;
       const householdsNumber = row.original.householdsNumber;
+
+      const isNewTransaction =
+        newTransactionApartIds &&
+        row.original.apartId &&
+        newTransactionApartIds.has(row.original.apartId);
+
       return (
         <div className="flex items-center gap-x-1">
+          {isNewTransaction && (
+            <div className="bg-primary mr-1 flex h-4 w-4 items-center justify-center rounded-full text-xs font-bold text-white">
+              N
+            </div>
+          )}
           <span className="font-semibold sm:font-medium">{apartName}</span>{' '}
           <Typography variant="muted">
             {calculateApartAdditionalInfo({
@@ -165,9 +179,10 @@ export function TransactionListTable({
   onPageSizeChange,
   onPageIndexChange,
   preservePageIndex = false,
+  newTransactionApartIds,
 }: TransactionListTableProps) {
   const router = useRouter();
-  const columns = createColumns({ onToggleFavorite });
+  const columns = createColumns({ onToggleFavorite, newTransactionApartIds });
   const mobileColumnTitles = {
     apartName: '아파트명',
     address: '주소',
@@ -190,6 +205,28 @@ export function TransactionListTable({
     router.push(`${ROUTE_PATH.APARTS}/${encodeURIComponent(row.apartName)}`);
   };
 
+  const getRowClassName = (row: TransactionItem) => {
+    const isNewTransaction =
+      newTransactionApartIds &&
+      row.apartId &&
+      newTransactionApartIds.has(row.apartId);
+
+    const isFavorite = row.favorite;
+
+    // 신규 거래가 우선순위
+    if (isNewTransaction) {
+      return 'cursor-pointer !bg-primary/10 hover:!bg-primary/14';
+    }
+
+    // 즐겨찾기는 더 연한 색상
+    if (isFavorite) {
+      return 'cursor-pointer !bg-primary/5 hover:!bg-primary/14';
+    }
+
+    // 일반 거래
+    return 'cursor-pointer hover:bg-gray-50';
+  };
+
   return (
     <DataTable
       columns={columns}
@@ -210,6 +247,7 @@ export function TransactionListTable({
       preservePageIndex={preservePageIndex}
       onRowClick={handleClick}
       mobileSortableColumns={mobileSortableColumns}
+      getRowClassName={getRowClassName}
     />
   );
 }

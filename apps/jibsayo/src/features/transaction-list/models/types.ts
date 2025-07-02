@@ -30,4 +30,5 @@ export interface TransactionFilter {
   apartName: string;
   isNationalSizeOnly: boolean;
   isFavoriteOnly: boolean;
+  isNewTransactionOnly: boolean;
 }

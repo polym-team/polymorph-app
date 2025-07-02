@@ -237,25 +237,29 @@ const parseThirdCell = (
 
   const tradeAmount = parseAmount(lines[0] || '');
 
-  // maxTradeAmount는 %가 포함된 라인에서 추출
-  // ↑나 ↓로 시작하는 라인은 상승/하락폭이므로 제외
+  // maxTradeAmount 최적화된 파싱 (성능 개선)
   let maxTradeAmount = 0;
-  for (const line of lines.slice(1)) {
-    // ↑, ↓로 시작하는 라인은 건너뛰기
-    if (line.startsWith('↑') || line.startsWith('↓')) {
-      continue;
-    }
+  const line1 = lines[1];
+  const line2 = lines[2];
 
-    // %가 포함된 라인에서 금액 추출
-    if (line.includes('%')) {
-      maxTradeAmount = parseAmount(line);
-      break;
-    }
-
-    // %가 없어도 금액이 있는 첫 번째 라인을 사용 (fallback)
-    if (!maxTradeAmount && /\d+억|\d+천|\d+만/.test(line)) {
-      maxTradeAmount = parseAmount(line);
-    }
+  // 첫 번째로 %가 포함된 라인 찾기 (대부분의 경우)
+  if (
+    line1 &&
+    line1.includes('%') &&
+    !line1.startsWith('↑') &&
+    !line1.startsWith('↓')
+  ) {
+    maxTradeAmount = parseAmount(line1);
+  } else if (
+    line2 &&
+    line2.includes('%') &&
+    !line2.startsWith('↑') &&
+    !line2.startsWith('↓')
+  ) {
+    maxTradeAmount = parseAmount(line2);
+  } else {
+    // fallback: 첫 번째 유효한 금액 라인 사용
+    maxTradeAmount = parseAmount(line1 || line2 || '');
   }
 
   return {
@@ -273,7 +277,8 @@ const parseRowData = (row: any, area: string): ApartmentTransaction => {
   const secondCellData = parseSecondCell(cells.eq(1).text());
   const thirdCellData = parseThirdCell(cells.eq(2).text());
 
-  const apartId = `${obfuscateKorean(area)}__${obfuscateKorean(firstCellData.address)}__${obfuscateKorean(firstCellData.apartName)}`;
+  // 모든 거래 정보를 조합하여 고유한 ID 생성
+  const apartId = `${obfuscateKorean(area)}__${obfuscateKorean(firstCellData.address)}__${obfuscateKorean(firstCellData.apartName)}__${secondCellData.tradeDate}__${secondCellData.size}__${secondCellData.floor}__${thirdCellData.tradeAmount}`;
 
   return {
     apartId,

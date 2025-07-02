@@ -55,6 +55,7 @@ interface DataTableProps<TData, TValue> {
   page?: number;
   onPageIndexChange?: (pageIndex: number) => void;
   mobileSortableColumns?: Record<string, string>;
+  getRowClassName?: (row: TData) => string;
 }
 
 function useIsClient() {
@@ -82,6 +83,7 @@ export function DataTable<TData, TValue>({
   page: externalPage,
   onPageIndexChange,
   mobileSortableColumns,
+  getRowClassName,
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
   const [internalPage, setInternalPage] = useState(0);
@@ -216,30 +218,39 @@ export function DataTable<TData, TValue>({
                 </TableCell>
               </TableRow>
             ) : isClient && table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map(row => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className={
-                    onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''
-                  }
-                  onClick={() => onRowClick?.(row.original)}
-                >
-                  {row.getVisibleCells().map(cell => (
-                    <TableCell
-                      key={cell.id}
-                      style={{ width: cell.column.getSize() }}
-                    >
-                      {
-                        flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        ) as any
-                      }
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map(row => {
+                const customClassName = getRowClassName
+                  ? getRowClassName(row.original)
+                  : '';
+                const baseClassName = getRowClassName
+                  ? ''
+                  : onRowClick
+                    ? 'cursor-pointer hover:bg-gray-50'
+                    : '';
+
+                return (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    className={`${baseClassName} ${customClassName}`}
+                    onClick={() => onRowClick?.(row.original)}
+                  >
+                    {row.getVisibleCells().map(cell => (
+                      <TableCell
+                        key={cell.id}
+                        style={{ width: cell.column.getSize() }}
+                      >
+                        {
+                          flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          ) as any
+                        }
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow className="hover:bg-transparent">
                 <TableCell
@@ -369,52 +380,63 @@ export function DataTable<TData, TValue>({
             </div>
           </div>
         ) : isClient && table.getRowModel().rows?.length ? (
-          table.getRowModel().rows.map(row => (
-            <div
-              key={row.id}
-              className={`rounded-lg border border-gray-200 bg-white p-3 shadow-sm ${
-                onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''
-              }`}
-              onClick={() => onRowClick?.(row.original)}
-            >
-              {row.getVisibleCells().map((cell, index) => {
-                const header = table.getHeaderGroups()[0]?.headers[index];
-                let headerText = '';
+          table.getRowModel().rows.map(row => {
+            const customClassName = getRowClassName
+              ? getRowClassName(row.original)
+              : '';
+            const baseClassName = getRowClassName
+              ? ''
+              : onRowClick
+                ? 'cursor-pointer hover:bg-gray-50'
+                : '';
 
-                if (header) {
-                  const accessorKey = header.column.id;
+            return (
+              <div
+                key={row.id}
+                className={`rounded-lg border border-gray-200 bg-white p-3 shadow-sm ${baseClassName} ${customClassName}`}
+                onClick={() => onRowClick?.(row.original)}
+              >
+                {row.getVisibleCells().map((cell, index) => {
+                  const header = table.getHeaderGroups()[0]?.headers[index];
+                  let headerText = '';
 
-                  // mobileColumnTitles에서 우선 찾기
-                  if (mobileColumnTitles && mobileColumnTitles[accessorKey]) {
-                    headerText = mobileColumnTitles[accessorKey];
+                  if (header) {
+                    const accessorKey = header.column.id;
+
+                    // mobileColumnTitles에서 우선 찾기
+                    if (mobileColumnTitles && mobileColumnTitles[accessorKey]) {
+                      headerText = mobileColumnTitles[accessorKey];
+                    }
+                    // 문자열 헤더인 경우
+                    else if (
+                      typeof header.column.columnDef.header === 'string'
+                    ) {
+                      headerText = header.column.columnDef.header;
+                    }
                   }
-                  // 문자열 헤더인 경우
-                  else if (typeof header.column.columnDef.header === 'string') {
-                    headerText = header.column.columnDef.header;
-                  }
-                }
 
-                return (
-                  <div
-                    key={cell.id}
-                    className="flex items-center justify-between py-1 first:pt-0 last:pb-0"
-                  >
-                    <span className="mr-3 flex-shrink-0 text-sm font-medium text-gray-500">
-                      {headerText}
-                    </span>
-                    <div className="text-right text-sm">
-                      {
-                        flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        ) as any
-                      }
+                  return (
+                    <div
+                      key={cell.id}
+                      className="flex items-center justify-between py-1 first:pt-0 last:pb-0"
+                    >
+                      <span className="mr-3 flex-shrink-0 text-sm font-medium text-gray-500">
+                        {headerText}
+                      </span>
+                      <div className="text-right text-sm">
+                        {
+                          flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          ) as any
+                        }
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          ))
+                  );
+                })}
+              </div>
+            );
+          })
         ) : (
           <div className="rounded border border-gray-200 bg-white p-4 shadow-sm">
             <div className="flex flex-col items-center justify-center gap-5 py-12 text-center">

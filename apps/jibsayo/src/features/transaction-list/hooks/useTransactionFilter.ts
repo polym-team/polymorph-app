@@ -15,6 +15,7 @@ const initialState: TransactionFilter = {
   apartName: '',
   isNationalSizeOnly: false,
   isFavoriteOnly: false,
+  isNewTransactionOnly: false,
 };
 
 export const useTransactionFilter = (): Return => {

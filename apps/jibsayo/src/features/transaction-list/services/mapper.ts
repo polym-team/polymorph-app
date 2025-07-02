@@ -8,11 +8,13 @@ export const mapTransactionsWithFavorites = ({
   filter,
   favoriteApartList,
   regionCode,
+  newTransactionApartIds,
 }: {
   transactions: TransactionsResponse['list'];
   filter: TransactionFilter;
   favoriteApartList: FavoriteApartItem[];
   regionCode?: string;
+  newTransactionApartIds?: Set<string>;
 }): TransactionItem[] => {
   const currentRegionFavorites = favoriteApartList.find(
     region => region.regionCode === regionCode
@@ -41,7 +43,15 @@ export const mapTransactionsWithFavorites = ({
       const isMatchedFavorite = filter.isFavoriteOnly
         ? transaction.favorite
         : true;
+      const isMatchedNewTransaction = filter.isNewTransactionOnly
+        ? newTransactionApartIds?.has(transaction.apartId) || false
+        : true;
 
-      return isMatched && isMatchedSize && isMatchedFavorite;
+      return (
+        isMatched &&
+        isMatchedSize &&
+        isMatchedFavorite &&
+        isMatchedNewTransaction
+      );
     });
 };

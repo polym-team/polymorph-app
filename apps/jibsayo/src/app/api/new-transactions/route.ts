@@ -1,294 +1,467 @@
-import { AdminFirestoreClient } from '@polymorph/firebase';
+import cheerio from 'cheerio';
+import pLimit from 'p-limit';
 
-import * as cheerio from 'cheerio';
-import { NextRequest, NextResponse } from 'next/server';
+import { obfuscateKorean } from '../utils';
 
-interface TransactionData {
+// 성능 최적화를 위한 상수 정의
+const CONCURRENT_REQUESTS = 5;
+const BATCH_SIZE = 5;
+const REQUEST_TIMEOUT = 10000;
+const MAX_RETRIES = 3;
+
+// 동시 요청 수 제한
+const limit = pLimit(CONCURRENT_REQUESTS);
+
+// 정규표현식을 미리 컴파일하여 성능 최적화
+const REGEXES = {
+  whitespace: /^\s+|\s+$/gm,
+  numbers: /[^0-9]/g,
+  year: /(\d{4})년/,
+  households: /(\d+)세대/,
+  size: /(\d+(?:\.\d+)?)㎡/,
+  floor: /(\d+)층/,
+  newRecord: /\(신\)/,
+  amount: /(\d+)억?\s*(\d+)?천?\s*(\d+)?만?/,
+  date: /(\d{2})\.(\d{2})\.(\d{2})/,
+  dong: /\S+동/,
+} as const;
+
+// 타입 정의
+interface ApartmentTransaction {
+  apartId: string;
   apartName: string;
-  transactionPrice: number;
-  tradeDate: string;
-  floor: number;
-  area: string;
-  regionCode: string;
-}
-
-interface FavoriteApart {
-  id?: string;
-  regionCode: string;
+  buildedYear: number | null;
+  householdsNumber: number | null;
   address: string;
-  apartName: string;
-  deviceId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  tradeDate: string;
+  size: number | null;
+  floor: number | null;
+  isNewRecord: boolean;
+  tradeAmount: number;
+  maxTradeAmount: number;
 }
 
-// Firestore Admin 클라이언트 초기화
-const firestoreClient = new AdminFirestoreClient({
-  collectionName: 'favorite-apart',
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  serviceAccount: {
-    type: 'service_account',
-    project_id: process.env.FIREBASE_PROJECT_ID,
-    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-    private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    client_email: process.env.FIREBASE_CLIENT_EMAIL,
-    client_id: process.env.FIREBASE_CLIENT_ID,
-    auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-    token_uri: 'https://oauth2.googleapis.com/token',
-    auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
-    client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
-  } as any,
-});
-
-// Firestore 데이터를 FavoriteApart 타입으로 변환
-function mapFirestoreToFavoriteApart(doc: any): FavoriteApart {
-  return {
-    id: doc.id,
-    regionCode: doc.data.regionCode,
-    address: doc.data.address,
-    apartName: doc.data.apartName,
-    deviceId: doc.data.deviceId,
-    createdAt: doc.data.createdAt?.toDate() || new Date(),
-    updatedAt: doc.data.updatedAt?.toDate() || new Date(),
-  };
+interface ParsedPageResult {
+  page: number;
+  data: ApartmentTransaction[];
+  hasData: boolean;
 }
 
-// 특정 지역의 거래 데이터를 크롤링하는 함수
-async function crawlTransactionsByArea(
-  regionCode: string
-): Promise<TransactionData[]> {
-  const url = `https://apt2.me/apt/AptDaily.jsp?area=${regionCode}`;
+interface CrawlResult {
+  count: number;
+  list: ApartmentTransaction[];
+  totalPages: number;
+  processingTime: number;
+}
 
-  const response = await fetch(url, {
-    headers: {
-      'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      Accept:
-        'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
-      'Accept-Encoding': 'gzip, deflate, br',
-      Connection: 'keep-alive',
-      'Upgrade-Insecure-Requests': '1',
-    },
-  });
+// 메모리 효율적인 문자열 처리
+const optimizedSplitCellText = (text: string): string[] => {
+  return text.replace(REGEXES.whitespace, '').split('\n').filter(Boolean);
+};
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
+// 숫자 추출 최적화
+const extractNumber = (str: string | undefined): number => {
+  if (!str) return 0;
+  const match = str.match(/\d+/);
+  return match ? parseInt(match[0], 10) : 0;
+};
 
-  const html = await response.text();
-  const $ = cheerio.load(html);
+// 한국어 금액 파싱 로직 개선
+const parseAmount = (amountText: string): number => {
+  if (!amountText) return 0;
 
-  const transactions: TransactionData[] = [];
+  const cleanText = amountText.replace(REGEXES.newRecord, '').trim();
+  let amount = 0;
 
-  // 실거래 데이터가 있는 테이블을 찾습니다
-  $('table').each((tableIndex, table) => {
-    const $table = $(table);
+  // 억 단위 처리
+  const eokMatch = cleanText.match(/(\d+)억/);
+  if (eokMatch) {
+    amount += parseInt(eokMatch[1], 10) * 100_000_000;
 
-    // 각 행을 순회합니다
-    $table.find('tr').each((rowIndex, row) => {
-      const $row = $(row);
-      const $cells = $row.find('td');
+    // 억 다음에 오는 부분 처리
+    const afterEok = cleanText.replace(/\d+억\s*/, '');
 
-      if ($cells.length >= 3) {
-        const firstCellText = $cells.eq(0).text().trim();
-        const secondCellText = $cells.eq(1).text().trim();
-        const thirdCellText = $cells.eq(2).text().trim();
+    if (afterEok) {
+      // "천"이 명시적으로 있는 경우 (예: "8억8천" = 8억 + 8천만)
+      const cheonMatch = afterEok.match(/(\d+)천/);
+      if (cheonMatch) {
+        amount += parseInt(cheonMatch[1], 10) * 10_000_000;
 
-        // 첫 번째 셀이 단지명을 포함하고 있는지 확인 (실거래 데이터인지 판단)
-        if (
-          firstCellText &&
-          firstCellText.length > 10 &&
-          firstCellText.includes('년')
-        ) {
-          const transaction: TransactionData = {
-            apartName: '',
-            transactionPrice: 0,
-            tradeDate: '',
-            floor: 0,
-            area: '',
-            regionCode: regionCode,
-          };
-
-          // 단지명 추출 (예: "헬리오시티 2018년 (8년차) 9510세대 / 12,602대")
-          const complexMatch = firstCellText.match(/^([^(]+)\s+(\d{4})년/);
-          if (complexMatch) {
-            transaction.apartName = complexMatch[1].trim();
-          } else {
-            // 다른 형식의 단지명 처리
-            const simpleMatch = firstCellText.match(/^([^(]+)/);
-            if (simpleMatch) {
-              transaction.apartName = simpleMatch[1].trim();
-            }
-          }
-
-          // 계약 정보 추출 (예: "25.05.28 10층 110.44㎡ 42B평 중개거래")
-          const contractMatch = secondCellText.match(
-            /(\d{2})\.(\d{2})\.(\d{2})\s+(\d+)층\s+([\d.]+)㎡/
-          );
-          if (contractMatch) {
-            // 날짜 형식을 "2025-05-28" 형식으로 변환
-            const year = '20' + contractMatch[1];
-            const month = contractMatch[2];
-            const day = contractMatch[3];
-            transaction.tradeDate = `${year}-${month}-${day}`;
-
-            // 층수를 숫자로 변환
-            transaction.floor = parseInt(contractMatch[4]);
-
-            transaction.area = contractMatch[5] + '㎡';
-          }
-
-          // 가격 정보 추출 (예: "30억(신) ↑ 9천 29억1천 103.0% 22억8천 ↑ 31.5%")
-          const priceMatch = thirdCellText.match(/(\d+)억/);
-          if (priceMatch) {
-            const billion = parseInt(priceMatch[1]);
-            transaction.transactionPrice = billion * 100000000; // 억 단위를 원 단위로 변환
-          }
-
-          // 유효한 데이터가 있는 경우만 추가
-          if (transaction.apartName && transaction.transactionPrice > 0) {
-            transactions.push(transaction);
+        // 천 다음에 추가 숫자가 있는 경우 (예: "8억8천500" = 8억 + 8천만 + 500만)
+        const afterCheon = afterEok.replace(/\d+천\s*/, '');
+        if (afterCheon) {
+          const manMatch = afterCheon.match(/(\d+)/);
+          if (manMatch) {
+            amount += parseInt(manMatch[1], 10) * 10_000;
           }
         }
+      } else {
+        // "천"이 없고 숫자만 있는 경우 만 단위로 처리 (예: "8억800" = 8억 + 800만)
+        const manMatch = afterEok.match(/(\d+)/);
+        if (manMatch) {
+          amount += parseInt(manMatch[1], 10) * 10_000;
+        }
       }
-    });
+    }
+  } else {
+    // 억 단위가 없는 경우
+    const cheonMatch = cleanText.match(/(\d+)천/);
+    if (cheonMatch) {
+      amount += parseInt(cheonMatch[1], 10) * 10_000_000;
+    } else {
+      // 만 단위만 있는 경우
+      const manMatch = cleanText.match(/(\d+)/);
+      if (manMatch) {
+        amount += parseInt(manMatch[1], 10) * 10_000;
+      }
+    }
+  }
+
+  return amount;
+};
+
+// 날짜 파싱 최적화
+const parseDate = (dateText: string): string => {
+  const match = dateText.match(REGEXES.date);
+  if (!match) return '';
+
+  const [, year, month, day] = match;
+  return `20${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+};
+
+// 첫 번째 셀 데이터 파싱 최적화
+const parseFirstCell = (
+  cellText: string
+): {
+  apartName: string;
+  buildedYear: number | null;
+  householdsNumber: number | null;
+  address: string;
+} => {
+  const lines = optimizedSplitCellText(cellText);
+  const apartName = lines[0] || '';
+
+  let buildedYear: number | null = null;
+  let householdsNumber: number | null = null;
+  let address = '';
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (!buildedYear) {
+      const yearMatch = line.match(REGEXES.year);
+      if (yearMatch) {
+        buildedYear = parseInt(yearMatch[1], 10);
+        continue;
+      }
+    }
+
+    if (!householdsNumber) {
+      const householdsMatch = line.match(REGEXES.households);
+      if (householdsMatch) {
+        householdsNumber = parseInt(householdsMatch[1], 10);
+        continue;
+      }
+    }
+
+    if (!address) {
+      const dongMatch = line.match(REGEXES.dong);
+      if (dongMatch) {
+        address = line;
+        break;
+      }
+    }
+  }
+
+  return {
+    apartName,
+    buildedYear,
+    householdsNumber,
+    address,
+  };
+};
+
+// 두 번째 셀 데이터 파싱 최적화
+const parseSecondCell = (
+  cellText: string
+): {
+  tradeDate: string;
+  size: number | null;
+  floor: number | null;
+} => {
+  const lines = optimizedSplitCellText(cellText);
+
+  const tradeDate = parseDate(lines[0] || '');
+
+  let size: number | null = null;
+  let floor: number | null = null;
+
+  for (const line of lines) {
+    if (!size) {
+      const sizeMatch = line.match(REGEXES.size);
+      if (sizeMatch) {
+        size = parseFloat(sizeMatch[1]);
+        continue;
+      }
+    }
+
+    if (!floor) {
+      const floorMatch = line.match(REGEXES.floor);
+      if (floorMatch) {
+        floor = parseInt(floorMatch[1], 10);
+        continue;
+      }
+    }
+
+    if (size && floor) break;
+  }
+
+  return {
+    tradeDate,
+    size,
+    floor,
+  };
+};
+
+// 세 번째 셀 데이터 파싱 최적화
+const parseThirdCell = (
+  cellText: string
+): {
+  isNewRecord: boolean;
+  tradeAmount: number;
+  maxTradeAmount: number;
+} => {
+  const lines = optimizedSplitCellText(cellText);
+  const isNewRecord = REGEXES.newRecord.test(cellText);
+
+  const tradeAmount = parseAmount(lines[0] || '');
+
+  // maxTradeAmount는 %가 포함된 라인에서 추출
+  // ↑나 ↓로 시작하는 라인은 상승/하락폭이므로 제외
+  let maxTradeAmount = 0;
+  for (const line of lines.slice(1)) {
+    // ↑, ↓로 시작하는 라인은 건너뛰기
+    if (line.startsWith('↑') || line.startsWith('↓')) {
+      continue;
+    }
+
+    // %가 포함된 라인에서 금액 추출
+    if (line.includes('%')) {
+      maxTradeAmount = parseAmount(line);
+      break;
+    }
+
+    // %가 없어도 금액이 있는 첫 번째 라인을 사용 (fallback)
+    if (!maxTradeAmount && /\d+억|\d+천|\d+만/.test(line)) {
+      maxTradeAmount = parseAmount(line);
+    }
+  }
+
+  return {
+    isNewRecord,
+    tradeAmount,
+    maxTradeAmount,
+  };
+};
+
+// 행 데이터 파싱 최적화
+const parseRowData = (row: any, area: string): ApartmentTransaction => {
+  const cells = row.find('td');
+
+  const firstCellData = parseFirstCell(cells.eq(0).text());
+  const secondCellData = parseSecondCell(cells.eq(1).text());
+  const thirdCellData = parseThirdCell(cells.eq(2).text());
+
+  // 모든 거래 정보를 조합하여 고유한 ID 생성
+  const apartId = `${obfuscateKorean(area)}__${obfuscateKorean(firstCellData.address)}__${obfuscateKorean(firstCellData.apartName)}__${secondCellData.tradeDate}__${secondCellData.size}__${secondCellData.floor}__${thirdCellData.tradeAmount}`;
+
+  return {
+    apartId,
+    ...firstCellData,
+    ...secondCellData,
+    ...thirdCellData,
+  };
+};
+
+// HTML 파싱 최적화
+const parseHtmlData = (html: string, area: string): ApartmentTransaction[] => {
+  const $ = cheerio.load(html, {
+    decodeEntities: true,
+  });
+
+  const transactions: ApartmentTransaction[] = [];
+
+  // 테이블 직접 선택으로 성능 향상
+  $('table').each((_, table) => {
+    const $table = $(table);
+    const hasTradeData = $table.find('td:contains("단지명")').length > 0;
+
+    if (!hasTradeData) return;
+
+    $table
+      .find('tr')
+      .slice(1)
+      .each((_, row) => {
+        try {
+          const transaction = parseRowData($(row), area);
+          if (transaction.apartName) {
+            transactions.push(transaction);
+          }
+        } catch (error) {
+          console.warn('Row parsing error:', error);
+        }
+      });
   });
 
   return transactions;
-}
+};
 
-export async function GET(request: NextRequest) {
-  try {
-    console.log('🔍 즐겨찾기 기반 신규 거래 크롤링 시작...');
+// 재시도 로직이 포함된 fetch 함수
+const fetchWithRetry = async (
+  url: string,
+  retries = MAX_RETRIES
+): Promise<string> => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
-    // 1. Firestore에서 모든 favorite-apart 데이터 가져오기
-    const favoriteDocuments = await firestoreClient.getDocuments({});
-    const favoriteAparts = favoriteDocuments.map(doc =>
-      mapFirestoreToFavoriteApart(doc)
-    );
-
-    console.log(`📋 총 ${favoriteAparts.length}개의 즐겨찾기 아파트 발견`);
-
-    if (favoriteAparts.length === 0) {
-      return NextResponse.json({
-        success: true,
-        message: '즐겨찾기된 아파트가 없습니다.',
-        deviceMatches: {},
-        scrapedAt: new Date().toISOString(),
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          Accept:
+            'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
+          'Cache-Control': 'no-cache',
+        },
+        signal: controller.signal,
       });
-    }
 
-    // 2. regionCode 목록 취합 (중복 제거)
-    const uniqueRegionCodes = Array.from(
-      new Set(favoriteAparts.map(fav => fav.regionCode))
-    );
-    console.log(`🗺️  크롤링할 지역 코드: ${uniqueRegionCodes.join(', ')}`);
+      clearTimeout(timeoutId);
 
-    // 3. 각 regionCode별로 크롤링 실행
-    const allTransactions: TransactionData[] = [];
-
-    for (const regionCode of uniqueRegionCodes) {
-      try {
-        console.log(`🕷️  지역 ${regionCode} 크롤링 중...`);
-        const transactions = await crawlTransactionsByArea(regionCode);
-        allTransactions.push(...transactions);
-        console.log(
-          `✅ 지역 ${regionCode}: ${transactions.length}개 거래 발견`
-        );
-
-        // 요청 간격 조절 (서버 부하 방지)
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      } catch (error) {
-        console.error(`❌ 지역 ${regionCode} 크롤링 실패:`, error);
-      }
-    }
-
-    console.log(`📊 총 ${allTransactions.length}개의 거래 데이터 수집 완료`);
-
-    // 4. deviceId별로 즐겨찾기와 매칭되는 신규 거래 찾기
-    const deviceMatches: Record<string, any[]> = {};
-
-    // deviceId별로 그룹화
-    const favoritesByDevice = favoriteAparts.reduce(
-      (acc, fav) => {
-        if (!acc[fav.deviceId]) {
-          acc[fav.deviceId] = [];
-        }
-        acc[fav.deviceId].push(fav);
-        return acc;
-      },
-      {} as Record<string, FavoriteApart[]>
-    );
-
-    // 각 디바이스별로 매칭 확인
-    for (const [deviceId, favorites] of Object.entries(favoritesByDevice)) {
-      const matches: any[] = [];
-
-      for (const favorite of favorites) {
-        // 아파트명이 일치하는 거래 찾기 (부분 매칭)
-        const matchedTransactions = allTransactions.filter(transaction => {
-          const apartNameMatch =
-            transaction.apartName.includes(favorite.apartName) ||
-            favorite.apartName.includes(transaction.apartName);
-          const regionMatch = transaction.regionCode === favorite.regionCode;
-
-          return apartNameMatch && regionMatch;
-        });
-
-        if (matchedTransactions.length > 0) {
-          matches.push({
-            favoriteApart: {
-              apartName: favorite.apartName,
-              address: favorite.address,
-              regionCode: favorite.regionCode,
-            },
-            newTransactions: matchedTransactions,
-          });
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      if (matches.length > 0) {
-        deviceMatches[deviceId] = matches;
+      return await response.text();
+    } catch (error) {
+      console.warn(`Attempt ${attempt} failed:`, error);
 
-        // Console 출력
-        console.log(`\n🎯 디바이스 ${deviceId}의 즐겨찾기 매칭 결과:`);
-        matches.forEach(match => {
-          console.log(
-            `  📍 ${match.favoriteApart.apartName} (${match.favoriteApart.regionCode})`
-          );
-          console.log(
-            `     → ${match.newTransactions.length}개의 신규 거래 발견`
-          );
-          match.newTransactions.forEach((tx: TransactionData) => {
-            console.log(
-              `       • ${tx.tradeDate} | ${tx.floor}층 | ${tx.area} | ${(tx.transactionPrice / 100000000).toFixed(1)}억원`
-            );
-          });
-        });
+      if (attempt === retries) {
+        throw error;
       }
+
+      // 지수 백오프 대기
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
+  }
 
-    const totalMatches = Object.keys(deviceMatches).length;
-    console.log(`\n🏆 총 ${totalMatches}개 디바이스에서 즐겨찾기 매칭 완료!`);
+  throw new Error('Max retries exceeded');
+};
 
-    return NextResponse.json({
-      success: true,
-      summary: {
-        totalFavorites: favoriteAparts.length,
-        totalRegions: uniqueRegionCodes.length,
-        totalTransactions: allTransactions.length,
-        matchedDevices: totalMatches,
-      },
-      deviceMatches,
-      scrapedAt: new Date().toISOString(),
-    });
+// 페이지 데이터 가져오기 (Daily 버전)
+const fetchPageData = async (
+  area: string,
+  createDt: string,
+  page: number
+): Promise<ParsedPageResult> => {
+  try {
+    // 신규 거래는 Daily 엔드포인트 사용
+    const url = `https://apt2.me/apt/AptDaily.jsp?area=${area}&createDt=${createDt}&pages=${page}`;
+    const html = await fetchWithRetry(url);
+    const data = parseHtmlData(html, area);
+
+    return {
+      page,
+      data,
+      hasData: data.length > 0,
+    };
   } catch (error) {
-    console.error('❌ 크롤링 에러:', error);
-    return NextResponse.json(
+    console.error(`Error fetching page ${page}:`, error);
+    return {
+      page,
+      data: [],
+      hasData: false,
+    };
+  }
+};
+
+// 조기 종료 최적화
+const checkIfMorePagesExist = (results: ParsedPageResult[]): boolean => {
+  const lastBatch = results.slice(-BATCH_SIZE);
+  return lastBatch.some(result => result.hasData);
+};
+
+export async function GET(request: Request): Promise<Response> {
+  const startTime = Date.now();
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const area = searchParams.get('area');
+    const createDt = searchParams.get('createDt');
+
+    if (!area || !createDt) {
+      return Response.json(
+        { message: '필수 파라미터가 누락되었습니다.' },
+        { status: 400 }
+      );
+    }
+
+    const allResults: ParsedPageResult[] = [];
+    let currentPage = 1;
+    let hasMoreData = true;
+
+    while (hasMoreData) {
+      // 배치 단위로 병렬 처리
+      const batchPages = Array.from(
+        { length: BATCH_SIZE },
+        (_, i) => currentPage + i
+      );
+
+      const batchPromises = batchPages.map(page =>
+        limit(() => fetchPageData(area, createDt, page))
+      );
+
+      const batchResults = await Promise.all(batchPromises);
+      allResults.push(...batchResults);
+
+      // 조기 종료 조건 확인
+      hasMoreData = checkIfMorePagesExist(batchResults);
+      currentPage += BATCH_SIZE;
+
+      // 무한 루프 방지 (최대 100페이지)
+      if (currentPage > 100) {
+        console.warn('Maximum page limit reached');
+        break;
+      }
+    }
+
+    // 결과 집계
+    const validResults = allResults.filter(result => result.hasData);
+    const allTransactions = validResults.flatMap(result => result.data);
+    const totalPages = validResults.length;
+    const processingTime = Date.now() - startTime;
+
+    console.log(
+      `크롤링 완료: ${allTransactions.length}건, ${totalPages}페이지, ${processingTime}ms`
+    );
+
+    const result: CrawlResult = {
+      count: allTransactions.length,
+      list: allTransactions,
+      totalPages,
+      processingTime,
+    };
+
+    return Response.json(result);
+  } catch (error) {
+    console.error('크롤링 오류:', error);
+    return Response.json(
       {
-        error: '크롤링 중 오류가 발생했습니다.',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        message: '서버 오류가 발생했습니다.',
+        error: error instanceof Error ? error.message : '알 수 없는 오류',
       },
       { status: 500 }
     );

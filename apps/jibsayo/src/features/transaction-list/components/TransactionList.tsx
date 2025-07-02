@@ -6,6 +6,7 @@ import {
   getRegionNameWithRegionCode,
 } from '@/entities/region';
 import {
+  useNewTransactionListQuery,
   useSearchParams,
   useTransactionListQuery,
 } from '@/entities/transaction';
@@ -24,6 +25,14 @@ export function TransactionList() {
   const { searchParams } = useSearchParams();
   const { isLoading, isFetched, data } = useTransactionListQuery();
 
+  // 신규 거래건 조회 (오늘 등록된 거래)
+  const today = new Date().toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD 형식
+  const { data: newTransactionData, isLoading: isNewTransactionLoading } =
+    useNewTransactionListQuery({
+      area: searchParams.regionCode,
+      createDt: today, // 오늘 날짜로 고정
+    });
+
   const { favoriteApartList, addFavoriteApart, removeFavoriteApart } =
     useFavoriteApartList();
 
@@ -41,14 +50,29 @@ export function TransactionList() {
   // 즐겨찾기 토글 중인지 추적
   const isTogglingFavorite = useRef(false);
 
+  // 신규 거래건 판단 (오늘 등록된 거래의 apartId 기준)
+  const newTransactionApartIds = useMemo(() => {
+    const newTransactions = newTransactionData?.list ?? [];
+    return new Set(
+      newTransactions.map((transaction: any) => transaction.apartId)
+    );
+  }, [newTransactionData?.list]);
+
   const filteredTransactions = useMemo(() => {
     return mapTransactionsWithFavorites({
       transactions: data?.list ?? [],
       favoriteApartList,
       filter,
       regionCode: searchParams.regionCode,
+      newTransactionApartIds,
     });
-  }, [data?.list, favoriteApartList, filter, searchParams.regionCode]);
+  }, [
+    data?.list,
+    favoriteApartList,
+    filter,
+    searchParams.regionCode,
+    newTransactionApartIds,
+  ]);
 
   const totalCount = filteredTransactions.length;
   const averagePricePerPyeong =
@@ -96,7 +120,7 @@ export function TransactionList() {
         setFilter={setFilter}
       />
       <TransactionListTable
-        isLoading={isLoading}
+        isLoading={isLoading || isNewTransactionLoading}
         isFetched={isFetched}
         data={filteredTransactions}
         sorting={sorting}
@@ -107,6 +131,7 @@ export function TransactionList() {
         onPageSizeChange={updatePageSize}
         onPageIndexChange={updatePageIndex}
         preservePageIndex={isTogglingFavorite.current}
+        newTransactionApartIds={newTransactionApartIds}
       />
     </div>
   );
