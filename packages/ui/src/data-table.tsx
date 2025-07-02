@@ -54,7 +54,7 @@ interface DataTableProps<TData, TValue> {
   onRowClick?: (row: TData) => void;
   page?: number;
   onPageIndexChange?: (pageIndex: number) => void;
-  mobileSortableColumnIds?: string[];
+  mobileSortableColumns?: Record<string, string>;
 }
 
 function useIsClient() {
@@ -81,7 +81,7 @@ export function DataTable<TData, TValue>({
   onRowClick,
   page: externalPage,
   onPageIndexChange,
-  mobileSortableColumnIds,
+  mobileSortableColumns,
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
   const [internalPage, setInternalPage] = useState(0);
@@ -156,20 +156,23 @@ export function DataTable<TData, TValue>({
   };
 
   // 모바일에서 정렬 셀렉트에 노출할 컬럼 목록
-  const mobileSortableColumns = mobileSortableColumnIds
+  const mobileSortableColumnsList = mobileSortableColumns
     ? table
         .getAllColumns()
         .filter(
-          col => mobileSortableColumnIds.includes(col.id) && col.getCanSort()
+          col =>
+            Object.keys(mobileSortableColumns).includes(col.id) &&
+            col.getCanSort()
         )
     : table
         .getAllColumns()
         .filter(col => col.getCanSort() && col.id !== 'favorite');
 
-  // 기본 정렬 컬럼 값 (SSR 호환) - 모바일에서는 favorite 제외, mobileSortableColumnIds 우선
+  // 기본 정렬 컬럼 값 (SSR 호환)
   const defaultSortColumn = isClient
-    ? table.getState().sorting[0]?.id || (mobileSortableColumns[0]?.id ?? '')
-    : (mobileSortableColumns[0]?.id ?? '');
+    ? table.getState().sorting[0]?.id ||
+      (mobileSortableColumnsList[0]?.id ?? '')
+    : (mobileSortableColumnsList[0]?.id ?? '');
 
   const showLoading = loading;
 
@@ -271,7 +274,7 @@ export function DataTable<TData, TValue>({
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="정렬 컬럼">
                   {defaultSortColumn &&
-                    (mobileColumnTitles?.[defaultSortColumn] ||
+                    (mobileSortableColumns?.[defaultSortColumn] ||
                       (() => {
                         const column = table
                           .getAllColumns()
@@ -285,11 +288,14 @@ export function DataTable<TData, TValue>({
               </SelectTrigger>
               <SelectContent>
                 {isClient &&
-                  mobileSortableColumns.map(column => {
+                  mobileSortableColumnsList.map(column => {
                     const header = column.columnDef.header;
                     let displayName = '';
-                    if (mobileColumnTitles && mobileColumnTitles[column.id]) {
-                      displayName = mobileColumnTitles[column.id];
+                    if (
+                      mobileSortableColumns &&
+                      mobileSortableColumns[column.id]
+                    ) {
+                      displayName = mobileSortableColumns[column.id];
                     } else if (typeof header === 'string') {
                       displayName = header;
                     } else {

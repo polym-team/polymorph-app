@@ -92,7 +92,7 @@ const createColumns = ({
       const householdsNumber = row.original.householdsNumber;
       return (
         <div className="flex items-center gap-x-1">
-          {apartName}{' '}
+          <span className="font-semibold">{apartName}</span>{' '}
           <Typography variant="muted">
             {calculateApartAdditionalInfo({
               buildedYear,
@@ -143,7 +143,11 @@ const createColumns = ({
       const maxTradeAmount = row.getValue('maxTradeAmount') as number;
       if (!maxTradeAmount) return null;
 
-      return formatPrice(maxTradeAmount);
+      return (
+        <div className="font-semibold text-red-600">
+          {formatPrice(maxTradeAmount)}
+        </div>
+      );
     },
     size: 150,
   },
@@ -165,13 +169,21 @@ export function TransactionListTable({
   const router = useRouter();
   const columns = createColumns({ onToggleFavorite });
   const mobileColumnTitles = {
-    favorite: '저장',
-    tradeDate: '거래일',
-    address: '주소지',
     apartName: '아파트명',
+    address: '주소',
+    buildedYear: '준공년도',
+    householdsNumber: '세대수',
+    tradeDate: '거래일자',
     size: '평수',
     tradeAmount: '거래가격',
-    isNewRecord: '최고가',
+    maxTradeAmount: '최고가',
+  };
+
+  const mobileSortableColumns = {
+    apartName: '아파트명',
+    tradeAmount: '거래가격',
+    tradeDate: '거래일자',
+    maxTradeAmount: '최고가',
   };
 
   const handleClick = (row: TransactionItem) => {
@@ -197,12 +209,7 @@ export function TransactionListTable({
       mobileColumnTitles={mobileColumnTitles}
       preservePageIndex={preservePageIndex}
       onRowClick={handleClick}
-      mobileSortableColumnIds={[
-        'apartName',
-        'tradeAmount',
-        'tradeDate',
-        'maxTradeAmount',
-      ]}
+      mobileSortableColumns={mobileSortableColumns}
     />
   );
 }
