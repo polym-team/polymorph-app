@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import { Input, LabelCheckbox, Typography } from '@package/ui';
 
 import { TransactionFilter } from '../models/types';
@@ -20,6 +22,24 @@ export function TransactionListHeader({
   filter,
   setFilter,
 }: TransactionListHeaderProps) {
+  const [searchValue, setSearchValue] = useState(filter.apartName);
+
+  // filter.apartName이 외부에서 변경되면 searchValue도 업데이트
+  useEffect(() => {
+    setSearchValue(filter.apartName);
+  }, [filter.apartName]);
+
+  // apartName만 debounce 적용
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchValue !== filter.apartName) {
+        setFilter({ apartName: searchValue });
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [searchValue, setFilter, filter.apartName]);
+
   return (
     <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center justify-center gap-x-1 sm:justify-start">
@@ -85,8 +105,8 @@ export function TransactionListHeader({
         </div>
         <Input
           placeholder="아파트명 검색"
-          value={filter.apartName}
-          onChange={e => setFilter({ apartName: e.target.value })}
+          value={searchValue}
+          onChange={e => setSearchValue(e.target.value)}
           className="w-full sm:w-64"
         />
       </div>

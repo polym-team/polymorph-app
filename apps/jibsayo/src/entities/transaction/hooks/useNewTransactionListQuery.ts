@@ -19,7 +19,7 @@ export function useNewTransactionListQuery(
   const { area, createDt } = params || {};
 
   return useQuery<NewTransactionListResponse>({
-    queryKey: ['new-transactions', area, createDt],
+    queryKey: ['new-transactions', { area, createDt }],
     queryFn: async () => {
       if (!area || !createDt) {
         return { count: 0, list: [], totalPages: 0, processingTime: 0 };
@@ -41,7 +41,7 @@ export function useNewTransactionListQuery(
       return response.json();
     },
     enabled: !!area && !!createDt,
-    staleTime: 5 * 60 * 1000, // 5분
-    gcTime: 10 * 60 * 1000, // 10분
+    staleTime: 1000 * 60 * 60, // 1시간 (transactions와 동일)
+    gcTime: 1000 * 60 * 60, // 1시간 (transactions와 동일)
   });
 }
