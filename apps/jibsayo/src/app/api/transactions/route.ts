@@ -21,7 +21,8 @@ const REGEXES = {
   size: /(\d+(?:\.\d+)?)㎡/,
   floor: /(\d+)층/,
   newRecord: /\(신\)/,
-  amount: /(\d+)억?\s*(\d+)?천?\s*(\d+)?/,
+  // 한국어 금액 파싱을 위한 정규표현식 개선
+  amount: /(\d+)억?\s*(\d+)?천?\s*(\d+)?만?/,
   date: /(\d{2})\.(\d{2})\.(\d{2})/,
   dong: /\S+동/,
 } as const;
@@ -66,21 +67,56 @@ const extractNumber = (str: string | undefined): number => {
   return match ? parseInt(match[0], 10) : 0;
 };
 
-// 금액 파싱 최적화
+// 한국어 금액 파싱 로직 개선
 const parseAmount = (amountText: string): number => {
   if (!amountText) return 0;
 
   const cleanText = amountText.replace(REGEXES.newRecord, '').trim();
-  const match = cleanText.match(REGEXES.amount);
-
-  if (!match) return 0;
-
   let amount = 0;
-  const [, eok, cheon, man] = match;
 
-  if (eok) amount += parseInt(eok, 10) * 100_000_000;
-  if (cheon) amount += parseInt(cheon, 10) * 10_000_000;
-  if (man) amount += parseInt(man, 10) * 10_000;
+  // 억 단위 처리
+  const eokMatch = cleanText.match(/(\d+)억/);
+  if (eokMatch) {
+    amount += parseInt(eokMatch[1], 10) * 100_000_000;
+
+    // 억 다음에 오는 부분 처리
+    const afterEok = cleanText.replace(/\d+억\s*/, '');
+
+    if (afterEok) {
+      // "천"이 명시적으로 있는 경우 (예: "8억8천" = 8억 + 8천만)
+      const cheonMatch = afterEok.match(/(\d+)천/);
+      if (cheonMatch) {
+        amount += parseInt(cheonMatch[1], 10) * 10_000_000;
+
+        // 천 다음에 추가 숫자가 있는 경우 (예: "8억8천500" = 8억 + 8천만 + 500만)
+        const afterCheon = afterEok.replace(/\d+천\s*/, '');
+        if (afterCheon) {
+          const manMatch = afterCheon.match(/(\d+)/);
+          if (manMatch) {
+            amount += parseInt(manMatch[1], 10) * 10_000;
+          }
+        }
+      } else {
+        // "천"이 없고 숫자만 있는 경우 만 단위로 처리 (예: "8억800" = 8억 + 800만)
+        const manMatch = afterEok.match(/(\d+)/);
+        if (manMatch) {
+          amount += parseInt(manMatch[1], 10) * 10_000;
+        }
+      }
+    }
+  } else {
+    // 억 단위가 없는 경우
+    const cheonMatch = cleanText.match(/(\d+)천/);
+    if (cheonMatch) {
+      amount += parseInt(cheonMatch[1], 10) * 10_000_000;
+    } else {
+      // 만 단위만 있는 경우
+      const manMatch = cleanText.match(/(\d+)/);
+      if (manMatch) {
+        amount += parseInt(manMatch[1], 10) * 10_000;
+      }
+    }
+  }
 
   return amount;
 };
@@ -200,7 +236,27 @@ const parseThirdCell = (
   const isNewRecord = REGEXES.newRecord.test(cellText);
 
   const tradeAmount = parseAmount(lines[0] || '');
-  const maxTradeAmount = parseAmount(lines[1] || lines[2] || '');
+
+  // maxTradeAmount는 %가 포함된 라인에서 추출
+  // ↑나 ↓로 시작하는 라인은 상승/하락폭이므로 제외
+  let maxTradeAmount = 0;
+  for (const line of lines.slice(1)) {
+    // ↑, ↓로 시작하는 라인은 건너뛰기
+    if (line.startsWith('↑') || line.startsWith('↓')) {
+      continue;
+    }
+
+    // %가 포함된 라인에서 금액 추출
+    if (line.includes('%')) {
+      maxTradeAmount = parseAmount(line);
+      break;
+    }
+
+    // %가 없어도 금액이 있는 첫 번째 라인을 사용 (fallback)
+    if (!maxTradeAmount && /\d+억|\d+천|\d+만/.test(line)) {
+      maxTradeAmount = parseAmount(line);
+    }
+  }
 
   return {
     isNewRecord,

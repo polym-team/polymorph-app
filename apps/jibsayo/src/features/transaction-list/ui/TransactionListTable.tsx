@@ -71,14 +71,14 @@ const createColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="거래일" />
     ),
-    size: 70,
+    size: 80,
   },
   {
     accessorKey: 'address',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="주소지" />
     ),
-    size: 180,
+    size: 170,
   },
   {
     accessorKey: 'apartName',
@@ -135,19 +135,17 @@ const createColumns = ({
     size: 150,
   },
   {
-    accessorKey: 'isNewRecord',
+    accessorKey: 'maxTradeAmount',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="신고가" />
+      <DataTableColumnHeader column={column} title="최고가" />
     ),
     cell: ({ row }) => {
-      const isHigh = row.getValue('isNewRecord') as boolean;
-      return (
-        <div className={isHigh ? 'font-medium text-red-600' : ''}>
-          {isHigh ? '신고가' : ''}
-        </div>
-      );
+      const maxTradeAmount = row.getValue('maxTradeAmount') as number;
+      if (!maxTradeAmount) return null;
+
+      return formatPrice(maxTradeAmount);
     },
-    size: 80,
+    size: 150,
   },
 ];
 
@@ -173,7 +171,7 @@ export function TransactionListTable({
     apartName: '아파트명',
     size: '평수',
     tradeAmount: '거래가격',
-    isNewRecord: '신고가',
+    isNewRecord: '최고가',
   };
 
   const handleClick = (row: TransactionItem) => {
@@ -199,6 +197,12 @@ export function TransactionListTable({
       mobileColumnTitles={mobileColumnTitles}
       preservePageIndex={preservePageIndex}
       onRowClick={handleClick}
+      mobileSortableColumnIds={[
+        'apartName',
+        'tradeAmount',
+        'tradeDate',
+        'maxTradeAmount',
+      ]}
     />
   );
 }

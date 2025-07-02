@@ -54,6 +54,7 @@ interface DataTableProps<TData, TValue> {
   onRowClick?: (row: TData) => void;
   page?: number;
   onPageIndexChange?: (pageIndex: number) => void;
+  mobileSortableColumnIds?: string[];
 }
 
 function useIsClient() {
@@ -80,6 +81,7 @@ export function DataTable<TData, TValue>({
   onRowClick,
   page: externalPage,
   onPageIndexChange,
+  mobileSortableColumnIds,
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
   const [internalPage, setInternalPage] = useState(0);
@@ -153,12 +155,21 @@ export function DataTable<TData, TValue>({
     onPageSizeChange?.(size);
   };
 
-  // 기본 정렬 컬럼 값 (SSR 호환)
+  // 모바일에서 정렬 셀렉트에 노출할 컬럼 목록
+  const mobileSortableColumns = mobileSortableColumnIds
+    ? table
+        .getAllColumns()
+        .filter(
+          col => mobileSortableColumnIds.includes(col.id) && col.getCanSort()
+        )
+    : table
+        .getAllColumns()
+        .filter(col => col.getCanSort() && col.id !== 'favorite');
+
+  // 기본 정렬 컬럼 값 (SSR 호환) - 모바일에서는 favorite 제외, mobileSortableColumnIds 우선
   const defaultSortColumn = isClient
-    ? table.getState().sorting[0]?.id ||
-      table.getAllColumns().find(col => col.getCanSort())?.id ||
-      ''
-    : '';
+    ? table.getState().sorting[0]?.id || (mobileSortableColumns[0]?.id ?? '')
+    : (mobileSortableColumns[0]?.id ?? '');
 
   const showLoading = loading;
 
@@ -257,39 +268,39 @@ export function DataTable<TData, TValue>({
                 setSorting(newSorting);
               }}
             >
-              <SelectTrigger className="h-8 w-full text-sm">
-                <SelectValue placeholder="정렬 컬럼" />
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="정렬 컬럼">
+                  {defaultSortColumn &&
+                    (mobileColumnTitles?.[defaultSortColumn] ||
+                      (() => {
+                        const column = table
+                          .getAllColumns()
+                          .find(col => col.id === defaultSortColumn);
+                        const header = column?.columnDef.header;
+                        return typeof header === 'string'
+                          ? header
+                          : defaultSortColumn;
+                      })())}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {isClient &&
-                  table
-                    .getAllColumns()
-                    .filter(
-                      column => column.getCanSort() && column.id !== 'favorite'
-                    )
-                    .map(column => {
-                      const header = column.columnDef.header;
-                      let displayName = '';
-
-                      // mobileColumnTitles에서 우선 찾기
-                      if (mobileColumnTitles && mobileColumnTitles[column.id]) {
-                        displayName = mobileColumnTitles[column.id];
-                      }
-                      // 문자열 헤더인 경우
-                      else if (typeof header === 'string') {
-                        displayName = header;
-                      }
-                      // columnDef.id 또는 accessorKey 사용
-                      else {
-                        displayName = column.id;
-                      }
-
-                      return (
-                        <SelectItem key={column.id} value={column.id}>
-                          {displayName}
-                        </SelectItem>
-                      );
-                    })}
+                  mobileSortableColumns.map(column => {
+                    const header = column.columnDef.header;
+                    let displayName = '';
+                    if (mobileColumnTitles && mobileColumnTitles[column.id]) {
+                      displayName = mobileColumnTitles[column.id];
+                    } else if (typeof header === 'string') {
+                      displayName = header;
+                    } else {
+                      displayName = column.id;
+                    }
+                    return (
+                      <SelectItem key={column.id} value={column.id}>
+                        {displayName}
+                      </SelectItem>
+                    );
+                  })}
               </SelectContent>
             </Select>
           </div>
@@ -301,7 +312,7 @@ export function DataTable<TData, TValue>({
                   ? table.getState().sorting[0]?.desc
                     ? 'desc'
                     : 'asc'
-                  : ''
+                  : 'asc'
               }
               onValueChange={value => {
                 const currentSort = table.getState().sorting[0];
@@ -313,8 +324,14 @@ export function DataTable<TData, TValue>({
                 setSorting(newSorting);
               }}
             >
-              <SelectTrigger className="h-8 w-full text-sm">
-                <SelectValue placeholder="정렬 순서" />
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="정렬 순서">
+                  {isClient
+                    ? table.getState().sorting[0]?.desc
+                      ? '내림차순'
+                      : '오름차순'
+                    : '오름차순'}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {isClient && (
@@ -339,25 +356,12 @@ export function DataTable<TData, TValue>({
         </div>
 
         {showLoading ? (
-          // 스켈레톤 UI - 3개 카드 생성
-          Array.from({ length: 3 }, (_, index) => (
-            <div
-              key={index}
-              className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm"
-            >
-              <div className="space-y-2">
-                {Array.from({ length: columns.length }, (_, colIndex) => (
-                  <div
-                    key={colIndex}
-                    className="flex items-start justify-between"
-                  >
-                    <div className="h-3 w-16 animate-pulse rounded bg-gray-200"></div>
-                    <div className="h-3 w-24 animate-pulse rounded bg-gray-200"></div>
-                  </div>
-                ))}
-              </div>
+          <div className="rounded border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="flex flex-col items-center justify-center gap-5 py-12 text-center">
+              <div className="border-primary h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" />
+              <span className="text-sm text-gray-500">{loadingMessage}</span>
             </div>
-          ))
+          </div>
         ) : isClient && table.getRowModel().rows?.length ? (
           table.getRowModel().rows.map(row => (
             <div
@@ -406,9 +410,9 @@ export function DataTable<TData, TValue>({
             </div>
           ))
         ) : (
-          <div className="rounded border border-gray-200 bg-white p-6 shadow-sm">
-            <div className="flex flex-col items-center justify-center gap-2 text-center">
-              <SearchX className="h-5 w-5 text-gray-500" />
+          <div className="rounded border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="flex flex-col items-center justify-center gap-5 py-12 text-center">
+              <SearchX className="h-5 w-5 text-gray-400" />
               <span className="text-sm text-gray-500">{emptyMessage}</span>
             </div>
           </div>
