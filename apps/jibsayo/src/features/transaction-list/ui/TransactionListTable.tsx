@@ -92,7 +92,7 @@ const createColumns = ({
       const householdsNumber = row.original.householdsNumber;
       return (
         <div className="flex items-center gap-x-1">
-          <span className="font-semibold">{apartName}</span>{' '}
+          <span className="font-semibold sm:font-medium">{apartName}</span>{' '}
           <Typography variant="muted">
             {calculateApartAdditionalInfo({
               buildedYear,
