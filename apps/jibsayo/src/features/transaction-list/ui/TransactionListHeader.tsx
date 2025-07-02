@@ -1,4 +1,4 @@
-import { Checkbox, Input, Label, Typography } from '@package/ui';
+import { Input, LabelCheckbox, Typography } from '@package/ui';
 
 import { TransactionFilter } from '../models/types';
 import { formatPrice } from '../services/formatter';
@@ -21,7 +21,7 @@ export function TransactionListHeader({
   setFilter,
 }: TransactionListHeaderProps) {
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center justify-center gap-x-1 sm:justify-start">
         {fullRegionName && (
           <>
@@ -47,54 +47,41 @@ export function TransactionListHeader({
         )}
       </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-x-2">
-        <div className="flex h-[37px] items-center rounded border bg-white">
-          <div className="flex h-full w-full">
-            <div className="flex flex-1 items-center justify-center px-4">
-              <Label className="flex cursor-pointer items-center gap-2">
-                <Checkbox
-                  checked={filter.isNewTransactionOnly}
-                  onCheckedChange={() =>
-                    setFilter({
-                      isNewTransactionOnly: !filter.isNewTransactionOnly,
-                    })
-                  }
-                />
-                <span className="whitespace-nowrap text-sm font-medium">
-                  신규 거래
-                </span>
-              </Label>
-            </div>
-            <div className="w-px bg-gray-200"></div>
-            <div className="flex flex-1 items-center justify-center px-4">
-              <Label className="flex cursor-pointer items-center gap-2">
-                <Checkbox
-                  checked={filter.isFavoriteOnly}
-                  onCheckedChange={() =>
-                    setFilter({ isFavoriteOnly: !filter.isFavoriteOnly })
-                  }
-                />
-                <span className="whitespace-nowrap text-sm font-medium">
-                  저장된 아파트
-                </span>
-              </Label>
-            </div>
-            <div className="w-px bg-gray-200"></div>
-            <div className="flex flex-1 items-center justify-center px-4">
-              <Label className="flex cursor-pointer items-center gap-2">
-                <Checkbox
-                  checked={filter.isNationalSizeOnly}
-                  onCheckedChange={() =>
-                    setFilter({
-                      isNationalSizeOnly: !filter.isNationalSizeOnly,
-                    })
-                  }
-                />
-                <span className="whitespace-nowrap text-sm font-medium">
-                  국민평수
-                </span>
-              </Label>
-            </div>
-          </div>
+        <div className="flex w-full">
+          <LabelCheckbox
+            checked={filter.isNewTransactionOnly}
+            onCheckedChange={() =>
+              setFilter({
+                isNewTransactionOnly: !filter.isNewTransactionOnly,
+              })
+            }
+            title="신규 거래"
+            className={`hover:bg-primary/5 data-[state=checked]:bg-primary/5 data-[state=checked]:border-primary/20 h-full flex-1 rounded-none rounded-l border-r ${
+              filter.isNewTransactionOnly ? 'z-10' : ''
+            }`}
+          />
+          <LabelCheckbox
+            checked={filter.isFavoriteOnly}
+            onCheckedChange={() =>
+              setFilter({ isFavoriteOnly: !filter.isFavoriteOnly })
+            }
+            title="저장된 아파트"
+            className={`hover:bg-primary/5 data-[state=checked]:bg-primary/5 data-[state=checked]:border-primary/20 -mx-px h-full flex-1 rounded-none border-r ${
+              filter.isFavoriteOnly ? 'z-10' : ''
+            }`}
+          />
+          <LabelCheckbox
+            checked={filter.isNationalSizeOnly}
+            onCheckedChange={() =>
+              setFilter({
+                isNationalSizeOnly: !filter.isNationalSizeOnly,
+              })
+            }
+            title="국민평수"
+            className={`hover:bg-primary/5 data-[state=checked]:bg-primary/5 data-[state=checked]:border-primary/20 h-full flex-1 rounded-none rounded-r ${
+              filter.isNationalSizeOnly ? 'z-10' : ''
+            }`}
+          />
         </div>
         <Input
           placeholder="아파트명 검색"
