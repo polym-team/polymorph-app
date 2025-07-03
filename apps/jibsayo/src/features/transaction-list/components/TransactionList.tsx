@@ -132,6 +132,7 @@ export function TransactionList() {
         onPageIndexChange={updatePageIndex}
         preservePageIndex={isTogglingFavorite.current}
         newTransactionApartIds={newTransactionApartIds}
+        regionCode={searchParams.regionCode}
       />
     </div>
   );

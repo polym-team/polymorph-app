@@ -6,18 +6,20 @@ import { Suspense } from 'react';
 
 interface Props {
   params: {
+    regionCode: string;
     apartName: string;
   };
 }
 
 async function getApartDetail(
-  apartName: string
+  apartName: string,
+  regionCode: string
 ): Promise<ApartDetailResponse | null> {
   try {
     const response = await fetch(
       `${process.env.BASE_URL}/api/apart?apartName=${encodeURIComponent(
         apartName
-      )}`
+      )}&area=${regionCode}`
     );
 
     if (response.ok) {
@@ -32,17 +34,17 @@ async function getApartDetail(
 }
 
 export default function ApartDetailPage({ params }: Props) {
-  const { apartName } = params;
+  const { apartName, regionCode } = params;
   const decodedApartName = decodeURIComponent(apartName);
 
-  if (!decodedApartName) {
+  if (!decodedApartName || !regionCode) {
     return null;
   }
 
   return (
     <Suspense fallback={<LoadingFallback />}>
       {(async () => {
-        const data = await getApartDetail(apartName);
+        const data = await getApartDetail(apartName, regionCode);
 
         if (!data) {
           return null;

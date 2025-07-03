@@ -127,37 +127,85 @@ const calculateTradeItems = ($: CheerioAPI): Response['tradeItems'] => {
   return getTradeItems(getTrs());
 };
 
-const fetchTradeDetail = async (apartName: string): Promise<string> => {
-  const response = await fetch(
-    `https://apt2.me/apt/AptReal.jsp?danji_nm=${apartName}`
-  );
+const fetchTradeDetail = async (
+  apartName: string,
+  area: string
+): Promise<string> => {
+  try {
+    // 먼저 메인 페이지에 접근해서 세션 확보
+    const mainResponse = await fetch('https://apt2.me/', {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
+    });
 
-  return await response.text();
+    const cookies = mainResponse.headers.get('set-cookie') || '';
+
+    const url = `https://apt2.me/apt/AptReal.jsp?danji_nm=${encodeURIComponent(apartName)}&area=${area}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        Accept:
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        Connection: 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'same-origin',
+        Referer: 'https://apt2.me/',
+        'Cache-Control': 'max-age=0',
+        Cookie: cookies,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const html = await response.text();
+
+    return html;
+  } catch (error) {
+    console.error('크롤링 에러:', error);
+    throw error;
+  }
 };
 
-const createResponse = async (apartName: string): Promise<Response> => {
-  const html = await fetchTradeDetail(apartName);
+const createResponse = async (
+  apartName: string,
+  area: string
+): Promise<Response> => {
+  const html = await fetchTradeDetail(apartName, area);
   const $ = cheerio.load(html);
 
   const apartInfo = calculateApartInfo($);
   const tradeItems = calculateTradeItems($);
 
-  return { ...apartInfo, tradeItems };
+  return {
+    ...apartInfo,
+    tradeItems,
+  };
 };
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const apartName = searchParams.get('apartName');
+  const area = searchParams.get('area');
 
-  if (!apartName) {
+  if (!apartName || !area) {
     return Response.json(
-      { message: '필수 파라미터가 누락되었습니다.' },
+      { message: '필수 파라미터(apartName, area)가 누락되었습니다.' },
       { status: 400 }
     );
   }
 
   try {
-    return Response.json(await createResponse(apartName));
+    return Response.json(await createResponse(apartName, area));
   } catch (error) {
     return Response.json(
       { message: '서버 오류가 발생했습니다.' },

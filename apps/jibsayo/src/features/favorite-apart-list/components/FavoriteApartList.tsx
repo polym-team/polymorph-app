@@ -20,8 +20,10 @@ export function FavoriteApartList() {
   const { favoriteApartList, removeFavoriteApart } = useFavoriteApartList();
   const isClient = useIsClient();
 
-  const handleClickApart = (apartName: string) => {
-    router.push(`${ROUTE_PATH.APARTS}/${encodeURIComponent(apartName)}`);
+  const handleClickApart = (apartName: string, regionCode: string) => {
+    router.push(
+      `${ROUTE_PATH.APARTS}/${regionCode}/${encodeURIComponent(apartName)}`
+    );
   };
 
   const handleRemoveApart = (regionCode: string, apartItem: ApartItem) => {
@@ -70,7 +72,9 @@ export function FavoriteApartList() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleClickApart(item.apartName)}
+                    onClick={() =>
+                      handleClickApart(item.apartName, apart.regionCode)
+                    }
                     className="whitespace-nowrap rounded-r-none border-0 px-3 py-1.5 text-sm"
                   >
                     <span className="translate-y-[-0.5px]">

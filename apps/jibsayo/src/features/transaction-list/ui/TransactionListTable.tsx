@@ -29,6 +29,7 @@ interface TransactionListTableProps {
   onPageIndexChange: (pageIndex: number) => void;
   preservePageIndex?: boolean;
   newTransactionApartIds?: Set<string>;
+  regionCode?: string;
 }
 
 const createColumns = ({
@@ -180,6 +181,7 @@ export function TransactionListTable({
   onPageIndexChange,
   preservePageIndex = false,
   newTransactionApartIds,
+  regionCode,
 }: TransactionListTableProps) {
   const router = useRouter();
   const columns = createColumns({ onToggleFavorite, newTransactionApartIds });
@@ -202,7 +204,10 @@ export function TransactionListTable({
   };
 
   const handleClick = (row: TransactionItem) => {
-    router.push(`${ROUTE_PATH.APARTS}/${encodeURIComponent(row.apartName)}`);
+    if (!regionCode) return;
+    router.push(
+      `${ROUTE_PATH.APARTS}/${regionCode}/${encodeURIComponent(row.apartName)}`
+    );
   };
 
   const getRowClassName = (row: TransactionItem) => {
