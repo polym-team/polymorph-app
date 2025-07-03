@@ -46,7 +46,13 @@ export const useFavoriteApartList = (): Return => {
     if (existingRegionIndex >= 0) {
       const existingRegion = favoriteApartList[existingRegionIndex];
 
-      if (!isDuplicateApart(existingRegion, apartItem.apartId)) {
+      if (
+        !isDuplicateApart(
+          existingRegion,
+          apartItem.apartName,
+          apartItem.address
+        )
+      ) {
         const updatedList = addApartToExistingRegion(
           favoriteApartList,
           existingRegionIndex,
@@ -71,7 +77,8 @@ export const useFavoriteApartList = (): Return => {
 
     const updatedRegion = removeApartFromRegion(
       favoriteApartList[regionIndex],
-      apartItem.apartId
+      apartItem.apartName,
+      apartItem.address
     );
 
     if (updatedRegion.apartItems.length === 0) {

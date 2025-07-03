@@ -28,16 +28,16 @@ interface TransactionListTableProps {
   onPageSizeChange: (pageSize: number) => void;
   onPageIndexChange: (pageIndex: number) => void;
   preservePageIndex?: boolean;
-  newTransactionApartIds?: Set<string>;
+  newTransactionKeys?: Set<string>;
   regionCode?: string;
 }
 
 const createColumns = ({
   onToggleFavorite,
-  newTransactionApartIds,
+  newTransactionKeys,
 }: {
   onToggleFavorite: (item: TransactionItem) => void;
-  newTransactionApartIds?: Set<string>;
+  newTransactionKeys?: Set<string>;
 }): ColumnDef<TransactionItem>[] => [
   {
     accessorKey: 'favorite',
@@ -96,9 +96,12 @@ const createColumns = ({
       const householdsNumber = row.original.householdsNumber;
 
       const isNewTransaction =
-        newTransactionApartIds &&
-        row.original.apartId &&
-        newTransactionApartIds.has(row.original.apartId);
+        newTransactionKeys &&
+        row.original.apartName &&
+        row.original.address &&
+        newTransactionKeys.has(
+          `${row.original.apartName}-${row.original.address}`
+        );
 
       return (
         <div className="flex items-center gap-x-1">
@@ -180,11 +183,11 @@ export function TransactionListTable({
   onPageSizeChange,
   onPageIndexChange,
   preservePageIndex = false,
-  newTransactionApartIds,
+  newTransactionKeys,
   regionCode,
 }: TransactionListTableProps) {
   const router = useRouter();
-  const columns = createColumns({ onToggleFavorite, newTransactionApartIds });
+  const columns = createColumns({ onToggleFavorite, newTransactionKeys });
   const mobileColumnTitles = {
     apartName: '아파트명',
     address: '주소',
@@ -212,9 +215,10 @@ export function TransactionListTable({
 
   const getRowClassName = (row: TransactionItem) => {
     const isNewTransaction =
-      newTransactionApartIds &&
-      row.apartId &&
-      newTransactionApartIds.has(row.apartId);
+      newTransactionKeys &&
+      row.apartName &&
+      row.address &&
+      newTransactionKeys.has(`${row.apartName}-${row.address}`);
 
     const isFavorite = row.favorite;
 

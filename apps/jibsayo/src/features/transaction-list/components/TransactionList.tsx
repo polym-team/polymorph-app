@@ -50,11 +50,13 @@ export function TransactionList() {
   // 즐겨찾기 토글 중인지 추적
   const isTogglingFavorite = useRef(false);
 
-  // 신규 거래건 판단 (오늘 등록된 거래의 apartId 기준)
-  const newTransactionApartIds = useMemo(() => {
+  // 신규 거래건 판단 (오늘 등록된 거래의 apartName-address 기준)
+  const newTransactionKeys = useMemo(() => {
     const newTransactions = newTransactionData?.list ?? [];
     return new Set(
-      newTransactions.map((transaction: any) => transaction.apartId)
+      newTransactions.map(
+        (transaction: any) => `${transaction.apartName}-${transaction.address}`
+      )
     );
   }, [newTransactionData?.list]);
 
@@ -64,14 +66,14 @@ export function TransactionList() {
       favoriteApartList,
       filter,
       regionCode: searchParams.regionCode,
-      newTransactionApartIds,
+      newTransactionKeys,
     });
   }, [
     data?.list,
     favoriteApartList,
     filter,
     searchParams.regionCode,
-    newTransactionApartIds,
+    newTransactionKeys,
   ]);
 
   const totalCount = filteredTransactions.length;
@@ -97,8 +99,8 @@ export function TransactionList() {
       removeFavoriteApart(searchParams.regionCode, item);
     } else {
       const apartItem = {
-        apartId: item.apartId,
         apartName: item.apartName,
+        address: item.address,
       };
       addFavoriteApart(searchParams.regionCode, apartItem);
     }
@@ -131,7 +133,7 @@ export function TransactionList() {
         onPageSizeChange={updatePageSize}
         onPageIndexChange={updatePageIndex}
         preservePageIndex={isTogglingFavorite.current}
-        newTransactionApartIds={newTransactionApartIds}
+        newTransactionKeys={newTransactionKeys}
         regionCode={searchParams.regionCode}
       />
     </div>

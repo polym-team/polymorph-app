@@ -66,7 +66,7 @@ export function FavoriteApartList() {
             <div className="flex flex-wrap gap-2 p-3 md:p-4">
               {apart.apartItems.map(item => (
                 <div
-                  key={item.apartId}
+                  key={`${item.apartName}-${item.address}`}
                   className="border-input bg-background flex flex-shrink-0 rounded-md border"
                 >
                   <Button

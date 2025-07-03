@@ -1,6 +1,6 @@
 export interface ApartItem {
-  apartId: string;
   apartName: string;
+  address: string;
 }
 
 export interface FavoriteApartItem {

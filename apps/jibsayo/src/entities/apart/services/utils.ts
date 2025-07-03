@@ -16,9 +16,12 @@ export const findRegionIndex = (
 
 export const isDuplicateApart = (
   region: FavoriteApartItem,
-  apartId: string
+  apartName: string,
+  address: string
 ): boolean => {
-  return region.apartItems.some(item => item.apartId === apartId);
+  return region.apartItems.some(
+    item => item.apartName === apartName && item.address === address
+  );
 };
 
 export const addApartToExistingRegion = (
@@ -51,11 +54,14 @@ export const createNewRegion = (
 
 export const removeApartFromRegion = (
   region: FavoriteApartItem,
-  apartId: string
+  apartName: string,
+  address: string
 ): FavoriteApartItem => {
   return {
     ...region,
-    apartItems: region.apartItems.filter(item => item.apartId !== apartId),
+    apartItems: region.apartItems.filter(
+      item => !(item.apartName === apartName && item.address === address)
+    ),
   };
 };
 
