@@ -83,18 +83,6 @@ export function CombinedChart({ items }: Props) {
         </div>
       </div>
 
-      {/* 차트 범례 */}
-      <div className="mb-4 flex items-center justify-center gap-6 text-sm">
-        <div className="flex items-center gap-2">
-          <div className="h-3 w-8 bg-blue-500"></div>
-          <span>실거래가 (만원)</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="h-3 w-8 bg-gray-400"></div>
-          <span>거래건수 (건)</span>
-        </div>
-      </div>
-
       <div className="relative w-full">
         <div
           className="relative"

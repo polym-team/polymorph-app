@@ -352,11 +352,16 @@ export function useCombinedChart({
       g.append('rect')
         .attr('class', 'count-bar')
         .attr('x', xPos - barWidth / 2)
-        .attr('y', yCountScale(totalCount))
+        .attr('y', chartHeight) // 시작 위치를 차트 하단으로
         .attr('width', barWidth)
-        .attr('height', chartHeight - yCountScale(totalCount))
+        .attr('height', 0) // 시작 높이를 0으로
         .attr('fill', '#e5e7eb')
-        .attr('opacity', 0.7);
+        .attr('opacity', 0.7)
+        .transition()
+        .duration(500)
+        .delay((_, i) => i * 30) // 순차적으로 애니메이션
+        .attr('y', yCountScale(totalCount))
+        .attr('height', chartHeight - yCountScale(totalCount));
     });
 
     // 평형별 실거래가 라인 차트
@@ -378,7 +383,17 @@ export function useCombinedChart({
         .attr('fill', 'none')
         .attr('stroke', color)
         .attr('stroke-width', 2)
-        .attr('d', line);
+        .attr('d', line)
+        .attr('stroke-dasharray', function () {
+          return this.getTotalLength();
+        })
+        .attr('stroke-dashoffset', function () {
+          return this.getTotalLength();
+        })
+        .transition()
+        .duration(600)
+        .delay((_, i) => i * 100) // 평형별로 순차 애니메이션
+        .attr('stroke-dashoffset', 0);
 
       // 데이터 포인트 (기본적으로 숨김)
       g.selectAll(`.point-${pyeong}`)
@@ -387,12 +402,16 @@ export function useCombinedChart({
         .append('circle')
         .attr('class', `point-${pyeong}`)
         .attr('cx', d => xScale(formatDateForScale(d.date)) || 0)
-        .attr('cy', d => yPriceScale(d.averagePrice))
+        .attr('cy', chartHeight) // 시작 위치를 차트 하단으로
         .attr('r', 4)
         .attr('fill', color)
         .attr('stroke', 'white')
         .attr('stroke-width', 2)
-        .style('opacity', 0); // 기본적으로 숨김
+        .style('opacity', 0) // 기본적으로 숨김
+        .transition()
+        .duration(400)
+        .delay((_, i) => i * 50 + 200) // 라인 애니메이션 후 시작
+        .attr('cy', d => yPriceScale(d.averagePrice));
     });
 
     // x축과 y축 사이의 빈틈을 메우는 실선 (바 차트보다 나중에 그려서 위에 표시)
