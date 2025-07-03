@@ -7,6 +7,7 @@ import { subMonths } from 'date-fns';
 import {
   MutableRefObject,
   RefObject,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -52,6 +53,9 @@ export function useCombinedChart({
   const [selectedPyeongs, setSelectedPyeongs] = useState<Set<number>>(
     new Set()
   );
+
+  const [isFirstRender, setIsFirstRender] = useState(true);
+  const [prevChartDataKey, setPrevChartDataKey] = useState<string>('');
 
   // 컨테이너 너비 감지
   useEffect(() => {
@@ -349,19 +353,30 @@ export function useCombinedChart({
       const totalCount = dateCountMap.get(dateString) || 0;
       const xPos = xScale(dateString) || 0;
 
-      g.append('rect')
+      const bar = g
+        .append('rect')
         .attr('class', 'count-bar')
         .attr('x', xPos - barWidth / 2)
-        .attr('y', chartHeight) // 시작 위치를 차트 하단으로
         .attr('width', barWidth)
-        .attr('height', 0) // 시작 높이를 0으로
         .attr('fill', '#e5e7eb')
-        .attr('opacity', 0.7)
-        .transition()
-        .duration(500)
-        .delay((_, i) => i * 30) // 순차적으로 애니메이션
-        .attr('y', yCountScale(totalCount))
-        .attr('height', chartHeight - yCountScale(totalCount));
+        .attr('opacity', 0.7);
+
+      if (isFirstRender) {
+        // 첫 번째 렌더링일 때만 애니메이션 실행
+        bar
+          .attr('y', chartHeight) // 시작 위치를 차트 하단으로
+          .attr('height', 0) // 시작 높이를 0으로
+          .transition()
+          .duration(500)
+          .delay((_, i) => i * 30) // 순차적으로 애니메이션
+          .attr('y', yCountScale(totalCount))
+          .attr('height', chartHeight - yCountScale(totalCount));
+      } else {
+        // 데이터가 변경되지 않았으면 바로 최종 위치에 배치
+        bar
+          .attr('y', yCountScale(totalCount))
+          .attr('height', chartHeight - yCountScale(totalCount));
+      }
     });
 
     // 평형별 실거래가 라인 차트
@@ -378,40 +393,55 @@ export function useCombinedChart({
         .y(d => yPriceScale(d.averagePrice))
         .curve(d3.curveMonotoneX);
 
-      g.append('path')
+      const path = g
+        .append('path')
         .datum(data.sort((a, b) => a.date.getTime() - b.date.getTime()))
         .attr('fill', 'none')
         .attr('stroke', color)
         .attr('stroke-width', 2)
-        .attr('d', line)
-        .attr('stroke-dasharray', function () {
-          return this.getTotalLength();
-        })
-        .attr('stroke-dashoffset', function () {
-          return this.getTotalLength();
-        })
-        .transition()
-        .duration(600)
-        .delay((_, i) => i * 100) // 평형별로 순차 애니메이션
-        .attr('stroke-dashoffset', 0);
+        .attr('d', line);
+
+      if (isFirstRender) {
+        // 첫 번째 렌더링일 때만 애니메이션 실행
+        path
+          .attr('stroke-dasharray', function () {
+            return this.getTotalLength();
+          })
+          .attr('stroke-dashoffset', function () {
+            return this.getTotalLength();
+          })
+          .transition()
+          .duration(600)
+          .delay((_, i) => i * 100) // 평형별로 순차 애니메이션
+          .attr('stroke-dashoffset', 0);
+      }
 
       // 데이터 포인트 (기본적으로 숨김)
-      g.selectAll(`.point-${pyeong}`)
+      const points = g
+        .selectAll(`.point-${pyeong}`)
         .data(data)
         .enter()
         .append('circle')
         .attr('class', `point-${pyeong}`)
         .attr('cx', d => xScale(formatDateForScale(d.date)) || 0)
-        .attr('cy', chartHeight) // 시작 위치를 차트 하단으로
         .attr('r', 4)
         .attr('fill', color)
         .attr('stroke', 'white')
         .attr('stroke-width', 2)
-        .style('opacity', 0) // 기본적으로 숨김
-        .transition()
-        .duration(400)
-        .delay((_, i) => i * 50 + 200) // 라인 애니메이션 후 시작
-        .attr('cy', d => yPriceScale(d.averagePrice));
+        .style('opacity', 0); // 기본적으로 숨김
+
+      if (isFirstRender) {
+        // 첫 번째 렌더링일 때만 애니메이션 실행
+        points
+          .attr('cy', chartHeight) // 시작 위치를 차트 하단으로
+          .transition()
+          .duration(400)
+          .delay((_, i) => i * 50 + 200) // 라인 애니메이션 후 시작
+          .attr('cy', d => yPriceScale(d.averagePrice));
+      } else {
+        // 데이터가 변경되지 않았으면 바로 최종 위치에 배치
+        points.attr('cy', d => yPriceScale(d.averagePrice));
+      }
     });
 
     // x축과 y축 사이의 빈틈을 메우는 실선 (바 차트보다 나중에 그려서 위에 표시)
@@ -490,37 +520,31 @@ export function useCombinedChart({
       const formatPrice = (price: number) =>
         `${Math.round(price / 100000000)}억`;
 
-      let tooltipContent = `<div style="font-weight: bold; margin-bottom: 4px;">${closestDateString}</div>`;
-
       // 해당 날짜의 총 거래건수 계산
       const totalCount = dateData.reduce((sum, d) => sum + d.count, 0);
+
+      // 날짜 형식을 "2025년 1월" 형태로 변환
+      const [year, month] = closestDateString.split('-');
+      const formattedDate = `${year}년 ${parseInt(month)}월`;
+
+      let tooltipContent = `<div style=\"font-weight: bold; margin-bottom: 4px;\">${formattedDate}(총 ${totalCount}건)</div>`;
 
       dateData
         .sort((a, b) => a.pyeong - b.pyeong)
         .forEach(d => {
-          const color =
-            CHART_COLORS[
-              legendData.findIndex(l => l.pyeong === d.pyeong) %
-                CHART_COLORS.length
-            ];
+          const legendItem = legendData.find(l => l.pyeong === d.pyeong);
+          const color = legendItem
+            ? legendItem.color
+            : CHART_COLORS[d.pyeong % CHART_COLORS.length];
           tooltipContent += `
-            <div style="display: flex; align-items: center; margin: 2px 0;">
-              <div style="width: 12px; height: 12px; background-color: ${color}; margin-right: 6px; border-radius: 2px;"></div>
-              <span style="margin-right: 8px;">${d.pyeong}평:</span>
-              <span style="margin-right: 8px;">${formatPrice(d.averagePrice)}</span>
-              <span style="color: #999;">(${d.count}건)</span>
+            <div style=\"display: flex; align-items: center; margin: 2px 0;\">
+              <div style=\"width: 12px; height: 12px; background-color: ${color}; margin-right: 6px; border-radius: 2px;\"></div>
+              <span style=\"margin-right: 8px;\">${d.pyeong}평:</span>
+              <span style=\"margin-right: 8px;\">${formatPrice(d.averagePrice)}</span>
+              <span style=\"color: #999;\">(${d.count}건)</span>
             </div>
           `;
         });
-
-      // 총 거래건수 표시 (평형이 여러 개인 경우)
-      if (dateData.length > 1) {
-        tooltipContent += `
-          <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid #444; font-size: 11px; color: #ccc;">
-            총 거래건수: ${totalCount}건
-          </div>
-        `;
-      }
 
       tooltipRef.current.innerHTML = tooltipContent;
 
@@ -551,17 +575,41 @@ export function useCombinedChart({
 
         if (tooltipRef.current) {
           const tooltipWidth = tooltipRef.current.offsetWidth;
-          const tooltipHeight = tooltipRef.current.offsetHeight;
+          const rect = svgRef.current?.getBoundingClientRect();
 
-          d3.select(tooltipRef.current)
-            .style(
-              'left',
-              `${Math.min(event.pageX + 10, window.innerWidth - tooltipWidth - 10)}px`
-            )
-            .style(
-              'top',
-              `${Math.max(event.pageY - tooltipHeight - 10, 10)}px`
-            );
+          if (rect) {
+            // 세로선 위치를 정확히 계산
+            const domain = xScale.domain();
+            const range = xScale.range();
+            const step = (range[1] - range[0]) / (domain.length - 1);
+            const index = Math.round(mouseX / step);
+            const closestDateString =
+              domain[Math.max(0, Math.min(index, domain.length - 1))];
+            const lineX = xScale(closestDateString) || 0;
+
+            // 세로선의 절대 위치 계산
+            const absoluteLineX = rect.left + lineX;
+            const chartCenter = rect.left + chartWidth / 2;
+            const isLeftSide = absoluteLineX < chartCenter;
+
+            let left: number;
+            if (isLeftSide) {
+              // 세로선이 좌측이면 툴팁을 우측에 배치 (20px)
+              left = absoluteLineX + 50;
+            } else {
+              // 세로선이 우측이면 툴팁을 좌측에 배치 (10px)
+              left = absoluteLineX - tooltipWidth - 10;
+            }
+
+            // 화면 경계 체크
+            const maxLeft = window.innerWidth - tooltipWidth - 10;
+            left = Math.max(10, Math.min(left, maxLeft));
+
+            d3.select(tooltipRef.current)
+              .style('left', `${left}px`)
+              .style('top', `${rect.top + 40}px`)
+              .style('transform', 'none');
+          }
         }
       })
       .on('mouseout', () => {
@@ -574,6 +622,17 @@ export function useCombinedChart({
       });
 
     setIsLoading(false);
+
+    // 첫 번째 렌더링 완료 후 상태 업데이트
+    if (isFirstRender) {
+      setIsFirstRender(false);
+    }
+
+    // 데이터 변경 감지를 위한 키 업데이트
+    const chartDataKey = JSON.stringify(
+      chartData.map(d => ({ date: d.date, pyeong: d.pyeong }))
+    );
+    setPrevChartDataKey(chartDataKey);
   }, [
     chartData,
     chartWidth,
@@ -582,7 +641,7 @@ export function useCombinedChart({
     yPriceScale,
     yCountScale,
     margin,
-    legendData,
+    isFirstRender,
   ]);
 
   // 초기 선택 상태 설정
@@ -602,7 +661,7 @@ export function useCombinedChart({
     };
   }, []);
 
-  const togglePyeong = (pyeong: number) => {
+  const togglePyeong = useCallback((pyeong: number) => {
     setSelectedPyeongs(prev => {
       const newSet = new Set(prev);
       if (newSet.has(pyeong)) {
@@ -612,21 +671,182 @@ export function useCombinedChart({
       }
       return newSet;
     });
-  };
+  }, []);
 
-  const toggleAllPyeongs = () => {
+  const toggleAllPyeongs = useCallback(() => {
     if (selectedPyeongs.size === legendData.length) {
       setSelectedPyeongs(new Set());
     } else {
       setSelectedPyeongs(new Set(legendData.map(item => item.pyeong)));
     }
-  };
+  }, [selectedPyeongs.size, legendData]);
+
+  // 모바일용 툴팁 업데이트 함수
+  const updateTooltipForMobile = useCallback(
+    (touchX: number) => {
+      if (!tooltipRef.current) return;
+
+      // Point scale에서는 invert가 없으므로 가장 가까운 점을 찾는 방식 사용
+      const domain = xScale.domain();
+      const range = xScale.range();
+      const step = (range[1] - range[0]) / (domain.length - 1);
+
+      const index = Math.round(touchX / step);
+      const closestDateString =
+        domain[Math.max(0, Math.min(index, domain.length - 1))];
+
+      if (!closestDateString) return;
+
+      // 해당 날짜 문자열과 일치하는 데이터 찾기
+      const dateData = chartData.filter(
+        d => formatDateForScale(d.date) === closestDateString
+      );
+
+      if (dateData.length === 0) return;
+
+      // 모든 데이터 포인트 숨기기
+      const g = d3.select(svgRef.current).select('g');
+      g.selectAll('[class*="point-"]').style('opacity', 0);
+
+      // 해당 월의 데이터 포인트만 표시
+      dateData.forEach(d => {
+        g.selectAll(`.point-${d.pyeong}`)
+          .filter(
+            pointData =>
+              formatDateForScale((pointData as CombinedChartData).date) ===
+              closestDateString
+          )
+          .style('opacity', 1);
+      });
+
+      // 툴팁 내용 생성
+      const formatPrice = (price: number) =>
+        `${Math.round(price / 100000000)}억`;
+
+      // 해당 날짜의 총 거래건수 계산
+      const totalCount = dateData.reduce((sum, d) => sum + d.count, 0);
+
+      // 날짜 형식을 "2025년 1월" 형태로 변환
+      const [year, month] = closestDateString.split('-');
+      const formattedDate = `${year}년 ${parseInt(month)}월`;
+
+      let tooltipContent = `<div style=\"font-weight: bold; margin-bottom: 4px;\">${formattedDate}(총 ${totalCount}건)</div>`;
+
+      dateData
+        .sort((a, b) => a.pyeong - b.pyeong)
+        .forEach(d => {
+          const legendItem = legendData.find(l => l.pyeong === d.pyeong);
+          const color = legendItem
+            ? legendItem.color
+            : CHART_COLORS[d.pyeong % CHART_COLORS.length];
+          tooltipContent += `
+            <div style=\"display: flex; align-items: center; margin: 2px 0;\">
+              <div style=\"width: 12px; height: 12px; background-color: ${color}; margin-right: 6px; border-radius: 2px;\"></div>
+              <span style=\"margin-right: 8px;\">${d.pyeong}평:</span>
+              <span style=\"margin-right: 8px;\">${formatPrice(d.averagePrice)}</span>
+              <span style=\"color: #999;\">(${d.count}건)</span>
+            </div>
+          `;
+        });
+
+      tooltipRef.current.innerHTML = tooltipContent;
+
+      // 수직선 표시
+      g.selectAll('.hover-line').remove();
+      const lineX = xScale(closestDateString) || 0;
+      g.append('line')
+        .attr('class', 'hover-line')
+        .attr('x1', lineX)
+        .attr('x2', lineX)
+        .attr('y1', 0)
+        .attr('y2', chartHeight)
+        .attr('stroke', '#999')
+        .attr('stroke-width', 1)
+        .attr('stroke-dasharray', '3,3');
+
+      // 모바일 툴팁 위치 계산
+      const tooltipWidth = tooltipRef.current.offsetWidth;
+      const rect = svgRef.current?.getBoundingClientRect();
+
+      if (rect) {
+        // 세로선의 절대 위치 계산
+        const absoluteLineX = rect.left + lineX;
+        const chartCenter = rect.left + chartWidth / 2;
+        const isLeftSide = absoluteLineX < chartCenter;
+
+        let left: number;
+        if (isLeftSide) {
+          // 세로선이 좌측이면 툴팁을 우측에 배치 (20px)
+          left = absoluteLineX + 20;
+        } else {
+          // 세로선이 우측이면 툴팁을 좌측에 배치 (10px)
+          left = absoluteLineX - tooltipWidth - 10;
+        }
+
+        // 화면 경계 체크
+        const maxLeft = window.innerWidth - tooltipWidth - 10;
+        left = Math.max(10, Math.min(left, maxLeft));
+
+        d3.select(tooltipRef.current)
+          .style('left', `${left}px`)
+          .style('top', `${rect.top + 40}px`)
+          .style('transform', 'none');
+      }
+    },
+    [chartData, xScale, chartWidth, chartHeight]
+  );
+
+  // 모바일 터치 이벤트 핸들러들
+  const handleMobileTouchStart = useCallback(
+    (event: TouchEvent) => {
+      if (!tooltipRef.current || !svgRef.current) return;
+
+      const touch = event.touches[0];
+      const rect = svgRef.current.getBoundingClientRect();
+      const touchX = touch.clientX - rect.left - margin.left;
+
+      // 툴팁 표시
+      d3.select(tooltipRef.current).style('visibility', 'visible');
+      updateTooltipForMobile(touchX);
+    },
+    [updateTooltipForMobile, margin.left]
+  );
+
+  const handleMobileTouchMove = useCallback(
+    (event: TouchEvent) => {
+      if (!tooltipRef.current || !svgRef.current) return;
+
+      const touch = event.touches[0];
+      const rect = svgRef.current.getBoundingClientRect();
+      const touchX = touch.clientX - rect.left - margin.left;
+
+      updateTooltipForMobile(touchX);
+    },
+    [updateTooltipForMobile, margin.left]
+  );
+
+  const handleMobileTouchEnd = useCallback(() => {
+    if (!tooltipRef.current) return;
+
+    // 툴팁 숨기기
+    d3.select(tooltipRef.current).style('visibility', 'hidden');
+
+    // 모든 데이터 포인트 숨기기
+    const g = d3.select(svgRef.current).select('g');
+    g.selectAll('[class*="point-"]').style('opacity', 0);
+    g.selectAll('.hover-line').remove();
+  }, []);
 
   return {
-    isLoading,
+    chartData,
     legendData,
+    isLoading,
     selectedPyeongs,
     togglePyeong,
     toggleAllPyeongs,
+    updateTooltipForMobile,
+    handleMobileTouchStart,
+    handleMobileTouchMove,
+    handleMobileTouchEnd,
   };
 }

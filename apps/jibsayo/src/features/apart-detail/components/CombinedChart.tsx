@@ -2,7 +2,7 @@
 
 import { ApartDetailResponse } from '@/app/api/apart/types';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button, Card, Typography } from '@package/ui';
 
@@ -26,22 +26,27 @@ export function CombinedChart({ items }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [period, setPeriod] = useState<PeriodValue>('60');
-  const [windowWidth, setWindowWidth] = useState<number>(
-    typeof window !== 'undefined' ? window.innerWidth : 1024
-  );
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    setMounted(true);
   }, []);
 
   const margin = { top: 20, right: 35, bottom: 30, left: 30 };
-  const height = windowWidth <= 640 ? 250 : 350;
+  const height = useMemo(() => {
+    return mounted && typeof window !== 'undefined' && window.innerWidth <= 640
+      ? 250
+      : 350;
+  }, [mounted]);
+
+  const chartContainerStyle = useMemo(
+    () => ({
+      width: '100%',
+      height: `${height}px`,
+      touchAction: 'none',
+    }),
+    [height]
+  );
 
   const {
     isLoading,
@@ -49,6 +54,9 @@ export function CombinedChart({ items }: Props) {
     selectedPyeongs,
     togglePyeong,
     toggleAllPyeongs,
+    handleMobileTouchStart,
+    handleMobileTouchMove,
+    handleMobileTouchEnd,
   } = useCombinedChart({
     items,
     svgRef,
@@ -57,6 +65,57 @@ export function CombinedChart({ items }: Props) {
     margin,
     period: Number(period),
   });
+
+  // 모바일 터치 이벤트를 위한 non-passive 리스너
+  useEffect(() => {
+    if (!mounted || !svgRef.current) return;
+
+    const svgElement = svgRef.current;
+
+    const handleTouchStart = (event: TouchEvent) => {
+      if (window.innerWidth <= 640) {
+        event.preventDefault();
+        event.stopPropagation();
+        handleMobileTouchStart(event as any);
+      }
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (window.innerWidth <= 640) {
+        event.preventDefault();
+        event.stopPropagation();
+        handleMobileTouchMove(event as any);
+      }
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      if (window.innerWidth <= 640) {
+        event.preventDefault();
+        event.stopPropagation();
+        handleMobileTouchEnd(event as any);
+      }
+    };
+
+    // non-passive 옵션으로 이벤트 리스너 추가
+    svgElement.addEventListener('touchstart', handleTouchStart, {
+      passive: false,
+    });
+    svgElement.addEventListener('touchmove', handleTouchMove, {
+      passive: false,
+    });
+    svgElement.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    return () => {
+      svgElement.removeEventListener('touchstart', handleTouchStart);
+      svgElement.removeEventListener('touchmove', handleTouchMove);
+      svgElement.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [
+    mounted,
+    handleMobileTouchStart,
+    handleMobileTouchMove,
+    handleMobileTouchEnd,
+  ]);
 
   const handlePeriodChange = (value: PeriodValue) => {
     setPeriod(value);
@@ -84,13 +143,7 @@ export function CombinedChart({ items }: Props) {
       </div>
 
       <div className="relative w-full">
-        <div
-          className="relative"
-          style={{
-            width: '100%',
-            height: `${height}px`,
-          }}
-        >
+        <div className="relative" style={chartContainerStyle}>
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/80">
               <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
@@ -101,6 +154,7 @@ export function CombinedChart({ items }: Props) {
             style={{
               width: '100%',
               height: '100%',
+              touchAction: 'none',
             }}
           />
         </div>
