@@ -183,11 +183,23 @@ export function useCombinedChart({
     // 날짜를 문자열로 변환하여 도메인으로 사용
     const dateStrings = uniqueDates.map(date => d3.timeFormat('%Y-%m')(date));
 
+    // 바의 너비 계산
+    const barWidth =
+      dateStrings.length > 0
+        ? Math.max(
+            1,
+            (chartWidth - dateStrings.length * 4) / dateStrings.length
+          )
+        : 0;
+
+    // 바가 차트 영역을 벗어나지 않도록 range 조정
+    const margin = Math.max(barWidth / 2, 10); // 최소 10px 여백
+
     return d3
       .scalePoint()
       .domain(dateStrings)
-      .range([0, chartWidth])
-      .padding(0.1);
+      .range([margin, chartWidth - margin])
+      .padding(0);
   }, [chartData, chartWidth]);
 
   const yPriceScale = useMemo(() => {
@@ -295,6 +307,8 @@ export function useCombinedChart({
 
     // 유니크한 날짜들 추출
     const uniqueDates = Array.from(dateCountMap.keys()).sort();
+
+    // 바의 너비 계산 (스케일 계산과 동일한 로직)
     const barWidth =
       uniqueDates.length > 0
         ? Math.max(
@@ -303,7 +317,7 @@ export function useCombinedChart({
           )
         : 0;
 
-    // 거래건수 바 차트 (날짜별로 합산된 데이터)
+    // 거래건수 바 차트 (날짜별로 합산된 데이터) - x축 선보다 먼저 그리기
     uniqueDates.forEach(dateString => {
       const totalCount = dateCountMap.get(dateString) || 0;
       const xPos = xScale(dateString) || 0;
@@ -339,7 +353,7 @@ export function useCombinedChart({
         .attr('stroke-width', 2)
         .attr('d', line);
 
-      // 데이터 포인트
+      // 데이터 포인트 (기본적으로 숨김)
       g.selectAll(`.point-${pyeong}`)
         .data(data)
         .enter()
@@ -350,8 +364,36 @@ export function useCombinedChart({
         .attr('r', 4)
         .attr('fill', color)
         .attr('stroke', 'white')
-        .attr('stroke-width', 2);
+        .attr('stroke-width', 2)
+        .style('opacity', 0); // 기본적으로 숨김
     });
+
+    // x축과 y축 사이의 빈틈을 메우는 실선 (바 차트보다 나중에 그려서 위에 표시)
+    const xRange = xScale.range();
+    const leftGap = xRange[0]; // 왼쪽 빈틈
+    const rightGap = chartWidth - xRange[1]; // 오른쪽 빈틈
+
+    // 왼쪽 실선 (왼쪽 y축에서 x축 시작점까지)
+    if (leftGap > 0) {
+      g.append('line')
+        .attr('x1', 0)
+        .attr('x2', xRange[0])
+        .attr('y1', chartHeight + 0.5)
+        .attr('y2', chartHeight + 0.5)
+        .attr('stroke', '#000')
+        .attr('stroke-width', 1);
+    }
+
+    // 오른쪽 실선 (x축 끝점에서 오른쪽 y축까지)
+    if (rightGap > 0) {
+      g.append('line')
+        .attr('x1', xRange[1])
+        .attr('x2', chartWidth)
+        .attr('y1', chartHeight + 0.5)
+        .attr('y2', chartHeight + 0.5)
+        .attr('stroke', '#000')
+        .attr('stroke-width', 1);
+    }
 
     // 마우스 인터랙션을 위한 투명한 오버레이
     const overlay = g
@@ -383,6 +425,20 @@ export function useCombinedChart({
       );
 
       if (dateData.length === 0) return;
+
+      // 모든 데이터 포인트 숨기기
+      g.selectAll('[class*="point-"]').style('opacity', 0);
+
+      // 해당 월의 데이터 포인트만 표시
+      dateData.forEach(d => {
+        g.selectAll(`.point-${d.pyeong}`)
+          .filter(
+            pointData =>
+              formatDateForScale((pointData as CombinedChartData).date) ===
+              closestDateString
+          )
+          .style('opacity', 1);
+      });
 
       // 툴팁 내용 생성
       const formatPrice = (price: number) =>
@@ -466,6 +522,8 @@ export function useCombinedChart({
         if (tooltipRef.current) {
           d3.select(tooltipRef.current).style('visibility', 'hidden');
         }
+        // 모든 데이터 포인트 숨기기
+        g.selectAll('[class*="point-"]').style('opacity', 0);
         g.selectAll('.hover-line').remove();
       });
 
