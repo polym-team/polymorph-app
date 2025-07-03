@@ -170,20 +170,24 @@ export function useCombinedChart({
   // 스케일 계산
   const xScale = useMemo(() => {
     if (!chartData.length) {
-      return d3
-        .scaleTime()
-        .domain([new Date(), new Date()])
-        .range([0, chartWidth]);
+      return d3.scalePoint().domain([]).range([0, chartWidth]);
     }
 
-    const dates = Array.from(new Set(chartData.map(d => d.date.getTime())))
+    // 실제 데이터가 있는 날짜들만 추출하고 정렬
+    const uniqueDates = Array.from(
+      new Set(chartData.map(d => d.date.getTime()))
+    )
       .map(time => new Date(time))
       .sort((a, b) => a.getTime() - b.getTime());
 
+    // 날짜를 문자열로 변환하여 도메인으로 사용
+    const dateStrings = uniqueDates.map(date => d3.timeFormat('%Y-%m')(date));
+
     return d3
-      .scaleTime()
-      .domain(d3.extent(dates) as [Date, Date])
-      .range([0, chartWidth]);
+      .scalePoint()
+      .domain(dateStrings)
+      .range([0, chartWidth])
+      .padding(0.1);
   }, [chartData, chartWidth]);
 
   const yPriceScale = useMemo(() => {
@@ -203,12 +207,22 @@ export function useCombinedChart({
       return d3.scaleLinear().domain([0, 10]).range([chartHeight, 0]);
     }
 
-    const maxCount = d3.max(chartData, d => d.count) || 0;
+    // 날짜별 거래건수 합산하여 최대값 계산
+    const dateCountMap = new Map<string, number>();
+    chartData.forEach(d => {
+      const dateKey = d3.timeFormat('%Y-%m')(d.date);
+      dateCountMap.set(dateKey, (dateCountMap.get(dateKey) || 0) + d.count);
+    });
+
+    const maxCount = Math.max(...Array.from(dateCountMap.values())) || 0;
     return d3
       .scaleLinear()
       .domain([0, maxCount * 1.1])
       .range([chartHeight, 0]);
   }, [chartData, chartHeight]);
+
+  // 날짜를 문자열로 변환하는 헬퍼 함수
+  const formatDateForScale = (date: Date) => d3.timeFormat('%Y-%m')(date);
 
   // 차트 렌더링
   useEffect(() => {
@@ -250,12 +264,11 @@ export function useCombinedChart({
     g.append('g')
       .attr('transform', `translate(0,${chartHeight})`)
       .call(
-        d3.axisBottom(xScale).tickFormat(domainValue => {
-          if (domainValue instanceof Date) {
-            return d3.timeFormat('%Y-%m')(domainValue);
-          }
-          return '';
-        })
+        d3
+          .axisBottom(xScale)
+          .tickValues(
+            xScale.domain().filter(dateString => dateString.endsWith('-01'))
+          )
       );
 
     // 왼쪽 y축 (가격)
@@ -273,29 +286,49 @@ export function useCombinedChart({
     // 평형별로 그룹화
     const pyeongGroups = d3.group(chartData, d => d.pyeong);
 
+    // 날짜별 거래건수 합산 (바 차트용)
+    const dateCountMap = new Map<string, number>();
+    chartData.forEach(d => {
+      const dateKey = formatDateForScale(d.date);
+      dateCountMap.set(dateKey, (dateCountMap.get(dateKey) || 0) + d.count);
+    });
+
+    // 유니크한 날짜들 추출
+    const uniqueDates = Array.from(dateCountMap.keys()).sort();
+    const barWidth =
+      uniqueDates.length > 0
+        ? Math.max(
+            1,
+            (chartWidth - uniqueDates.length * 4) / uniqueDates.length
+          )
+        : 0;
+
+    // 거래건수 바 차트 (날짜별로 합산된 데이터)
+    uniqueDates.forEach(dateString => {
+      const totalCount = dateCountMap.get(dateString) || 0;
+      const xPos = xScale(dateString) || 0;
+
+      g.append('rect')
+        .attr('class', 'count-bar')
+        .attr('x', xPos - barWidth / 2)
+        .attr('y', yCountScale(totalCount))
+        .attr('width', barWidth)
+        .attr('height', chartHeight - yCountScale(totalCount))
+        .attr('fill', '#e5e7eb')
+        .attr('opacity', 0.7);
+    });
+
+    // 평형별 실거래가 라인 차트
     Array.from(pyeongGroups, ([pyeong, data]) => {
       const color =
         CHART_COLORS[
           legendData.findIndex(l => l.pyeong === pyeong) % CHART_COLORS.length
         ];
 
-      // 거래건수 바 차트
-      g.selectAll(`.bar-${pyeong}`)
-        .data(data)
-        .enter()
-        .append('rect')
-        .attr('class', `bar-${pyeong}`)
-        .attr('x', d => xScale(d.date) - 10)
-        .attr('y', d => yCountScale(d.count))
-        .attr('width', 20)
-        .attr('height', d => chartHeight - yCountScale(d.count))
-        .attr('fill', '#e5e7eb')
-        .attr('opacity', 0.7);
-
       // 실거래가 라인 차트
       const line = d3
         .line<CombinedChartData>()
-        .x(d => xScale(d.date))
+        .x(d => xScale(formatDateForScale(d.date)) || 0)
         .y(d => yPriceScale(d.averagePrice))
         .curve(d3.curveMonotoneX);
 
@@ -312,7 +345,7 @@ export function useCombinedChart({
         .enter()
         .append('circle')
         .attr('class', `point-${pyeong}`)
-        .attr('cx', d => xScale(d.date))
+        .attr('cx', d => xScale(formatDateForScale(d.date)) || 0)
         .attr('cy', d => yPriceScale(d.averagePrice))
         .attr('r', 4)
         .attr('fill', color)
@@ -333,34 +366,32 @@ export function useCombinedChart({
     const updateTooltip = (mouseX: number) => {
       if (!tooltipRef.current) return;
 
-      // 마우스 위치에서 가장 가까운 날짜 찾기
-      const mouseDate = xScale.invert(mouseX);
-      const sortedDates = Array.from(
-        new Set(chartData.map(d => d.date.getTime()))
-      )
-        .map(time => new Date(time))
-        .sort((a, b) => a.getTime() - b.getTime());
+      // Point scale에서는 invert가 없으므로 가장 가까운 점을 찾는 방식 사용
+      const domain = xScale.domain();
+      const range = xScale.range();
+      const step = (range[1] - range[0]) / (domain.length - 1);
 
-      const closestDate = sortedDates.reduce((prev, curr) => {
-        return Math.abs(curr.getTime() - mouseDate.getTime()) <
-          Math.abs(prev.getTime() - mouseDate.getTime())
-          ? curr
-          : prev;
-      });
+      const index = Math.round(mouseX / step);
+      const closestDateString =
+        domain[Math.max(0, Math.min(index, domain.length - 1))];
 
-      // 해당 날짜의 모든 평형 데이터 수집
+      if (!closestDateString) return;
+
+      // 해당 날짜 문자열과 일치하는 데이터 찾기
       const dateData = chartData.filter(
-        d => d.date.getTime() === closestDate.getTime()
+        d => formatDateForScale(d.date) === closestDateString
       );
 
       if (dateData.length === 0) return;
 
       // 툴팁 내용 생성
-      const formatDate = d3.timeFormat('%Y년 %m월');
       const formatPrice = (price: number) =>
         `${Math.round(price / 100000000)}억`;
 
-      let tooltipContent = `<div style="font-weight: bold; margin-bottom: 4px;">${formatDate(closestDate)}</div>`;
+      let tooltipContent = `<div style="font-weight: bold; margin-bottom: 4px;">${closestDateString}</div>`;
+
+      // 해당 날짜의 총 거래건수 계산
+      const totalCount = dateData.reduce((sum, d) => sum + d.count, 0);
 
       dateData
         .sort((a, b) => a.pyeong - b.pyeong)
@@ -380,14 +411,24 @@ export function useCombinedChart({
           `;
         });
 
+      // 총 거래건수 표시 (평형이 여러 개인 경우)
+      if (dateData.length > 1) {
+        tooltipContent += `
+          <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid #444; font-size: 11px; color: #ccc;">
+            총 거래건수: ${totalCount}건
+          </div>
+        `;
+      }
+
       tooltipRef.current.innerHTML = tooltipContent;
 
       // 수직선 표시
       g.selectAll('.hover-line').remove();
+      const lineX = xScale(closestDateString) || 0;
       g.append('line')
         .attr('class', 'hover-line')
-        .attr('x1', xScale(closestDate))
-        .attr('x2', xScale(closestDate))
+        .attr('x1', lineX)
+        .attr('x2', lineX)
         .attr('y1', 0)
         .attr('y2', chartHeight)
         .attr('stroke', '#999')
