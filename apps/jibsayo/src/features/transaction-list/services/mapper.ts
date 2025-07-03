@@ -46,9 +46,7 @@ export const mapTransactionsWithFavorites = ({
         ? transaction.favorite
         : true;
       const isMatchedNewTransaction = filter.isNewTransactionOnly
-        ? newTransactionKeys?.has(
-            `${transaction.apartName}-${transaction.address}`
-          ) || false
+        ? newTransactionKeys?.has(transaction.apartId) || false
         : true;
 
       return (

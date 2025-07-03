@@ -28,16 +28,16 @@ interface TransactionListTableProps {
   onPageSizeChange: (pageSize: number) => void;
   onPageIndexChange: (pageIndex: number) => void;
   preservePageIndex?: boolean;
-  newTransactionKeys?: Set<string>;
+  newTransactionIds?: Set<string>;
   regionCode?: string;
 }
 
 const createColumns = ({
   onToggleFavorite,
-  newTransactionKeys,
+  newTransactionIds,
 }: {
   onToggleFavorite: (item: TransactionItem) => void;
-  newTransactionKeys?: Set<string>;
+  newTransactionIds?: Set<string>;
 }): ColumnDef<TransactionItem>[] => [
   {
     accessorKey: 'favorite',
@@ -96,12 +96,9 @@ const createColumns = ({
       const householdsNumber = row.original.householdsNumber;
 
       const isNewTransaction =
-        newTransactionKeys &&
-        row.original.apartName &&
-        row.original.address &&
-        newTransactionKeys.has(
-          `${row.original.apartName}-${row.original.address}`
-        );
+        newTransactionIds &&
+        row.original.apartId &&
+        newTransactionIds.has(row.original.apartId);
 
       return (
         <div className="flex items-center gap-x-1">
@@ -183,11 +180,11 @@ export function TransactionListTable({
   onPageSizeChange,
   onPageIndexChange,
   preservePageIndex = false,
-  newTransactionKeys,
+  newTransactionIds,
   regionCode,
 }: TransactionListTableProps) {
   const router = useRouter();
-  const columns = createColumns({ onToggleFavorite, newTransactionKeys });
+  const columns = createColumns({ onToggleFavorite, newTransactionIds });
   const mobileColumnTitles = {
     apartName: '아파트명',
     address: '주소',
@@ -215,10 +212,7 @@ export function TransactionListTable({
 
   const getRowClassName = (row: TransactionItem) => {
     const isNewTransaction =
-      newTransactionKeys &&
-      row.apartName &&
-      row.address &&
-      newTransactionKeys.has(`${row.apartName}-${row.address}`);
+      newTransactionIds && row.apartId && newTransactionIds.has(row.apartId);
 
     const isFavorite = row.favorite;
 

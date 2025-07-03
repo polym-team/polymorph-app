@@ -50,12 +50,12 @@ export function TransactionList() {
   // 즐겨찾기 토글 중인지 추적
   const isTogglingFavorite = useRef(false);
 
-  // 신규 거래건 판단 (오늘 등록된 거래의 apartName-address 기준)
-  const newTransactionKeys = useMemo(() => {
+  // 신규 거래건 판단 (오늘 등록된 거래의 개별 거래건 ID 기준)
+  const newTransactionIds = useMemo(() => {
     const newTransactions = newTransactionData?.list ?? [];
     return new Set(
       newTransactions.map(
-        (transaction: any) => `${transaction.apartName}-${transaction.address}`
+        (transaction: any) => transaction.id || transaction.apartId
       )
     );
   }, [newTransactionData?.list]);
@@ -66,14 +66,14 @@ export function TransactionList() {
       favoriteApartList,
       filter,
       regionCode: searchParams.regionCode,
-      newTransactionKeys,
+      newTransactionKeys: newTransactionIds,
     });
   }, [
     data?.list,
     favoriteApartList,
     filter,
     searchParams.regionCode,
-    newTransactionKeys,
+    newTransactionIds,
   ]);
 
   const totalCount = filteredTransactions.length;
@@ -133,7 +133,7 @@ export function TransactionList() {
         onPageSizeChange={updatePageSize}
         onPageIndexChange={updatePageIndex}
         preservePageIndex={isTogglingFavorite.current}
-        newTransactionKeys={newTransactionKeys}
+        newTransactionIds={newTransactionIds}
         regionCode={searchParams.regionCode}
       />
     </div>
