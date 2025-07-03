@@ -273,21 +273,48 @@ export function useCombinedChart({
     }
 
     // x축
-    g.append('g')
+    const yearTicks = xScale
+      .domain()
+      .filter(dateString => dateString.endsWith('-01'))
+      .map(dateString => dateString.split('-')[0]);
+
+    // 모바일에서는 2년마다 하나씩만 표시
+    const displayTicks =
+      containerWidth <= 640
+        ? yearTicks.filter((_, index) => index % 2 === 0)
+        : yearTicks;
+
+    const xAxis = g
+      .append('g')
       .attr('transform', `translate(0,${chartHeight})`)
       .call(
         d3
           .axisBottom(xScale)
-          .tickValues(
-            xScale.domain().filter(dateString => dateString.endsWith('-01'))
-          )
+          .tickValues(displayTicks.map(year => `${year}-01`))
+          .tickFormat(dateString => {
+            if (dateString.endsWith('-01')) {
+              return dateString.split('-')[0]; // 년도만 추출
+            }
+            return '';
+          })
       );
+
+    // 모바일에서 틱 텍스트 기울이기
+    if (containerWidth <= 640) {
+      xAxis
+        .selectAll('text')
+        .style('text-anchor', 'end')
+        .attr('dx', '-0.8em')
+        .attr('dy', '0.15em')
+        .attr('transform', 'rotate(-45)');
+    }
 
     // 왼쪽 y축 (가격)
     g.append('g').call(
       d3
         .axisLeft(yPriceScale)
         .tickFormat(d => `${Math.round(Number(d) / 100000000)}억`)
+        .tickValues(yPriceScale.ticks().filter(tick => tick > 0))
     );
 
     // 오른쪽 y축 (건수)

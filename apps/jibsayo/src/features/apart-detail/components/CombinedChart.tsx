@@ -40,7 +40,7 @@ export function CombinedChart({ items }: Props) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const margin = { top: 20, right: 60, bottom: 30, left: 60 };
+  const margin = { top: 20, right: 35, bottom: 30, left: 30 };
   const height = windowWidth <= 640 ? 250 : 350;
 
   const {
