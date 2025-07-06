@@ -188,11 +188,12 @@ export function useCombinedChart({
     const dateStrings = uniqueDates.map(date => d3.timeFormat('%Y-%m')(date));
 
     // 바의 너비 계산
+    const barMargin = containerWidth <= 640 ? 0.5 : 4; // 모바일에서는 0.5px, PC에서는 4px
     const barWidth =
       dateStrings.length > 0
         ? Math.max(
             1,
-            (chartWidth - dateStrings.length * 4) / dateStrings.length
+            (chartWidth - dateStrings.length * barMargin) / dateStrings.length
           )
         : 0;
 
@@ -342,11 +343,12 @@ export function useCombinedChart({
     const uniqueDates = Array.from(dateCountMap.keys()).sort();
 
     // 바의 너비 계산 (스케일 계산과 동일한 로직)
+    const barMargin = containerWidth <= 640 ? 0.5 : 4; // 모바일에서는 0.5px, PC에서는 4px
     const barWidth =
       uniqueDates.length > 0
         ? Math.max(
             1,
-            (chartWidth - uniqueDates.length * 4) / uniqueDates.length
+            (chartWidth - uniqueDates.length * barMargin) / uniqueDates.length
           )
         : 0;
 
