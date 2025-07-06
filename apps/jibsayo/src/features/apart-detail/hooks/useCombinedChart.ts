@@ -264,7 +264,7 @@ export function useCombinedChart({
       tooltipRef.current = d3
         .select('body')
         .append('div')
-        .style('position', 'absolute')
+        .style('position', 'fixed')
         .style('visibility', 'hidden')
         .style('background-color', 'rgba(0, 0, 0, 0.8)')
         .style('color', 'white')
@@ -607,19 +607,119 @@ export function useCombinedChart({
 
             d3.select(tooltipRef.current)
               .style('left', `${left}px`)
-              .style('top', `${rect.top + 40}px`)
+              .style('top', `${rect.top + margin.top + 20 + window.scrollY}px`)
               .style('transform', 'none');
           }
         }
       })
       .on('mouseout', () => {
-        if (tooltipRef.current) {
-          d3.select(tooltipRef.current).style('visibility', 'hidden');
-        }
-        // 모든 데이터 포인트 숨기기
+        // 마우스가 차트 영역을 벗어나도 툴팁과 세로선을 유지
+        // 툴팁과 세로선은 그대로 두고, 데이터 포인트만 숨김
         g.selectAll('[class*="point-"]').style('opacity', 0);
-        g.selectAll('.hover-line').remove();
       });
+
+    // PC 버전에서 기본적으로 가장 오른쪽 데이터에 세로선과 툴팁 노출
+    if (chartData.length > 0) {
+      const domain = xScale.domain();
+      const lastDateString = domain[domain.length - 1];
+
+      if (lastDateString) {
+        // 가장 오른쪽 데이터에 대한 툴팁 업데이트
+        const lastDateData = chartData.filter(
+          d => formatDateForScale(d.date) === lastDateString
+        );
+
+        if (lastDateData.length > 0) {
+          // 모든 데이터 포인트 숨기기
+          g.selectAll('[class*="point-"]').style('opacity', 0);
+
+          // 해당 월의 데이터 포인트만 표시
+          lastDateData.forEach(d => {
+            g.selectAll(`.point-${d.pyeong}`)
+              .filter(
+                pointData =>
+                  formatDateForScale((pointData as CombinedChartData).date) ===
+                  lastDateString
+              )
+              .style('opacity', 1);
+          });
+
+          // 툴팁 내용 생성
+          const formatPrice = (price: number) =>
+            `${Math.round(price / 100000000)}억`;
+
+          const totalCount = lastDateData.reduce((sum, d) => sum + d.count, 0);
+          const [year, month] = lastDateString.split('-');
+          const formattedDate = `${year}년 ${parseInt(month)}월`;
+
+          let tooltipContent = `<div style=\"font-weight: bold; margin-bottom: 4px;\">${formattedDate}(총 ${totalCount}건)</div>`;
+
+          lastDateData
+            .sort((a, b) => a.pyeong - b.pyeong)
+            .forEach(d => {
+              const legendItem = legendData.find(l => l.pyeong === d.pyeong);
+              const color = legendItem
+                ? legendItem.color
+                : CHART_COLORS[d.pyeong % CHART_COLORS.length];
+              tooltipContent += `
+                <div style=\"display: flex; align-items: center; margin: 2px 0;\">
+                  <div style=\"width: 12px; height: 12px; background-color: ${color}; margin-right: 6px; border-radius: 2px;\"></div>
+                  <span style=\"margin-right: 8px;\">${d.pyeong}평:</span>
+                  <span style=\"margin-right: 8px;\">${formatPrice(d.averagePrice)}</span>
+                  <span style=\"color: #999;\">(${d.count}건)</span>
+                </div>
+              `;
+            });
+
+          if (tooltipRef.current) {
+            tooltipRef.current.innerHTML = tooltipContent;
+            d3.select(tooltipRef.current).style('visibility', 'visible');
+
+            // 툴팁 위치 계산
+            const tooltipWidth = tooltipRef.current.offsetWidth;
+            const rect = svgRef.current?.getBoundingClientRect();
+
+            if (rect) {
+              const lineX = xScale(lastDateString) || 0;
+              const absoluteLineX = rect.left + lineX;
+              const chartCenter = rect.left + chartWidth / 2;
+              const isLeftSide = absoluteLineX < chartCenter;
+
+              let left: number;
+              if (isLeftSide) {
+                left = absoluteLineX + 50;
+              } else {
+                left = absoluteLineX - tooltipWidth - 10;
+              }
+
+              const maxLeft = window.innerWidth - tooltipWidth - 10;
+              left = Math.max(10, Math.min(left, maxLeft));
+
+              d3.select(tooltipRef.current)
+                .style('left', `${left}px`)
+                .style(
+                  'top',
+                  `${rect.top + margin.top + 20 + window.scrollY}px`
+                )
+                .style('transform', 'none');
+            }
+          }
+
+          // 수직선 표시
+          g.selectAll('.hover-line').remove();
+          const lineX = xScale(lastDateString) || 0;
+          g.append('line')
+            .attr('class', 'hover-line')
+            .attr('x1', lineX)
+            .attr('x2', lineX)
+            .attr('y1', 0)
+            .attr('y2', chartHeight)
+            .attr('stroke', '#999')
+            .attr('stroke-width', 1)
+            .attr('stroke-dasharray', '3,3');
+        }
+      }
+    }
 
     setIsLoading(false);
 
@@ -776,24 +876,27 @@ export function useCombinedChart({
 
         let left: number;
         if (isLeftSide) {
-          // 세로선이 좌측이면 툴팁을 우측에 배치 (20px)
-          left = absoluteLineX + 20;
+          // 세로선이 좌측이면 툴팁을 우측에 배치 (40px)
+          left = absoluteLineX + 40;
         } else {
           // 세로선이 우측이면 툴팁을 좌측에 배치 (10px)
-          left = absoluteLineX - tooltipWidth - 10;
+          left = absoluteLineX - tooltipWidth + 10;
         }
 
         // 화면 경계 체크
         const maxLeft = window.innerWidth - tooltipWidth - 10;
         left = Math.max(10, Math.min(left, maxLeft));
 
+        // Y 위치 - 그래프 영역 최상단보다 조금 아래에 고정
+        const top = rect.top + margin.top + 20;
+
         d3.select(tooltipRef.current)
           .style('left', `${left}px`)
-          .style('top', `${rect.top + 40}px`)
+          .style('top', `${top + window.scrollY}px`)
           .style('transform', 'none');
       }
     },
-    [chartData, xScale, chartWidth, chartHeight]
+    [chartData, xScale, chartWidth, chartHeight, margin.bottom]
   );
 
   // 모바일 터치 이벤트 핸들러들
