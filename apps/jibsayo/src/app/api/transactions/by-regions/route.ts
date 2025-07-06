@@ -2,8 +2,6 @@ import { AdminFirestoreClient } from '@polymorph/firebase';
 
 import { NextRequest, NextResponse } from 'next/server';
 
-import { obfuscateKorean } from '../utils';
-
 interface TransactionData {
   apartId: string;
   apartName: string;
@@ -26,15 +24,6 @@ interface FavoriteApart {
   deviceId: string;
   createdAt: Date;
   updatedAt: Date;
-}
-
-interface PushNotificationData {
-  deviceId: string;
-  message: string;
-  apartName: string;
-  regionCode: string;
-  transactionCount: number;
-  transactions: TransactionData[];
 }
 
 // Firestore Admin 클라이언트 초기화
@@ -95,7 +84,9 @@ async function getNewTransactionsByArea(
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🔍 즐겨찾기 기반 푸시 알림 처리 시작...');
+    console.log(
+      '🔍 즐겨찾기 지역 기반 거래 데이터 조회 및 푸시 알림 처리 시작...'
+    );
 
     // 1. Firestore에서 모든 favorite-apart 데이터 가져오기
     const favoriteDocuments = await firestoreClient.getDocuments({});
@@ -109,12 +100,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: '즐겨찾기된 아파트가 없습니다.',
-        pushNotifications: [],
+        regions: [],
+        transactions: {},
         summary: {
           totalFavorites: 0,
           totalRegions: 0,
           totalTransactions: 0,
-          totalPushNotifications: 0,
         },
         scrapedAt: new Date().toISOString(),
       });
@@ -124,16 +115,18 @@ export async function POST(request: NextRequest) {
     const uniqueRegionCodes = Array.from(
       new Set(favoriteAparts.map(fav => fav.regionCode))
     );
-    console.log(`🗺️  크롤링할 지역 코드: ${uniqueRegionCodes.join(', ')}`);
+    console.log(`🗺️  조회할 지역 코드: ${uniqueRegionCodes.join(', ')}`);
 
     // 3. 각 regionCode별로 신규 거래 데이터 가져오기
-    const allTransactions: TransactionData[] = [];
+    const transactionsByRegion: Record<string, TransactionData[]> = {};
+    let totalTransactions = 0;
 
     for (const regionCode of uniqueRegionCodes) {
       try {
         console.log(`🕷️  지역 ${regionCode} 신규 거래 조회 중...`);
         const transactions = await getNewTransactionsByArea(regionCode);
-        allTransactions.push(...transactions);
+        transactionsByRegion[regionCode] = transactions;
+        totalTransactions += transactions.length;
         console.log(
           `✅ 지역 ${regionCode}: ${transactions.length}개 거래 발견`
         );
@@ -142,94 +135,33 @@ export async function POST(request: NextRequest) {
         await new Promise(resolve => setTimeout(resolve, 500));
       } catch (error) {
         console.error(`❌ 지역 ${regionCode} 신규 거래 조회 실패:`, error);
+        transactionsByRegion[regionCode] = [];
       }
     }
 
-    console.log(
-      `📊 총 ${allTransactions.length}개의 신규 거래 데이터 수집 완료`
-    );
+    console.log(`📊 총 ${totalTransactions}개의 거래 데이터 수집 완료`);
 
-    // 4. deviceId별로 즐겨찾기와 매칭되는 신규 거래 찾기 및 푸시 데이터 생성
-    const pushNotifications: PushNotificationData[] = [];
-
-    // deviceId별로 그룹화
-    const favoritesByDevice = favoriteAparts.reduce(
-      (acc, fav) => {
-        if (!acc[fav.deviceId]) {
-          acc[fav.deviceId] = [];
-        }
-        acc[fav.deviceId].push(fav);
-        return acc;
-      },
-      {} as Record<string, FavoriteApart[]>
-    );
-
-    // 각 디바이스별로 매칭 확인 및 푸시 데이터 생성
-    for (const [deviceId, favorites] of Object.entries(favoritesByDevice)) {
-      const deviceTransactions: TransactionData[] = [];
-      const matchedAparts: string[] = [];
-
-      for (const favorite of favorites) {
-        // apartId에 포함된 정보로 매칭 (regionCode, address, apartName)
-        const matchedTransactions = allTransactions.filter(transaction => {
-          // regionCode, address, apartName이 apartId에 모두 포함되어 있음
-          const regionMatch = transaction.apartId.includes(
-            obfuscateKorean(favorite.regionCode)
-          );
-          const addressMatch = transaction.apartId.includes(
-            obfuscateKorean(favorite.address)
-          );
-          const apartNameMatch = transaction.apartId.includes(
-            obfuscateKorean(favorite.apartName)
-          );
-
-          return regionMatch && addressMatch && apartNameMatch;
-        });
-
-        if (matchedTransactions.length > 0) {
-          deviceTransactions.push(...matchedTransactions);
-          matchedAparts.push(favorite.apartName);
-        }
-      }
-
-      if (deviceTransactions.length > 0) {
-        // 아파트명을 쉼표로 구분하여 메시지 생성
-        const apartNames = Array.from(new Set(matchedAparts)).join(', ');
-        const message = `신규 거래가 있습니다. (${apartNames})`;
-
-        pushNotifications.push({
-          deviceId,
-          message,
-          apartName: apartNames,
-          regionCode: favorites[0].regionCode, // 첫 번째 즐겨찾기의 regionCode 사용
-          transactionCount: deviceTransactions.length,
-          transactions: deviceTransactions,
-        });
-
-        console.log(
-          `✅✅✅✅✅ 푸시 알람을 전송합니다. (deviceId: ${deviceId}, apartName: ${apartNames})`
-        );
-      }
-    }
-
-    const totalPushNotifications = pushNotifications.length;
+    // TODO: 여기에 실제 푸시 알림 전송 로직 추가
+    // 예: Firebase Cloud Messaging, OneSignal 등
+    console.log('📱 푸시 알림 전송 로직 실행 예정...');
 
     return NextResponse.json({
       success: true,
+      regions: uniqueRegionCodes,
+      transactions: transactionsByRegion,
       summary: {
         totalFavorites: favoriteAparts.length,
         totalRegions: uniqueRegionCodes.length,
-        totalTransactions: allTransactions.length,
-        totalPushNotifications: totalPushNotifications,
+        totalTransactions: totalTransactions,
       },
-      pushNotifications,
       scrapedAt: new Date().toISOString(),
+      pushNotificationStatus: 'pending', // 푸시 알림 상태 추가
     });
   } catch (error) {
-    console.error('❌ 푸시 알림 처리 에러:', error);
+    console.error('❌ 거래 데이터 조회 에러:', error);
     return NextResponse.json(
       {
-        error: '푸시 알림 처리 중 오류가 발생했습니다.',
+        error: '거래 데이터 조회 중 오류가 발생했습니다.',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
