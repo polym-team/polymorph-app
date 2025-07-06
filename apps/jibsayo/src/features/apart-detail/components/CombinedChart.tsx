@@ -92,7 +92,7 @@ export function CombinedChart({ items }: Props) {
       if (window.innerWidth <= 640) {
         event.preventDefault();
         event.stopPropagation();
-        handleMobileTouchEnd(event as any);
+        handleMobileTouchEnd();
       }
     };
 
