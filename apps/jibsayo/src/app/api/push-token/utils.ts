@@ -1,10 +1,11 @@
 import { AdminFirestoreClient } from '@polymorph/firebase';
 
+import { COLLECTIONS } from '../consts';
 import { PushToken } from './types';
 
 // Firestore Admin 클라이언트 초기화 (서버 사이드용)
 const firestoreClient = new AdminFirestoreClient({
-  collectionName: 'push-token',
+  collectionName: COLLECTIONS.PUSH_TOKEN,
   projectId: process.env.FIREBASE_PROJECT_ID,
   // 서비스 계정 정보 (환경변수에서 읽기)
   serviceAccount: {
@@ -26,8 +27,7 @@ export { firestoreClient };
 // Firestore 데이터를 PushToken 타입으로 변환
 export function mapFirestoreToPushToken(doc: any): PushToken {
   return {
-    id: doc.id,
-    deviceId: doc.data.deviceId,
+    id: doc.id, // 문서 ID가 deviceId와 동일
     token: doc.data.token,
     os: doc.data.os,
     osVersion: doc.data.osVersion,
@@ -40,11 +40,12 @@ export function mapFirestoreToPushToken(doc: any): PushToken {
 
 // PushToken을 Firestore 데이터로 변환
 export function mapPushTokenToFirestore(
-  pushToken: Omit<PushToken, 'id' | 'createdAt' | 'updatedAt'>
+  pushToken: Omit<PushToken, 'id' | 'createdAt' | 'updatedAt'> & {
+    deviceId: string;
+  }
 ): any {
   const now = new Date();
   return {
-    deviceId: pushToken.deviceId,
     token: pushToken.token,
     os: pushToken.os,
     osVersion: pushToken.osVersion,
@@ -55,17 +56,15 @@ export function mapPushTokenToFirestore(
   };
 }
 
-// 디바이스 ID로 기존 토큰 찾기
+// 디바이스 ID로 기존 토큰 찾기 (문서 ID로 직접 조회)
 export async function findExistingToken(
   deviceId: string
 ): Promise<PushToken | null> {
   try {
-    const documents = await firestoreClient.getDocuments({
-      where: [{ field: 'deviceId', operator: '==', value: deviceId }],
-    });
+    const document = await firestoreClient.getDocument(deviceId);
 
-    if (documents.length > 0) {
-      return mapFirestoreToPushToken(documents[0]);
+    if (document) {
+      return mapFirestoreToPushToken(document);
     }
     return null;
   } catch (error) {

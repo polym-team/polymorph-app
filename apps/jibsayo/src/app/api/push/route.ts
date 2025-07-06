@@ -1,7 +1,11 @@
-import { AdminFirestoreClient } from '@polymorph/firebase';
+import {
+  AdminFirestoreClient,
+  PushNotificationClient,
+} from '@polymorph/firebase';
 
 import { NextRequest, NextResponse } from 'next/server';
 
+import { COLLECTIONS } from '../consts';
 import { obfuscateKorean } from '../utils';
 
 interface TransactionData {
@@ -37,9 +41,21 @@ interface PushNotificationData {
   transactions: TransactionData[];
 }
 
+// PushNotificationClient 초기화 (jibsayo 전용 push-token 컬렉션 사용)
+const pushClient = new PushNotificationClient(
+  {
+    projectId: process.env.FIREBASE_PROJECT_ID!,
+    privateKeyId: process.env.FIREBASE_PRIVATE_KEY_ID!,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')!,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
+    clientId: process.env.FIREBASE_CLIENT_ID!,
+  },
+  COLLECTIONS.PUSH_TOKEN // jibsayo 전용 컬렉션명
+);
+
 // Firestore Admin 클라이언트 초기화
 const firestoreClient = new AdminFirestoreClient({
-  collectionName: 'favorite-apart',
+  collectionName: COLLECTIONS.FAVORITE_APART,
   projectId: process.env.FIREBASE_PROJECT_ID,
   serviceAccount: {
     type: 'service_account',
@@ -90,6 +106,34 @@ async function getNewTransactionsByArea(
   } catch (error) {
     console.error(`Error fetching new transactions for area ${area}:`, error);
     return [];
+  }
+}
+
+// 푸시 알림 전송 함수 (packages/firebase 사용)
+async function sendPushNotification(
+  deviceId: string,
+  message: string
+): Promise<boolean> {
+  try {
+    const result = await pushClient.sendToDevice(deviceId, {
+      title: '새로운 아파트 거래',
+      body: message,
+      data: {
+        type: 'new_transaction',
+        message: message,
+      },
+    });
+
+    if (result.success) {
+      console.log(`✅ 푸시 전송 성공: ${deviceId}`);
+      return true;
+    } else {
+      console.error(`❌ 푸시 전송 실패: ${deviceId} - ${result.error}`);
+      return false;
+    }
+  } catch (error) {
+    console.error(`❌ 푸시 전송 에러: ${deviceId} - ${error}`);
+    return false;
   }
 }
 
@@ -214,15 +258,42 @@ export async function POST(request: NextRequest) {
 
     const totalPushNotifications = pushNotifications.length;
 
+    // 5. 실제 푸시 알림 전송
+    console.log(`📱 ${totalPushNotifications}개 푸시 알림 전송 시작...`);
+
+    const pushResults = await Promise.allSettled(
+      pushNotifications.map(async pushData => {
+        const success = await sendPushNotification(
+          pushData.deviceId,
+          pushData.message
+        );
+        return {
+          deviceId: pushData.deviceId,
+          success,
+          message: pushData.message,
+        };
+      })
+    );
+
+    // 전송 결과 집계
+    const successfulPushes = pushResults.filter(
+      result => result.status === 'fulfilled' && result.value.success
+    ).length;
+
+    const failedPushes = totalPushNotifications - successfulPushes;
+
+    console.log(
+      `📊 푸시 전송 완료: 성공 ${successfulPushes}개, 실패 ${failedPushes}개`
+    );
+
     return NextResponse.json({
       success: true,
-      summary: {
-        totalFavorites: favoriteAparts.length,
-        totalRegions: uniqueRegionCodes.length,
-        totalTransactions: allTransactions.length,
-        totalPushNotifications: totalPushNotifications,
+      message: '푸시 알림 전송이 완료되었습니다.',
+      pushResults: {
+        total: totalPushNotifications,
+        successful: successfulPushes,
+        failed: failedPushes,
       },
-      pushNotifications,
       scrapedAt: new Date().toISOString(),
     });
   } catch (error) {

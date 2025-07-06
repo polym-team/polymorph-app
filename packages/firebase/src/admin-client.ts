@@ -149,6 +149,28 @@ export class AdminFirestoreClient {
     }
   }
 
+  // 지정된 ID로 문서 생성
+  async createDocumentWithId<T extends DocumentData>(
+    id: string,
+    data: T
+  ): Promise<FirestoreWriteResult> {
+    try {
+      const docRef = this.collectionRef.doc(id);
+      await docRef.set(data);
+      return {
+        id,
+        success: true,
+      };
+    } catch (error) {
+      console.error('Error creating document with ID:', error);
+      return {
+        id,
+        success: false,
+        error: error as Error,
+      };
+    }
+  }
+
   // 문서 업데이트
   async updateDocument<T extends DocumentData>(
     id: string,

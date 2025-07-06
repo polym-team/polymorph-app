@@ -4,7 +4,6 @@ import { PushTokenResponse, UpdatePushTokenRequest } from '../types';
 import {
   findExistingToken,
   firestoreClient,
-  mapFirestoreToPushToken,
   validateDeviceId,
   validateToken,
 } from '../utils';

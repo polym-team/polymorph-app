@@ -1,6 +1,5 @@
 export interface PushToken {
-  id?: string;
-  deviceId: string;
+  id?: string; // 문서 ID (deviceId와 동일)
   token: string;
   os: string;
   osVersion: string;
@@ -11,7 +10,7 @@ export interface PushToken {
 }
 
 export interface CreatePushTokenRequest {
-  deviceId: string;
+  deviceId: string; // URL 파라미터나 문서 ID로 사용
   token: string;
   os: string;
   osVersion: string;
