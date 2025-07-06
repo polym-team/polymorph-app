@@ -10,24 +10,22 @@ interface NewTransactionListResponse {
 
 interface UseNewTransactionListQueryParams {
   area?: string;
-  createDt?: string;
 }
 
 export function useNewTransactionListQuery(
   params?: UseNewTransactionListQueryParams
 ) {
-  const { area, createDt } = params || {};
+  const { area } = params || {};
 
   return useQuery<NewTransactionListResponse>({
-    queryKey: ['new-transactions', { area, createDt }],
+    queryKey: ['new-transactions', { area }],
     queryFn: async () => {
-      if (!area || !createDt) {
+      if (!area) {
         return { count: 0, list: [], totalPages: 0, processingTime: 0 };
       }
 
       const searchParams = new URLSearchParams({
         area,
-        createDt,
       });
 
       const response = await fetch(
@@ -40,7 +38,7 @@ export function useNewTransactionListQuery(
 
       return response.json();
     },
-    enabled: !!area && !!createDt,
+    enabled: !!area,
     staleTime: 1000 * 60 * 60, // 1시간 (transactions와 동일)
     gcTime: 1000 * 60 * 60, // 1시간 (transactions와 동일)
   });

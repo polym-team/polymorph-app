@@ -25,12 +25,10 @@ export function TransactionList() {
   const { searchParams } = useSearchParams();
   const { isLoading, isFetched, data } = useTransactionListQuery();
 
-  // 신규 거래건 조회 (오늘 등록된 거래)
-  const today = new Date().toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD 형식
+  // 신규 거래건 조회 (일별 신규 거래)
   const { data: newTransactionData, isLoading: isNewTransactionLoading } =
     useNewTransactionListQuery({
       area: searchParams.regionCode,
-      createDt: today, // 오늘 날짜로 고정
     });
 
   const { favoriteApartList, addFavoriteApart, removeFavoriteApart } =

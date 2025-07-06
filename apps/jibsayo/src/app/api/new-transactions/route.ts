@@ -364,12 +364,11 @@ const fetchWithRetry = async (
 // 페이지 데이터 가져오기 (Daily 버전)
 const fetchPageData = async (
   area: string,
-  createDt: string,
   page: number
 ): Promise<ParsedPageResult> => {
   try {
     // 신규 거래는 Daily 엔드포인트 사용
-    const url = `https://apt2.me/apt/AptDaily.jsp?area=${area}&createDt=${createDt}&pages=${page}`;
+    const url = `https://apt2.me/apt/AptDaily.jsp?area=${area}&pages=${page}`;
     const html = await fetchWithRetry(url);
     const data = parseHtmlData(html, area);
 
@@ -400,9 +399,8 @@ export async function GET(request: Request): Promise<Response> {
   try {
     const { searchParams } = new URL(request.url);
     const area = searchParams.get('area');
-    const createDt = searchParams.get('createDt');
 
-    if (!area || !createDt) {
+    if (!area) {
       return Response.json(
         { message: '필수 파라미터가 누락되었습니다.' },
         { status: 400 }
@@ -421,7 +419,7 @@ export async function GET(request: Request): Promise<Response> {
       );
 
       const batchPromises = batchPages.map(page =>
-        limit(() => fetchPageData(area, createDt, page))
+        limit(() => fetchPageData(area, page))
       );
 
       const batchResults = await Promise.all(batchPromises);

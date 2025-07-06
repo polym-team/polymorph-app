@@ -59,11 +59,10 @@ function mapFirestoreToFavoriteApart(doc: any): FavoriteApart {
 
 // 특정 지역의 신규 거래 데이터를 가져오는 함수
 async function getNewTransactionsByArea(
-  area: string,
-  createDt: string
+  area: string
 ): Promise<TransactionData[]> {
   try {
-    const url = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/new-transactions?area=${area}&createDt=${createDt}`;
+    const url = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/new-transactions?area=${area}`;
 
     const response = await fetch(url, {
       headers: {
@@ -112,12 +111,11 @@ export async function GET(request: NextRequest) {
 
     // 3. 각 regionCode별로 신규 거래 데이터 가져오기
     const allTransactions: TransactionData[] = [];
-    const today = new Date().toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD 형식
 
     for (const regionCode of uniqueRegionCodes) {
       try {
         console.log(`🕷️  지역 ${regionCode} 신규 거래 조회 중...`);
-        const transactions = await getNewTransactionsByArea(regionCode, today);
+        const transactions = await getNewTransactionsByArea(regionCode);
         allTransactions.push(...transactions);
         console.log(
           `✅ 지역 ${regionCode}: ${transactions.length}개 거래 발견`
