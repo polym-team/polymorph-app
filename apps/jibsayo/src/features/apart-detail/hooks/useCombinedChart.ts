@@ -262,9 +262,9 @@ export function useCombinedChart({
     // 툴팁 생성
     if (!tooltipRef.current) {
       tooltipRef.current = d3
-        .select('body')
+        .select(svgRef.current?.parentElement)
         .append('div')
-        .style('position', 'fixed')
+        .style('position', 'absolute')
         .style('visibility', 'hidden')
         .style('background-color', 'rgba(0, 0, 0, 0.8)')
         .style('color', 'white')
@@ -272,7 +272,9 @@ export function useCombinedChart({
         .style('border-radius', '4px')
         .style('font-size', '12px')
         .style('pointer-events', 'none')
-        .style('z-index', '1000')
+        .style('z-index', '10')
+        .style('max-width', '200px')
+        .style('word-wrap', 'break-word')
         .node() as HTMLDivElement;
     }
 
@@ -575,9 +577,10 @@ export function useCombinedChart({
 
         if (tooltipRef.current) {
           const tooltipWidth = tooltipRef.current.offsetWidth;
-          const rect = svgRef.current?.getBoundingClientRect();
+          const containerRect =
+            svgRef.current?.parentElement?.getBoundingClientRect();
 
-          if (rect) {
+          if (containerRect) {
             // 세로선 위치를 정확히 계산
             const domain = xScale.domain();
             const range = xScale.range();
@@ -587,27 +590,30 @@ export function useCombinedChart({
               domain[Math.max(0, Math.min(index, domain.length - 1))];
             const lineX = xScale(closestDateString) || 0;
 
-            // 세로선의 절대 위치 계산
-            const absoluteLineX = rect.left + lineX;
-            const chartCenter = rect.left + chartWidth / 2;
-            const isLeftSide = absoluteLineX < chartCenter;
+            // 차트 컨테이너 내에서의 상대적 위치 계산
+            const relativeLineX = margin.left + lineX;
+            const chartCenter = margin.left + chartWidth / 2;
+            const isLeftSide = relativeLineX < chartCenter;
 
             let left: number;
             if (isLeftSide) {
-              // 세로선이 좌측이면 툴팁을 우측에 배치 (20px)
-              left = absoluteLineX + 50;
+              // 세로선이 좌측이면 툴팁을 우측에 배치
+              left = relativeLineX + 20;
             } else {
-              // 세로선이 우측이면 툴팁을 좌측에 배치 (10px)
-              left = absoluteLineX - tooltipWidth - 10;
+              // 세로선이 우측이면 툴팁을 좌측에 배치
+              left = relativeLineX - tooltipWidth - 10;
             }
 
-            // 화면 경계 체크
-            const maxLeft = window.innerWidth - tooltipWidth - 10;
+            // 컨테이너 경계 체크
+            const maxLeft = containerRect.width - tooltipWidth - 10;
             left = Math.max(10, Math.min(left, maxLeft));
+
+            // 세로 위치는 차트 상단에서 약간 아래
+            const top = margin.top + 20;
 
             d3.select(tooltipRef.current)
               .style('left', `${left}px`)
-              .style('top', `${rect.top + margin.top + 20 + window.scrollY}px`)
+              .style('top', `${top}px`)
               .style('transform', 'none');
           }
         }
@@ -677,30 +683,30 @@ export function useCombinedChart({
 
             // 툴팁 위치 계산
             const tooltipWidth = tooltipRef.current.offsetWidth;
-            const rect = svgRef.current?.getBoundingClientRect();
+            const containerRect =
+              svgRef.current?.parentElement?.getBoundingClientRect();
 
-            if (rect) {
+            if (containerRect) {
               const lineX = xScale(lastDateString) || 0;
-              const absoluteLineX = rect.left + lineX;
-              const chartCenter = rect.left + chartWidth / 2;
-              const isLeftSide = absoluteLineX < chartCenter;
+              const relativeLineX = margin.left + lineX;
+              const chartCenter = margin.left + chartWidth / 2;
+              const isLeftSide = relativeLineX < chartCenter;
 
               let left: number;
               if (isLeftSide) {
-                left = absoluteLineX + 50;
+                left = relativeLineX + 20;
               } else {
-                left = absoluteLineX - tooltipWidth - 10;
+                left = relativeLineX - tooltipWidth - 10;
               }
 
-              const maxLeft = window.innerWidth - tooltipWidth - 10;
+              const maxLeft = containerRect.width - tooltipWidth - 10;
               left = Math.max(10, Math.min(left, maxLeft));
+
+              const top = margin.top + 20;
 
               d3.select(tooltipRef.current)
                 .style('left', `${left}px`)
-                .style(
-                  'top',
-                  `${rect.top + margin.top + 20 + window.scrollY}px`
-                )
+                .style('top', `${top}px`)
                 .style('transform', 'none');
             }
           }
@@ -866,33 +872,34 @@ export function useCombinedChart({
 
       // 모바일 툴팁 위치 계산
       const tooltipWidth = tooltipRef.current.offsetWidth;
-      const rect = svgRef.current?.getBoundingClientRect();
+      const containerRect =
+        svgRef.current?.parentElement?.getBoundingClientRect();
 
-      if (rect) {
-        // 세로선의 절대 위치 계산
-        const absoluteLineX = rect.left + lineX;
-        const chartCenter = rect.left + chartWidth / 2;
-        const isLeftSide = absoluteLineX < chartCenter;
+      if (containerRect) {
+        // 차트 컨테이너 내에서의 상대적 위치 계산
+        const relativeLineX = margin.left + lineX;
+        const chartCenter = margin.left + chartWidth / 2;
+        const isLeftSide = relativeLineX < chartCenter;
 
         let left: number;
         if (isLeftSide) {
-          // 세로선이 좌측이면 툴팁을 우측에 배치 (40px)
-          left = absoluteLineX + 40;
+          // 세로선이 좌측이면 툴팁을 우측에 배치
+          left = relativeLineX + 20;
         } else {
-          // 세로선이 우측이면 툴팁을 좌측에 배치 (10px)
-          left = absoluteLineX - tooltipWidth + 10;
+          // 세로선이 우측이면 툴팁을 좌측에 배치
+          left = relativeLineX - tooltipWidth - 10;
         }
 
-        // 화면 경계 체크
-        const maxLeft = window.innerWidth - tooltipWidth - 10;
+        // 컨테이너 경계 체크
+        const maxLeft = containerRect.width - tooltipWidth - 10;
         left = Math.max(10, Math.min(left, maxLeft));
 
-        // Y 위치 - 그래프 영역 최상단보다 조금 아래에 고정
-        const top = rect.top + margin.top + 20;
+        // 세로 위치는 차트 상단에서 약간 아래
+        const top = margin.top + 20;
 
         d3.select(tooltipRef.current)
           .style('left', `${left}px`)
-          .style('top', `${top + window.scrollY}px`)
+          .style('top', `${top}px`)
           .style('transform', 'none');
       }
     },
@@ -905,8 +912,11 @@ export function useCombinedChart({
       if (!tooltipRef.current || !svgRef.current) return;
 
       const touch = event.touches[0];
-      const rect = svgRef.current.getBoundingClientRect();
-      const touchX = touch.clientX - rect.left - margin.left;
+      const containerRect =
+        svgRef.current.parentElement?.getBoundingClientRect();
+      if (!containerRect) return;
+
+      const touchX = touch.clientX - containerRect.left - margin.left;
 
       // 툴팁 표시
       d3.select(tooltipRef.current).style('visibility', 'visible');
@@ -920,8 +930,11 @@ export function useCombinedChart({
       if (!tooltipRef.current || !svgRef.current) return;
 
       const touch = event.touches[0];
-      const rect = svgRef.current.getBoundingClientRect();
-      const touchX = touch.clientX - rect.left - margin.left;
+      const containerRect =
+        svgRef.current.parentElement?.getBoundingClientRect();
+      if (!containerRect) return;
+
+      const touchX = touch.clientX - containerRect.left - margin.left;
 
       updateTooltipForMobile(touchX);
     },
