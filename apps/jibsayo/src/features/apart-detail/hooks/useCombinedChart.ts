@@ -56,6 +56,7 @@ export function useCombinedChart({
 
   const [isFirstRender, setIsFirstRender] = useState(true);
   const [prevChartDataKey, setPrevChartDataKey] = useState<string>('');
+  const [isDataChanged, setIsDataChanged] = useState(false);
 
   // 컨테이너 너비 감지
   useEffect(() => {
@@ -136,6 +137,24 @@ export function useCombinedChart({
 
     return result.sort((a, b) => a.date.getTime() - b.date.getTime());
   }, [items, period, selectedPyeongs]);
+
+  // 데이터 변경 감지
+  useEffect(() => {
+    const currentChartDataKey = JSON.stringify(
+      chartData.map(d => ({
+        date: d.date,
+        pyeong: d.pyeong,
+        count: d.count,
+        averagePrice: d.averagePrice,
+      }))
+    );
+
+    if (prevChartDataKey && prevChartDataKey !== currentChartDataKey) {
+      setIsDataChanged(true);
+    }
+
+    setPrevChartDataKey(currentChartDataKey);
+  }, [chartData, prevChartDataKey]);
 
   // 범례 데이터 계산
   const legendData = useMemo(() => {
@@ -365,22 +384,15 @@ export function useCombinedChart({
         .attr('fill', '#e5e7eb')
         .attr('opacity', 0.7);
 
-      if (isFirstRender) {
-        // 첫 번째 렌더링일 때만 애니메이션 실행
-        bar
-          .attr('y', chartHeight) // 시작 위치를 차트 하단으로
-          .attr('height', 0) // 시작 높이를 0으로
-          .transition()
-          .duration(500)
-          .delay((_, i) => i * 30) // 순차적으로 애니메이션
-          .attr('y', yCountScale(totalCount))
-          .attr('height', chartHeight - yCountScale(totalCount));
-      } else {
-        // 데이터가 변경되지 않았으면 바로 최종 위치에 배치
-        bar
-          .attr('y', yCountScale(totalCount))
-          .attr('height', chartHeight - yCountScale(totalCount));
-      }
+      // 항상 애니메이션 실행 (최초 렌더링이거나 데이터 변경 시)
+      bar
+        .attr('y', chartHeight) // 시작 위치를 차트 하단으로
+        .attr('height', 0) // 시작 높이를 0으로
+        .transition()
+        .duration(500)
+        .delay((_, i) => i * 30) // 순차적으로 애니메이션
+        .attr('y', yCountScale(totalCount))
+        .attr('height', chartHeight - yCountScale(totalCount));
     });
 
     // 평형별 실거래가 라인 차트
@@ -405,20 +417,18 @@ export function useCombinedChart({
         .attr('stroke-width', 2)
         .attr('d', line);
 
-      if (isFirstRender) {
-        // 첫 번째 렌더링일 때만 애니메이션 실행
-        path
-          .attr('stroke-dasharray', function () {
-            return this.getTotalLength();
-          })
-          .attr('stroke-dashoffset', function () {
-            return this.getTotalLength();
-          })
-          .transition()
-          .duration(600)
-          .delay((_, i) => i * 100) // 평형별로 순차 애니메이션
-          .attr('stroke-dashoffset', 0);
-      }
+      // 항상 애니메이션 실행 (최초 렌더링이거나 데이터 변경 시)
+      path
+        .attr('stroke-dasharray', function () {
+          return this.getTotalLength();
+        })
+        .attr('stroke-dashoffset', function () {
+          return this.getTotalLength();
+        })
+        .transition()
+        .duration(600)
+        .delay((_, i) => i * 100) // 평형별로 순차 애니메이션
+        .attr('stroke-dashoffset', 0);
 
       // 데이터 포인트 (기본적으로 숨김)
       const points = g
@@ -434,18 +444,8 @@ export function useCombinedChart({
         .attr('stroke-width', 2)
         .style('opacity', 0); // 기본적으로 숨김
 
-      if (isFirstRender) {
-        // 첫 번째 렌더링일 때만 애니메이션 실행
-        points
-          .attr('cy', chartHeight) // 시작 위치를 차트 하단으로
-          .transition()
-          .duration(400)
-          .delay((_, i) => i * 50 + 200) // 라인 애니메이션 후 시작
-          .attr('cy', d => yPriceScale(d.averagePrice));
-      } else {
-        // 데이터가 변경되지 않았으면 바로 최종 위치에 배치
-        points.attr('cy', d => yPriceScale(d.averagePrice));
-      }
+      // 점은 애니메이션 없이 바로 최종 위치에 배치
+      points.attr('cy', d => yPriceScale(d.averagePrice));
     });
 
     // x축과 y축 사이의 빈틈을 메우는 실선 (바 차트보다 나중에 그려서 위에 표시)
@@ -738,7 +738,12 @@ export function useCombinedChart({
 
     // 데이터 변경 감지를 위한 키 업데이트
     const chartDataKey = JSON.stringify(
-      chartData.map(d => ({ date: d.date, pyeong: d.pyeong }))
+      chartData.map(d => ({
+        date: d.date,
+        pyeong: d.pyeong,
+        count: d.count,
+        averagePrice: d.averagePrice,
+      }))
     );
     setPrevChartDataKey(chartDataKey);
   }, [
