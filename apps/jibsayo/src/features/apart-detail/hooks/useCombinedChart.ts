@@ -299,10 +299,18 @@ export function useCombinedChart({
     }
 
     // x축
-    const yearTicks = xScale
-      .domain()
-      .filter(dateString => dateString.endsWith('-01'))
-      .map(dateString => dateString.split('-')[0]);
+    const allDates = xScale.domain();
+
+    // 각 연도의 첫 번째 데이터 위치에 틱 생성
+    const yearFirstDates = new Map<string, string>();
+    allDates.forEach(dateString => {
+      const year = dateString.split('-')[0];
+      if (!yearFirstDates.has(year)) {
+        yearFirstDates.set(year, dateString);
+      }
+    });
+
+    const yearTicks = Array.from(yearFirstDates.values()).sort();
 
     // 모바일에서는 2년마다 하나씩만 표시
     const displayTicks =
@@ -316,24 +324,19 @@ export function useCombinedChart({
       .call(
         d3
           .axisBottom(xScale)
-          .tickValues(displayTicks.map(year => `${year}-01`))
+          .tickValues(displayTicks)
           .tickFormat(dateString => {
-            if (dateString.endsWith('-01')) {
-              return dateString.split('-')[0]; // 년도만 추출
-            }
-            return '';
+            return dateString.split('-')[0]; // 년도만 추출
           })
       );
 
-    // 모바일에서 틱 텍스트 기울이기
-    if (containerWidth <= 640) {
-      xAxis
-        .selectAll('text')
-        .style('text-anchor', 'end')
-        .attr('dx', '-0.8em')
-        .attr('dy', '0.15em')
-        .attr('transform', 'rotate(-45)');
-    }
+    // PC와 모바일 모두에서 틱 텍스트 기울이기
+    xAxis
+      .selectAll('text')
+      .style('text-anchor', 'end')
+      .attr('dx', '-0.8em')
+      .attr('dy', '0.15em')
+      .attr('transform', 'rotate(-45)');
 
     // 왼쪽 y축 (가격)
     g.append('g').call(
