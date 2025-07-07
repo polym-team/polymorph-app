@@ -2,7 +2,7 @@
 declare global {
   interface Window {
     jibsayo: {
-      deviceId: string;
+      deviceId?: string;
     };
   }
 }
