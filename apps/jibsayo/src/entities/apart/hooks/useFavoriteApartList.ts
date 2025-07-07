@@ -1,19 +1,18 @@
-import { STORAGE_KEY } from '@/shared/consts/storageKey';
-import { getItem, setItem } from '@/shared/lib/localStorage';
+import { getDeviceId } from '@/shared/lib/device';
 
 import { useEffect, useState } from 'react';
 
 import { toast } from '@package/ui';
 
-import { ApartItem, FavoriteApartItem } from '../models/types';
 import {
-  addApartToExistingRegion,
-  createNewRegion,
-  findRegionIndex,
-  isDuplicateApart,
-  removeApartFromRegion,
-  sortFavoriteApartList,
-} from '../services/utils';
+  addFavoriteApartToLocal,
+  addFavoriteApartToServer,
+  loadFavoriteApartListFromLocal,
+  loadFavoriteApartListFromServer,
+  removeFavoriteApartFromLocal,
+  removeFavoriteApartFromServer,
+} from '../models/favorite-storage';
+import { ApartItem, FavoriteApartItem } from '../models/types';
 
 interface Return {
   favoriteApartList: FavoriteApartItem[];
@@ -26,73 +25,80 @@ export const useFavoriteApartList = (): Return => {
     FavoriteApartItem[]
   >([]);
 
-  // 클라이언트에서만 localStorage에서 데이터 로드
   useEffect(() => {
-    const savedList =
-      getItem<FavoriteApartItem[]>(STORAGE_KEY.FAVORITE_APART_LIST) ?? [];
-
-    setFavoriteApartList(savedList);
+    loadFavoriteApartList();
   }, []);
 
-  const updateAndSave = (newList: FavoriteApartItem[]): void => {
-    const sortedList = sortFavoriteApartList(newList);
-    setFavoriteApartList(sortedList);
-    setItem(STORAGE_KEY.FAVORITE_APART_LIST, sortedList);
+  const loadFavoriteApartList = async () => {
+    const deviceId = getDeviceId();
+    try {
+      if (deviceId) {
+        const serverData = await loadFavoriteApartListFromServer(deviceId);
+        setFavoriteApartList(serverData);
+      } else {
+        const localData = loadFavoriteApartListFromLocal();
+        setFavoriteApartList(localData);
+      }
+    } catch (error) {
+      console.error('즐겨찾기 목록 로드 실패:', error);
+      const localData = loadFavoriteApartListFromLocal();
+      setFavoriteApartList(localData);
+    }
   };
 
-  const addFavoriteApart = (regionCode: string, apartItem: ApartItem) => {
-    const existingRegionIndex = findRegionIndex(favoriteApartList, regionCode);
-
-    if (existingRegionIndex >= 0) {
-      const existingRegion = favoriteApartList[existingRegionIndex];
-
-      if (
-        !isDuplicateApart(
-          existingRegion,
-          apartItem.apartName,
-          apartItem.address
-        )
-      ) {
-        const updatedList = addApartToExistingRegion(
+  const addFavoriteApart = async (regionCode: string, apartItem: ApartItem) => {
+    const deviceId = getDeviceId();
+    try {
+      if (deviceId) {
+        await addFavoriteApartToServer(deviceId, regionCode, apartItem);
+        const updatedList = addFavoriteApartToLocal(
           favoriteApartList,
-          existingRegionIndex,
+          regionCode,
           apartItem
         );
-        updateAndSave(updatedList);
+        setFavoriteApartList(updatedList);
+      } else {
+        const updatedList = addFavoriteApartToLocal(
+          favoriteApartList,
+          regionCode,
+          apartItem
+        );
+        setFavoriteApartList(updatedList);
       }
-    } else {
-      const newList = createNewRegion(favoriteApartList, regionCode, apartItem);
-      updateAndSave(newList);
+      toast.success(`즐겨찾기에 추가되었습니다. (${apartItem.apartName})`);
+    } catch (error) {
+      console.error('즐겨찾기 추가 실패:', error);
+      toast.error('즐겨찾기 추가에 실패했습니다.');
     }
-
-    toast.success(`즐겨찾기에 추가되었습니다. (${apartItem.apartName})`);
   };
 
-  const removeFavoriteApart = (regionCode: string, apartItem: ApartItem) => {
-    const regionIndex = findRegionIndex(favoriteApartList, regionCode);
-
-    if (regionIndex < 0) {
-      return;
+  const removeFavoriteApart = async (
+    regionCode: string,
+    apartItem: ApartItem
+  ) => {
+    const deviceId = getDeviceId();
+    try {
+      if (deviceId) {
+        await removeFavoriteApartFromServer(deviceId, regionCode, apartItem);
+        const updatedList = removeFavoriteApartFromLocal(
+          favoriteApartList,
+          regionCode,
+          apartItem
+        );
+        setFavoriteApartList(updatedList);
+      } else {
+        const updatedList = removeFavoriteApartFromLocal(
+          favoriteApartList,
+          regionCode,
+          apartItem
+        );
+        setFavoriteApartList(updatedList);
+      }
+      toast.success(`즐겨찾기에서 삭제되었습니다. (${apartItem.apartName})`);
+    } catch (error) {
+      console.error('즐겨찾기 삭제 실패:', error);
+      toast.error('즐겨찾기 삭제에 실패했습니다.');
     }
-
-    const updatedRegion = removeApartFromRegion(
-      favoriteApartList[regionIndex],
-      apartItem.apartName,
-      apartItem.address
-    );
-
-    if (updatedRegion.apartItems.length === 0) {
-      const updatedList = favoriteApartList.filter(
-        (_, index) => index !== regionIndex
-      );
-      updateAndSave(updatedList);
-    } else {
-      const updatedList = [...favoriteApartList];
-      updatedList[regionIndex] = updatedRegion;
-      updateAndSave(updatedList);
-    }
-
-    toast.success(`즐겨찾기에서 삭제되었습니다. (${apartItem.apartName})`);
   };
 
   return {

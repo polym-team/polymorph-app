@@ -87,26 +87,30 @@ export function TransactionList() {
   const fullRegionName =
     cityName && regionName ? `${cityName} ${regionName}` : '';
 
-  const handleToggleFavorite = (item: TransactionItem) => {
+  const handleToggleFavorite = async (item: TransactionItem) => {
     if (!searchParams.regionCode) return;
 
     // 즐겨찾기 토글 시작
     isTogglingFavorite.current = true;
 
-    if (item.favorite) {
-      removeFavoriteApart(searchParams.regionCode, item);
-    } else {
-      const apartItem = {
-        apartName: item.apartName,
-        address: item.address,
-      };
-      addFavoriteApart(searchParams.regionCode, apartItem);
+    try {
+      if (item.favorite) {
+        await removeFavoriteApart(searchParams.regionCode, item);
+      } else {
+        const apartItem = {
+          apartName: item.apartName,
+          address: item.address,
+        };
+        await addFavoriteApart(searchParams.regionCode, apartItem);
+      }
+    } catch (error) {
+      console.error('즐겨찾기 토글 실패:', error);
+    } finally {
+      // 다음 렌더링 후 플래그 리셋
+      setTimeout(() => {
+        isTogglingFavorite.current = false;
+      }, 0);
     }
-
-    // 다음 렌더링 후 플래그 리셋
-    setTimeout(() => {
-      isTogglingFavorite.current = false;
-    }, 0);
   };
 
   return (

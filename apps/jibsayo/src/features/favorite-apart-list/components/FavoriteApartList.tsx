@@ -26,8 +26,11 @@ export function FavoriteApartList() {
     );
   };
 
-  const handleRemoveApart = (regionCode: string, apartItem: ApartItem) => {
-    removeFavoriteApart(regionCode, apartItem);
+  const handleRemoveApart = async (
+    regionCode: string,
+    apartItem: ApartItem
+  ) => {
+    await removeFavoriteApart(regionCode, apartItem);
   };
 
   if (!isClient) {

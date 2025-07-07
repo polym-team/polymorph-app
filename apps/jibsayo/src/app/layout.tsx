@@ -38,7 +38,7 @@ export default function RootLayout({
             dangerouslySetInnerHTML={{
               __html: `
                 window.jibsayo = window.jibsayo || {};
-                window.jibsayo.deviceId = 'dev-device-id-${Date.now()}';
+                window.jibsayo.deviceId = 'dev-device-id';
                 console.log('개발 환경: window.jibsayo.deviceId 주입됨:', window.jibsayo.deviceId);
               `,
             }}
