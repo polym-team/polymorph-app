@@ -74,27 +74,23 @@ const columns: ColumnDef<TransactionItem>[] = [
     ),
     cell: ({ row }) => {
       const amount = row.getValue('tradeAmount') as number;
+      const pricePerPyeong = row.original.pricePerPyeong;
+
       return (
-        <div className="text-primary font-bold">{formatPrice(amount)}</div>
+        <div className="flex items-center gap-x-1">
+          <span className="text-primary font-bold">{formatPrice(amount)}</span>
+          <span className="text-sm text-gray-500">
+            (평당{formatPrice(pricePerPyeong)})
+          </span>
+        </div>
       );
     },
     size: 150,
   },
   {
-    accessorKey: 'pricePerPyeong',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="평당가격" />
-    ),
-    cell: ({ row }) => {
-      const pricePerPyeong = row.getValue('pricePerPyeong') as number;
-      return <div>{formatPrice(pricePerPyeong)}</div>;
-    },
-    size: 130,
-  },
-  {
     accessorKey: 'priceChange',
     header: () => (
-      <div className="font-semibold text-gray-700">
+      <div>
         가격변동
         <HoverCard openDelay={0} closeDelay={0}>
           <HoverCardTrigger asChild>

@@ -68,7 +68,7 @@ const createColumns = ({
         </div>
       );
     },
-    size: 40,
+    size: 50,
   },
   {
     accessorKey: 'tradeDate',
