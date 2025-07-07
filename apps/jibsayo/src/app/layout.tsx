@@ -2,10 +2,12 @@ import { Header } from '@/wigets/ui/Header';
 
 import type { Metadata } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
+import Script from 'next/script';
 
 import { Toaster } from '@package/ui';
 
 import '../../../../packages/styles/globals.css';
+import { DeviceIdInitializer } from './DeviceIdInitializer';
 import { Providers } from './providers';
 
 const notoSansKr = Noto_Sans_KR({
@@ -27,11 +29,28 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
+      <head>
+        {/* 개발 환경에서만 window.jibsayo.deviceId 주입 */}
+        {process.env.NODE_ENV === 'development' && (
+          <Script
+            id="dev-device-id"
+            strategy="beforeInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.jibsayo = window.jibsayo || {};
+                window.jibsayo.deviceId = 'dev-device-id-${Date.now()}';
+                console.log('개발 환경: window.jibsayo.deviceId 주입됨:', window.jibsayo.deviceId);
+              `,
+            }}
+          />
+        )}
+      </head>
       <body className={`${notoSansKr.variable} ${notoSansKr.className}`}>
         <div className="flex min-h-screen flex-col">
           <Header />
           <main className="flex-1 bg-gray-50">
             <Providers>
+              <DeviceIdInitializer />
               <section className="container mx-auto px-4 pb-10 pt-5">
                 {children}
               </section>
