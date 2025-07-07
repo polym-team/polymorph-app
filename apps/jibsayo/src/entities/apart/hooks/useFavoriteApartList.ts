@@ -11,6 +11,8 @@ import {
   loadFavoriteApartListFromServer,
   removeFavoriteApartFromLocal,
   removeFavoriteApartFromServer,
+  removeFromLocalStateOnly,
+  updateLocalStateOnly,
 } from '../models/favorite-storage';
 import { ApartItem, FavoriteApartItem } from '../models/types';
 
@@ -51,7 +53,7 @@ export const useFavoriteApartList = (): Return => {
     try {
       if (deviceId) {
         await addFavoriteApartToServer(deviceId, regionCode, apartItem);
-        const updatedList = addFavoriteApartToLocal(
+        const updatedList = updateLocalStateOnly(
           favoriteApartList,
           regionCode,
           apartItem
@@ -80,7 +82,7 @@ export const useFavoriteApartList = (): Return => {
     try {
       if (deviceId) {
         await removeFavoriteApartFromServer(deviceId, regionCode, apartItem);
-        const updatedList = removeFavoriteApartFromLocal(
+        const updatedList = removeFromLocalStateOnly(
           favoriteApartList,
           regionCode,
           apartItem

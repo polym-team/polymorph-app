@@ -1,16 +1,6 @@
-import { ApartItem } from '../models/types';
+import { ApartItem, ServerFavoriteApart } from '../models/types';
 
 // API 응답 타입들
-interface FavoriteApart {
-  id?: string;
-  regionCode: string;
-  address: string;
-  apartName: string;
-  deviceId: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -20,10 +10,10 @@ interface ApiResponse<T> {
 // 즐겨찾기 아파트 목록 조회
 export const fetchFavoriteApartList = async (
   deviceId: string
-): Promise<FavoriteApart[]> => {
+): Promise<ServerFavoriteApart[]> => {
   try {
     const response = await fetch(`/api/favorite-apart?deviceId=${deviceId}`);
-    const result: ApiResponse<FavoriteApart[]> = await response.json();
+    const result: ApiResponse<ServerFavoriteApart[]> = await response.json();
 
     if (!result.success) {
       throw new Error(result.error || '즐겨찾기 목록 조회에 실패했습니다.');
@@ -41,7 +31,7 @@ export const addFavoriteApart = async (
   deviceId: string,
   regionCode: string,
   apartItem: ApartItem
-): Promise<FavoriteApart> => {
+): Promise<ServerFavoriteApart> => {
   try {
     const response = await fetch('/api/favorite-apart', {
       method: 'POST',
@@ -56,7 +46,7 @@ export const addFavoriteApart = async (
       }),
     });
 
-    const result: ApiResponse<FavoriteApart> = await response.json();
+    const result: ApiResponse<ServerFavoriteApart> = await response.json();
 
     if (!result.success) {
       throw new Error(result.error || '즐겨찾기 추가에 실패했습니다.');
