@@ -1,11 +1,13 @@
+import admin from "firebase-admin";
 import {
   AdminFirestoreClient,
-  PushNotificationClient,
+  ExpoPushNotificationClient,
 } from '@polymorph/firebase';
 
 import { NextRequest, NextResponse } from 'next/server';
 
 import { COLLECTIONS } from '../consts';
+import { validateToken } from '../push-token/utils';
 import { obfuscateKorean } from '../utils';
 
 interface TransactionData {
@@ -41,21 +43,46 @@ interface PushNotificationData {
   transactions: TransactionData[];
 }
 
-// PushNotificationClient 초기화 (jibsayo 전용 push-token 컬렉션 사용)
-const pushClient = new PushNotificationClient(
-  {
-    projectId: process.env.FIREBASE_PROJECT_ID!,
-    privateKeyId: process.env.FIREBASE_PRIVATE_KEY_ID!,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')!,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
-    clientId: process.env.FIREBASE_CLIENT_ID!,
-  },
-  COLLECTIONS.PUSH_TOKEN // jibsayo 전용 컬렉션명
-);
+// Expo Push Notification Client 초기화
 
-// Firestore Admin 클라이언트 초기화
+// Firebase Admin SDK 초기화 (FCM용)
+let firebaseApp: admin.app.App;
+
+if (!admin.apps.length) {
+  firebaseApp = admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      privateKeyId: process.env.FIREBASE_PRIVATE_KEY_ID,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      clientId: process.env.FIREBASE_CLIENT_ID,
+    } as any),
+  });
+} else {
+  firebaseApp = admin.app();
+}const expoPushClient = new ExpoPushNotificationClient();
+
+// Firestore Admin 클라이언트 초기화 (즐겨찾기 아파트용)
 const firestoreClient = new AdminFirestoreClient({
   collectionName: COLLECTIONS.FAVORITE_APART,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  serviceAccount: {
+    type: 'service_account',
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    client_id: process.env.FIREBASE_CLIENT_ID,
+    auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+    token_uri: 'https://oauth2.googleapis.com/token',
+    auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+    client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
+  } as any,
+});
+
+// Firestore Admin 클라이언트 초기화 (푸시 토큰용)
+const pushTokenClient = new AdminFirestoreClient({
+  collectionName: COLLECTIONS.PUSH_TOKEN,
   projectId: process.env.FIREBASE_PROJECT_ID,
   serviceAccount: {
     type: 'service_account',
@@ -109,34 +136,70 @@ async function getNewTransactionsByArea(
   }
 }
 
-// 푸시 알림 전송 함수 (packages/firebase 사용)
+// 푸시 알림 전송 함수 (Firebase FCM 직접 사용)
 async function sendPushNotification(
   deviceId: string,
   message: string
 ): Promise<boolean> {
   try {
-    const result = await pushClient.sendToDevice(deviceId, {
-      title: '새로운 아파트 거래',
-      body: message,
-      data: {
-        type: 'new_transaction',
-        message: message,
-      },
-    });
+    // Firestore에서 토큰 조회 (문서 ID로 직접 조회)
+    const tokenDoc = await pushTokenClient.getDocument(deviceId);
 
-    if (result.success) {
-      console.log(`✅ 푸시 전송 성공: ${deviceId}`);
-      return true;
-    } else {
-      console.error(`❌ 푸시 전송 실패: ${deviceId} - ${result.error}`);
+    if (!tokenDoc) {
+      console.error(`❌ 토큰을 찾을 수 없습니다: ${deviceId}`);
       return false;
     }
+
+    const token = tokenDoc.data?.token;
+
+    if (!token) {
+      console.error(`❌ 토큰이 없습니다: ${deviceId}`);
+      return false;
+    }
+
+    console.log(
+      `🎫 토큰 조회 성공: ${deviceId} - ${token.substring(0, 20)}...`
+    );
+
+    // 토큰 유효성 검사
+    if (!validateToken(token)) {
+      console.error(
+        `❌ 유효하지 않은 토큰: ${deviceId} - ${token.substring(0, 20)}...`
+      );
+      return false;
+    }
+
+    // Firebase FCM을 직접 사용하여 전송
+    const messagePayload = {
+      notification: {
+        title: "새로운 아파트 거래",
+        body: message,
+      },
+      data: {
+        type: "new_transaction",
+        message: message,
+      },
+      token: token,
+      android: {
+        priority: "high" as const,
+      },
+      apns: {
+        headers: {
+          "apns-priority": "10",
+        },
+      },
+    };
+
+    console.log(`📤 FCM 전송 시작: ${deviceId}`);
+    const response = await firebaseApp.messaging().send(messagePayload);
+    console.log(`✅ FCM 전송 성공: ${deviceId} - Message ID: ${response}`);
+    
+    return true;
   } catch (error) {
-    console.error(`❌ 푸시 전송 에러: ${deviceId} - ${error}`);
+    console.error(`❌ FCM 전송 실패: ${deviceId} - ${error}`);
     return false;
   }
 }
-
 export async function POST(request: NextRequest) {
   try {
     console.log('🔍 즐겨찾기 기반 푸시 알림 처리 시작...');
