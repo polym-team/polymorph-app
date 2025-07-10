@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "tsc": "tsc --noEmit",
-    "clean": "rm -rf .next"
+    "clean": "rm -rf .next",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@package/ui": "workspace:*",
@@ -16,6 +19,15 @@
     "@polymorph/firebase": "workspace:*",
     "@types/d3": "^7.4.3",
     "cheerio": "1.0.0-rc.12",
-    "d3": "^7.9.0"
+    "d3": "^7.9.0",
+    "firebase-admin": "^13.4.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^14.3.1",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
   }
 }

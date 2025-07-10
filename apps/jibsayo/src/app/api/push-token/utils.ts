@@ -73,9 +73,49 @@ export async function findExistingToken(
   }
 }
 
-// 토큰 유효성 검사
+// 토큰 유효성 검사 (Exponent Push Token과 FCM 토큰 모두 지원)
 export function validateToken(token: string): boolean {
-  return Boolean(token && token.length > 0);
+  // 기본 검증
+  if (!token || token.length === 0) {
+    return false;
+  }
+
+  // Exponent Push Token 검증
+  if (token.startsWith('ExponentPushToken[') && token.endsWith(']')) {
+    const tokenContent = token.slice(18, -1); // ExponentPushToken[...] 안의 내용
+    if (tokenContent.length >= 20) {
+      console.log('✅ Exponent Push Token 형식 확인됨');
+      return true;
+    } else {
+      console.warn(
+        '⚠️  Exponent Push Token 내용이 너무 짧습니다:',
+        tokenContent.length
+      );
+      return false;
+    }
+  }
+
+  // Firebase FCM 토큰 검증
+  if (token.length >= 140) {
+    console.log('✅ Firebase FCM 토큰 형식 확인됨');
+    return true;
+  }
+
+  // 테스트/더미 토큰인지 확인
+  if (
+    token.includes('example') ||
+    token.includes('test') ||
+    token.includes('dummy')
+  ) {
+    console.warn(
+      '테스트/더미 토큰이 감지되었습니다:',
+      token.substring(0, 20) + '...'
+    );
+    return false;
+  }
+
+  console.warn('⚠️  알 수 없는 토큰 형식:', token.substring(0, 20) + '...');
+  return false;
 }
 
 // 디바이스 ID 유효성 검사

@@ -1,4 +1,3 @@
-import admin from "firebase-admin";
 import {
   AdminFirestoreClient,
   ExpoPushNotificationClient,
@@ -44,23 +43,7 @@ interface PushNotificationData {
 }
 
 // Expo Push Notification Client 초기화
-
-// Firebase Admin SDK 초기화 (FCM용)
-let firebaseApp: admin.app.App;
-
-if (!admin.apps.length) {
-  firebaseApp = admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      privateKeyId: process.env.FIREBASE_PRIVATE_KEY_ID,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      clientId: process.env.FIREBASE_CLIENT_ID,
-    } as any),
-  });
-} else {
-  firebaseApp = admin.app();
-}const expoPushClient = new ExpoPushNotificationClient();
+const expoPushClient = new ExpoPushNotificationClient();
 
 // Firestore Admin 클라이언트 초기화 (즐겨찾기 아파트용)
 const firestoreClient = new AdminFirestoreClient({
@@ -169,28 +152,29 @@ async function sendPushNotification(
       return false;
     }
 
-    // Expo Push Notification Service를 사용하여 전송
     const result = await expoPushClient.sendToDevice(token, {
-      title: "새로운 아파트 거래",
+      title: '새로운 아파트 거래',
       body: message,
       data: {
-        type: "new_transaction",
+        type: 'new_transaction',
         message: message,
       },
     });
 
     if (result.success) {
-      console.log(`✅ Expo 푸시 전송 성공: ${deviceId}`);
+      console.log(`✅ 푸시 전송 성공: ${deviceId}`);
       return true;
     } else {
-      console.error(`❌ Expo 푸시 전송 실패: ${deviceId} - ${result.error}`);
+      console.error(`❌ 푸시 전송 실패: ${deviceId} - ${result.error}`);
       return false;
     }
   } catch (error) {
-    console.error(`❌ Expo 푸시 전송 에러: ${deviceId} - ${error}`);
+    console.error(`❌ 푸시 전송 에러: ${deviceId} - ${error}`);
     return false;
   }
-}export async function POST(request: NextRequest) {
+}
+
+export async function POST(request: NextRequest) {
   try {
     console.log('🔍 즐겨찾기 기반 푸시 알림 처리 시작...');
 
