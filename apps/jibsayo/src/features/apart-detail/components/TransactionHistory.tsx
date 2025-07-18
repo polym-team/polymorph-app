@@ -75,7 +75,7 @@ const columns: ColumnDef<TransactionItem>[] = [
     cell: ({ row }) => (
       <div className="hidden sm:block">{row.getValue('floor')}층</div>
     ),
-    size: 80,
+    size: 100,
   },
   {
     accessorKey: 'tradeAmount',
@@ -150,7 +150,7 @@ const columns: ColumnDef<TransactionItem>[] = [
         </div>
       );
     },
-    size: 100,
+    size: 60,
   },
 ];
 
