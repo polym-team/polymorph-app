@@ -2,7 +2,7 @@ import { STORAGE_KEY } from '@/shared/consts/storageKey';
 import {
   getItem as getLocalItem,
   setItem as setLocalItem,
-} from '@/shared/lib/localStorage';
+} from '@/shared/lib/indexedDB';
 import {
   getItem as getSessionItem,
   setItem as setSessionItem,
@@ -35,7 +35,7 @@ export const useTransactionViewSetting = (): Return => {
     const loadSettings = async () => {
       setIsMounted(true);
 
-      const savedSettings = getLocalItem<
+      const savedSettings = await getLocalItem<
         Omit<TransactionViewSetting, 'pageIndex'>
       >(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS);
 
@@ -62,14 +62,14 @@ export const useTransactionViewSetting = (): Return => {
     loadSettings();
   }, []);
 
-  const saveSettings = (newSettings: Partial<TransactionViewSetting>) => {
+  const saveSettings = async (newSettings: Partial<TransactionViewSetting>) => {
     const updatedSettings = { ...settings, ...newSettings };
     setSettings(updatedSettings);
 
     if (isMounted) {
-      // sorting과 pageSize는 localStorage에 저장
+      // sorting과 pageSize는 IndexedDB에 저장
       if ('sorting' in newSettings || 'pageSize' in newSettings) {
-        setLocalItem(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS, {
+        await setLocalItem(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS, {
           sorting: updatedSettings.sorting,
           pageSize: updatedSettings.pageSize,
         });
@@ -85,16 +85,16 @@ export const useTransactionViewSetting = (): Return => {
     }
   };
 
-  const updateSorting = (sorting: SortingState) => {
-    saveSettings({ sorting });
+  const updateSorting = async (sorting: SortingState) => {
+    await saveSettings({ sorting });
   };
 
-  const updatePageSize = (pageSize: number) => {
-    saveSettings({ pageSize });
+  const updatePageSize = async (pageSize: number) => {
+    await saveSettings({ pageSize });
   };
 
-  const updatePageIndex = (pageIndex: number) => {
-    saveSettings({ pageIndex });
+  const updatePageIndex = async (pageIndex: number) => {
+    await saveSettings({ pageIndex });
   };
 
   return {

@@ -50,7 +50,7 @@ export function FavoriteRegionList({ form, onSubmit }: Props) {
       {favoriteRegions.map(regionCode => (
         <div
           key={regionCode}
-          className="border-input bg-background flex flex-shrink-0 rounded-md border"
+          className="border-input bg-background flex flex-shrink-0 rounded-sm border"
         >
           <Button
             variant="ghost"

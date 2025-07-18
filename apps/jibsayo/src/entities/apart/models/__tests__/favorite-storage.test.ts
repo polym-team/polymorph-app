@@ -17,12 +17,12 @@ import { ApartItem, FavoriteApartItem } from '../types';
 jest.mock('../../services/api');
 const mockedApi = api as jest.Mocked<typeof api>;
 
-// localStorage 모킹
+// IndexedDB 모킹
 const mockGetItem = jest.fn();
 const mockSetItem = jest.fn();
-jest.mock('@/shared/lib/localStorage', () => ({
-  getItem: (...args: any[]) => mockGetItem(...args),
-  setItem: (...args: any[]) => mockSetItem(...args),
+jest.mock('@/shared/lib/indexedDB', () => ({
+  getItem: async (...args: any[]) => mockGetItem(...args),
+  setItem: async (...args: any[]) => mockSetItem(...args),
 }));
 
 describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {

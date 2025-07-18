@@ -3,7 +3,7 @@ import {
   getRegionNameWithRegionCode,
 } from '@/entities/region';
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
-import { getItem, setItem } from '@/shared/lib/localStorage';
+import { getItem, setItem } from '@/shared/lib/indexedDB';
 
 import { useEffect, useState } from 'react';
 
@@ -19,13 +19,18 @@ export const useFavoriteRegion = (): Return => {
   const [favoriteRegions, setFavoriteRegions] = useState<string[]>([]);
 
   useEffect(() => {
-    const savedRegions = getItem<string[]>(STORAGE_KEY.FAVORITE_REGION_LIST);
-    if (savedRegions) {
-      setFavoriteRegions(savedRegions);
-    }
+    const loadSavedRegions = async () => {
+      const savedRegions = await getItem<string[]>(
+        STORAGE_KEY.FAVORITE_REGION_LIST
+      );
+      if (savedRegions) {
+        setFavoriteRegions(savedRegions);
+      }
+    };
+    loadSavedRegions();
   }, []);
 
-  const addFavoriteRegion = (regionCode: string) => {
+  const addFavoriteRegion = async (regionCode: string) => {
     setFavoriteRegions(prev => {
       const newRegions = [...prev, regionCode];
       setItem(STORAGE_KEY.FAVORITE_REGION_LIST, newRegions);
@@ -42,7 +47,7 @@ export const useFavoriteRegion = (): Return => {
     );
   };
 
-  const removeFavoriteRegion = (regionCode: string) => {
+  const removeFavoriteRegion = async (regionCode: string) => {
     setFavoriteRegions(prev => {
       const newRegions = prev.filter(r => r !== regionCode);
       setItem(STORAGE_KEY.FAVORITE_REGION_LIST, newRegions);
@@ -54,11 +59,11 @@ export const useFavoriteRegion = (): Return => {
     );
   };
 
-  const toggleFavoriteRegion = (regionCode: string) => {
+  const toggleFavoriteRegion = async (regionCode: string) => {
     if (favoriteRegions.includes(regionCode)) {
-      removeFavoriteRegion(regionCode);
+      await removeFavoriteRegion(regionCode);
     } else {
-      addFavoriteRegion(regionCode);
+      await addFavoriteRegion(regionCode);
     }
   };
 

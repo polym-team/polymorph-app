@@ -1,4 +1,4 @@
-import { getDeviceId } from '@/shared/lib/device';
+import { getDeviceId, getDeviceIdSync } from '@/shared/lib/device';
 
 import { useEffect, useState } from 'react';
 
@@ -32,24 +32,24 @@ export const useFavoriteApartList = (): Return => {
   }, []);
 
   const loadFavoriteApartList = async () => {
-    const deviceId = getDeviceId();
+    const deviceId = await getDeviceId();
     try {
       if (deviceId) {
         const serverData = await loadFavoriteApartListFromServer(deviceId);
         setFavoriteApartList(serverData);
       } else {
-        const localData = loadFavoriteApartListFromLocal();
+        const localData = await loadFavoriteApartListFromLocal();
         setFavoriteApartList(localData);
       }
     } catch (error) {
       console.error('즐겨찾기 목록 로드 실패:', error);
-      const localData = loadFavoriteApartListFromLocal();
+      const localData = await loadFavoriteApartListFromLocal();
       setFavoriteApartList(localData);
     }
   };
 
   const addFavoriteApart = async (regionCode: string, apartItem: ApartItem) => {
-    const deviceId = getDeviceId();
+    const deviceId = await getDeviceId();
     try {
       if (deviceId) {
         await addFavoriteApartToServer(deviceId, regionCode, apartItem);
@@ -60,7 +60,7 @@ export const useFavoriteApartList = (): Return => {
         );
         setFavoriteApartList(updatedList);
       } else {
-        const updatedList = addFavoriteApartToLocal(
+        const updatedList = await addFavoriteApartToLocal(
           favoriteApartList,
           regionCode,
           apartItem
@@ -78,7 +78,7 @@ export const useFavoriteApartList = (): Return => {
     regionCode: string,
     apartItem: ApartItem
   ) => {
-    const deviceId = getDeviceId();
+    const deviceId = await getDeviceId();
     try {
       if (deviceId) {
         await removeFavoriteApartFromServer(deviceId, regionCode, apartItem);
@@ -89,7 +89,7 @@ export const useFavoriteApartList = (): Return => {
         );
         setFavoriteApartList(updatedList);
       } else {
-        const updatedList = removeFavoriteApartFromLocal(
+        const updatedList = await removeFavoriteApartFromLocal(
           favoriteApartList,
           regionCode,
           apartItem
