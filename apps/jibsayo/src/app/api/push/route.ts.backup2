@@ -1,9 +1,9 @@
+import admin from "firebase-admin";
 import {
   AdminFirestoreClient,
   ExpoPushNotificationClient,
 } from '@polymorph/firebase';
 
-import admin from 'firebase-admin';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { COLLECTIONS } from '../consts';
@@ -53,15 +53,14 @@ if (!admin.apps.length) {
     credential: admin.credential.cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
       privateKeyId: process.env.FIREBASE_PRIVATE_KEY_ID,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
       clientId: process.env.FIREBASE_CLIENT_ID,
     } as any),
   });
 } else {
   firebaseApp = admin.app();
-}
-const expoPushClient = new ExpoPushNotificationClient();
+}const expoPushClient = new ExpoPushNotificationClient();
 
 // Firestore Admin 클라이언트 초기화 (즐겨찾기 아파트용)
 const firestoreClient = new AdminFirestoreClient({
@@ -172,10 +171,10 @@ async function sendPushNotification(
 
     // Expo Push Notification Service를 사용하여 전송
     const result = await expoPushClient.sendToDevice(token, {
-      title: '새로운 아파트 거래',
+      title: "새로운 아파트 거래",
       body: message,
       data: {
-        type: 'new_transaction',
+        type: "new_transaction",
         message: message,
       },
     });
@@ -191,8 +190,7 @@ async function sendPushNotification(
     console.error(`❌ Expo 푸시 전송 에러: ${deviceId} - ${error}`);
     return false;
   }
-}
-export async function POST(request: NextRequest) {
+}export async function POST(request: NextRequest) {
   try {
     console.log('🔍 즐겨찾기 기반 푸시 알림 처리 시작...');
 
@@ -248,46 +246,65 @@ export async function POST(request: NextRequest) {
       `📊 총 ${allTransactions.length}개의 신규 거래 데이터 수집 완료`
     );
 
-    // 4. 아파트별로 매칭되는 신규 거래 찾기 및 푸시 데이터 생성
+    // 4. deviceId별로 즐겨찾기와 매칭되는 신규 거래 찾기 및 푸시 데이터 생성
     const pushNotifications: PushNotificationData[] = [];
-    const sentSet = new Set<string>(); // deviceId|apartName 중복 방지
 
-    // 각 즐겨찾기 아파트별로 매칭 확인
-    for (const favorite of favoriteAparts) {
-      const key = `${favorite.deviceId}|${favorite.apartName}`;
-      if (sentSet.has(key)) continue; // 중복 방지
+    // deviceId별로 그룹화
+    const favoritesByDevice = favoriteAparts.reduce(
+      (acc, fav) => {
+        if (!acc[fav.deviceId]) {
+          acc[fav.deviceId] = [];
+        }
+        acc[fav.deviceId].push(fav);
+        return acc;
+      },
+      {} as Record<string, FavoriteApart[]>
+    );
 
-      // 해당 아파트와 매칭되는 거래 찾기
-      const matchedTransactions = allTransactions.filter(transaction => {
-        const regionMatch = transaction.apartId.includes(
-          obfuscateKorean(favorite.regionCode)
-        );
-        const addressMatch = transaction.apartId.includes(
-          obfuscateKorean(favorite.address)
-        );
-        const apartNameMatch = transaction.apartId.includes(
-          obfuscateKorean(favorite.apartName)
-        );
-        return regionMatch && addressMatch && apartNameMatch;
-      });
+    // 각 디바이스별로 매칭 확인 및 푸시 데이터 생성
+    for (const [deviceId, favorites] of Object.entries(favoritesByDevice)) {
+      const deviceTransactions: TransactionData[] = [];
+      const matchedAparts: string[] = [];
 
-      if (matchedTransactions.length > 0) {
-        const message = `${favorite.apartName}에 ${matchedTransactions.length}건의 신규 거래가 있습니다.`;
-        pushNotifications.push({
-          deviceId: favorite.deviceId,
-          message,
-          apartName: favorite.apartName,
-          regionCode: favorite.regionCode,
-          transactionCount: matchedTransactions.length,
-          transactions: matchedTransactions,
+      for (const favorite of favorites) {
+        // apartId에 포함된 정보로 매칭 (regionCode, address, apartName)
+        const matchedTransactions = allTransactions.filter(transaction => {
+          // regionCode, address, apartName이 apartId에 모두 포함되어 있음
+          const regionMatch = transaction.apartId.includes(
+            obfuscateKorean(favorite.regionCode)
+          );
+          const addressMatch = transaction.apartId.includes(
+            obfuscateKorean(favorite.address)
+          );
+          const apartNameMatch = transaction.apartId.includes(
+            obfuscateKorean(favorite.apartName)
+          );
+
+          return regionMatch && addressMatch && apartNameMatch;
         });
-        sentSet.add(key);
+
+        if (matchedTransactions.length > 0) {
+          deviceTransactions.push(...matchedTransactions);
+          matchedAparts.push(favorite.apartName);
+        }
+      }
+
+      if (deviceTransactions.length > 0) {
+        // 아파트명을 쉼표로 구분하여 메시지 생성
+        const apartNames = Array.from(new Set(matchedAparts)).join(', ');
+        const message = `신규 거래가 있습니다. (${apartNames})`;
+
+        pushNotifications.push({
+          deviceId,
+          message,
+          apartName: apartNames,
+          regionCode: favorites[0].regionCode, // 첫 번째 즐겨찾기의 regionCode 사용
+          transactionCount: deviceTransactions.length,
+          transactions: deviceTransactions,
+        });
+
         console.log(
-          `✅✅✅✅✅ 푸시 알람을 전송합니다. (deviceId: ${favorite.deviceId}, apartName: ${favorite.apartName}, 거래수: ${matchedTransactions.length}건)`
-        );
-      } else {
-        console.log(
-          `⚠️  매칭되는 거래 없음: ${favorite.apartName} (deviceId: ${favorite.deviceId})`
+          `✅✅✅✅✅ 푸시 알람을 전송합니다. (deviceId: ${deviceId}, apartName: ${apartNames})`
         );
       }
     }
@@ -303,11 +320,6 @@ export async function POST(request: NextRequest) {
           pushData.deviceId,
           pushData.message
         );
-        if (success) {
-          console.log(
-            `푸시 전송 성공: ${pushData.deviceId} - ${pushData.apartName}`
-          );
-        }
         return {
           deviceId: pushData.deviceId,
           success,
