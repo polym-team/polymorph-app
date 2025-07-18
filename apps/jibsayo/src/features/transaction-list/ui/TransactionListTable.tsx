@@ -101,7 +101,7 @@ const createColumns = ({
         newTransactionIds.has(row.original.apartId);
 
       return (
-        <div className="flex items-center gap-x-1">
+        <div className="flex flex-wrap items-center justify-end gap-x-1 sm:justify-normal">
           {isNewTransaction && (
             <div className="bg-primary mr-1 flex h-4 w-4 items-center justify-center rounded-full text-xs font-bold text-white">
               N
@@ -143,8 +143,24 @@ const createColumns = ({
     ),
     cell: ({ row }) => {
       const amount = row.getValue('tradeAmount') as number;
+      const maxTradeAmount = row.getValue('maxTradeAmount') as number;
+
       return (
-        <div className="text-primary font-bold">{formatPrice(amount)}</div>
+        <div className="flex flex-wrap items-center justify-end sm:justify-normal">
+          <span className="text-primary font-bold">{formatPrice(amount)}</span>
+          {/* 모바일에서만 최고가 표시 */}
+          {maxTradeAmount && (
+            <div className="flex items-center">
+              <span className="mx-1 text-xs text-gray-400 sm:hidden">/</span>
+              <span
+                className="text-xs font-semibold text-red-600 sm:hidden"
+                style={{ wordBreak: 'keep-all' }}
+              >
+                {formatPrice(maxTradeAmount)}
+              </span>
+            </div>
+          )}
+        </div>
       );
     },
     size: 150,
@@ -159,7 +175,10 @@ const createColumns = ({
       if (!maxTradeAmount) return null;
 
       return (
-        <div className="font-semibold text-red-600">
+        <div
+          className="font-semibold text-red-600"
+          style={{ wordBreak: 'keep-all' }}
+        >
           {formatPrice(maxTradeAmount)}
         </div>
       );
@@ -192,16 +211,19 @@ export function TransactionListTable({
     householdsNumber: '세대수',
     tradeDate: '거래일자',
     size: '평수',
-    tradeAmount: '거래가격',
+    tradeAmount: '거래가격/최고가',
     maxTradeAmount: '최고가',
   };
 
   const mobileSortableColumns = {
-    apartName: '아파트명',
-    tradeAmount: '거래가격',
-    tradeDate: '거래일자',
-    maxTradeAmount: '최고가',
+    tradeDate: '',
+    apartName: '',
+    size: '',
+    tradeAmount: '',
   };
+
+  // 모바일에서 보여줄 컬럼 순서
+  const mobileColumns = ['tradeDate', 'apartName', 'size', 'tradeAmount'];
 
   const handleClick = (row: TransactionItem) => {
     if (!regionCode) return;
@@ -247,6 +269,7 @@ export function TransactionListTable({
       onPageSizeChange={onPageSizeChange}
       onPageIndexChange={onPageIndexChange}
       mobileColumnTitles={mobileColumnTitles}
+      mobileColumns={mobileColumns}
       preservePageIndex={preservePageIndex}
       onRowClick={handleClick}
       mobileSortableColumns={mobileSortableColumns}

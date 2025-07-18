@@ -48,6 +48,7 @@ interface DataTableProps<TData, TValue> {
   onSortingChange?: (sorting: SortingState) => void;
   onPageSizeChange?: (pageSize: number) => void;
   mobileColumnTitles?: Record<string, string>;
+  mobileColumns?: string[];
   loading?: boolean;
   loadingMessage?: string;
   preservePageIndex?: boolean;
@@ -76,6 +77,7 @@ export function DataTable<TData, TValue>({
   onSortingChange,
   onPageSizeChange,
   mobileColumnTitles,
+  mobileColumns,
   loading = false,
   preservePageIndex = false,
   loadingMessage = '데이터를 불러오고 있어요.',
@@ -285,16 +287,19 @@ export function DataTable<TData, TValue>({
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="정렬 컬럼">
                   {defaultSortColumn &&
-                    (mobileSortableColumns?.[defaultSortColumn] ||
-                      (() => {
-                        const column = table
-                          .getAllColumns()
-                          .find(col => col.id === defaultSortColumn);
-                        const header = column?.columnDef.header;
-                        return typeof header === 'string'
-                          ? header
-                          : defaultSortColumn;
-                      })())}
+                    (mobileColumnTitles?.[defaultSortColumn] ||
+                      (mobileSortableColumns?.[defaultSortColumn] &&
+                      mobileSortableColumns[defaultSortColumn].trim() !== ''
+                        ? mobileSortableColumns[defaultSortColumn]
+                        : (() => {
+                            const column = table
+                              .getAllColumns()
+                              .find(col => col.id === defaultSortColumn);
+                            const header = column?.columnDef.header;
+                            return typeof header === 'string'
+                              ? header
+                              : defaultSortColumn;
+                          })()))}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -302,9 +307,16 @@ export function DataTable<TData, TValue>({
                   mobileSortableColumnsList.map(column => {
                     const header = column.columnDef.header;
                     let displayName = '';
-                    if (
+
+                    // mobileColumnTitles에서 우선 찾기
+                    if (mobileColumnTitles && mobileColumnTitles[column.id]) {
+                      displayName = mobileColumnTitles[column.id];
+                    }
+                    // mobileSortableColumns에서 찾기 (값이 있는 경우만)
+                    else if (
                       mobileSortableColumns &&
-                      mobileSortableColumns[column.id]
+                      mobileSortableColumns[column.id] &&
+                      mobileSortableColumns[column.id].trim() !== ''
                     ) {
                       displayName = mobileSortableColumns[column.id];
                     } else if (typeof header === 'string') {
@@ -399,6 +411,14 @@ export function DataTable<TData, TValue>({
                 {row.getVisibleCells().map((cell, index) => {
                   const header = table.getHeaderGroups()[0]?.headers[index];
                   let headerText = '';
+
+                  // mobileColumns가 지정된 경우 해당 컬럼만 보여주기
+                  if (
+                    mobileColumns &&
+                    !mobileColumns.includes(cell.column.id)
+                  ) {
+                    return null;
+                  }
 
                   if (header) {
                     const accessorKey = header.column.id;
