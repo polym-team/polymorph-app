@@ -40,7 +40,7 @@ const columns: ColumnDef<TransactionItem>[] = [
       <DataTableColumnHeader column={column} title="거래일" />
     ),
     cell: ({ row }) => <div>{row.getValue('tradeDate')}</div>,
-    size: 120,
+    size: 100,
   },
   {
     accessorKey: 'size',
@@ -50,21 +50,31 @@ const columns: ColumnDef<TransactionItem>[] = [
     cell: ({ row }) => {
       const size = row.getValue('size') as number;
       const pyeong = row.original.pyeong;
+      const floor = row.original.floor;
+
+      // 모바일에서는 층/평수/면적을 묶어서 표시
       return (
         <div className="flex items-center gap-x-1">
-          <div>{pyeong}평</div>
-          <div className="text-sm text-gray-500">({size}㎡)</div>
+          <div className="hidden sm:flex sm:items-center sm:gap-x-1">
+            <div>{pyeong}평</div>
+            <div className="text-sm text-gray-500">({size}㎡)</div>
+          </div>
+          <div className="sm:hidden">
+            {floor}층/{pyeong}평 ({size}㎡)
+          </div>
         </div>
       );
     },
-    size: 100,
+    size: 120,
   },
   {
     accessorKey: 'floor',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="층" />
     ),
-    cell: ({ row }) => <div>{row.getValue('floor')}층</div>,
+    cell: ({ row }) => (
+      <div className="hidden sm:block">{row.getValue('floor')}층</div>
+    ),
     size: 80,
   },
   {
@@ -78,10 +88,25 @@ const columns: ColumnDef<TransactionItem>[] = [
 
       return (
         <div className="flex items-center gap-x-1">
-          <span className="text-primary font-bold">{formatPrice(amount)}</span>
-          <span className="text-sm text-gray-500">
-            (평당{formatPrice(pricePerPyeong)})
-          </span>
+          <div className="text-primary font-bold">{formatPrice(amount)}</div>
+          <div className="text-sm text-gray-500 sm:hidden">
+            (평당 {formatPrice(pricePerPyeong)})
+          </div>
+        </div>
+      );
+    },
+    size: 150,
+  },
+  {
+    accessorKey: 'pricePerPyeong',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="평당가격" />
+    ),
+    cell: ({ row }) => {
+      const pricePerPyeong = row.original.pricePerPyeong;
+      return (
+        <div className="hidden text-sm text-gray-600 sm:block">
+          {formatPrice(pricePerPyeong)}
         </div>
       );
     },
@@ -131,10 +156,10 @@ const columns: ColumnDef<TransactionItem>[] = [
 
 const mobileColumnTitles = {
   tradeDate: '거래일',
-  size: '면적/평수',
-  floor: '층',
+  size: '층/평수/면적',
+  floor: '층/평수/면적',
   tradeAmount: '거래가격',
-  pricePerPyeong: '평당가격',
+  pricePerPyeong: '거래가격',
   priceChange: '가격변동',
 };
 
@@ -215,6 +240,12 @@ export function TransactionHistory({ items }: Props) {
         pageSize={pageSize}
         onPageSizeChange={setPageSize}
         mobileColumnTitles={mobileColumnTitles}
+        mobileColumns={['tradeDate', 'size', 'tradeAmount', 'priceChange']}
+        mobileSortableColumns={{
+          tradeDate: '거래일',
+          size: '평수',
+          tradeAmount: '거래가격',
+        }}
         emptyMessage="거래 내역이 없습니다."
         showPagination={true}
       />
