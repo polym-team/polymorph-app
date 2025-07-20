@@ -96,15 +96,12 @@ export const useTransactionViewSetting = (): Return => {
       if ('pageIndex' in newSettings) {
         const newParams: Record<string, string> = {};
 
-        // 기존 검색 파라미터 유지
-        if (searchParams.regionCode) {
-          newParams.regionCode = searchParams.regionCode;
-        }
-        if (searchParams.tradeDate) {
-          newParams.tradeDate = searchParams.tradeDate;
-        }
+        // 현재 URL의 모든 쿼리파라미터 유지
+        navigationSearchParams.forEach((value, key) => {
+          newParams[key] = value;
+        });
 
-        // pageIndex 업데이트
+        // pageIndex만 업데이트
         newParams.pageIndex = updatedSettings.pageIndex.toString();
 
         setSearchParams(newParams);
