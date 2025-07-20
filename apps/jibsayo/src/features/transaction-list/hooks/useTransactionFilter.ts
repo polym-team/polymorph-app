@@ -113,26 +113,45 @@ export const useTransactionFilter = (): Return => {
       prevSearchParams.current.tradeDate !== currentTradeDate;
 
     if (regionCodeChanged || tradeDateChanged) {
-      const newParams: Record<string, string> = {};
-
-      // 현재 URL의 모든 쿼리파라미터 유지
-      navigationSearchParams.forEach((value, key) => {
-        newParams[key] = value;
+      console.log('🔄 Region/Date changed:', {
+        regionCodeChanged,
+        tradeDateChanged,
       });
 
-      // regionCode가 변경된 경우에만 apartName 초기화
+      const newParams: Record<string, string> = {};
+
+      // 기본 검색 파라미터 추가
+      if (searchParams.regionCode) {
+        newParams.regionCode = searchParams.regionCode;
+      }
+      if (searchParams.tradeDate) {
+        newParams.tradeDate = searchParams.tradeDate;
+      }
+
+      // 현재 필터 상태에서 파라미터 구성
+      const currentApartName = regionCodeChanged ? '' : filterState.apartName;
+      if (currentApartName) {
+        newParams.apartName = currentApartName;
+      }
+
+      // 다른 필터들은 현재 상태 유지
+      newParams.nationalSizeOnly = filterState.isNationalSizeOnly.toString();
+      newParams.favoriteOnly = filterState.isFavoriteOnly.toString();
+      newParams.newTransactionOnly =
+        filterState.isNewTransactionOnly.toString();
+
+      // pageIndex는 항상 0으로 리셋
+      newParams.pageIndex = '0';
+
+      console.log('🌐 Final params to set:', newParams);
+
+      // regionCode가 변경된 경우 상태도 업데이트
       if (regionCodeChanged) {
         setFilterState(prev => ({
           ...prev,
-          apartName: '', // apartName만 초기화
+          apartName: '',
         }));
-
-        // apartName 제거 (초기화)
-        delete newParams.apartName;
       }
-
-      // pageIndex는 항상 0으로 리셋 (새로운 데이터셋이므로)
-      newParams.pageIndex = '0';
 
       setSearchParams(newParams);
     }
