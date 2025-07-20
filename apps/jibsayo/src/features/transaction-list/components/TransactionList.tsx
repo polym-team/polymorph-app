@@ -134,7 +134,7 @@ export function TransactionList() {
         onSortingChange={updateSorting}
         onPageSizeChange={updatePageSize}
         onPageIndexChange={updatePageIndex}
-        preservePageIndex={isTogglingFavorite.current}
+        preservePageIndex={true}
         newTransactionIds={newTransactionIds}
         regionCode={searchParams.regionCode}
       />

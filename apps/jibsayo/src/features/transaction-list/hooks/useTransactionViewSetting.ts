@@ -64,13 +64,9 @@ export const useTransactionViewSetting = (): Return => {
   // pageIndex는 쿼리파라미터에서 직접 읽으므로 동기화 불필요
 
   const saveSettings = async (newSettings: Partial<TransactionViewSetting>) => {
-    console.log('💾 saveSettings:', newSettings, 'current settings:', settings);
-
     if (isMounted) {
       // pageIndex는 별도로 처리 (쿼리파라미터에 저장)
       if ('pageIndex' in newSettings && newSettings.pageIndex !== undefined) {
-        console.log('🌐 updating URL with pageIndex:', newSettings.pageIndex);
-
         const newParams: Record<string, string> = {};
 
         // 현재 URL의 모든 쿼리파라미터 유지
@@ -81,7 +77,6 @@ export const useTransactionViewSetting = (): Return => {
         // pageIndex만 업데이트
         newParams.pageIndex = newSettings.pageIndex.toString();
 
-        console.log('🌐 setSearchParams called with:', newParams);
         setSearchParams(newParams);
       }
 
@@ -110,7 +105,6 @@ export const useTransactionViewSetting = (): Return => {
   };
 
   const updatePageIndex = async (pageIndex: number) => {
-    console.log('🔄 updatePageIndex called:', pageIndex);
     await saveSettings({ pageIndex });
   };
 
