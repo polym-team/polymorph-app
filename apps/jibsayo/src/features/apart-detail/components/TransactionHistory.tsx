@@ -165,8 +165,16 @@ const mobileColumnTitles = {
 
 // 정렬 컬럼용 별도 라벨 (정렬 selectbox에서만 사용)
 const mobileSortableColumnTitles = {
+  tradeDate: '거래일',
   size: '평수',
   tradeAmount: '거래가격',
+};
+
+// 정렬 가능한 컬럼 제한
+const mobileSortableColumns = {
+  tradeDate: '',
+  size: '',
+  tradeAmount: '',
 };
 
 export function TransactionHistory({ items }: Props) {
@@ -247,6 +255,7 @@ export function TransactionHistory({ items }: Props) {
         onPageSizeChange={setPageSize}
         mobileColumnTitles={mobileColumnTitles}
         mobileColumns={['tradeDate', 'size', 'tradeAmount', 'priceChange']}
+        mobileSortableColumns={mobileSortableColumns}
         mobileSortableColumnTitles={mobileSortableColumnTitles}
         emptyMessage="거래 내역이 없습니다."
         showPagination={true}
