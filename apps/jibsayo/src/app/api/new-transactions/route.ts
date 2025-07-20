@@ -3,6 +3,9 @@ import pLimit from 'p-limit';
 
 import { obfuscateKorean } from '../utils';
 
+// 동적 라우트로 설정 (정적 빌드 시 request.url 사용으로 인한 오류 방지)
+export const dynamic = 'force-dynamic';
+
 // 성능 최적화를 위한 상수 정의
 const CONCURRENT_REQUESTS = 5;
 const BATCH_SIZE = 5;

@@ -8,9 +8,9 @@ import { QueryParamsInitializer } from './QueryParamsInitializer';
 export default async function TransactionsPage() {
   return (
     <div className="flex flex-col gap-y-5">
-      {/* 페이지 로드 시 세션 스토리지에서 쿼리 파라미터 복원 */}
-      <QueryParamsInitializer />
       <Suspense fallback={null}>
+        {/* 페이지 로드 시 세션 스토리지에서 쿼리 파라미터 복원 */}
+        <QueryParamsInitializer />
         <TransactionSearch />
         <TransactionList />
       </Suspense>
