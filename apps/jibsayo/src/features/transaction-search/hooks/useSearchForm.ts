@@ -7,6 +7,7 @@ import { useSearchParams } from '@/entities/transaction';
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
 import { getItem, setItem } from '@/shared/lib/sessionStorage';
 
+import { useSearchParams as useNavigationSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { SearchForm } from '../models/types';
@@ -22,6 +23,7 @@ interface Return {
 
 export const useSearchForm = (): Return => {
   const { searchParams, setSearchParams } = useSearchParams();
+  const navigationSearchParams = useNavigationSearchParams();
 
   const [form, setForm] = useState<SearchForm>(() => {
     if (searchParams.regionCode && searchParams.tradeDate) {
@@ -95,10 +97,23 @@ export const useSearchForm = (): Return => {
       tradeDate,
     });
 
-    setSearchParams({
-      regionCode: changedForm.regionCode,
-      tradeDate,
+    // 기존 필터 파라미터들을 유지하면서 regionCode, tradeDate만 업데이트
+    const newParams: Record<string, string> = {};
+
+    // 기존 파라미터들 복사 (regionCode, tradeDate 제외)
+    navigationSearchParams.forEach((value, key) => {
+      if (key !== 'regionCode' && key !== 'tradeDate') {
+        newParams[key] = value;
+      }
     });
+
+    // 새로운 regionCode, tradeDate 설정
+    newParams.regionCode = changedForm.regionCode;
+    newParams.tradeDate = tradeDate;
+
+    console.log('🔍 useSearchForm setSearchParams:', newParams);
+
+    setSearchParams(newParams);
   };
 
   useEffect(() => {
@@ -111,12 +126,24 @@ export const useSearchForm = (): Return => {
 
     if (savedSearchForm) {
       // 저장된 tradeDate를 그대로 사용
-      setSearchParams({
-        regionCode: savedSearchForm.regionCode,
-        tradeDate: savedSearchForm.tradeDate,
+      const newParams: Record<string, string> = {};
+
+      // 기존 파라미터들 복사 (regionCode, tradeDate 제외)
+      navigationSearchParams.forEach((value, key) => {
+        if (key !== 'regionCode' && key !== 'tradeDate') {
+          newParams[key] = value;
+        }
       });
+
+      // 저장된 regionCode, tradeDate 설정
+      newParams.regionCode = savedSearchForm.regionCode;
+      newParams.tradeDate = savedSearchForm.tradeDate;
+
+      console.log('🔍 useSearchForm useEffect setSearchParams:', newParams);
+
+      setSearchParams(newParams);
     }
-  }, []);
+  }, [navigationSearchParams, setSearchParams]);
 
   return {
     form,

@@ -174,40 +174,13 @@ export const useTransactionFilter = (): Return => {
       }
 
       setSearchParams(newParams);
-
-      // 지역 변경 시 강제로 apartName 제거 확인 (fallback)
-      if (regionCodeChanged) {
-        setTimeout(() => {
-          const currentURL = new URLSearchParams(window.location.search);
-          const currentApartName = currentURL.get('apartName');
-          if (currentApartName) {
-            console.log('⚠️ FORCE REMOVING apartName:', currentApartName);
-            const cleanParams: Record<string, string> = {};
-
-            // 모든 파라미터를 다시 수집하되 apartName 제외
-            currentURL.forEach((value, key) => {
-              if (key !== 'apartName') {
-                cleanParams[key] = value;
-              }
-            });
-
-            console.log('🧹 Clean params:', cleanParams);
-            originalSetSearchParams(cleanParams);
-          }
-        }, 100); // 100ms 후 확인
-      }
     }
 
     prevSearchParams.current = {
       regionCode: currentRegionCode,
       tradeDate: currentTradeDate,
     };
-  }, [
-    searchParams.regionCode,
-    searchParams.tradeDate,
-    setSearchParams,
-    originalSetSearchParams,
-  ]);
+  }, [searchParams.regionCode, searchParams.tradeDate, setSearchParams]);
 
   return {
     filter: filterState,
