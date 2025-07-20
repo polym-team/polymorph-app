@@ -41,8 +41,15 @@ const searchParamsToFilter = (
 };
 
 export const useTransactionFilter = (): Return => {
-  const { searchParams, setSearchParams } = useSearchParams();
+  const { searchParams, setSearchParams: originalSetSearchParams } =
+    useSearchParams();
   const navigationSearchParams = useNavigationSearchParams();
+
+  // setSearchParams 래핑해서 로그 추가
+  const setSearchParams = (params: Record<string, string>) => {
+    console.log('🌐 setSearchParams called from useTransactionFilter:', params);
+    originalSetSearchParams(params);
+  };
 
   const [filterState, setFilterState] =
     useState<TransactionFilter>(initialState);
@@ -56,6 +63,11 @@ export const useTransactionFilter = (): Return => {
   });
 
   const setFilter = (nextFilter: Partial<TransactionFilter>) => {
+    console.log('🔧 setFilter called:', {
+      nextFilter,
+      currentState: filterState,
+    });
+
     const changedFilter = { ...filterState, ...nextFilter };
     setFilterState(changedFilter);
 
@@ -71,7 +83,7 @@ export const useTransactionFilter = (): Return => {
     }
 
     // 필터 상태 업데이트
-    if (changedFilter.apartName) {
+    if (changedFilter.apartName && changedFilter.apartName.trim()) {
       newParams.apartName = changedFilter.apartName;
     }
     newParams.nationalSizeOnly = changedFilter.isNationalSizeOnly.toString();
@@ -82,6 +94,7 @@ export const useTransactionFilter = (): Return => {
     // pageIndex는 0으로 리셋 (필터링된 새로운 목록이므로)
     newParams.pageIndex = '0';
 
+    console.log('🔧 setFilter params:', newParams);
     setSearchParams(newParams);
   };
 
@@ -161,13 +174,40 @@ export const useTransactionFilter = (): Return => {
       }
 
       setSearchParams(newParams);
+
+      // 지역 변경 시 강제로 apartName 제거 확인 (fallback)
+      if (regionCodeChanged) {
+        setTimeout(() => {
+          const currentURL = new URLSearchParams(window.location.search);
+          const currentApartName = currentURL.get('apartName');
+          if (currentApartName) {
+            console.log('⚠️ FORCE REMOVING apartName:', currentApartName);
+            const cleanParams: Record<string, string> = {};
+
+            // 모든 파라미터를 다시 수집하되 apartName 제외
+            currentURL.forEach((value, key) => {
+              if (key !== 'apartName') {
+                cleanParams[key] = value;
+              }
+            });
+
+            console.log('🧹 Clean params:', cleanParams);
+            originalSetSearchParams(cleanParams);
+          }
+        }, 100); // 100ms 후 확인
+      }
     }
 
     prevSearchParams.current = {
       regionCode: currentRegionCode,
       tradeDate: currentTradeDate,
     };
-  }, [searchParams.regionCode, searchParams.tradeDate, setSearchParams]);
+  }, [
+    searchParams.regionCode,
+    searchParams.tradeDate,
+    setSearchParams,
+    originalSetSearchParams,
+  ]);
 
   return {
     filter: filterState,

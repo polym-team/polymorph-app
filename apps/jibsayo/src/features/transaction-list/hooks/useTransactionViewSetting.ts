@@ -22,8 +22,18 @@ interface Return {
 }
 
 export const useTransactionViewSetting = (): Return => {
-  const { searchParams, setSearchParams } = useSearchParams();
+  const { searchParams, setSearchParams: originalSetSearchParams } =
+    useSearchParams();
   const navigationSearchParams = useNavigationSearchParams();
+
+  // setSearchParams 래핑해서 로그 추가
+  const setSearchParams = (params: Record<string, string>) => {
+    console.log(
+      '🌐 setSearchParams called from useTransactionViewSetting:',
+      params
+    );
+    originalSetSearchParams(params);
+  };
 
   const [isMounted, setIsMounted] = useState(false);
   const [settings, setSettings] = useState<
