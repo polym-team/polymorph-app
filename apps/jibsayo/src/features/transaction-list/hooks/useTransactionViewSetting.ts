@@ -1,5 +1,6 @@
 import { useSearchParams } from '@/entities/transaction';
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
+import { useQueryParamsManager } from '@/shared/hooks/useQueryParamsManager';
 import {
   getItem as getLocalItem,
   setItem as setLocalItem,
@@ -22,18 +23,9 @@ interface Return {
 }
 
 export const useTransactionViewSetting = (): Return => {
-  const { searchParams, setSearchParams: originalSetSearchParams } =
-    useSearchParams();
+  const { searchParams } = useSearchParams();
   const navigationSearchParams = useNavigationSearchParams();
-
-  // setSearchParams 래핑해서 로그 추가
-  const setSearchParams = (params: Record<string, string>) => {
-    console.log(
-      '🌐 setSearchParams called from useTransactionViewSetting:',
-      params
-    );
-    originalSetSearchParams(params);
-  };
+  const { updateQueryParams } = useQueryParamsManager();
 
   const [isMounted, setIsMounted] = useState(false);
   const [settings, setSettings] = useState<
@@ -77,50 +69,11 @@ export const useTransactionViewSetting = (): Return => {
     if (isMounted) {
       // pageIndex는 별도로 처리 (쿼리파라미터에 저장)
       if ('pageIndex' in newSettings && newSettings.pageIndex !== undefined) {
-        const newParams: Record<string, string> = {};
-
-        // 필요한 파라미터들만 명시적으로 추가
-        const regionCode = navigationSearchParams.get('regionCode');
-        const tradeDate = navigationSearchParams.get('tradeDate');
-        const apartName = navigationSearchParams.get('apartName');
-        const nationalSizeOnly = navigationSearchParams.get('nationalSizeOnly');
-        const favoriteOnly = navigationSearchParams.get('favoriteOnly');
-        const newTransactionOnly =
-          navigationSearchParams.get('newTransactionOnly');
-
-        console.log('📄 Current URL params before pageIndex update:', {
-          regionCode,
-          tradeDate,
-          apartName,
-          nationalSizeOnly,
-          favoriteOnly,
-          newTransactionOnly,
+        // 새로운 중앙화된 쿼리파라미터 관리 사용
+        updateQueryParams({
+          type: 'PAGE_UPDATE',
+          pageIndex: newSettings.pageIndex,
         });
-
-        if (regionCode) newParams.regionCode = regionCode;
-        if (tradeDate) newParams.tradeDate = tradeDate;
-
-        // apartName은 조건부로 추가 (비어있지 않을 때만)
-        if (apartName && apartName.trim()) {
-          console.log('✅ Including apartName in pageIndex update:', apartName);
-          newParams.apartName = apartName;
-        } else {
-          console.log('🚫 Excluding apartName in pageIndex update:', apartName);
-        }
-
-        if (nationalSizeOnly) newParams.nationalSizeOnly = nationalSizeOnly;
-        if (favoriteOnly) newParams.favoriteOnly = favoriteOnly;
-        if (newTransactionOnly)
-          newParams.newTransactionOnly = newTransactionOnly;
-
-        // pageIndex 업데이트
-        newParams.pageIndex = newSettings.pageIndex.toString();
-
-        console.log(
-          '📄 pageIndex update params:',
-          JSON.stringify(newParams, null, 2)
-        );
-        setSearchParams(newParams);
       }
 
       // sorting과 pageSize는 로컬 상태 및 IndexedDB에 저장

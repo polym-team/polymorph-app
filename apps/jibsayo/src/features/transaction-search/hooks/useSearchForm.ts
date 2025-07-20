@@ -5,9 +5,9 @@ import {
 } from '@/entities/region';
 import { useSearchParams } from '@/entities/transaction';
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
+import { useQueryParamsManager } from '@/shared/hooks/useQueryParamsManager';
 import { getItem, setItem } from '@/shared/lib/sessionStorage';
 
-import { useSearchParams as useNavigationSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { SearchForm } from '../models/types';
@@ -22,8 +22,8 @@ interface Return {
 }
 
 export const useSearchForm = (): Return => {
-  const { searchParams, setSearchParams } = useSearchParams();
-  const navigationSearchParams = useNavigationSearchParams();
+  const { searchParams } = useSearchParams();
+  const { updateQueryParams } = useQueryParamsManager();
 
   const [form, setForm] = useState<SearchForm>(() => {
     if (searchParams.regionCode && searchParams.tradeDate) {
@@ -97,19 +97,12 @@ export const useSearchForm = (): Return => {
       tradeDate,
     });
 
-    console.log(
-      '🔍 useSearchForm onSubmit - setting only regionCode and tradeDate:',
-      {
-        regionCode: changedForm.regionCode,
-        tradeDate,
-      }
-    );
-
-    // 단순하게 regionCode, tradeDate만 설정
-    // 다른 필터들은 useTransactionFilter에서 관리하도록 함
-    setSearchParams({
+    // 새로운 중앙화된 쿼리파라미터 관리 사용
+    updateQueryParams({
+      type: 'SEARCH_UPDATE',
       regionCode: changedForm.regionCode,
       tradeDate,
+      currentRegionCode: searchParams.regionCode,
     });
   };
 
@@ -128,9 +121,11 @@ export const useSearchForm = (): Return => {
       );
 
       // 초기 로드 시에는 단순하게 regionCode, tradeDate만 설정
-      setSearchParams({
+      updateQueryParams({
+        type: 'SEARCH_UPDATE',
         regionCode: savedSearchForm.regionCode,
         tradeDate: savedSearchForm.tradeDate,
+        currentRegionCode: undefined, // 초기 로드 시에는 이전 값이 없음
       });
     }
   }, []); // 빈 의존성 배열로 초기 로드 시에만 실행
