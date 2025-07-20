@@ -1,22 +1,27 @@
 import * as transactionEntity from '@/entities/transaction';
-import { STORAGE_KEY } from '@/shared/consts/storageKey';
-import * as sessionStorage from '@/shared/lib/sessionStorage';
 import { act, renderHook } from '@testing-library/react';
 
 import { useTransactionFilter } from '../useTransactionFilter';
 
 // Mock dependencies
-jest.mock('@/shared/lib/sessionStorage');
 jest.mock('@/entities/transaction');
 
-const mockedSessionStorage = sessionStorage as jest.Mocked<
-  typeof sessionStorage
->;
 const mockedTransactionEntity = transactionEntity as jest.Mocked<
   typeof transactionEntity
 >;
 
-describe('useTransactionFilter - 거래 필터 Hook', () => {
+// Mock window.location
+const mockLocation = {
+  search: '',
+};
+
+Object.defineProperty(window, 'location', {
+  value: mockLocation,
+  writable: true,
+});
+
+describe('useTransactionFilter - 거래 필터 Hook (쿼리파라미터 기반)', () => {
+  const mockSetSearchParams = jest.fn();
   const mockSearchParams = {
     regionCode: '11680',
     tradeDate: '2024-01',
@@ -24,16 +29,13 @@ describe('useTransactionFilter - 거래 필터 Hook', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLocation.search = '';
 
     // useSearchParams mock 설정
     mockedTransactionEntity.useSearchParams.mockReturnValue({
       searchParams: mockSearchParams,
-      setSearchParams: jest.fn(),
+      setSearchParams: mockSetSearchParams,
     });
-
-    // sessionStorage mock 설정
-    mockedSessionStorage.getItem.mockReturnValue(null);
-    mockedSessionStorage.setItem.mockImplementation(() => {});
   });
 
   describe('초기 상태', () => {
@@ -48,22 +50,33 @@ describe('useTransactionFilter - 거래 필터 Hook', () => {
       });
     });
 
-    it('세션스토리지에서 저장된 필터를 로드해야 한다', () => {
-      const savedFilter = {
-        apartName: '강남',
-        isNationalSizeOnly: true,
-        isFavoriteOnly: false,
-        isNewTransactionOnly: true,
-      };
-
-      mockedSessionStorage.getItem.mockReturnValue(savedFilter);
+    it('URL 쿼리파라미터에서 필터를 로드해야 한다', () => {
+      // URL에 필터 쿼리파라미터 설정
+      mockLocation.search =
+        '?regionCode=11680&tradeDate=2024-01&apartName=강남&nationalSizeOnly=true&favoriteOnly=true&newTransactionOnly=false';
 
       const { result } = renderHook(() => useTransactionFilter());
 
-      expect(mockedSessionStorage.getItem).toHaveBeenCalledWith(
-        STORAGE_KEY.TRANSACTION_LIST_FILTER
-      );
-      expect(result.current.filter).toEqual(savedFilter);
+      expect(result.current.filter).toEqual({
+        apartName: '강남',
+        isNationalSizeOnly: true,
+        isFavoriteOnly: true,
+        isNewTransactionOnly: false,
+      });
+    });
+
+    it('일부 필터만 URL에 있을 때 나머지는 기본값이어야 한다', () => {
+      mockLocation.search =
+        '?regionCode=11680&apartName=강남&favoriteOnly=true';
+
+      const { result } = renderHook(() => useTransactionFilter());
+
+      expect(result.current.filter).toEqual({
+        apartName: '강남',
+        isNationalSizeOnly: false,
+        isFavoriteOnly: true,
+        isNewTransactionOnly: false,
+      });
     });
   });
 
@@ -77,10 +90,12 @@ describe('useTransactionFilter - 거래 필터 Hook', () => {
 
       expect(result.current.filter.apartName).toBe('강남아파트');
       expect(result.current.filter.isNationalSizeOnly).toBe(false); // 다른 필터는 유지
-      expect(mockedSessionStorage.setItem).toHaveBeenCalledWith(
-        STORAGE_KEY.TRANSACTION_LIST_FILTER,
-        expect.objectContaining({ apartName: '강남아파트' })
-      );
+
+      expect(mockSetSearchParams).toHaveBeenCalledWith({
+        regionCode: '11680',
+        tradeDate: '2024-01',
+        apartName: '강남아파트',
+      });
     });
 
     it('여러 필터를 동시에 업데이트할 수 있어야 한다', () => {
@@ -100,47 +115,80 @@ describe('useTransactionFilter - 거래 필터 Hook', () => {
         isFavoriteOnly: true,
         isNewTransactionOnly: false,
       });
+
+      expect(mockSetSearchParams).toHaveBeenCalledWith({
+        regionCode: '11680',
+        tradeDate: '2024-01',
+        apartName: '역삼타워',
+        nationalSizeOnly: 'true',
+        favoriteOnly: 'true',
+      });
     });
 
-    it('필터 변경 시 세션스토리지에 저장되어야 한다', () => {
+    it('필터 변경 시 쿼리파라미터가 업데이트되어야 한다', () => {
       const { result } = renderHook(() => useTransactionFilter());
 
-      const newFilter = {
-        apartName: '테스트',
-        isNationalSizeOnly: true,
-      };
-
       act(() => {
-        result.current.setFilter(newFilter);
-      });
-
-      expect(mockedSessionStorage.setItem).toHaveBeenCalledWith(
-        STORAGE_KEY.TRANSACTION_LIST_FILTER,
-        {
+        result.current.setFilter({
           apartName: '테스트',
           isNationalSizeOnly: true,
+          isNewTransactionOnly: true,
+        });
+      });
+
+      expect(mockSetSearchParams).toHaveBeenCalledWith({
+        regionCode: '11680',
+        tradeDate: '2024-01',
+        apartName: '테스트',
+        nationalSizeOnly: 'true',
+        newTransactionOnly: 'true',
+      });
+    });
+
+    it('false인 boolean 필터는 쿼리파라미터에 포함되지 않아야 한다', () => {
+      const { result } = renderHook(() => useTransactionFilter());
+
+      act(() => {
+        result.current.setFilter({
+          apartName: '테스트',
+          isNationalSizeOnly: false,
           isFavoriteOnly: false,
           isNewTransactionOnly: false,
-        }
-      );
+        });
+      });
+
+      expect(mockSetSearchParams).toHaveBeenCalledWith({
+        regionCode: '11680',
+        tradeDate: '2024-01',
+        apartName: '테스트',
+      });
+    });
+
+    it('빈 문자열인 apartName은 쿼리파라미터에 포함되지 않아야 한다', () => {
+      const { result } = renderHook(() => useTransactionFilter());
+
+      act(() => {
+        result.current.setFilter({
+          apartName: '',
+          isNationalSizeOnly: true,
+        });
+      });
+
+      expect(mockSetSearchParams).toHaveBeenCalledWith({
+        regionCode: '11680',
+        tradeDate: '2024-01',
+        nationalSizeOnly: 'true',
+      });
     });
   });
 
   describe('검색 파라미터 변경 감지', () => {
     it('지역코드가 변경되면 필터를 초기화해야 한다', () => {
-      const savedFilter = {
-        apartName: '강남',
-        isNationalSizeOnly: true,
-        isFavoriteOnly: true,
-        isNewTransactionOnly: true,
-      };
-
-      mockedSessionStorage.getItem.mockReturnValue(savedFilter);
-
+      // 초기 필터 설정
+      mockLocation.search = '?apartName=강남&nationalSizeOnly=true';
       const { result, rerender } = renderHook(() => useTransactionFilter());
 
-      // 초기 로드 시 저장된 필터 적용
-      expect(result.current.filter).toEqual(savedFilter);
+      expect(result.current.filter.apartName).toBe('강남');
 
       // 지역코드 변경
       mockedTransactionEntity.useSearchParams.mockReturnValue({
@@ -148,7 +196,7 @@ describe('useTransactionFilter - 거래 필터 Hook', () => {
           regionCode: '11650', // 다른 지역
           tradeDate: '2024-01',
         },
-        setSearchParams: jest.fn(),
+        setSearchParams: mockSetSearchParams,
       });
 
       rerender();
@@ -161,30 +209,18 @@ describe('useTransactionFilter - 거래 필터 Hook', () => {
         isNewTransactionOnly: false,
       });
 
-      expect(mockedSessionStorage.setItem).toHaveBeenCalledWith(
-        STORAGE_KEY.TRANSACTION_LIST_FILTER,
-        {
-          apartName: '',
-          isNationalSizeOnly: false,
-          isFavoriteOnly: false,
-          isNewTransactionOnly: false,
-        }
-      );
+      expect(mockSetSearchParams).toHaveBeenCalledWith({
+        regionCode: '11650',
+        tradeDate: '2024-01',
+      });
     });
 
     it('거래일이 변경되면 필터를 초기화해야 한다', () => {
-      const savedFilter = {
-        apartName: '강남',
-        isNationalSizeOnly: true,
-        isFavoriteOnly: true,
-        isNewTransactionOnly: true,
-      };
-
-      mockedSessionStorage.getItem.mockReturnValue(savedFilter);
-
+      // 초기 필터 설정
+      mockLocation.search = '?apartName=강남&nationalSizeOnly=true';
       const { result, rerender } = renderHook(() => useTransactionFilter());
 
-      expect(result.current.filter).toEqual(savedFilter);
+      expect(result.current.filter.apartName).toBe('강남');
 
       // 거래일 변경
       mockedTransactionEntity.useSearchParams.mockReturnValue({
@@ -192,7 +228,7 @@ describe('useTransactionFilter - 거래 필터 Hook', () => {
           regionCode: '11680',
           tradeDate: '2024-02', // 다른 월
         },
-        setSearchParams: jest.fn(),
+        setSearchParams: mockSetSearchParams,
       });
 
       rerender();
@@ -203,59 +239,23 @@ describe('useTransactionFilter - 거래 필터 Hook', () => {
         isFavoriteOnly: false,
         isNewTransactionOnly: false,
       });
-    });
 
-    it('지역코드와 거래일이 모두 변경되면 필터를 초기화해야 한다', () => {
-      const savedFilter = {
-        apartName: '강남',
-        isNationalSizeOnly: true,
-        isFavoriteOnly: true,
-        isNewTransactionOnly: true,
-      };
-
-      mockedSessionStorage.getItem.mockReturnValue(savedFilter);
-
-      const { result, rerender } = renderHook(() => useTransactionFilter());
-
-      expect(result.current.filter).toEqual(savedFilter);
-
-      // 지역코드와 거래일 모두 변경
-      mockedTransactionEntity.useSearchParams.mockReturnValue({
-        searchParams: {
-          regionCode: '11650',
-          tradeDate: '2024-02',
-        },
-        setSearchParams: jest.fn(),
-      });
-
-      rerender();
-
-      expect(result.current.filter).toEqual({
-        apartName: '',
-        isNationalSizeOnly: false,
-        isFavoriteOnly: false,
-        isNewTransactionOnly: false,
+      expect(mockSetSearchParams).toHaveBeenCalledWith({
+        regionCode: '11680',
+        tradeDate: '2024-02',
       });
     });
 
     it('검색 파라미터가 변경되지 않으면 필터를 유지해야 한다', () => {
-      const savedFilter = {
-        apartName: '강남',
-        isNationalSizeOnly: true,
-        isFavoriteOnly: true,
-        isNewTransactionOnly: true,
-      };
-
-      mockedSessionStorage.getItem.mockReturnValue(savedFilter);
-
+      mockLocation.search = '?apartName=강남&nationalSizeOnly=true';
       const { result, rerender } = renderHook(() => useTransactionFilter());
 
-      expect(result.current.filter).toEqual(savedFilter);
+      const initialFilter = result.current.filter;
 
       // 같은 검색 파라미터로 다시 렌더링
       rerender();
 
-      expect(result.current.filter).toEqual(savedFilter);
+      expect(result.current.filter).toEqual(initialFilter);
     });
   });
 
@@ -340,7 +340,7 @@ describe('useTransactionFilter - 거래 필터 Hook', () => {
           regionCode: '11650',
           tradeDate: '2024-02',
         },
-        setSearchParams: jest.fn(),
+        setSearchParams: mockSetSearchParams,
       });
 
       rerender();
@@ -378,34 +378,27 @@ describe('useTransactionFilter - 거래 필터 Hook', () => {
     });
   });
 
-  describe('에러 처리', () => {
-    it('세션스토리지 접근 실패 시 기본값을 사용해야 한다', () => {
-      mockedSessionStorage.getItem.mockImplementation(() => {
-        throw new Error('SessionStorage access denied');
-      });
+  describe('쿼리파라미터 파싱', () => {
+    it('boolean 값이 올바르게 파싱되어야 한다', () => {
+      mockLocation.search =
+        '?nationalSizeOnly=true&favoriteOnly=false&newTransactionOnly=true';
 
       const { result } = renderHook(() => useTransactionFilter());
 
-      expect(result.current.filter).toEqual({
-        apartName: '',
-        isNationalSizeOnly: false,
-        isFavoriteOnly: false,
-        isNewTransactionOnly: false,
-      });
+      expect(result.current.filter.isNationalSizeOnly).toBe(true);
+      expect(result.current.filter.isFavoriteOnly).toBe(false);
+      expect(result.current.filter.isNewTransactionOnly).toBe(true);
     });
 
-    it('세션스토리지 저장 실패 시에도 상태는 업데이트되어야 한다', () => {
-      mockedSessionStorage.setItem.mockImplementation(() => {
-        throw new Error('SessionStorage save failed');
-      });
+    it('잘못된 boolean 값은 false로 처리되어야 한다', () => {
+      mockLocation.search =
+        '?nationalSizeOnly=invalid&favoriteOnly=&newTransactionOnly=1';
 
       const { result } = renderHook(() => useTransactionFilter());
 
-      act(() => {
-        result.current.setFilter({ apartName: '강남아파트' });
-      });
-
-      expect(result.current.filter.apartName).toBe('강남아파트');
+      expect(result.current.filter.isNationalSizeOnly).toBe(false);
+      expect(result.current.filter.isFavoriteOnly).toBe(false);
+      expect(result.current.filter.isNewTransactionOnly).toBe(false);
     });
   });
 });
