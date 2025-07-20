@@ -88,9 +88,26 @@ export const useTransactionViewSetting = (): Return => {
         const newTransactionOnly =
           navigationSearchParams.get('newTransactionOnly');
 
+        console.log('📄 Current URL params before pageIndex update:', {
+          regionCode,
+          tradeDate,
+          apartName,
+          nationalSizeOnly,
+          favoriteOnly,
+          newTransactionOnly,
+        });
+
         if (regionCode) newParams.regionCode = regionCode;
         if (tradeDate) newParams.tradeDate = tradeDate;
-        if (apartName) newParams.apartName = apartName;
+
+        // apartName은 조건부로 추가 (비어있지 않을 때만)
+        if (apartName && apartName.trim()) {
+          console.log('✅ Including apartName in pageIndex update:', apartName);
+          newParams.apartName = apartName;
+        } else {
+          console.log('🚫 Excluding apartName in pageIndex update:', apartName);
+        }
+
         if (nationalSizeOnly) newParams.nationalSizeOnly = nationalSizeOnly;
         if (favoriteOnly) newParams.favoriteOnly = favoriteOnly;
         if (newTransactionOnly)
@@ -99,7 +116,10 @@ export const useTransactionViewSetting = (): Return => {
         // pageIndex 업데이트
         newParams.pageIndex = newSettings.pageIndex.toString();
 
-        console.log('📄 pageIndex update params:', newParams);
+        console.log(
+          '📄 pageIndex update params:',
+          JSON.stringify(newParams, null, 2)
+        );
         setSearchParams(newParams);
       }
 
@@ -128,6 +148,20 @@ export const useTransactionViewSetting = (): Return => {
   };
 
   const updatePageIndex = async (pageIndex: number) => {
+    const currentPageIndex = getPageIndexFromParams();
+    if (currentPageIndex === pageIndex) {
+      console.log(
+        '📄 Skipping pageIndex update - already same value:',
+        pageIndex
+      );
+      return;
+    }
+    console.log(
+      '📄 Updating pageIndex from',
+      currentPageIndex,
+      'to',
+      pageIndex
+    );
     await saveSettings({ pageIndex });
   };
 

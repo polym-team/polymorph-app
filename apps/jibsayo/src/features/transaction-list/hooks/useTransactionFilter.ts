@@ -172,7 +172,11 @@ export const useTransactionFilter = (): Return => {
         JSON.stringify(newParams, null, 2)
       );
 
-      setSearchParams(newParams);
+      // setTimeout을 사용해서 다른 setSearchParams 호출 후에 실행
+      setTimeout(() => {
+        console.log('⏰ Delayed setSearchParams execution');
+        setSearchParams(newParams);
+      }, 0);
     }
 
     prevSearchParams.current = {
