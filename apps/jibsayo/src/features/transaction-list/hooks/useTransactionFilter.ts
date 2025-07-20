@@ -55,24 +55,28 @@ export const useTransactionFilter = (): Return => {
     const changedFilter = { ...filterState, ...nextFilter };
     setFilterState(changedFilter);
 
-    // 현재 URL의 모든 쿼리파라미터를 유지하면서 필터만 업데이트
+    // 필터 변경 시 기본 파라미터와 필터 상태만 유지하고 pageIndex는 0으로 리셋
     const newParams: Record<string, string> = {};
 
-    // 현재 URL의 모든 쿼리파라미터 유지 (pageIndex 포함)
-    navigationSearchParams.forEach((value, key) => {
-      newParams[key] = value;
-    });
+    // 기본 검색 파라미터 유지
+    if (searchParams.regionCode) {
+      newParams.regionCode = searchParams.regionCode;
+    }
+    if (searchParams.tradeDate) {
+      newParams.tradeDate = searchParams.tradeDate;
+    }
 
     // 필터 상태 업데이트
     if (changedFilter.apartName) {
       newParams.apartName = changedFilter.apartName;
-    } else {
-      delete newParams.apartName; // 빈 문자열이면 제거
     }
     newParams.nationalSizeOnly = changedFilter.isNationalSizeOnly.toString();
     newParams.favoriteOnly = changedFilter.isFavoriteOnly.toString();
     newParams.newTransactionOnly =
       changedFilter.isNewTransactionOnly.toString();
+
+    // pageIndex는 0으로 리셋 (필터링된 새로운 목록이므로)
+    newParams.pageIndex = '0';
 
     setSearchParams(newParams);
   };
