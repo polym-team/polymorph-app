@@ -21,26 +21,6 @@ const getBooleanFromSearchParams = (value: string | null): boolean => {
   return value === 'true';
 };
 
-// TransactionFilter를 쿼리파라미터로 변환하는 헬퍼 함수
-const filterToSearchParams = (filter: TransactionFilter) => {
-  const params: Record<string, string> = {};
-
-  if (filter.apartName) {
-    params.apartName = filter.apartName;
-  }
-  if (filter.isNationalSizeOnly) {
-    params.nationalSizeOnly = 'true';
-  }
-  if (filter.isFavoriteOnly) {
-    params.favoriteOnly = 'true';
-  }
-  if (filter.isNewTransactionOnly) {
-    params.newTransactionOnly = 'true';
-  }
-
-  return params;
-};
-
 // 쿼리파라미터에서 TransactionFilter를 읽어오는 헬퍼 함수
 const searchParamsToFilter = (
   searchParams: URLSearchParams
@@ -73,13 +53,32 @@ export const useTransactionFilter = (): Return => {
     const changedFilter = { ...filterState, ...nextFilter };
     setFilterState(changedFilter);
 
-    // 기존 쿼리파라미터 유지하면서 필터만 업데이트
-    const filterParams = filterToSearchParams(changedFilter);
-    setSearchParams({
-      ...(searchParams.regionCode && { regionCode: searchParams.regionCode }),
-      ...(searchParams.tradeDate && { tradeDate: searchParams.tradeDate }),
-      ...filterParams,
-    });
+    // 완전히 새로운 쿼리파라미터 구성 (기존 필터 제거 포함)
+    const newParams: Record<string, string> = {};
+
+    // 기본 검색 파라미터 유지
+    if (searchParams.regionCode) {
+      newParams.regionCode = searchParams.regionCode;
+    }
+    if (searchParams.tradeDate) {
+      newParams.tradeDate = searchParams.tradeDate;
+    }
+
+    // 활성화된 필터만 포함
+    if (changedFilter.apartName) {
+      newParams.apartName = changedFilter.apartName;
+    }
+    if (changedFilter.isNationalSizeOnly) {
+      newParams.nationalSizeOnly = 'true';
+    }
+    if (changedFilter.isFavoriteOnly) {
+      newParams.favoriteOnly = 'true';
+    }
+    if (changedFilter.isNewTransactionOnly) {
+      newParams.newTransactionOnly = 'true';
+    }
+
+    setSearchParams(newParams);
   };
 
   // 쿼리파라미터에서 필터 상태 초기화
@@ -102,11 +101,15 @@ export const useTransactionFilter = (): Return => {
 
     if (prevSearchParams.current !== currentSearchParams) {
       setFilterState(initialState);
-      // 필터 관련 쿼리파라미터만 제거하고 regionCode, tradeDate는 유지
-      setSearchParams({
-        ...(searchParams.regionCode && { regionCode: searchParams.regionCode }),
-        ...(searchParams.tradeDate && { tradeDate: searchParams.tradeDate }),
-      });
+      // 기본 검색 파라미터만 유지하고 필터는 모두 제거
+      const newParams: Record<string, string> = {};
+      if (searchParams.regionCode) {
+        newParams.regionCode = searchParams.regionCode;
+      }
+      if (searchParams.tradeDate) {
+        newParams.tradeDate = searchParams.tradeDate;
+      }
+      setSearchParams(newParams);
     }
 
     prevSearchParams.current = currentSearchParams;
