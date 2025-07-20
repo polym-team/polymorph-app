@@ -94,20 +94,26 @@ export const useTransactionFilter = (): Return => {
 
     if (prevSearchParams.current !== currentSearchParams) {
       setFilterState(initialState);
-      // 현재 URL의 모든 쿼리파라미터 유지하면서 필터만 초기화
+      // 지역/날짜 변경 시 필터와 pageIndex 모두 초기화
       const newParams: Record<string, string> = {};
 
-      // 현재 URL의 모든 쿼리파라미터 유지 (pageIndex 포함)
-      navigationSearchParams.forEach((value, key) => {
-        newParams[key] = value;
-      });
+      // 기본 검색 파라미터만 유지
+      if (searchParams.regionCode) {
+        newParams.regionCode = searchParams.regionCode;
+      }
+      if (searchParams.tradeDate) {
+        newParams.tradeDate = searchParams.tradeDate;
+      }
 
-      // 필터만 초기값으로 설정
-      delete newParams.apartName; // apartName 제거
+      // 필터를 초기값으로 설정
       newParams.nationalSizeOnly = initialState.isNationalSizeOnly.toString();
       newParams.favoriteOnly = initialState.isFavoriteOnly.toString();
       newParams.newTransactionOnly =
         initialState.isNewTransactionOnly.toString();
+
+      // pageIndex는 0으로 리셋 (새로운 데이터셋이므로)
+      newParams.pageIndex = '0';
+
       setSearchParams(newParams);
     }
 
