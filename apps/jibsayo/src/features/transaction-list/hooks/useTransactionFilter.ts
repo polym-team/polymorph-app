@@ -13,7 +13,8 @@ interface Return {
 
 const initialState: TransactionFilter = {
   apartName: '',
-  isNationalSizeOnly: false,
+  minSize: 0,
+  maxSize: 50,
   isFavoriteOnly: false,
   isNewTransactionOnly: false,
 };
@@ -23,15 +24,23 @@ const getBooleanFromSearchParams = (value: string | null): boolean => {
   return value === 'true';
 };
 
+// 쿼리파라미터에서 number 값을 읽어오는 헬퍼 함수
+const getNumberFromSearchParams = (
+  value: string | null,
+  defaultValue: number
+): number => {
+  const parsed = Number(value);
+  return isNaN(parsed) ? defaultValue : parsed;
+};
+
 // 쿼리파라미터에서 TransactionFilter를 읽어오는 헬퍼 함수
 const searchParamsToFilter = (
   searchParams: URLSearchParams
 ): TransactionFilter => {
   return {
     apartName: searchParams.get('apartName') || '',
-    isNationalSizeOnly: getBooleanFromSearchParams(
-      searchParams.get('nationalSizeOnly')
-    ),
+    minSize: getNumberFromSearchParams(searchParams.get('minSize'), 0),
+    maxSize: getNumberFromSearchParams(searchParams.get('maxSize'), 50),
     isFavoriteOnly: getBooleanFromSearchParams(
       searchParams.get('favoriteOnly')
     ),
@@ -63,7 +72,8 @@ export const useTransactionFilter = (): Return => {
       type: 'FILTER_UPDATE',
       payload: {
         apartName: changedFilter.apartName,
-        nationalSizeOnly: changedFilter.isNationalSizeOnly,
+        minSize: changedFilter.minSize,
+        maxSize: changedFilter.maxSize,
         favoriteOnly: changedFilter.isFavoriteOnly,
         newTransactionOnly: changedFilter.isNewTransactionOnly,
       },

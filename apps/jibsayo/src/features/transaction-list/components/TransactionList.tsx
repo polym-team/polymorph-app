@@ -16,7 +16,10 @@ import { useMemo, useRef } from 'react';
 import { useTransactionFilter } from '../hooks/useTransactionFilter';
 import { useTransactionViewSetting } from '../hooks/useTransactionViewSetting';
 import { TransactionItem } from '../models/types';
-import { calculateAveragePricePerPyeong } from '../services/calculator';
+import {
+  calculateAveragePricePerPyeong,
+  calculatePyeongRange,
+} from '../services/calculator';
 import { mapTransactionsWithFavorites } from '../services/mapper';
 import { TransactionListHeader } from '../ui/TransactionListHeader';
 import { TransactionListTable } from '../ui/TransactionListTable';
@@ -78,6 +81,9 @@ export function TransactionList() {
   const averagePricePerPyeong =
     calculateAveragePricePerPyeong(filteredTransactions);
 
+  // 평수 범위 계산
+  const pyeongRange = calculatePyeongRange(filteredTransactions);
+
   const cityName = searchParams.regionCode
     ? getCityNameWithRegionCode(searchParams.regionCode)
     : '';
@@ -122,6 +128,7 @@ export function TransactionList() {
         averagePricePerPyeong={averagePricePerPyeong}
         filter={filter}
         setFilter={setFilter}
+        pyeongRange={pyeongRange}
       />
       <TransactionListTable
         isLoading={isLoading || isNewTransactionLoading}

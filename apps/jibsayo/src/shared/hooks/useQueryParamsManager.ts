@@ -14,7 +14,8 @@ interface QueryParamsState {
   regionCode?: string;
   tradeDate?: string;
   apartName?: string;
-  nationalSizeOnly?: string;
+  minSize?: string;
+  maxSize?: string;
   favoriteOnly?: string;
   newTransactionOnly?: string;
   pageIndex?: string;
@@ -34,7 +35,8 @@ interface FilterAction {
   type: 'FILTER_UPDATE';
   payload: {
     apartName?: string;
-    nationalSizeOnly?: boolean;
+    minSize?: number;
+    maxSize?: number;
     favoriteOnly?: boolean;
     newTransactionOnly?: boolean;
   };
@@ -70,7 +72,8 @@ const queryParamsReducer = (
         apartName: regionChanged ? '' : currentState.apartName,
 
         // 다른 필터들은 유지
-        nationalSizeOnly: currentState.nationalSizeOnly,
+        minSize: currentState.minSize,
+        maxSize: currentState.maxSize,
         favoriteOnly: currentState.favoriteOnly,
         newTransactionOnly: currentState.newTransactionOnly,
       };
@@ -79,7 +82,7 @@ const queryParamsReducer = (
     }
 
     case 'FILTER_UPDATE': {
-      const { apartName, nationalSizeOnly, favoriteOnly, newTransactionOnly } =
+      const { apartName, minSize, maxSize, favoriteOnly, newTransactionOnly } =
         action.payload;
 
       const newState: QueryParamsState = {
@@ -91,8 +94,11 @@ const queryParamsReducer = (
       if (apartName !== undefined) {
         newState.apartName = apartName && apartName.trim() ? apartName : '';
       }
-      if (nationalSizeOnly !== undefined) {
-        newState.nationalSizeOnly = nationalSizeOnly.toString();
+      if (minSize !== undefined) {
+        newState.minSize = minSize.toString();
+      }
+      if (maxSize !== undefined) {
+        newState.maxSize = maxSize.toString();
       }
       if (favoriteOnly !== undefined) {
         newState.favoriteOnly = favoriteOnly.toString();

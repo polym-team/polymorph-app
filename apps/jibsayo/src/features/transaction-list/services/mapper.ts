@@ -2,6 +2,7 @@ import { TransactionsResponse } from '@/app/api/transactions/types';
 import { FavoriteApartItem } from '@/entities/apart/models/types';
 
 import { TransactionFilter, TransactionItem } from '../models/types';
+import { calculatePyeong } from './calculator';
 
 export const mapTransactionsWithFavorites = ({
   transactions,
@@ -39,9 +40,18 @@ export const mapTransactionsWithFavorites = ({
       const isMatched = transaction.apartName
         .toLowerCase()
         .includes(filter.apartName.toLowerCase());
-      const isMatchedSize = filter.isNationalSizeOnly
-        ? transaction.size >= 84 && transaction.size < 85
+
+      const isMatchedSize = transaction.size
+        ? (() => {
+            const pyeong = calculatePyeong(transaction.size);
+            const normalizedPyeong = pyeong >= 50 ? 50 : pyeong;
+            return (
+              normalizedPyeong >= filter.minSize &&
+              normalizedPyeong <= filter.maxSize
+            );
+          })()
         : true;
+
       const isMatchedFavorite = filter.isFavoriteOnly
         ? transaction.favorite
         : true;

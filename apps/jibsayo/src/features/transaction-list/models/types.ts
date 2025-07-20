@@ -28,7 +28,8 @@ export interface TransactionViewSetting {
 
 export interface TransactionFilter {
   apartName: string;
-  isNationalSizeOnly: boolean;
+  minSize: number;
+  maxSize: number;
   isFavoriteOnly: boolean;
   isNewTransactionOnly: boolean;
 }

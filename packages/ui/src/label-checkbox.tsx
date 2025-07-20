@@ -44,7 +44,7 @@ const LabelCheckbox = React.forwardRef<
       <Label
         ref={ref}
         className={cn(
-          'hover:bg-accent/50 has-[[aria-checked=true]]:border-primary has-[[aria-checked=true]]:bg-primary/10 dark:has-[[aria-checked=true]]:border-primary dark:has-[[aria-checked=true]]:bg-primary/20 flex cursor-pointer items-start justify-center gap-3 rounded border bg-white p-3',
+          'hover:bg-accent/50 has-[[aria-checked=true]]:border-primary has-[[aria-checked=true]]:bg-primary/10 dark:has-[[aria-checked=true]]:border-primary dark:has-[[aria-checked=true]]:bg-primary/20 flex cursor-pointer items-start justify-center gap-2 rounded border bg-white p-3',
           disabled && 'cursor-not-allowed opacity-50',
           className
         )}
