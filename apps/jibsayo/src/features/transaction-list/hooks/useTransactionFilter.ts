@@ -130,6 +130,13 @@ export const useTransactionFilter = (): Return => {
 
       // 현재 필터 상태에서 파라미터 구성
       const currentApartName = regionCodeChanged ? '' : filterState.apartName;
+      console.log('🏠 apartName logic:', {
+        regionCodeChanged,
+        filterStateApartName: filterState.apartName,
+        currentApartName,
+        willAddToParams: !!currentApartName,
+      });
+
       if (currentApartName) {
         newParams.apartName = currentApartName;
       }

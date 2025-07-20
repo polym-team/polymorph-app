@@ -69,14 +69,27 @@ export const useTransactionViewSetting = (): Return => {
       if ('pageIndex' in newSettings && newSettings.pageIndex !== undefined) {
         const newParams: Record<string, string> = {};
 
-        // 현재 URL의 모든 쿼리파라미터 유지
-        navigationSearchParams.forEach((value, key) => {
-          newParams[key] = value;
-        });
+        // 필요한 파라미터들만 명시적으로 추가
+        const regionCode = navigationSearchParams.get('regionCode');
+        const tradeDate = navigationSearchParams.get('tradeDate');
+        const apartName = navigationSearchParams.get('apartName');
+        const nationalSizeOnly = navigationSearchParams.get('nationalSizeOnly');
+        const favoriteOnly = navigationSearchParams.get('favoriteOnly');
+        const newTransactionOnly =
+          navigationSearchParams.get('newTransactionOnly');
 
-        // pageIndex만 업데이트
+        if (regionCode) newParams.regionCode = regionCode;
+        if (tradeDate) newParams.tradeDate = tradeDate;
+        if (apartName) newParams.apartName = apartName;
+        if (nationalSizeOnly) newParams.nationalSizeOnly = nationalSizeOnly;
+        if (favoriteOnly) newParams.favoriteOnly = favoriteOnly;
+        if (newTransactionOnly)
+          newParams.newTransactionOnly = newTransactionOnly;
+
+        // pageIndex 업데이트
         newParams.pageIndex = newSettings.pageIndex.toString();
 
+        console.log('📄 pageIndex update params:', newParams);
         setSearchParams(newParams);
       }
 
