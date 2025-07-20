@@ -72,7 +72,9 @@ export const useTransactionViewSetting = (): Return => {
         // 새로운 중앙화된 쿼리파라미터 관리 사용
         updateQueryParams({
           type: 'PAGE_UPDATE',
-          pageIndex: newSettings.pageIndex,
+          payload: {
+            pageIndex: newSettings.pageIndex,
+          },
         });
       }
 

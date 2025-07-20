@@ -1,128 +1,189 @@
 import { useSearchParams } from '@/entities/transaction';
+import { ROUTE_PATH } from '@/shared/consts/route';
+import { STORAGE_KEY } from '@/shared/consts/storageKey';
+import { getItem, setItem } from '@/shared/lib/sessionStorage';
 
-import { useSearchParams as useNavigationSearchParams } from 'next/navigation';
+import {
+  useSearchParams as useNavigationSearchParams,
+  useRouter,
+} from 'next/navigation';
 import { useCallback } from 'react';
 
-interface SearchUpdate {
-  type: 'SEARCH_UPDATE';
-  regionCode: string;
-  tradeDate: string;
-  currentRegionCode?: string; // 이전 지역코드 (apartName 초기화 판단용)
-}
-
-interface FilterUpdate {
-  type: 'FILTER_UPDATE';
+// State 타입 정의
+interface QueryParamsState {
+  regionCode?: string;
+  tradeDate?: string;
   apartName?: string;
-  nationalSizeOnly?: boolean;
-  favoriteOnly?: boolean;
-  newTransactionOnly?: boolean;
+  nationalSizeOnly?: string;
+  favoriteOnly?: string;
+  newTransactionOnly?: string;
+  pageIndex?: string;
 }
 
-interface PageUpdate {
+// Action 타입 정의
+interface SearchAction {
+  type: 'SEARCH_UPDATE';
+  payload: {
+    regionCode: string;
+    tradeDate: string;
+    currentRegionCode?: string;
+  };
+}
+
+interface FilterAction {
+  type: 'FILTER_UPDATE';
+  payload: {
+    apartName?: string;
+    nationalSizeOnly?: boolean;
+    favoriteOnly?: boolean;
+    newTransactionOnly?: boolean;
+  };
+}
+
+interface PageAction {
   type: 'PAGE_UPDATE';
-  pageIndex: number;
+  payload: {
+    pageIndex: number;
+  };
 }
 
-type QueryParamsUpdate = SearchUpdate | FilterUpdate | PageUpdate;
+type QueryParamsAction = SearchAction | FilterAction | PageAction;
+
+// Reducer 함수
+const queryParamsReducer = (
+  currentState: QueryParamsState,
+  action: QueryParamsAction
+): QueryParamsState => {
+  switch (action.type) {
+    case 'SEARCH_UPDATE': {
+      const { regionCode, tradeDate, currentRegionCode } = action.payload;
+
+      // 지역 변경 여부 확인
+      const regionChanged = currentRegionCode !== regionCode;
+
+      const newState: QueryParamsState = {
+        regionCode,
+        tradeDate,
+        pageIndex: '0', // 검색 시 페이지 초기화
+
+        // 지역 변경 시 apartName 초기화, 아니면 유지
+        apartName: regionChanged ? '' : currentState.apartName,
+
+        // 다른 필터들은 유지
+        nationalSizeOnly: currentState.nationalSizeOnly,
+        favoriteOnly: currentState.favoriteOnly,
+        newTransactionOnly: currentState.newTransactionOnly,
+      };
+
+      return newState;
+    }
+
+    case 'FILTER_UPDATE': {
+      const { apartName, nationalSizeOnly, favoriteOnly, newTransactionOnly } =
+        action.payload;
+
+      const newState: QueryParamsState = {
+        ...currentState,
+        pageIndex: '0', // 필터 변경 시 페이지 초기화
+      };
+
+      // 필터 값들 업데이트
+      if (apartName !== undefined) {
+        newState.apartName = apartName && apartName.trim() ? apartName : '';
+      }
+      if (nationalSizeOnly !== undefined) {
+        newState.nationalSizeOnly = nationalSizeOnly.toString();
+      }
+      if (favoriteOnly !== undefined) {
+        newState.favoriteOnly = favoriteOnly.toString();
+      }
+      if (newTransactionOnly !== undefined) {
+        newState.newTransactionOnly = newTransactionOnly.toString();
+      }
+
+      return newState;
+    }
+
+    case 'PAGE_UPDATE': {
+      return {
+        ...currentState,
+        pageIndex: action.payload.pageIndex.toString(),
+      };
+    }
+
+    default:
+      return currentState;
+  }
+};
 
 export const useQueryParamsManager = () => {
-  const { setSearchParams } = useSearchParams();
   const navigationSearchParams = useNavigationSearchParams();
+  const router = useRouter();
 
-  const getCurrentParams = useCallback(() => {
-    const params: Record<string, string> = {};
+  const getCurrentParams = useCallback((): QueryParamsState => {
+    const params: QueryParamsState = {};
     navigationSearchParams.forEach((value, key) => {
-      params[key] = value;
+      params[key as keyof QueryParamsState] = value;
     });
     return params;
   }, [navigationSearchParams]);
 
+  // 세션 스토리지에 쿼리 파라미터 저장
+  const saveQueryParamsToStorage = useCallback((params: QueryParamsState) => {
+    // 빈 값 필터링하여 저장
+    const filteredParams = Object.entries(params).reduce(
+      (acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key as keyof QueryParamsState] = value;
+        }
+        return acc;
+      },
+      {} as QueryParamsState
+    );
+
+    setItem(STORAGE_KEY.TRANSACTION_QUERY_PARAMS, filteredParams);
+  }, []);
+
+  // 세션 스토리지에서 쿼리 파라미터 복원
+  const restoreQueryParamsFromStorage =
+    useCallback((): QueryParamsState | null => {
+      return getItem<QueryParamsState>(STORAGE_KEY.TRANSACTION_QUERY_PARAMS);
+    }, []);
+
   const updateQueryParams = useCallback(
-    (update: QueryParamsUpdate) => {
-      const currentParams = getCurrentParams();
-      let newParams: Record<string, string> = {};
-
-      console.log('🎯 QueryParamsManager update:', update.type, update);
-      console.log('📋 Current params:', currentParams);
-
-      switch (update.type) {
-        case 'SEARCH_UPDATE': {
-          // 검색 시: regionCode, tradeDate 변경
-          newParams.regionCode = update.regionCode;
-          newParams.tradeDate = update.tradeDate;
-
-          // pageIndex는 0으로 초기화
-          newParams.pageIndex = '0';
-
-          // regionCode가 변경되는 경우 apartName 초기화
-          const regionChanged = update.currentRegionCode !== update.regionCode;
-          if (!regionChanged && currentParams.apartName) {
-            newParams.apartName = currentParams.apartName;
-            console.log(
-              '✅ Keeping apartName (same region):',
-              currentParams.apartName
-            );
-          } else {
-            console.log('🚫 Clearing apartName (region changed)');
-          }
-
-          // 다른 필터들은 유지
-          if (currentParams.nationalSizeOnly)
-            newParams.nationalSizeOnly = currentParams.nationalSizeOnly;
-          if (currentParams.favoriteOnly)
-            newParams.favoriteOnly = currentParams.favoriteOnly;
-          if (currentParams.newTransactionOnly)
-            newParams.newTransactionOnly = currentParams.newTransactionOnly;
-
-          break;
-        }
-
-        case 'FILTER_UPDATE': {
-          // 필터 변경 시: pageIndex 0으로 초기화
-          newParams = { ...currentParams };
-          newParams.pageIndex = '0';
-
-          // 필터 값들 업데이트
-          if (update.apartName !== undefined) {
-            if (update.apartName && update.apartName.trim()) {
-              newParams.apartName = update.apartName;
-            } else {
-              delete newParams.apartName;
-            }
-          }
-          if (update.nationalSizeOnly !== undefined) {
-            newParams.nationalSizeOnly = update.nationalSizeOnly.toString();
-          }
-          if (update.favoriteOnly !== undefined) {
-            newParams.favoriteOnly = update.favoriteOnly.toString();
-          }
-          if (update.newTransactionOnly !== undefined) {
-            newParams.newTransactionOnly = update.newTransactionOnly.toString();
-          }
-
-          break;
-        }
-
-        case 'PAGE_UPDATE': {
-          // 페이지 변경 시: pageIndex만 변경, 나머지 모든 파라미터 유지
-          newParams = { ...currentParams };
-          newParams.pageIndex = update.pageIndex.toString();
-
-          break;
-        }
+    (
+      action: Omit<QueryParamsAction, 'type'> & {
+        type: QueryParamsAction['type'];
       }
+    ) => {
+      const currentParams = getCurrentParams();
 
-      console.log(
-        '🌐 Final params to set:',
-        JSON.stringify(newParams, null, 2)
+      // Reducer를 통해 새로운 상태 계산
+      const newState = queryParamsReducer(
+        currentParams,
+        action as QueryParamsAction
       );
-      setSearchParams(newParams);
+
+      // URL 생성 - 빈 문자열과 undefined 값 제외
+      const urlSearchParams = new URLSearchParams();
+      Object.entries(newState).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          urlSearchParams.set(key, value);
+        }
+      });
+
+      const newUrl = `${ROUTE_PATH.TRANSACTIONS}?${urlSearchParams.toString()}`;
+      router.push(newUrl);
+
+      // 세션 스토리지에 저장
+      saveQueryParamsToStorage(newState);
     },
-    [getCurrentParams, setSearchParams]
+    [getCurrentParams, router, saveQueryParamsToStorage]
   );
 
   return {
     updateQueryParams,
     getCurrentParams,
+    restoreQueryParamsFromStorage,
   };
 };

@@ -4,9 +4,7 @@ import {
   getRegionsWithCityName,
 } from '@/entities/region';
 import { useSearchParams } from '@/entities/transaction';
-import { STORAGE_KEY } from '@/shared/consts/storageKey';
 import { useQueryParamsManager } from '@/shared/hooks/useQueryParamsManager';
-import { getItem, setItem } from '@/shared/lib/sessionStorage';
 
 import { useEffect, useState } from 'react';
 
@@ -92,43 +90,16 @@ export const useSearchForm = (): Return => {
     updateRegionCode(changedForm.regionCode);
     updateDate(changedForm.date);
 
-    setItem(STORAGE_KEY.TRANSACTION_SEARCH_FORM, {
-      regionCode: changedForm.regionCode,
-      tradeDate,
-    });
-
-    // 새로운 중앙화된 쿼리파라미터 관리 사용
+    // 새로운 중앙화된 쿼리파라미터 관리 사용 (세션 스토리지 자동 저장 포함)
     updateQueryParams({
       type: 'SEARCH_UPDATE',
-      regionCode: changedForm.regionCode,
-      tradeDate,
-      currentRegionCode: searchParams.regionCode,
+      payload: {
+        regionCode: changedForm.regionCode,
+        tradeDate,
+        currentRegionCode: searchParams.regionCode,
+      },
     });
   };
-
-  useEffect(() => {
-    if (searchParams.regionCode && searchParams.tradeDate) return;
-
-    const savedSearchForm = getItem<{
-      regionCode: string;
-      tradeDate: string;
-    }>(STORAGE_KEY.TRANSACTION_SEARCH_FORM);
-
-    if (savedSearchForm) {
-      console.log(
-        '🔍 useSearchForm useEffect - initial load only:',
-        savedSearchForm
-      );
-
-      // 초기 로드 시에는 단순하게 regionCode, tradeDate만 설정
-      updateQueryParams({
-        type: 'SEARCH_UPDATE',
-        regionCode: savedSearchForm.regionCode,
-        tradeDate: savedSearchForm.tradeDate,
-        currentRegionCode: undefined, // 초기 로드 시에는 이전 값이 없음
-      });
-    }
-  }, []); // 빈 의존성 배열로 초기 로드 시에만 실행
 
   return {
     form,

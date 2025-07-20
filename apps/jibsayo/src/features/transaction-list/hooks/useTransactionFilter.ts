@@ -61,10 +61,12 @@ export const useTransactionFilter = (): Return => {
     // 새로운 중앙화된 쿼리파라미터 관리 사용
     updateQueryParams({
       type: 'FILTER_UPDATE',
-      apartName: changedFilter.apartName,
-      nationalSizeOnly: changedFilter.isNationalSizeOnly,
-      favoriteOnly: changedFilter.isFavoriteOnly,
-      newTransactionOnly: changedFilter.isNewTransactionOnly,
+      payload: {
+        apartName: changedFilter.apartName,
+        nationalSizeOnly: changedFilter.isNationalSizeOnly,
+        favoriteOnly: changedFilter.isFavoriteOnly,
+        newTransactionOnly: changedFilter.isNewTransactionOnly,
+      },
     });
   };
 
