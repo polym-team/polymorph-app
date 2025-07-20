@@ -55,20 +55,19 @@ export const useTransactionFilter = (): Return => {
     const changedFilter = { ...filterState, ...nextFilter };
     setFilterState(changedFilter);
 
-    // 모든 필터를 쿼리파라미터에 포함 (false 값도 포함)
+    // 현재 URL의 모든 쿼리파라미터를 유지하면서 필터만 업데이트
     const newParams: Record<string, string> = {};
 
-    // 기본 검색 파라미터 유지
-    if (searchParams.regionCode) {
-      newParams.regionCode = searchParams.regionCode;
-    }
-    if (searchParams.tradeDate) {
-      newParams.tradeDate = searchParams.tradeDate;
-    }
+    // 현재 URL의 모든 쿼리파라미터 유지 (pageIndex 포함)
+    navigationSearchParams.forEach((value, key) => {
+      newParams[key] = value;
+    });
 
-    // 모든 필터 상태를 쿼리파라미터에 포함
+    // 필터 상태 업데이트
     if (changedFilter.apartName) {
       newParams.apartName = changedFilter.apartName;
+    } else {
+      delete newParams.apartName; // 빈 문자열이면 제거
     }
     newParams.nationalSizeOnly = changedFilter.isNationalSizeOnly.toString();
     newParams.favoriteOnly = changedFilter.isFavoriteOnly.toString();
@@ -95,15 +94,16 @@ export const useTransactionFilter = (): Return => {
 
     if (prevSearchParams.current !== currentSearchParams) {
       setFilterState(initialState);
-      // 기본 검색 파라미터 유지하고 필터는 초기값으로 설정
+      // 현재 URL의 모든 쿼리파라미터 유지하면서 필터만 초기화
       const newParams: Record<string, string> = {};
-      if (searchParams.regionCode) {
-        newParams.regionCode = searchParams.regionCode;
-      }
-      if (searchParams.tradeDate) {
-        newParams.tradeDate = searchParams.tradeDate;
-      }
-      // 모든 필터를 초기값으로 명시적 설정
+
+      // 현재 URL의 모든 쿼리파라미터 유지 (pageIndex 포함)
+      navigationSearchParams.forEach((value, key) => {
+        newParams[key] = value;
+      });
+
+      // 필터만 초기값으로 설정
+      delete newParams.apartName; // apartName 제거
       newParams.nationalSizeOnly = initialState.isNationalSizeOnly.toString();
       newParams.favoriteOnly = initialState.isFavoriteOnly.toString();
       newParams.newTransactionOnly =
