@@ -97,12 +97,19 @@ export const useSearchForm = (): Return => {
       tradeDate,
     });
 
+    // 지역이 변경되었는지 확인
+    const regionChanged = searchParams.regionCode !== changedForm.regionCode;
+
     // 기존 필터 파라미터들을 유지하면서 regionCode, tradeDate만 업데이트
     const newParams: Record<string, string> = {};
 
-    // 기존 파라미터들 복사 (regionCode, tradeDate 제외)
+    // 기존 파라미터들 복사 (regionCode, tradeDate, apartName 제외)
     navigationSearchParams.forEach((value, key) => {
       if (key !== 'regionCode' && key !== 'tradeDate') {
+        // 지역이 변경된 경우 apartName은 제외
+        if (regionChanged && key === 'apartName') {
+          return;
+        }
         newParams[key] = value;
       }
     });
@@ -111,7 +118,15 @@ export const useSearchForm = (): Return => {
     newParams.regionCode = changedForm.regionCode;
     newParams.tradeDate = tradeDate;
 
-    console.log('🔍 useSearchForm setSearchParams:', newParams);
+    // 지역 변경 시 pageIndex도 0으로 리셋
+    if (regionChanged) {
+      newParams.pageIndex = '0';
+    }
+
+    console.log('🔍 useSearchForm setSearchParams:', {
+      regionChanged,
+      newParams,
+    });
 
     setSearchParams(newParams);
   };
