@@ -6,7 +6,7 @@ import {
 } from '@/shared/lib/indexedDB';
 
 import { useSearchParams as useNavigationSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { SortingState } from '@package/ui';
 
@@ -31,6 +31,9 @@ export const useTransactionViewSetting = (): Return => {
     pageSize: 10,
     pageIndex: 0,
   });
+
+  // URL 업데이트 중인지 추적하는 플래그
+  const isUpdatingUrl = useRef(false);
 
   // 쿼리파라미터에서 pageIndex 읽어오기
   const getPageIndexFromParams = (): number => {
@@ -66,21 +69,37 @@ export const useTransactionViewSetting = (): Return => {
     loadSettings();
   }, []);
 
-  // 쿼리파라미터와 pageIndex 동기화
+  // 쿼리파라미터와 pageIndex 동기화 (외부 URL 변경 감지용)
   useEffect(() => {
-    if (isMounted) {
+    console.log(
+      '📡 useEffect triggered. isMounted:',
+      isMounted,
+      'isUpdatingUrl:',
+      isUpdatingUrl.current
+    );
+    if (isMounted && !isUpdatingUrl.current) {
       const pageIndexFromParams = getPageIndexFromParams();
-      if (pageIndexFromParams !== settings.pageIndex) {
+      console.log(
+        '📡 pageIndexFromParams:',
+        pageIndexFromParams,
+        'current settings.pageIndex:',
+        settings.pageIndex
+      );
+      if (settings.pageIndex !== pageIndexFromParams) {
+        console.log('📡 updating settings pageIndex to:', pageIndexFromParams);
         setSettings(prev => ({
           ...prev,
           pageIndex: pageIndexFromParams,
         }));
       }
     }
-  }, [navigationSearchParams, isMounted]);
+    // URL 업데이트 플래그 리셋
+    isUpdatingUrl.current = false;
+  }, [navigationSearchParams, isMounted, settings.pageIndex]);
 
   const saveSettings = async (newSettings: Partial<TransactionViewSetting>) => {
     const updatedSettings = { ...settings, ...newSettings };
+    console.log('💾 saveSettings:', newSettings, 'current settings:', settings);
     setSettings(updatedSettings);
 
     if (isMounted) {
@@ -94,6 +113,13 @@ export const useTransactionViewSetting = (): Return => {
 
       // pageIndex는 쿼리파라미터에 저장
       if ('pageIndex' in newSettings) {
+        console.log(
+          '🌐 updating URL with pageIndex:',
+          updatedSettings.pageIndex
+        );
+        // URL 업데이트 중임을 표시
+        isUpdatingUrl.current = true;
+
         const newParams: Record<string, string> = {};
 
         // 현재 URL의 모든 쿼리파라미터 유지
@@ -104,6 +130,7 @@ export const useTransactionViewSetting = (): Return => {
         // pageIndex만 업데이트
         newParams.pageIndex = updatedSettings.pageIndex.toString();
 
+        console.log('🌐 setSearchParams called with:', newParams);
         setSearchParams(newParams);
       }
     }
@@ -118,6 +145,7 @@ export const useTransactionViewSetting = (): Return => {
   };
 
   const updatePageIndex = async (pageIndex: number) => {
+    console.log('🔄 updatePageIndex called:', pageIndex);
     await saveSettings({ pageIndex });
   };
 
