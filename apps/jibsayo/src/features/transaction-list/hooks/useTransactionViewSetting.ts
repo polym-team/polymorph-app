@@ -26,20 +26,21 @@ export const useTransactionViewSetting = (): Return => {
   const navigationSearchParams = useNavigationSearchParams();
 
   const [isMounted, setIsMounted] = useState(false);
-  const [settings, setSettings] = useState<TransactionViewSetting>({
+  const [settings, setSettings] = useState<
+    Omit<TransactionViewSetting, 'pageIndex'>
+  >({
     sorting: [],
     pageSize: 10,
-    pageIndex: 0,
   });
 
-  // URL 업데이트 중인지 추적하는 플래그
-  const isUpdatingUrl = useRef(false);
-
-  // 쿼리파라미터에서 pageIndex 읽어오기
+  // pageIndex는 항상 쿼리파라미터에서 직접 읽어오기
   const getPageIndexFromParams = (): number => {
     const pageIndex = navigationSearchParams.get('pageIndex');
     return pageIndex ? parseInt(pageIndex, 10) : 0;
   };
+
+  // 실제 pageIndex 값 (쿼리파라미터에서 실시간으로 읽어옴)
+  const currentPageIndex = getPageIndexFromParams();
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -49,76 +50,26 @@ export const useTransactionViewSetting = (): Return => {
         Omit<TransactionViewSetting, 'pageIndex'>
       >(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS);
 
-      const pageIndexFromParams = getPageIndexFromParams();
-
       if (savedSettings) {
-        setSettings(prev => ({
-          ...prev,
+        setSettings({
           sorting: savedSettings.sorting,
           pageSize: savedSettings.pageSize,
-          pageIndex: pageIndexFromParams,
-        }));
-      } else {
-        setSettings(prev => ({
-          ...prev,
-          pageIndex: pageIndexFromParams,
-        }));
+        });
       }
     };
 
     loadSettings();
   }, []);
 
-  // 쿼리파라미터와 pageIndex 동기화 (외부 URL 변경 감지용)
-  useEffect(() => {
-    console.log(
-      '📡 useEffect triggered. isMounted:',
-      isMounted,
-      'isUpdatingUrl:',
-      isUpdatingUrl.current
-    );
-    if (isMounted && !isUpdatingUrl.current) {
-      const pageIndexFromParams = getPageIndexFromParams();
-      console.log(
-        '📡 pageIndexFromParams:',
-        pageIndexFromParams,
-        'current settings.pageIndex:',
-        settings.pageIndex
-      );
-      if (settings.pageIndex !== pageIndexFromParams) {
-        console.log('📡 updating settings pageIndex to:', pageIndexFromParams);
-        setSettings(prev => ({
-          ...prev,
-          pageIndex: pageIndexFromParams,
-        }));
-      }
-    }
-    // URL 업데이트 플래그 리셋
-    isUpdatingUrl.current = false;
-  }, [navigationSearchParams, isMounted, settings.pageIndex]);
+  // pageIndex는 쿼리파라미터에서 직접 읽으므로 동기화 불필요
 
   const saveSettings = async (newSettings: Partial<TransactionViewSetting>) => {
-    const updatedSettings = { ...settings, ...newSettings };
     console.log('💾 saveSettings:', newSettings, 'current settings:', settings);
-    setSettings(updatedSettings);
 
     if (isMounted) {
-      // sorting과 pageSize는 IndexedDB에 저장
-      if ('sorting' in newSettings || 'pageSize' in newSettings) {
-        await setLocalItem(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS, {
-          sorting: updatedSettings.sorting,
-          pageSize: updatedSettings.pageSize,
-        });
-      }
-
-      // pageIndex는 쿼리파라미터에 저장
-      if ('pageIndex' in newSettings) {
-        console.log(
-          '🌐 updating URL with pageIndex:',
-          updatedSettings.pageIndex
-        );
-        // URL 업데이트 중임을 표시
-        isUpdatingUrl.current = true;
+      // pageIndex는 별도로 처리 (쿼리파라미터에 저장)
+      if ('pageIndex' in newSettings && newSettings.pageIndex !== undefined) {
+        console.log('🌐 updating URL with pageIndex:', newSettings.pageIndex);
 
         const newParams: Record<string, string> = {};
 
@@ -128,10 +79,24 @@ export const useTransactionViewSetting = (): Return => {
         });
 
         // pageIndex만 업데이트
-        newParams.pageIndex = updatedSettings.pageIndex.toString();
+        newParams.pageIndex = newSettings.pageIndex.toString();
 
         console.log('🌐 setSearchParams called with:', newParams);
         setSearchParams(newParams);
+      }
+
+      // sorting과 pageSize는 로컬 상태 및 IndexedDB에 저장
+      const otherSettings = { ...newSettings };
+      delete otherSettings.pageIndex; // pageIndex 제외
+
+      if (Object.keys(otherSettings).length > 0) {
+        const updatedSettings = { ...settings, ...otherSettings };
+        setSettings(updatedSettings);
+
+        await setLocalItem(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS, {
+          sorting: updatedSettings.sorting,
+          pageSize: updatedSettings.pageSize,
+        });
       }
     }
   };
@@ -152,7 +117,7 @@ export const useTransactionViewSetting = (): Return => {
   return {
     sorting: isMounted ? settings.sorting : [],
     pageSize: isMounted ? settings.pageSize : 10,
-    pageIndex: isMounted ? settings.pageIndex : 0,
+    pageIndex: isMounted ? currentPageIndex : 0,
     updateSorting,
     updatePageSize,
     updatePageIndex,
