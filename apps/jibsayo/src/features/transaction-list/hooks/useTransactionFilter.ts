@@ -1,5 +1,6 @@
 import { useSearchParams } from '@/entities/transaction';
 
+import { useSearchParams as useNavigationSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { TransactionFilter } from '../models/types';
@@ -41,6 +42,7 @@ const searchParamsToFilter = (
 
 export const useTransactionFilter = (): Return => {
   const { searchParams, setSearchParams } = useSearchParams();
+  const navigationSearchParams = useNavigationSearchParams();
 
   const [filterState, setFilterState] =
     useState<TransactionFilter>(initialState);
@@ -53,7 +55,7 @@ export const useTransactionFilter = (): Return => {
     const changedFilter = { ...filterState, ...nextFilter };
     setFilterState(changedFilter);
 
-    // 완전히 새로운 쿼리파라미터 구성 (기존 필터 제거 포함)
+    // 모든 필터를 쿼리파라미터에 포함 (false 값도 포함)
     const newParams: Record<string, string> = {};
 
     // 기본 검색 파라미터 유지
@@ -64,31 +66,23 @@ export const useTransactionFilter = (): Return => {
       newParams.tradeDate = searchParams.tradeDate;
     }
 
-    // 활성화된 필터만 포함
+    // 모든 필터 상태를 쿼리파라미터에 포함
     if (changedFilter.apartName) {
       newParams.apartName = changedFilter.apartName;
     }
-    if (changedFilter.isNationalSizeOnly) {
-      newParams.nationalSizeOnly = 'true';
-    }
-    if (changedFilter.isFavoriteOnly) {
-      newParams.favoriteOnly = 'true';
-    }
-    if (changedFilter.isNewTransactionOnly) {
-      newParams.newTransactionOnly = 'true';
-    }
+    newParams.nationalSizeOnly = changedFilter.isNationalSizeOnly.toString();
+    newParams.favoriteOnly = changedFilter.isFavoriteOnly.toString();
+    newParams.newTransactionOnly =
+      changedFilter.isNewTransactionOnly.toString();
 
     setSearchParams(newParams);
   };
 
-  // 쿼리파라미터에서 필터 상태 초기화
+  // 쿼리파라미터와 필터 상태 동기화
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const urlSearchParams = new URLSearchParams(window.location.search);
-      const filterFromParams = searchParamsToFilter(urlSearchParams);
-      setFilterState(filterFromParams);
-    }
-  }, []);
+    const filterFromParams = searchParamsToFilter(navigationSearchParams);
+    setFilterState(filterFromParams);
+  }, [navigationSearchParams]); // 모든 쿼리파라미터 변경 시마다 실행
 
   // 지역이나 날짜가 변경되면 필터 초기화
   useEffect(() => {
@@ -101,7 +95,7 @@ export const useTransactionFilter = (): Return => {
 
     if (prevSearchParams.current !== currentSearchParams) {
       setFilterState(initialState);
-      // 기본 검색 파라미터만 유지하고 필터는 모두 제거
+      // 기본 검색 파라미터 유지하고 필터는 초기값으로 설정
       const newParams: Record<string, string> = {};
       if (searchParams.regionCode) {
         newParams.regionCode = searchParams.regionCode;
@@ -109,6 +103,11 @@ export const useTransactionFilter = (): Return => {
       if (searchParams.tradeDate) {
         newParams.tradeDate = searchParams.tradeDate;
       }
+      // 모든 필터를 초기값으로 명시적 설정
+      newParams.nationalSizeOnly = initialState.isNationalSizeOnly.toString();
+      newParams.favoriteOnly = initialState.isFavoriteOnly.toString();
+      newParams.newTransactionOnly =
+        initialState.isNewTransactionOnly.toString();
       setSearchParams(newParams);
     }
 
