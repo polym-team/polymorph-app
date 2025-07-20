@@ -1,13 +1,11 @@
+import { useSearchParams } from '@/entities/transaction';
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
 import {
   getItem as getLocalItem,
   setItem as setLocalItem,
 } from '@/shared/lib/indexedDB';
-import {
-  getItem as getSessionItem,
-  setItem as setSessionItem,
-} from '@/shared/lib/sessionStorage';
 
+import { useSearchParams as useNavigationSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { SortingState } from '@package/ui';
@@ -24,12 +22,21 @@ interface Return {
 }
 
 export const useTransactionViewSetting = (): Return => {
+  const { searchParams, setSearchParams } = useSearchParams();
+  const navigationSearchParams = useNavigationSearchParams();
+
   const [isMounted, setIsMounted] = useState(false);
   const [settings, setSettings] = useState<TransactionViewSetting>({
     sorting: [],
     pageSize: 10,
     pageIndex: 0,
   });
+
+  // 쿼리파라미터에서 pageIndex 읽어오기
+  const getPageIndexFromParams = (): number => {
+    const pageIndex = navigationSearchParams.get('pageIndex');
+    return pageIndex ? parseInt(pageIndex, 10) : 0;
+  };
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -39,28 +46,38 @@ export const useTransactionViewSetting = (): Return => {
         Omit<TransactionViewSetting, 'pageIndex'>
       >(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS);
 
-      const savedPageIndex = getSessionItem<number>(
-        STORAGE_KEY.TRANSACTION_LIST_PAGE
-      );
+      const pageIndexFromParams = getPageIndexFromParams();
 
       if (savedSettings) {
         setSettings(prev => ({
           ...prev,
           sorting: savedSettings.sorting,
           pageSize: savedSettings.pageSize,
+          pageIndex: pageIndexFromParams,
         }));
-      }
-
-      if (savedPageIndex !== null) {
+      } else {
         setSettings(prev => ({
           ...prev,
-          pageIndex: savedPageIndex,
+          pageIndex: pageIndexFromParams,
         }));
       }
     };
 
     loadSettings();
   }, []);
+
+  // 쿼리파라미터와 pageIndex 동기화
+  useEffect(() => {
+    if (isMounted) {
+      const pageIndexFromParams = getPageIndexFromParams();
+      if (pageIndexFromParams !== settings.pageIndex) {
+        setSettings(prev => ({
+          ...prev,
+          pageIndex: pageIndexFromParams,
+        }));
+      }
+    }
+  }, [navigationSearchParams, isMounted]);
 
   const saveSettings = async (newSettings: Partial<TransactionViewSetting>) => {
     const updatedSettings = { ...settings, ...newSettings };
@@ -75,12 +92,22 @@ export const useTransactionViewSetting = (): Return => {
         });
       }
 
-      // pageIndex는 sessionStorage에 저장
+      // pageIndex는 쿼리파라미터에 저장
       if ('pageIndex' in newSettings) {
-        setSessionItem(
-          STORAGE_KEY.TRANSACTION_LIST_PAGE,
-          updatedSettings.pageIndex
-        );
+        const newParams: Record<string, string> = {};
+
+        // 기존 검색 파라미터 유지
+        if (searchParams.regionCode) {
+          newParams.regionCode = searchParams.regionCode;
+        }
+        if (searchParams.tradeDate) {
+          newParams.tradeDate = searchParams.tradeDate;
+        }
+
+        // pageIndex 업데이트
+        newParams.pageIndex = updatedSettings.pageIndex.toString();
+
+        setSearchParams(newParams);
       }
     }
   };
