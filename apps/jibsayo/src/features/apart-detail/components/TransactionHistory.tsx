@@ -60,7 +60,7 @@ const columns: ColumnDef<TransactionItem>[] = [
             <div className="text-sm text-gray-500">({size}㎡)</div>
           </div>
           <div className="sm:hidden">
-            {floor}층/{pyeong}평 ({size}㎡)
+            {floor}층/{pyeong}평({size}㎡)
           </div>
         </div>
       );
@@ -156,11 +156,17 @@ const columns: ColumnDef<TransactionItem>[] = [
 
 const mobileColumnTitles = {
   tradeDate: '거래일',
-  size: '층/평수/면적',
-  floor: '층/평수/면적',
+  size: '층/평수(면적)',
+  floor: '층/평수(면적)',
   tradeAmount: '거래가격',
   pricePerPyeong: '거래가격',
   priceChange: '가격변동',
+};
+
+// 정렬 컬럼용 별도 라벨 (정렬 selectbox에서만 사용)
+const mobileSortableColumnTitles = {
+  size: '평수',
+  tradeAmount: '거래가격',
 };
 
 export function TransactionHistory({ items }: Props) {
@@ -241,11 +247,7 @@ export function TransactionHistory({ items }: Props) {
         onPageSizeChange={setPageSize}
         mobileColumnTitles={mobileColumnTitles}
         mobileColumns={['tradeDate', 'size', 'tradeAmount', 'priceChange']}
-        mobileSortableColumns={{
-          tradeDate: '거래일',
-          size: '평수',
-          tradeAmount: '거래가격',
-        }}
+        mobileSortableColumnTitles={mobileSortableColumnTitles}
         emptyMessage="거래 내역이 없습니다."
         showPagination={true}
       />

@@ -173,3 +173,44 @@ export const clearDeviceId = async (): Promise<void> =>
 export const isValidDeviceId = (deviceId: string): boolean =>
   deviceManager.isValidDeviceId(deviceId);
 export const generateDeviceId = (): string => deviceManager.generateDeviceId();
+
+// 디바이스 타입 감지 관련 함수들
+export const getDeviceType = (): 'mobile' | 'tablet' | 'desktop' => {
+  if (typeof window === 'undefined') return 'desktop';
+
+  const width = window.innerWidth;
+
+  if (width < 768) {
+    return 'mobile';
+  } else if (width >= 768 && width < 1024) {
+    return 'tablet';
+  } else {
+    return 'desktop';
+  }
+};
+
+export const isMobileDevice = (): boolean => {
+  if (typeof window === 'undefined') return false;
+
+  // User Agent 기반 모바일 감지
+  const userAgent = navigator.userAgent.toLowerCase();
+  const mobileKeywords = [
+    'mobile',
+    'android',
+    'iphone',
+    'ipod',
+    'blackberry',
+    'windows phone',
+    'opera mini',
+    'iemobile',
+  ];
+
+  const isMobileUserAgent = mobileKeywords.some(keyword =>
+    userAgent.includes(keyword)
+  );
+
+  // 화면 크기 기반 모바일 감지
+  const isMobileScreen = window.innerWidth < 768;
+
+  return isMobileUserAgent || isMobileScreen;
+};

@@ -56,6 +56,7 @@ interface DataTableProps<TData, TValue> {
   page?: number;
   onPageIndexChange?: (pageIndex: number) => void;
   mobileSortableColumns?: Record<string, string>;
+  mobileSortableColumnTitles?: Record<string, string>;
   getRowClassName?: (row: TData) => string;
 }
 
@@ -85,6 +86,7 @@ export function DataTable<TData, TValue>({
   page: externalPage,
   onPageIndexChange,
   mobileSortableColumns,
+  mobileSortableColumnTitles,
   getRowClassName,
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
@@ -287,7 +289,8 @@ export function DataTable<TData, TValue>({
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="정렬 컬럼">
                   {defaultSortColumn &&
-                    (mobileColumnTitles?.[defaultSortColumn] ||
+                    (mobileSortableColumnTitles?.[defaultSortColumn] ||
+                      mobileColumnTitles?.[defaultSortColumn] ||
                       (mobileSortableColumns?.[defaultSortColumn] &&
                       mobileSortableColumns[defaultSortColumn].trim() !== ''
                         ? mobileSortableColumns[defaultSortColumn]
@@ -308,8 +311,18 @@ export function DataTable<TData, TValue>({
                     const header = column.columnDef.header;
                     let displayName = '';
 
-                    // mobileColumnTitles에서 우선 찾기
-                    if (mobileColumnTitles && mobileColumnTitles[column.id]) {
+                    // mobileSortableColumnTitles에서 우선 찾기
+                    if (
+                      mobileSortableColumnTitles &&
+                      mobileSortableColumnTitles[column.id]
+                    ) {
+                      displayName = mobileSortableColumnTitles[column.id];
+                    }
+                    // mobileColumnTitles에서 찾기
+                    else if (
+                      mobileColumnTitles &&
+                      mobileColumnTitles[column.id]
+                    ) {
                       displayName = mobileColumnTitles[column.id];
                     }
                     // mobileSortableColumns에서 찾기 (값이 있는 경우만)
@@ -405,7 +418,7 @@ export function DataTable<TData, TValue>({
             return (
               <div
                 key={row.id}
-                className={`rounded-lg border border-gray-200 bg-white p-3 shadow-sm ${baseClassName} ${customClassName}`}
+                className={`rounded-sm border border-gray-200 bg-white p-3 shadow-sm ${baseClassName} ${customClassName}`}
                 onClick={() => onRowClick?.(row.original)}
               >
                 {row.getVisibleCells().map((cell, index) => {

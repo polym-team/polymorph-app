@@ -205,6 +205,7 @@ export function TransactionListTable({
   const router = useRouter();
   const columns = createColumns({ onToggleFavorite, newTransactionIds });
   const mobileColumnTitles = {
+    favorite: '즐겨찾기',
     apartName: '아파트명',
     address: '주소',
     buildedYear: '준공년도',
@@ -219,11 +220,22 @@ export function TransactionListTable({
     tradeDate: '',
     apartName: '',
     size: '',
-    tradeAmount: '',
+    tradeAmount: '거래가격',
+  };
+
+  // 정렬 컬럼용 별도 라벨 (정렬 selectbox에서만 사용)
+  const mobileSortableColumnTitles = {
+    tradeAmount: '거래가격',
   };
 
   // 모바일에서 보여줄 컬럼 순서
-  const mobileColumns = ['tradeDate', 'apartName', 'size', 'tradeAmount'];
+  const mobileColumns = [
+    'favorite',
+    'tradeDate',
+    'apartName',
+    'size',
+    'tradeAmount',
+  ];
 
   const handleClick = (row: TransactionItem) => {
     if (!regionCode) return;
@@ -273,6 +285,7 @@ export function TransactionListTable({
       preservePageIndex={preservePageIndex}
       onRowClick={handleClick}
       mobileSortableColumns={mobileSortableColumns}
+      mobileSortableColumnTitles={mobileSortableColumnTitles}
       getRowClassName={getRowClassName}
     />
   );
