@@ -131,6 +131,15 @@ export const useTransactionFilter = (): Return => {
         tradeDateChanged,
       });
 
+      // regionCode 변경 시 즉시 filterState 업데이트
+      if (regionCodeChanged) {
+        console.log('🧹 IMMEDIATELY clearing apartName from filterState');
+        setFilterState(prev => ({
+          ...prev,
+          apartName: '',
+        }));
+      }
+
       const newParams: Record<string, string> = {};
 
       // 기본 검색 파라미터 추가
@@ -141,17 +150,12 @@ export const useTransactionFilter = (): Return => {
         newParams.tradeDate = searchParams.tradeDate;
       }
 
-      // 현재 필터 상태에서 파라미터 구성
-      const currentApartName = regionCodeChanged ? '' : filterState.apartName;
-      console.log('🏠 apartName logic:', {
-        regionCodeChanged,
-        filterStateApartName: filterState.apartName,
-        currentApartName,
-        willAddToParams: !!currentApartName,
-      });
-
-      if (currentApartName) {
-        newParams.apartName = currentApartName;
+      // 지역 변경 시에는 apartName을 아예 포함하지 않음
+      if (!regionCodeChanged && filterState.apartName) {
+        newParams.apartName = filterState.apartName;
+        console.log('✅ Keeping apartName:', filterState.apartName);
+      } else {
+        console.log('🚫 EXCLUDING apartName (region changed or empty)');
       }
 
       // 다른 필터들은 현재 상태 유지
@@ -163,15 +167,10 @@ export const useTransactionFilter = (): Return => {
       // pageIndex는 항상 0으로 리셋
       newParams.pageIndex = '0';
 
-      console.log('🌐 Final params to set:', newParams);
-
-      // regionCode가 변경된 경우 상태도 업데이트
-      if (regionCodeChanged) {
-        setFilterState(prev => ({
-          ...prev,
-          apartName: '',
-        }));
-      }
+      console.log(
+        '🌐 Final params to set:',
+        JSON.stringify(newParams, null, 2)
+      );
 
       setSearchParams(newParams);
     }

@@ -97,38 +97,20 @@ export const useSearchForm = (): Return => {
       tradeDate,
     });
 
-    // 지역이 변경되었는지 확인
-    const regionChanged = searchParams.regionCode !== changedForm.regionCode;
-
-    // 기존 필터 파라미터들을 유지하면서 regionCode, tradeDate만 업데이트
-    const newParams: Record<string, string> = {};
-
-    // 기존 파라미터들 복사 (regionCode, tradeDate, apartName 제외)
-    navigationSearchParams.forEach((value, key) => {
-      if (key !== 'regionCode' && key !== 'tradeDate') {
-        // 지역이 변경된 경우 apartName은 제외
-        if (regionChanged && key === 'apartName') {
-          return;
-        }
-        newParams[key] = value;
+    console.log(
+      '🔍 useSearchForm onSubmit - setting only regionCode and tradeDate:',
+      {
+        regionCode: changedForm.regionCode,
+        tradeDate,
       }
+    );
+
+    // 단순하게 regionCode, tradeDate만 설정
+    // 다른 필터들은 useTransactionFilter에서 관리하도록 함
+    setSearchParams({
+      regionCode: changedForm.regionCode,
+      tradeDate,
     });
-
-    // 새로운 regionCode, tradeDate 설정
-    newParams.regionCode = changedForm.regionCode;
-    newParams.tradeDate = tradeDate;
-
-    // 지역 변경 시 pageIndex도 0으로 리셋
-    if (regionChanged) {
-      newParams.pageIndex = '0';
-    }
-
-    console.log('🔍 useSearchForm setSearchParams:', {
-      regionChanged,
-      newParams,
-    });
-
-    setSearchParams(newParams);
   };
 
   useEffect(() => {
@@ -140,25 +122,18 @@ export const useSearchForm = (): Return => {
     }>(STORAGE_KEY.TRANSACTION_SEARCH_FORM);
 
     if (savedSearchForm) {
-      // 저장된 tradeDate를 그대로 사용
-      const newParams: Record<string, string> = {};
+      console.log(
+        '🔍 useSearchForm useEffect - initial load only:',
+        savedSearchForm
+      );
 
-      // 기존 파라미터들 복사 (regionCode, tradeDate 제외)
-      navigationSearchParams.forEach((value, key) => {
-        if (key !== 'regionCode' && key !== 'tradeDate') {
-          newParams[key] = value;
-        }
+      // 초기 로드 시에는 단순하게 regionCode, tradeDate만 설정
+      setSearchParams({
+        regionCode: savedSearchForm.regionCode,
+        tradeDate: savedSearchForm.tradeDate,
       });
-
-      // 저장된 regionCode, tradeDate 설정
-      newParams.regionCode = savedSearchForm.regionCode;
-      newParams.tradeDate = savedSearchForm.tradeDate;
-
-      console.log('🔍 useSearchForm useEffect setSearchParams:', newParams);
-
-      setSearchParams(newParams);
     }
-  }, [navigationSearchParams, setSearchParams]);
+  }, []); // 빈 의존성 배열로 초기 로드 시에만 실행
 
   return {
     form,
