@@ -47,9 +47,13 @@ export const useTransactionFilter = (): Return => {
   const [filterState, setFilterState] =
     useState<TransactionFilter>(initialState);
 
-  const prevSearchParams = useRef<string | undefined>(
-    `${searchParams.regionCode}-${searchParams.tradeDate}`
-  );
+  const prevSearchParams = useRef<{
+    regionCode: string | undefined;
+    tradeDate: string | undefined;
+  }>({
+    regionCode: searchParams.regionCode,
+    tradeDate: searchParams.tradeDate,
+  });
 
   const setFilter = (nextFilter: Partial<TransactionFilter>) => {
     const changedFilter = { ...filterState, ...nextFilter };
@@ -89,21 +93,26 @@ export const useTransactionFilter = (): Return => {
 
   // 지역이나 날짜가 변경되면 필터 초기화
   useEffect(() => {
-    const currentSearchParams = `${searchParams.regionCode}-${searchParams.tradeDate}`;
+    const currentRegionCode = searchParams.regionCode;
+    const currentTradeDate = searchParams.tradeDate;
 
-    if (!prevSearchParams.current) {
-      prevSearchParams.current = currentSearchParams;
+    if (
+      !prevSearchParams.current.regionCode &&
+      !prevSearchParams.current.tradeDate
+    ) {
+      prevSearchParams.current = {
+        regionCode: currentRegionCode,
+        tradeDate: currentTradeDate,
+      };
       return;
     }
 
-    if (prevSearchParams.current !== currentSearchParams) {
-      // apartName만 초기화하고 나머지 필터는 유지
-      setFilterState(prev => ({
-        ...prev,
-        apartName: '', // apartName만 초기화
-      }));
+    const regionCodeChanged =
+      prevSearchParams.current.regionCode !== currentRegionCode;
+    const tradeDateChanged =
+      prevSearchParams.current.tradeDate !== currentTradeDate;
 
-      // 지역/날짜 변경 시 apartName과 pageIndex만 초기화
+    if (regionCodeChanged || tradeDateChanged) {
       const newParams: Record<string, string> = {};
 
       // 현재 URL의 모든 쿼리파라미터 유지
@@ -111,16 +120,27 @@ export const useTransactionFilter = (): Return => {
         newParams[key] = value;
       });
 
-      // apartName 제거 (초기화)
-      delete newParams.apartName;
+      // regionCode가 변경된 경우에만 apartName 초기화
+      if (regionCodeChanged) {
+        setFilterState(prev => ({
+          ...prev,
+          apartName: '', // apartName만 초기화
+        }));
 
-      // pageIndex는 0으로 리셋 (새로운 데이터셋이므로)
+        // apartName 제거 (초기화)
+        delete newParams.apartName;
+      }
+
+      // pageIndex는 항상 0으로 리셋 (새로운 데이터셋이므로)
       newParams.pageIndex = '0';
 
       setSearchParams(newParams);
     }
 
-    prevSearchParams.current = currentSearchParams;
+    prevSearchParams.current = {
+      regionCode: currentRegionCode,
+      tradeDate: currentTradeDate,
+    };
   }, [searchParams.regionCode, searchParams.tradeDate, setSearchParams]);
 
   return {
