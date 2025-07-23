@@ -140,7 +140,9 @@ async function getNewTransactionsByArea(
 // 푸시 알림 전송 함수 (Expo Push Notification Service 사용)
 async function sendPushNotification(
   deviceId: string,
-  message: string
+  message: string,
+  regionCode: string,
+  apartName: string
 ): Promise<boolean> {
   try {
     // Firestore에서 토큰 조회 (문서 ID로 직접 조회)
@@ -175,8 +177,9 @@ async function sendPushNotification(
       title: '새로운 아파트 거래',
       body: message,
       data: {
-        type: 'new_transaction',
-        message: message,
+        action: 'gotoUrl',
+        screen: 'home',
+        url: `https://jibsayo.vercel.app/aparts/${regionCode}/${encodeURIComponent(apartName)}`,
       },
     });
 
@@ -301,7 +304,9 @@ export async function POST(request: NextRequest) {
       pushNotifications.map(async pushData => {
         const success = await sendPushNotification(
           pushData.deviceId,
-          pushData.message
+          pushData.message,
+          pushData.regionCode,
+          pushData.apartName
         );
         if (success) {
           console.log(

@@ -49,11 +49,11 @@ export class ExpoPushNotificationClient {
         data: payload.data || {},
       };
 
-      console.log('📤 Expo 푸시 메시지 전송:', {
-        to: expoPushToken,
-        title: payload.title,
-        body: payload.body,
-      });
+      // 🚀 최종 전송 로그 - Expo client로 전달하는 데이터
+      console.log('🚀 ===== EXPO CLIENT 최종 전송 =====');
+      console.log(' 전송할 메시지 전체 구조:');
+      console.log(JSON.stringify(message, null, 2));
+      console.log('🚀 ===== EXPO CLIENT 전송 시작 =====');
 
       const chunks = this.expo.chunkPushNotifications([message]);
       const tickets = [];
