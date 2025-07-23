@@ -102,35 +102,35 @@ export function TransactionListHeader({
   return (
     <div className="flex w-full flex-col gap-4">
       {/* 타이틀과 컨트롤 그룹 */}
-      <div className="flex flex-wrap items-start justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         {/* 타이틀 섹션 */}
-        <div className="my-[9.5px] flex items-center gap-x-1">
-          {fullRegionName && (
-            <>
-              <Typography className="text-sm font-bold sm:text-base">
-                {fullRegionName}
-              </Typography>
-              <Typography variant="small" className="text-xs sm:text-sm">
-                (총 거래 건수{' '}
-                <span className="text-primary font-bold">
-                  {filteredTransactionsLength}건
-                </span>
-                {totalCount !== filteredTransactionsLength && (
-                  <span className="text-gray-500">/{totalCount}건</span>
-                )}
-                <span className="mx-1 text-gray-400">·</span>
-                평당 거래가격{' '}
-                <span className="text-primary font-bold">
-                  {formatPrice(averagePricePerPyeong)}
-                </span>
-                )
-              </Typography>
-            </>
-          )}
-        </div>
+        {fullRegionName && (
+          <div className="flex min-w-0 flex-1 items-center gap-x-1">
+            <Typography className="text-sm font-bold sm:text-base">
+              {fullRegionName}
+            </Typography>
+            <Typography variant="small" className="text-xs sm:text-sm">
+              (총 거래 건수{' '}
+              <span className="text-primary font-bold">
+                {filteredTransactionsLength}건
+              </span>
+              {totalCount !== filteredTransactionsLength && (
+                <span className="text-gray-500">/{totalCount}건</span>
+              )}
+              <span className="mx-1 text-gray-400">·</span>
+              평당 거래가격{' '}
+              <span className="text-primary font-bold">
+                {formatPrice(averagePricePerPyeong)}
+              </span>
+              )
+            </Typography>
+          </div>
+        )}
 
         {/* 컨트롤 그룹 */}
-        <div className="flex flex-wrap items-start gap-2">
+        <div
+          className={`flex flex-wrap items-start gap-2 ${!fullRegionName ? 'w-full justify-end' : 'flex-shrink-0'}`}
+        >
           {/* 필터 (평수 + 아파트명 + 체크박스) */}
           <CollapsibleFilter
             title="필터"
@@ -169,7 +169,7 @@ export function TransactionListHeader({
               </div>
             }
           >
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
               {/* 평수 섹션 */}
               <div className="rounded border border-gray-200 bg-white p-3">
                 <div className="mb-2 flex items-center justify-between">
@@ -197,8 +197,9 @@ export function TransactionListHeader({
               />
 
               {/* 체크박스 섹션 */}
-              <div className="flex flex-col gap-3">
+              <div className="flex gap-2">
                 <LabelCheckbox
+                  className="flex-1"
                   checked={filter.isFavoriteOnly}
                   onCheckedChange={() =>
                     setFilter({ isFavoriteOnly: !filter.isFavoriteOnly })
@@ -206,6 +207,7 @@ export function TransactionListHeader({
                   title="저장된 아파트"
                 />
                 <LabelCheckbox
+                  className="flex-1"
                   checked={filter.isNewTransactionOnly}
                   onCheckedChange={() =>
                     setFilter({

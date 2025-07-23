@@ -20,7 +20,7 @@ export function CollapsibleFilter({
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className={`w-full sm:w-[350px] ${className}`}>
+    <div className={`w-full sm:w-[420px] ${className}`}>
       <div className="rounded-sm border border-gray-200 bg-white transition-all">
         {/* 상단 헤더 - 두 상태에서 공통 사용 */}
         <button
