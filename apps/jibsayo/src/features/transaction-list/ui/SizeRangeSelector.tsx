@@ -30,16 +30,11 @@ export function SizeRangeSelector({
 
   // 외부 값 변경 시 동기화
   useEffect(() => {
-    setLocalMin(minSize || MIN_PYEONG);
-    setLocalMax(maxSize || MAX_PYEONG);
+    setLocalMin(minSize ?? MIN_PYEONG);
+    setLocalMax(maxSize ?? MAX_PYEONG);
   }, [minSize, maxSize]);
 
-  // 초기값 설정
-  useEffect(() => {
-    if (!minSize && !maxSize) {
-      onRangeChange(MIN_PYEONG, MAX_PYEONG);
-    }
-  }, []);
+  // 초기값 설정은 useTransactionFilter에서 처리하므로 제거
 
   // 위치를 평수로 변환
   const positionToValue = (x: number): number => {

@@ -59,11 +59,6 @@ export const useTransactionFilter = (): Return => {
     useState<TransactionFilter>(initialState);
 
   const setFilter = (nextFilter: Partial<TransactionFilter>) => {
-    console.log('🔧 setFilter called:', {
-      nextFilter,
-      currentState: filterState,
-    });
-
     const changedFilter = { ...filterState, ...nextFilter };
     setFilterState(changedFilter);
 
@@ -83,7 +78,21 @@ export const useTransactionFilter = (): Return => {
   // 쿼리파라미터와 필터 상태 동기화
   useEffect(() => {
     const filterFromParams = searchParamsToFilter(navigationSearchParams);
-    setFilterState(filterFromParams);
+
+    // 쿼리파라미터에서 minSize, maxSize가 없으면 기본값으로 설정
+    const finalFilter = {
+      ...filterFromParams,
+      minSize:
+        filterFromParams.minSize === 0 && filterFromParams.maxSize === 0
+          ? 0
+          : filterFromParams.minSize,
+      maxSize:
+        filterFromParams.minSize === 0 && filterFromParams.maxSize === 0
+          ? 50
+          : filterFromParams.maxSize,
+    };
+
+    setFilterState(finalFilter);
   }, [navigationSearchParams]); // 모든 쿼리파라미터 변경 시마다 실행
 
   // 지역/날짜 변경 감지는 이제 useQueryParamsManager에서 처리됨
