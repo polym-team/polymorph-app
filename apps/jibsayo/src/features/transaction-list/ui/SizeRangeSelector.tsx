@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { Button } from '@package/ui';
+import { Button, Typography } from '@package/ui';
 
 interface SizeRangeSelectorProps {
   minSize: number;
@@ -170,6 +170,7 @@ export function SizeRangeSelector({
   const shouldMinBeOnTop = isOverlapping && localMin === 50 && localMax === 50;
 
   const quickSelectButtons = [
+    { label: '전체', min: 0, max: 50 },
     { label: '10평대', min: 10, max: 19 },
     { label: '20평대', min: 20, max: 29 },
     { label: '30평대', min: 30, max: 39 },
@@ -178,7 +179,19 @@ export function SizeRangeSelector({
   ];
 
   return (
-    <div className={`flex w-full flex-col gap-2 ${className}`}>
+    <div className={`flex w-full flex-col gap-3 ${className}`}>
+      {/* 헤더: 평수 제목과 현재 선택된 범위 */}
+      <div className="flex items-center justify-between">
+        <Typography variant="small" className="text-sm font-medium">
+          평수
+        </Typography>
+        <Typography variant="small" className="text-sm text-gray-600">
+          {localMin === 0 && localMax === 50
+            ? '전체 평수'
+            : `${localMin}~${localMax}평`}
+        </Typography>
+      </div>
+
       {/* 1행: Range Selector */}
       <div className="flex w-full items-center justify-center">
         <div className="relative w-full">
@@ -228,7 +241,7 @@ export function SizeRangeSelector({
       </div>
 
       {/* 2행: 빠른 선택 버튼들 */}
-      <div className="grid w-full grid-cols-5 gap-1">
+      <div className="grid w-full grid-cols-6 gap-1">
         {quickSelectButtons.map(button => (
           <Button
             key={button.label}

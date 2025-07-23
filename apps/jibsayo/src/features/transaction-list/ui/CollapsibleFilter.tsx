@@ -20,8 +20,10 @@ export function CollapsibleFilter({
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className={`w-full sm:w-[420px] ${className}`}>
-      <div className="rounded-sm border border-gray-200 bg-white transition-all">
+    <div className={`relative w-full sm:w-[420px] ${className}`}>
+      <div
+        className={`border border-gray-200 bg-white transition-all ${isExpanded ? 'rounded-t-sm' : 'rounded-sm'}`}
+      >
         {/* 상단 헤더 - 두 상태에서 공통 사용 */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
@@ -57,7 +59,11 @@ export function CollapsibleFilter({
         </button>
 
         {/* 펼쳐진 상태에서만 내용 표시 */}
-        {isExpanded && <div className="p-3">{children}</div>}
+        {isExpanded && (
+          <div className="absolute left-0 right-0 top-[calc(100%-1px)] z-50 rounded-b-sm border border-gray-200 bg-white p-3 shadow-lg">
+            {children}
+          </div>
+        )}
       </div>
     </div>
   );
