@@ -433,7 +433,7 @@ export function useCombinedChart({
         .delay((_, i) => i * 100) // 평형별로 순차 애니메이션
         .attr('stroke-dashoffset', 0);
 
-      // 데이터 포인트 (기본적으로 숨김)
+      // 데이터 포인트 (PC에서는 차트 애니메이션 완료 후 노출, 모바일에서는 기본적으로 숨김)
       const points = g
         .selectAll(`.point-${pyeong}`)
         .data(data)
@@ -445,10 +445,25 @@ export function useCombinedChart({
         .attr('fill', color)
         .attr('stroke', 'white')
         .attr('stroke-width', 2)
-        .style('opacity', 0); // 기본적으로 숨김
+        .style('opacity', 0); // 초기에는 모두 숨김
 
       // 점은 애니메이션 없이 바로 최종 위치에 배치
       points.attr('cy', d => yPriceScale(d.averagePrice));
+
+      // PC에서 차트 애니메이션 완료 후 포인트 표시
+      if (containerWidth > 640) {
+        const pyeongGroupsArray = Array.from(pyeongGroups);
+        const currentPyeongIndex = pyeongGroupsArray.findIndex(
+          ([p]) => p === pyeong
+        );
+        const animationDelay = 600 + currentPyeongIndex * 100; // 라인 애니메이션과 동일한 지연시간
+
+        points
+          .transition()
+          .delay(animationDelay)
+          .duration(200)
+          .style('opacity', 1);
+      }
     });
 
     // x축과 y축 사이의 빈틈을 메우는 실선 (바 차트보다 나중에 그려서 위에 표시)
@@ -509,19 +524,22 @@ export function useCombinedChart({
 
       if (dateData.length === 0) return;
 
-      // 모든 데이터 포인트 숨기기
-      g.selectAll('[class*="point-"]').style('opacity', 0);
+      // 모바일에서만 데이터 포인트 숨기기/표시 로직 실행
+      if (containerWidth <= 640) {
+        // 모든 데이터 포인트 숨기기
+        g.selectAll('[class*="point-"]').style('opacity', 0);
 
-      // 해당 월의 데이터 포인트만 표시
-      dateData.forEach(d => {
-        g.selectAll(`.point-${d.pyeong}`)
-          .filter(
-            pointData =>
-              formatDateForScale((pointData as CombinedChartData).date) ===
-              closestDateString
-          )
-          .style('opacity', 1);
-      });
+        // 해당 월의 데이터 포인트만 표시
+        dateData.forEach(d => {
+          g.selectAll(`.point-${d.pyeong}`)
+            .filter(
+              pointData =>
+                formatDateForScale((pointData as CombinedChartData).date) ===
+                closestDateString
+            )
+            .style('opacity', 1);
+        });
+      }
 
       // 툴팁 내용 생성
       const formatPrice = (price: number) =>
@@ -625,8 +643,10 @@ export function useCombinedChart({
       })
       .on('mouseout', () => {
         // 마우스가 차트 영역을 벗어나도 툴팁과 세로선을 유지
-        // 툴팁과 세로선은 그대로 두고, 데이터 포인트만 숨김
-        g.selectAll('[class*="point-"]').style('opacity', 0);
+        // 모바일에서만 데이터 포인트 숨김
+        if (containerWidth <= 640) {
+          g.selectAll('[class*="point-"]').style('opacity', 0);
+        }
       });
 
     // PC 버전에서 기본적으로 가장 오른쪽 데이터에 세로선과 툴팁 노출
@@ -641,19 +661,23 @@ export function useCombinedChart({
         );
 
         if (lastDateData.length > 0) {
-          // 모든 데이터 포인트 숨기기
-          g.selectAll('[class*="point-"]').style('opacity', 0);
+          // 모바일에서만 데이터 포인트 숨기기/표시 로직 실행
+          if (containerWidth <= 640) {
+            // 모든 데이터 포인트 숨기기
+            g.selectAll('[class*="point-"]').style('opacity', 0);
 
-          // 해당 월의 데이터 포인트만 표시
-          lastDateData.forEach(d => {
-            g.selectAll(`.point-${d.pyeong}`)
-              .filter(
-                pointData =>
-                  formatDateForScale((pointData as CombinedChartData).date) ===
-                  lastDateString
-              )
-              .style('opacity', 1);
-          });
+            // 해당 월의 데이터 포인트만 표시
+            lastDateData.forEach(d => {
+              g.selectAll(`.point-${d.pyeong}`)
+                .filter(
+                  pointData =>
+                    formatDateForScale(
+                      (pointData as CombinedChartData).date
+                    ) === lastDateString
+                )
+                .style('opacity', 1);
+            });
+          }
 
           // 툴팁 내용 생성
           const formatPrice = (price: number) =>
