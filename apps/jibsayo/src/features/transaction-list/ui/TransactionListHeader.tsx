@@ -126,41 +126,7 @@ export function TransactionListHeader({
       </div>
 
       {/* 필터 (평수 + 아파트명 + 체크박스) */}
-      <CollapsibleFilter
-        title="필터"
-        value={getCombinedFilterText()}
-        className="w-full sm:w-auto"
-        customHeader={
-          <div className="flex w-full items-center justify-between">
-            <Typography variant="small" className="text-sm font-medium">
-              필터
-            </Typography>
-            <div className="ml-4 flex min-w-0 flex-1 items-center justify-end gap-2">
-              <div className="min-w-0 flex-1" title={getCombinedFilterText()}>
-                <Typography
-                  variant="small"
-                  className="block truncate text-right text-sm text-gray-600"
-                >
-                  {getCombinedFilterText()}
-                </Typography>
-              </div>
-              <svg
-                className="h-4 w-4 text-gray-400 transition-transform"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-          </div>
-        }
-      >
+      <CollapsibleFilter title="필터" value={getCombinedFilterText()}>
         <div className="flex flex-col gap-2">
           {/* 평수 섹션 */}
           <div className="rounded border border-gray-200 bg-white p-3">
