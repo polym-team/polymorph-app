@@ -82,14 +82,12 @@ export const useTransactionFilter = (): Return => {
     // 쿼리파라미터에서 minSize, maxSize가 없으면 기본값으로 설정
     const finalFilter = {
       ...filterFromParams,
-      minSize:
-        filterFromParams.minSize === 0 && filterFromParams.maxSize === 0
-          ? 0
-          : filterFromParams.minSize,
-      maxSize:
-        filterFromParams.minSize === 0 && filterFromParams.maxSize === 0
-          ? 50
-          : filterFromParams.maxSize,
+      minSize: navigationSearchParams.has('minSize')
+        ? filterFromParams.minSize
+        : 0,
+      maxSize: navigationSearchParams.has('maxSize')
+        ? filterFromParams.maxSize
+        : 50,
     };
 
     setFilterState(finalFilter);

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { Button, Typography } from '@package/ui';
+import { Button } from '@package/ui';
 
 interface SizeRangeSelectorProps {
   minSize: number;
@@ -12,7 +12,6 @@ interface SizeRangeSelectorProps {
   pyeongRange: { min: number; max: number };
 }
 
-const SLIDER_WIDTH = 123;
 const MIN_PYEONG = 0;
 const MAX_PYEONG = 50;
 const HANDLE_RADIUS = 10; // 핸들 반지름 (w-4 + border-2 = 20px / 2)
@@ -23,9 +22,10 @@ export function SizeRangeSelector({
   onRangeChange,
   className = '',
 }: SizeRangeSelectorProps) {
-  const [localMin, setLocalMin] = useState(minSize || MIN_PYEONG);
-  const [localMax, setLocalMax] = useState(maxSize || MAX_PYEONG);
+  const [localMin, setLocalMin] = useState(minSize ?? MIN_PYEONG);
+  const [localMax, setLocalMax] = useState(maxSize ?? MAX_PYEONG);
   const [dragging, setDragging] = useState<'min' | 'max' | null>(null);
+  const [isSliderMounted, setIsSliderMounted] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
 
   // 외부 값 변경 시 동기화
@@ -34,19 +34,29 @@ export function SizeRangeSelector({
     setLocalMax(maxSize ?? MAX_PYEONG);
   }, [minSize, maxSize]);
 
-  // 초기값 설정은 useTransactionFilter에서 처리하므로 제거
+  // 슬라이더가 마운트된 후 위치 재계산
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (sliderRef.current) {
+        setIsSliderMounted(true);
+      }
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // 위치를 평수로 변환
   const positionToValue = (x: number): number => {
     if (!sliderRef.current) return MIN_PYEONG;
 
     const rect = sliderRef.current.getBoundingClientRect();
+    const sliderWidth = rect.width;
     const relativeX = x - rect.left;
     // 핸들 반지름을 고려한 유효 범위 계산
-    const effectiveWidth = SLIDER_WIDTH - HANDLE_RADIUS * 2;
+    const effectiveWidth = sliderWidth - HANDLE_RADIUS * 2;
     const clampedX = Math.max(
       HANDLE_RADIUS,
-      Math.min(SLIDER_WIDTH - HANDLE_RADIUS, relativeX)
+      Math.min(sliderWidth - HANDLE_RADIUS, relativeX)
     );
     const ratio = (clampedX - HANDLE_RADIUS) / effectiveWidth;
 
@@ -55,9 +65,14 @@ export function SizeRangeSelector({
 
   // 평수를 위치로 변환
   const valueToPosition = (value: number): number => {
+    if (!sliderRef.current || !isSliderMounted) return HANDLE_RADIUS;
+
+    const rect = sliderRef.current.getBoundingClientRect();
+    const sliderWidth = rect.width;
+
     const ratio = (value - MIN_PYEONG) / (MAX_PYEONG - MIN_PYEONG);
     // 핸들 반지름을 고려해서 위치 계산
-    const effectiveWidth = SLIDER_WIDTH - HANDLE_RADIUS * 2;
+    const effectiveWidth = sliderWidth - HANDLE_RADIUS * 2;
     return HANDLE_RADIUS + ratio * effectiveWidth;
   };
 
@@ -163,34 +178,10 @@ export function SizeRangeSelector({
   ];
 
   return (
-    <div
-      className={`rounded-sm border border-gray-200 bg-white p-2 px-3 sm:flex sm:h-[37px] sm:items-center sm:gap-2 sm:py-0 ${className}`}
-    >
-      {/* 슬라이더 섹션 */}
-      <div className="flex h-[33px] items-center justify-between gap-2 sm:justify-start sm:gap-2">
-        <div className="flex items-center gap-2">
-          <Typography
-            variant="small"
-            className="whitespace-nowrap text-sm font-medium"
-          >
-            평수
-          </Typography>
-
-          <Typography
-            variant="small"
-            className="min-w-[65px] text-sm text-gray-600"
-          >
-            {localMin === 0 && localMax === 50
-              ? '전체'
-              : localMax >= 50
-                ? `${localMin}평 이상`
-                : localMin === localMax
-                  ? `${localMin}평`
-                  : `${localMin}평 ~ ${localMax}평`}
-          </Typography>
-        </div>
-
-        <div className="relative" style={{ width: SLIDER_WIDTH }}>
+    <div className={`flex w-full flex-col gap-2 ${className}`}>
+      {/* 1행: Range Selector */}
+      <div className="flex w-full items-center justify-center">
+        <div className="relative w-full">
           {/* 슬라이더 트랙 */}
           <div
             ref={sliderRef}
@@ -236,8 +227,8 @@ export function SizeRangeSelector({
         </div>
       </div>
 
-      {/* 빠른 선택 버튼들 */}
-      <div className="mt-2 grid grid-cols-5 gap-1 sm:mt-0 sm:flex sm:flex-wrap sm:gap-2">
+      {/* 2행: 빠른 선택 버튼들 */}
+      <div className="grid w-full grid-cols-5 gap-1">
         {quickSelectButtons.map(button => (
           <Button
             key={button.label}
