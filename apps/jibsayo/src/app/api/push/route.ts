@@ -199,20 +199,21 @@ export async function POST(request: NextRequest) {
   try {
     // 개발 환경에서는 간단한 검증, 프로덕션에서는 엄격한 검증
     if (process.env.NODE_ENV === 'production') {
-      // 프로덕션: 인증 토큰 검증
-      const authHeader = request.headers.get('authorization');
-      const expectedToken = `Bearer ${process.env.CRON_SECRET_TOKEN}`;
+      // 프로덕션: User-Agent + 환경 변수 토큰 검증
+      const userAgent = request.headers.get('user-agent');
+      const isVercelCron =
+        userAgent?.includes('Vercel') || userAgent?.includes('cron');
+      const authToken = request.headers.get('x-cron-token');
+      const expectedToken = process.env.CRON_SECRET_TOKEN;
 
-      if (authHeader !== expectedToken) {
+      if (!isVercelCron || authToken !== expectedToken) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
     } else {
-      // 개발 환경: User-Agent 또는 간단한 헤더 검증
-      const userAgent = request.headers.get('user-agent');
+      // 개발 환경: 간단한 헤더 검증
       const isInternalCall = request.headers.get('x-internal-call') === 'true';
 
-      // 로컬 테스트를 위한 간단한 검증 (User-Agent가 없거나 내부 호출 헤더가 있는 경우 허용)
-      if (userAgent && !isInternalCall && !userAgent.includes('localhost')) {
+      if (!isInternalCall) {
         return NextResponse.json(
           { error: 'Development mode: Use x-internal-call header for testing' },
           { status: 403 }
