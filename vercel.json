@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "apps/jibsayo/src/app/api/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "crons": [
     {
       "path": "/api/push",
