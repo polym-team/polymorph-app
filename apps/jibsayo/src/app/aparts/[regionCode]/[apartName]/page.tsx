@@ -50,7 +50,13 @@ export default function ApartDetailPage({ params }: Props) {
           return null;
         }
 
-        return <ApartDetail data={data} apartName={decodedApartName} />;
+        return (
+          <ApartDetail
+            data={data}
+            apartName={decodedApartName}
+            regionCode={regionCode}
+          />
+        );
       })()}
     </Suspense>
   );

@@ -1,3 +1,5 @@
+import { Star } from 'lucide-react';
+
 import { Card, Typography } from '@package/ui';
 
 interface Props {
@@ -7,6 +9,8 @@ interface Props {
   parking: string;
   floorAreaRatio: number;
   buildingCoverageRatio: number;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
 }
 
 export function ApartInfo({
@@ -16,6 +20,8 @@ export function ApartInfo({
   parking,
   floorAreaRatio,
   buildingCoverageRatio,
+  isFavorite,
+  onToggleFavorite,
 }: Props) {
   const infoItems = [
     { label: '주소', value: address },
@@ -29,9 +35,24 @@ export function ApartInfo({
 
   return (
     <Card className="p-3 md:p-5">
-      <Typography variant="large" className="text-primary mb-5 font-semibold">
-        {apartName}
-      </Typography>
+      <div className="mb-5 flex items-center gap-1">
+        <Typography variant="large" className="text-primary font-semibold">
+          {apartName}
+        </Typography>
+        <button
+          type="button"
+          onClick={onToggleFavorite}
+          className="flex h-8 w-8 items-center justify-center transition-transform hover:scale-110"
+        >
+          <Star
+            className={`h-5 w-5 -translate-y-[0.5px] ${
+              isFavorite
+                ? 'fill-yellow-400 text-yellow-400'
+                : 'fill-gray-300 text-gray-300'
+            }`}
+          />
+        </button>
+      </div>
 
       {infoItems.map((item, index) => (
         <div key={index} className="flex items-center border-t py-2 last:pb-0">
