@@ -139,7 +139,9 @@ async function checkAndUpdateRateLimit(testKey?: string): Promise<boolean> {
       return true;
     }
 
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 형식
+    // 한국 시간 기준으로 오늘 날짜 계산 (UTC+9)
+    const koreaTime = new Date(Date.now() + 9 * 60 * 60 * 1000);
+    const today = koreaTime.toISOString().split('T')[0]; // YYYY-MM-DD 형식
     const rateLimitDocId = `push-api-${today}`;
 
     // 오늘 날짜의 호출 기록 조회
