@@ -7,6 +7,7 @@ interface CollapsibleFilterProps {
   value: string;
   children: React.ReactNode;
   className?: string;
+  hasActiveFilter?: boolean;
 }
 
 export function CollapsibleFilter({
@@ -14,18 +15,21 @@ export function CollapsibleFilter({
   value,
   children,
   className = '',
+  hasActiveFilter = false,
 }: CollapsibleFilterProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <div className={`relative w-full sm:w-[420px] ${className}`}>
       <div
-        className={`border border-gray-200 bg-white transition-all ${isExpanded ? 'rounded-t-sm' : 'rounded-sm'}`}
+        className={`rounded-sm border bg-white transition-all ${
+          hasActiveFilter ? 'border-primary' : 'border-gray-200'
+        }`}
       >
         {/* 상단 헤더 - 두 상태에서 공통 사용 */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex w-full items-center justify-between p-3 text-left transition-colors hover:bg-gray-50"
+          className="flex w-full items-center justify-between rounded-sm p-3 text-left transition-colors hover:bg-gray-50"
         >
           <Typography variant="small" className="text-sm font-medium">
             {title}
@@ -59,7 +63,7 @@ export function CollapsibleFilter({
 
         {/* 펼쳐진 상태에서만 내용 표시 */}
         {isExpanded && (
-          <div className="absolute left-0 right-0 top-[calc(100%-1px)] z-50 rounded-b-sm border border-gray-200 bg-white p-3 shadow-lg">
+          <div className="absolute left-0 right-0 top-full z-50 rounded-b-sm border-b border-l border-r border-gray-200 bg-white p-3 shadow-lg">
             {children}
           </div>
         )}

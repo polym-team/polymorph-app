@@ -73,13 +73,27 @@ export function TransactionListHeader({
     return filters.join(', ');
   };
 
+  // 필터가 적용되었는지 확인
+  const hasActiveFilter = () => {
+    // 평수 필터 확인
+    if (filter.minSize !== 0 || filter.maxSize !== 50) return true;
+
+    // 아파트명 필터 확인
+    if (searchValue && searchValue.trim()) return true;
+
+    // 체크박스 필터 확인
+    if (filter.isFavoriteOnly || filter.isNewTransactionOnly) return true;
+
+    return false;
+  };
+
   // 통합 필터 텍스트 생성 (평수 + 아파트명 + 체크박스)
   const getCombinedFilterText = () => {
     const parts = [];
 
     // 평수 부분
     const sizeText = getSizeRangeText();
-    if (sizeText !== '전체') {
+    if (sizeText !== '전체 평수') {
       parts.push(sizeText);
     }
 
@@ -94,7 +108,7 @@ export function TransactionListHeader({
       parts.push(filterText);
     }
 
-    if (parts.length === 0) return '전체';
+    if (parts.length === 0) return '적용된 필터 없음';
     if (parts.length === 1) return parts[0];
     return parts.join(', ');
   };
@@ -128,7 +142,11 @@ export function TransactionListHeader({
       </div>
 
       {/* 필터 (평수 + 아파트명 + 체크박스) */}
-      <CollapsibleFilter title="필터" value={getCombinedFilterText()}>
+      <CollapsibleFilter
+        title="필터"
+        value={getCombinedFilterText()}
+        hasActiveFilter={hasActiveFilter()}
+      >
         <div className="flex flex-col gap-2">
           {/* 평수 섹션 */}
           <div className="rounded border border-gray-200 bg-white p-3">
