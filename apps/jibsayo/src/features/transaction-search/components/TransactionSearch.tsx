@@ -9,6 +9,9 @@ export function TransactionSearch() {
   const { form, updateCityName, updateRegionCode, updateDate, onSubmit } =
     useSearchForm();
 
+  const { favoriteRegions, toggleFavoriteRegion, removeFavoriteRegion } =
+    useFavoriteRegion();
+
   return (
     <div className="flex flex-col gap-y-2">
       <SearchForm
@@ -17,8 +20,15 @@ export function TransactionSearch() {
         updateRegionCode={updateRegionCode}
         updateDate={updateDate}
         onSubmit={onSubmit}
+        favoriteRegions={favoriteRegions}
+        toggleFavoriteRegion={toggleFavoriteRegion}
       />
-      <FavoriteRegionList form={form} onSubmit={onSubmit} />
+      <FavoriteRegionList
+        form={form}
+        onSubmit={onSubmit}
+        favoriteRegions={favoriteRegions}
+        removeFavoriteRegion={removeFavoriteRegion}
+      />
     </div>
   );
 }

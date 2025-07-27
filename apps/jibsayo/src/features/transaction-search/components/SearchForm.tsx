@@ -6,6 +6,8 @@ import {
   getRegionsWithCityName,
 } from '@/entities/region';
 
+import { Star } from 'lucide-react';
+
 import {
   Button,
   MonthPicker,
@@ -24,6 +26,8 @@ interface Props {
   updateRegionCode: (nextRegionCode: string) => void;
   updateDate: (nextDate: Date) => void;
   onSubmit: () => void;
+  favoriteRegions: string[];
+  toggleFavoriteRegion: (regionCode: string) => void;
 }
 
 export function SearchForm({
@@ -32,11 +36,17 @@ export function SearchForm({
   updateRegionCode,
   updateDate,
   onSubmit,
+  favoriteRegions,
+  toggleFavoriteRegion,
 }: Props) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmit();
   };
+
+  const isCurrentRegionFavorite = form.regionCode
+    ? favoriteRegions.includes(form.regionCode)
+    : false;
 
   return (
     <form
@@ -85,9 +95,26 @@ export function SearchForm({
           onChange={nextDate => updateDate(nextDate ?? new Date())}
         />
       </div>
-      <Button type="submit" variant="primary" className="flex-1 sm:flex-none">
-        검색
-      </Button>
+      <div className="flex gap-2">
+        <Button type="submit" variant="primary" className="flex-1 sm:flex-none">
+          검색
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-[40px] w-[40px] flex-shrink-0"
+          onClick={() => toggleFavoriteRegion(form.regionCode)}
+        >
+          <Star
+            className={`h-6 w-6 ${
+              isCurrentRegionFavorite
+                ? 'fill-yellow-400 text-yellow-400'
+                : 'fill-gray-300 text-gray-300'
+            }`}
+          />
+        </Button>
+      </div>
     </form>
   );
 }
