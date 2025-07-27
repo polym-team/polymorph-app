@@ -255,10 +255,11 @@ export async function GET(request: NextRequest) {
     // 프로덕션 환경에서만 User-Agent 검증
     if (process.env.NODE_ENV === 'production') {
       const userAgent = request.headers.get('user-agent');
-      const isVercelCron =
-        userAgent?.includes('Vercel') || userAgent?.includes('cron');
+      const isGitHubActions =
+        userAgent?.includes('GitHub-Actions') ||
+        userAgent?.includes('actions-runner');
 
-      if (!isVercelCron) {
+      if (!isGitHubActions) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
