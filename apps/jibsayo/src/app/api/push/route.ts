@@ -99,6 +99,24 @@ const pushTokenClient = new AdminFirestoreClient({
   } as any,
 });
 
+// Firestore Admin 클라이언트 초기화 (API 호출 제한용)
+const rateLimitClient = new AdminFirestoreClient({
+  collectionName: COLLECTIONS.API_RATE_LIMIT,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  serviceAccount: {
+    type: 'service_account',
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    client_id: process.env.FIREBASE_CLIENT_ID,
+    auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+    token_uri: 'https://oauth2.googleapis.com/token',
+    auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+    client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
+  } as any,
+});
+
 // Firestore 데이터를 FavoriteApart 타입으로 변환
 function mapFirestoreToFavoriteApart(doc: any): FavoriteApart {
   return {
@@ -110,6 +128,41 @@ function mapFirestoreToFavoriteApart(doc: any): FavoriteApart {
     createdAt: doc.data.createdAt?.toDate() || new Date(),
     updatedAt: doc.data.updatedAt?.toDate() || new Date(),
   };
+}
+
+// API 호출 제한 확인 및 업데이트 함수
+async function checkAndUpdateRateLimit(testKey?: string): Promise<boolean> {
+  try {
+    // 테스트 키가 있고 환경 변수와 일치하면 제한 없이 허용
+    if (testKey && testKey === process.env.PUSH_API_TEST_KEY) {
+      console.log('🔑 테스트 키로 호출 제한 우회');
+      return true;
+    }
+
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 형식
+    const rateLimitDocId = `push-api-${today}`;
+
+    // 오늘 날짜의 호출 기록 조회
+    const rateLimitDoc = await rateLimitClient.getDocument(rateLimitDocId);
+
+    if (rateLimitDoc) {
+      // 이미 오늘 호출된 경우
+      console.log(`⚠️ 오늘 이미 호출됨: ${today}`);
+      return false;
+    }
+
+    // 오늘 첫 호출인 경우, 호출 기록 생성
+    await rateLimitClient.createDocumentWithId(rateLimitDocId, {
+      lastCalledAt: new Date(),
+      createdAt: new Date(),
+    });
+
+    console.log(`✅ 오늘 첫 호출 기록 생성: ${today}`);
+    return true;
+  } catch (error) {
+    console.error('❌ 호출 제한 확인 중 에러:', error);
+    return false; // 에러 발생 시 호출 차단
+  }
 }
 
 // 특정 지역의 신규 거래 데이터를 가져오는 함수
@@ -197,31 +250,30 @@ async function sendPushNotification(
 }
 export async function POST(request: NextRequest) {
   try {
-    // 개발 환경에서는 간단한 검증, 프로덕션에서는 엄격한 검증
+    // 프로덕션 환경에서만 User-Agent 검증
     if (process.env.NODE_ENV === 'production') {
-      // 프로덕션: User-Agent + 환경 변수 토큰 검증
       const userAgent = request.headers.get('user-agent');
       const isVercelCron =
         userAgent?.includes('Vercel') || userAgent?.includes('cron');
-      const authToken = request.headers.get('x-cron-token');
-      const expectedToken = process.env.CRON_SECRET_TOKEN;
 
-      if (!isVercelCron || authToken !== expectedToken) {
+      if (!isVercelCron) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-    } else {
-      // 개발 환경: 간단한 헤더 검증
-      const isInternalCall = request.headers.get('x-internal-call') === 'true';
-
-      if (!isInternalCall) {
-        return NextResponse.json(
-          { error: 'Development mode: Use x-internal-call header for testing' },
-          { status: 403 }
-        );
       }
     }
 
     console.log('🔍 즐겨찾기 기반 푸시 알림 처리 시작...');
+
+    // 0. API 호출 제한 확인 (테스트 키 포함)
+    const { searchParams } = new URL(request.url);
+    const testKey = searchParams.get('test_key');
+    const canProceed = await checkAndUpdateRateLimit(testKey || undefined);
+    if (!canProceed) {
+      return NextResponse.json({
+        success: false,
+        message: '오늘 이미 호출되었습니다. 하루에 한 번만 호출 가능합니다.',
+        scrapedAt: new Date().toISOString(),
+      });
+    }
 
     // 1. Firestore에서 모든 favorite-apart 데이터 가져오기
     const favoriteDocuments = await firestoreClient.getDocuments({});

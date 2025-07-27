@@ -7,10 +7,7 @@
   "crons": [
     {
       "path": "/api/push",
-      "schedule": "45 15 * * *",
-      "headers": {
-        "x-cron-token": "@CRON_SECRET_TOKEN"
-      }
+      "schedule": "42 2 * * *"
     }
   ]
 }
