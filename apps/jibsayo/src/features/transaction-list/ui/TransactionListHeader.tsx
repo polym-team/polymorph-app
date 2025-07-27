@@ -102,27 +102,29 @@ export function TransactionListHeader({
   return (
     <div className="flex w-full flex-col gap-4 sm:flex-row">
       {/* 타이틀 섹션 */}
-      <div className="flex min-w-0 flex-1 items-center justify-center gap-x-1 sm:justify-start">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-x-1 sm:justify-start">
         {fullRegionName && (
-          <Typography className="text-sm font-bold sm:text-base">
-            {fullRegionName}
-          </Typography>
+          <>
+            <Typography className="text-sm font-bold sm:text-base">
+              {fullRegionName}
+            </Typography>
+            <Typography variant="small" className="text-xs sm:text-sm">
+              (총 거래 건수{' '}
+              <span className="text-primary font-bold">
+                {filteredTransactionsLength}건
+              </span>
+              {totalCount !== filteredTransactionsLength && (
+                <span className="text-gray-500">/{totalCount}건</span>
+              )}
+              <span className="mx-1 text-gray-400">·</span>
+              평당 거래가격{' '}
+              <span className="text-primary font-bold">
+                {formatPrice(averagePricePerPyeong)}
+              </span>
+              )
+            </Typography>
+          </>
         )}
-        <Typography variant="small" className="text-xs sm:text-sm">
-          (총 거래 건수{' '}
-          <span className="text-primary font-bold">
-            {filteredTransactionsLength}건
-          </span>
-          {totalCount !== filteredTransactionsLength && (
-            <span className="text-gray-500">/{totalCount}건</span>
-          )}
-          <span className="mx-1 text-gray-400">·</span>
-          평당 거래가격{' '}
-          <span className="text-primary font-bold">
-            {formatPrice(averagePricePerPyeong)}
-          </span>
-          )
-        </Typography>
       </div>
 
       {/* 필터 (평수 + 아파트명 + 체크박스) */}

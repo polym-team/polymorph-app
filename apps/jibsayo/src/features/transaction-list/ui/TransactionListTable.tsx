@@ -75,7 +75,7 @@ const createColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="거래일" />
     ),
-    size: 80,
+    size: 100,
   },
   {
     accessorKey: 'address',
@@ -232,6 +232,7 @@ export function TransactionListTable({
   const mobileColumns = [
     'favorite',
     'tradeDate',
+    'address',
     'apartName',
     'size',
     'tradeAmount',
