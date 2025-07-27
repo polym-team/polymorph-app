@@ -1,7 +1,7 @@
 {
   "functions": {
     "apps/jibsayo/src/app/api/**/*.ts": {
-      "runtime": "nodejs18.x"
+      "runtime": "@vercel/node@20"
     }
   },
   "crons": [
