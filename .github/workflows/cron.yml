@@ -1,0 +1,15 @@
+name: Jibsayo Daily Report
+
+on:
+  schedule:
+    - cron: '58 17 * * *' # UTC 기준 → 한국 오전 2:58
+  workflow_dispatch: # 수동 실행도 가능하게
+
+jobs:
+  call-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call Jibsayo /api/push
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" https://jibsayo.vercel.app/api/push
