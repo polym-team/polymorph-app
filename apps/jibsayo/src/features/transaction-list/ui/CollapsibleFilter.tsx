@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Typography } from '@package/ui';
 
@@ -18,9 +18,33 @@ export function CollapsibleFilter({
   hasActiveFilter = false,
 }: CollapsibleFilterProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // 드롭다운 외 영역 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsExpanded(false);
+      }
+    };
+
+    if (isExpanded) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isExpanded]);
 
   return (
-    <div className={`relative w-full sm:w-[420px] ${className}`}>
+    <div
+      ref={containerRef}
+      className={`relative w-full sm:w-[420px] ${className}`}
+    >
       <div
         className={`rounded-sm border bg-white transition-all ${
           hasActiveFilter ? 'border-primary' : 'border-gray-200'
@@ -44,7 +68,7 @@ export function CollapsibleFilter({
               </Typography>
             </div>
             <svg
-              className={`h-4 w-4 flex-shrink-0 transform text-gray-400 transition-transform duration-200 ease-in-out ${
+              className={`h-4 w-4 flex-shrink-0 text-gray-400 transition-transform duration-200 ease-in-out ${
                 isExpanded ? 'rotate-180' : 'rotate-0'
               }`}
               fill="none"
@@ -63,7 +87,7 @@ export function CollapsibleFilter({
 
         {/* 펼쳐진 상태에서만 내용 표시 */}
         {isExpanded && (
-          <div className="absolute left-0 right-0 top-full z-50 rounded-b-sm border-b border-l border-r border-gray-200 bg-white p-3 shadow-lg">
+          <div className="animate-in fade-in slide-in-from-top-2 scale-in-95 absolute left-0 right-0 top-full z-50 rounded-b-sm border-b border-l border-r border-gray-200 bg-white p-3 shadow-lg duration-200">
             {children}
           </div>
         )}
