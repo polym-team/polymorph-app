@@ -248,7 +248,7 @@ async function sendPushNotification(
     return false;
   }
 }
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // 프로덕션 환경에서만 User-Agent 검증
     if (process.env.NODE_ENV === 'production') {
