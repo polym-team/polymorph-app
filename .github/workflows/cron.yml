@@ -2,7 +2,7 @@ name: Jibsayo Daily Report
 
 on:
   schedule:
-    - cron: '58 17 * * *' # UTC 기준 → 한국 오전 2:58
+    - cron: '12 18 * * *' # UTC 기준 → 한국 오전 2:58
   workflow_dispatch: # 수동 실행도 가능하게
 
 jobs:
