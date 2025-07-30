@@ -14,9 +14,10 @@ import TransactionHistory from './TransactionHistory';
 interface Props {
   data: ApartDetailResponse;
   apartName: string;
+  regionCode: string;
 }
 
-export function ApartDetail({ data, apartName }: Props) {
+export function ApartDetail({ data, apartName, regionCode }: Props) {
   const hasError = !data.tradeItems.length;
   const router = useRouter();
 
@@ -42,7 +43,7 @@ export function ApartDetail({ data, apartName }: Props) {
         buildingCoverageRatio={data.buildingCoverageRatio}
       />
       <CombinedChart items={data.tradeItems} />
-      <TransactionHistory items={data.tradeItems} />
+      <TransactionHistory items={data.tradeItems} regionCode={regionCode} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { ApartDetailResponse } from '@/app/api/apart/types';
+import { useNewTransactionListQuery } from '@/entities/transaction/hooks/useNewTransactionListQuery';
 import { formatPrice } from '@/features/transaction-list/services/formatter';
 import { formatSizeWithPyeong } from '@/features/transaction-list/services/formatter';
 import { TransactionItem } from '@/shared/models/types';
@@ -31,15 +32,38 @@ import { calculatePyeong } from '../services/calculator';
 
 interface Props {
   items: ApartDetailResponse['tradeItems'];
+  regionCode?: string;
 }
 
-const columns: ColumnDef<TransactionItem>[] = [
+const createColumns = ({
+  newTransactionIds,
+}: {
+  newTransactionIds?: Set<string>;
+}): ColumnDef<TransactionItem>[] => [
   {
     accessorKey: 'tradeDate',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="거래일" />
     ),
-    cell: ({ row }) => <div>{row.getValue('tradeDate')}</div>,
+    cell: ({ row }) => {
+      const tradeDate = row.getValue('tradeDate') as string;
+      const tradeAmount = row.original.tradeAmount;
+      const size = row.original.size;
+      const transactionKey = `${tradeDate}_${tradeAmount}_${size}`;
+      const isNewTransaction =
+        newTransactionIds && newTransactionIds.has(transactionKey);
+
+      return (
+        <div className="flex items-center gap-x-1">
+          {isNewTransaction && (
+            <div className="bg-primary mr-1 flex h-4 w-4 items-center justify-center rounded-full text-xs font-bold text-white">
+              N
+            </div>
+          )}
+          <div>{tradeDate}</div>
+        </div>
+      );
+    },
     size: 100,
   },
   {
@@ -177,10 +201,26 @@ const mobileSortableColumns = {
   tradeAmount: '',
 };
 
-export function TransactionHistory({ items }: Props) {
+export function TransactionHistory({ items, regionCode }: Props) {
   const [selectedSize, setSelectedSize] = useState<string>('all');
   const { processedItems, sorting, setSorting, pageSize, setPageSize } =
     useTransactionHistory(items);
+
+  // 신규 거래건 조회 (일별 신규 거래)
+  const { data: newTransactionData } = useNewTransactionListQuery({
+    area: regionCode,
+  });
+
+  // 신규 거래건 판단 (오늘 등록된 거래의 개별 거래건 ID 기준)
+  const newTransactionIds = useMemo(() => {
+    const newTransactions = newTransactionData?.list ?? [];
+    return new Set(
+      newTransactions.map(
+        (transaction: any) =>
+          `${transaction.tradeDate}_${transaction.tradeAmount}_${transaction.size}`
+      )
+    );
+  }, [newTransactionData?.list]);
 
   // 평형 옵션 생성
   const sizeOptions = useMemo(() => {
@@ -215,9 +255,24 @@ export function TransactionHistory({ items }: Props) {
     return processedItems.filter(item => selectedSizes.includes(item.size));
   }, [processedItems, selectedSize]);
 
+  // 신규거래 하이라이팅을 위한 행 클래스명 생성 함수
+  const getRowClassName = (row: TransactionItem) => {
+    const transactionKey = `${row.tradeDate}_${row.tradeAmount}_${row.size}`;
+    const isNewTransaction =
+      newTransactionIds && newTransactionIds.has(transactionKey);
+
+    if (isNewTransaction) {
+      return '!bg-primary/10 hover:!bg-primary/14';
+    }
+
+    return 'hover:bg-gray-50';
+  };
+
   if (!items || items.length === 0) {
     return null;
   }
+
+  const columns = createColumns({ newTransactionIds });
 
   return (
     <Card className="p-3 md:p-5">
@@ -259,6 +314,7 @@ export function TransactionHistory({ items }: Props) {
         mobileSortableColumnTitles={mobileSortableColumnTitles}
         emptyMessage="거래 내역이 없습니다."
         showPagination={true}
+        getRowClassName={getRowClassName}
       />
     </Card>
   );
