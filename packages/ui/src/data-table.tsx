@@ -186,90 +186,105 @@ export function DataTable<TData, TValue>({
     <div className="w-full space-y-4">
       {/* 데스크톱 테이블 뷰 */}
       <div className="hidden overflow-x-auto sm:block">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => {
-                  return (
-                    <TableHead
-                      key={header.id}
-                      style={{ width: header.getSize() }}
-                    >
-                      {
-                        flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        ) as any
-                      }
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {showLoading ? (
-              <TableRow className="hover:bg-transparent">
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-[120px] text-center"
-                >
-                  <div className="flex flex-col items-center gap-5">
-                    <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
-                    <span className="text-gray-500">{loadingMessage}</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : isClient && table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map(row => {
-                const customClassName = getRowClassName
-                  ? getRowClassName(row.original)
-                  : '';
-                const baseClassName = getRowClassName
-                  ? ''
-                  : onRowClick
-                    ? 'cursor-pointer hover:bg-gray-50'
-                    : '';
-
-                return (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                    className={`${baseClassName} ${customClassName}`}
-                    onClick={() => onRowClick?.(row.original)}
-                  >
-                    {row.getVisibleCells().map(cell => (
-                      <TableCell
-                        key={cell.id}
-                        style={{ width: cell.column.getSize() }}
+        <div className="relative">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map(headerGroup => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map(header => {
+                    return (
+                      <TableHead
+                        key={header.id}
+                        style={{ width: header.getSize() }}
                       >
                         {
                           flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
+                            header.column.columnDef.header,
+                            header.getContext()
                           ) as any
                         }
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                );
-              })
-            ) : (
-              <TableRow className="hover:bg-transparent">
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-[120px] text-center"
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <SearchX className="h-6 w-6 text-gray-400" />
-                    <span className="text-gray-500">{emptyMessage}</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {showLoading ? (
+                <>
+                  {/* 스켈레톤 행들 */}
+                  {Array.from({ length: 10 }).map((_, index) => (
+                    <TableRow
+                      key={`skeleton-${index}`}
+                      className="hover:bg-transparent"
+                    >
+                      {columns.map((column, colIndex) => (
+                        <TableCell
+                          key={`skeleton-cell-${index}-${colIndex}`}
+                          style={{ width: column.size }}
+                        >
+                          <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </>
+              ) : isClient && table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map(row => {
+                  const customClassName = getRowClassName
+                    ? getRowClassName(row.original)
+                    : '';
+                  const baseClassName = getRowClassName
+                    ? ''
+                    : onRowClick
+                      ? 'cursor-pointer hover:bg-gray-50'
+                      : '';
+
+                  return (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && 'selected'}
+                      className={`${baseClassName} ${customClassName}`}
+                      onClick={() => onRowClick?.(row.original)}
+                    >
+                      {row.getVisibleCells().map(cell => (
+                        <TableCell
+                          key={cell.id}
+                          style={{ width: cell.column.getSize() }}
+                        >
+                          {
+                            flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            ) as any
+                          }
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow className="hover:bg-transparent">
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-[120px] text-center"
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <SearchX className="h-6 w-6 text-gray-400" />
+                      <span className="text-gray-500">{emptyMessage}</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+          {/* PC 로딩 스피너 오버레이 */}
+          {showLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/50">
+              <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 모바일 카드 리스트 뷰 */}
@@ -398,10 +413,36 @@ export function DataTable<TData, TValue>({
         </div>
 
         {showLoading ? (
-          <div className="rounded border border-gray-200 bg-white p-4 shadow-sm">
-            <div className="flex flex-col items-center justify-center gap-5 py-12 text-center">
+          <div className="relative space-y-2">
+            {/* 스켈레톤 카드들 */}
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={`mobile-skeleton-${index}`}
+                className="rounded border border-gray-200 bg-white p-3 shadow-sm"
+              >
+                {mobileColumns?.map((columnId, colIndex) => (
+                  <div
+                    key={`mobile-skeleton-cell-${index}-${colIndex}`}
+                    className="flex items-center justify-between py-1 first:pt-0 last:pb-0"
+                  >
+                    <div className="mr-3 h-4 w-16 animate-pulse rounded bg-gray-200" />
+                    <div className="h-4 w-20 animate-pulse rounded bg-gray-200" />
+                  </div>
+                )) ||
+                  columns.map((_, colIndex) => (
+                    <div
+                      key={`mobile-skeleton-cell-${index}-${colIndex}`}
+                      className="flex items-center justify-between py-1 first:pt-0 last:pb-0"
+                    >
+                      <div className="mr-3 h-4 w-16 animate-pulse rounded bg-gray-200" />
+                      <div className="h-4 w-20 animate-pulse rounded bg-gray-200" />
+                    </div>
+                  ))}
+              </div>
+            ))}
+            {/* 로딩 스피너 오버레이 */}
+            <div className="absolute inset-0 flex items-center justify-center bg-white/50">
               <div className="border-primary h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" />
-              <span className="text-sm text-gray-500">{loadingMessage}</span>
             </div>
           </div>
         ) : isClient && table.getRowModel().rows?.length ? (

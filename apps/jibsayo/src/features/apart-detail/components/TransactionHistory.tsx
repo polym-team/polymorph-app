@@ -207,9 +207,10 @@ export function TransactionHistory({ items, regionCode }: Props) {
     useTransactionHistory(items);
 
   // 신규 거래건 조회 (일별 신규 거래)
-  const { data: newTransactionData } = useNewTransactionListQuery({
-    area: regionCode,
-  });
+  const { data: newTransactionData, isLoading: isNewTransactionLoading } =
+    useNewTransactionListQuery({
+      area: regionCode,
+    });
 
   // 신규 거래건 판단 (오늘 등록된 거래의 개별 거래건 ID 기준)
   const newTransactionIds = useMemo(() => {
@@ -304,6 +305,7 @@ export function TransactionHistory({ items, regionCode }: Props) {
       <DataTable
         columns={columns}
         data={filteredItems}
+        loading={isNewTransactionLoading}
         sorting={sorting}
         onSortingChange={setSorting}
         pageSize={pageSize}
