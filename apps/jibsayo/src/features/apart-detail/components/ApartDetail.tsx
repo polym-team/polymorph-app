@@ -83,7 +83,7 @@ export function ApartDetail({ data, apartName, regionCode }: Props) {
         onToggleFavorite={handleToggleFavorite}
       />
       <CombinedChart items={data.tradeItems} />
-      <TransactionHistory items={data.tradeItems} />
+      <TransactionHistory items={data.tradeItems} regionCode={regionCode} />
     </div>
   );
 }

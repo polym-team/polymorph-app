@@ -53,7 +53,11 @@ export function CollapsibleFilter({
         {/* 상단 헤더 - 두 상태에서 공통 사용 */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
+<<<<<<< HEAD
           className="flex w-full items-center justify-between rounded-sm p-3 text-left transition-colors hover:bg-gray-50"
+=======
+          className="flex h-[35px] w-full items-center justify-between px-3 text-left transition-colors hover:bg-gray-50"
+>>>>>>> jibsayo
         >
           <Typography variant="small" className="text-sm font-medium">
             {title}
@@ -67,6 +71,7 @@ export function CollapsibleFilter({
                 {value}
               </Typography>
             </div>
+
             <svg
               className={`h-4 w-4 flex-shrink-0 text-gray-400 transition-transform duration-200 ease-in-out ${
                 isExpanded ? 'rotate-180' : 'rotate-0'
