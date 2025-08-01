@@ -45,7 +45,7 @@ export function ApartInfo({
           className="flex h-8 w-8 items-center justify-center transition-transform hover:scale-110"
         >
           <Star
-            className={`h-5 w-5 -translate-y-[0.5px] ${
+            className={`h-5 w-5 ${
               isFavorite
                 ? 'fill-yellow-400 text-yellow-400'
                 : 'fill-gray-300 text-gray-300'

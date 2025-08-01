@@ -11,7 +11,7 @@ import {
   useTransactionListQuery,
 } from '@/entities/transaction';
 
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { useTransactionFilter } from '../hooks/useTransactionFilter';
 import { useTransactionViewSetting } from '../hooks/useTransactionViewSetting';
@@ -34,8 +34,12 @@ export function TransactionList() {
       area: searchParams.regionCode,
     });
 
-  const { favoriteApartList, addFavoriteApart, removeFavoriteApart } =
-    useFavoriteApartList();
+  const {
+    favoriteApartList,
+    addFavoriteApart,
+    removeFavoriteApart,
+    refreshFavoriteApartList,
+  } = useFavoriteApartList();
 
   const {
     sorting,
@@ -50,6 +54,18 @@ export function TransactionList() {
 
   // 즐겨찾기 토글 중인지 추적
   const isTogglingFavorite = useRef(false);
+
+  // 페이지 포커스 시 즐겨찾기 목록 새로고침
+  useEffect(() => {
+    const handleFocus = () => {
+      refreshFavoriteApartList();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [refreshFavoriteApartList]);
 
   // 신규 거래건 판단 (오늘 등록된 거래의 개별 거래건 ID 기준)
   const newTransactionIds = useMemo(() => {

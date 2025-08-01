@@ -16,19 +16,50 @@ import {
 } from '../models/favorite-storage';
 import { ApartItem, FavoriteApartItem } from '../models/types';
 
+// 전역 상태로 즐겨찾기 목록 관리
+let globalFavoriteApartList: FavoriteApartItem[] = [];
+let globalListeners: Set<() => void> = new Set();
+
+// 전역 상태 업데이트 함수
+const updateGlobalState = (newList: FavoriteApartItem[]) => {
+  globalFavoriteApartList = newList;
+  globalListeners.forEach(listener => listener());
+};
+
+// 전역 상태 구독 함수
+const subscribeToGlobalState = (listener: () => void) => {
+  globalListeners.add(listener);
+  return () => {
+    globalListeners.delete(listener);
+  };
+};
+
 interface Return {
   favoriteApartList: FavoriteApartItem[];
   addFavoriteApart: (regionCode: string, apartItem: ApartItem) => void;
   removeFavoriteApart: (regionCode: string, apartItem: ApartItem) => void;
+  refreshFavoriteApartList: () => Promise<void>;
 }
 
 export const useFavoriteApartList = (): Return => {
   const [favoriteApartList, setFavoriteApartList] = useState<
     FavoriteApartItem[]
-  >([]);
+  >(globalFavoriteApartList);
 
   useEffect(() => {
-    loadFavoriteApartList();
+    // 전역 상태 구독
+    const unsubscribe = subscribeToGlobalState(() => {
+      setFavoriteApartList(globalFavoriteApartList);
+    });
+
+    // 초기 로드 (전역 상태가 비어있을 때만)
+    if (globalFavoriteApartList.length === 0) {
+      loadFavoriteApartList();
+    } else {
+      setFavoriteApartList(globalFavoriteApartList);
+    }
+
+    return unsubscribe;
   }, []);
 
   const loadFavoriteApartList = async () => {
@@ -36,16 +67,20 @@ export const useFavoriteApartList = (): Return => {
     try {
       if (deviceId) {
         const serverData = await loadFavoriteApartListFromServer(deviceId);
-        setFavoriteApartList(serverData);
+        updateGlobalState(serverData);
       } else {
         const localData = await loadFavoriteApartListFromLocal();
-        setFavoriteApartList(localData);
+        updateGlobalState(localData);
       }
     } catch (error) {
       console.error('즐겨찾기 목록 로드 실패:', error);
       const localData = await loadFavoriteApartListFromLocal();
-      setFavoriteApartList(localData);
+      updateGlobalState(localData);
     }
+  };
+
+  const refreshFavoriteApartList = async () => {
+    await loadFavoriteApartList();
   };
 
   const addFavoriteApart = async (regionCode: string, apartItem: ApartItem) => {
@@ -54,18 +89,18 @@ export const useFavoriteApartList = (): Return => {
       if (deviceId) {
         await addFavoriteApartToServer(deviceId, regionCode, apartItem);
         const updatedList = updateLocalStateOnly(
-          favoriteApartList,
+          globalFavoriteApartList,
           regionCode,
           apartItem
         );
-        setFavoriteApartList(updatedList);
+        updateGlobalState(updatedList);
       } else {
         const updatedList = await addFavoriteApartToLocal(
-          favoriteApartList,
+          globalFavoriteApartList,
           regionCode,
           apartItem
         );
-        setFavoriteApartList(updatedList);
+        updateGlobalState(updatedList);
       }
       toast.success(`즐겨찾기에 추가되었습니다. (${apartItem.apartName})`);
     } catch (error) {
@@ -83,18 +118,18 @@ export const useFavoriteApartList = (): Return => {
       if (deviceId) {
         await removeFavoriteApartFromServer(deviceId, regionCode, apartItem);
         const updatedList = removeFromLocalStateOnly(
-          favoriteApartList,
+          globalFavoriteApartList,
           regionCode,
           apartItem
         );
-        setFavoriteApartList(updatedList);
+        updateGlobalState(updatedList);
       } else {
         const updatedList = await removeFavoriteApartFromLocal(
-          favoriteApartList,
+          globalFavoriteApartList,
           regionCode,
           apartItem
         );
-        setFavoriteApartList(updatedList);
+        updateGlobalState(updatedList);
       }
       toast.success(`즐겨찾기에서 삭제되었습니다. (${apartItem.apartName})`);
     } catch (error) {
@@ -107,5 +142,6 @@ export const useFavoriteApartList = (): Return => {
     favoriteApartList,
     addFavoriteApart,
     removeFavoriteApart,
+    refreshFavoriteApartList,
   };
 };

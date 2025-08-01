@@ -12,13 +12,27 @@ import { useIsClient } from '@/shared/hooks/useIsClient';
 
 import { Home, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 import { Button, Card, Typography } from '@package/ui';
 
 export function FavoriteApartList() {
   const router = useRouter();
-  const { favoriteApartList, removeFavoriteApart } = useFavoriteApartList();
+  const { favoriteApartList, removeFavoriteApart, refreshFavoriteApartList } =
+    useFavoriteApartList();
   const isClient = useIsClient();
+
+  // 페이지 포커스 시 즐겨찾기 목록 새로고침
+  useEffect(() => {
+    const handleFocus = () => {
+      refreshFavoriteApartList();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [refreshFavoriteApartList]);
 
   const handleClickApart = (apartName: string, regionCode: string) => {
     router.push(
@@ -55,49 +69,52 @@ export function FavoriteApartList() {
 
   return (
     <div className="flex flex-col gap-y-5">
-      {favoriteApartList.map(apart => (
-        <div key={apart.regionCode}>
-          <Card className="flex flex-col">
-            <Typography variant="small" className="p-3 md:p-5">
-              {getCityNameWithRegionCode(apart.regionCode)}{' '}
-              {getRegionNameWithRegionCode(apart.regionCode)}{' '}
-              <strong className="text-primary">
-                ({apart.apartItems.length})
-              </strong>
-            </Typography>
-            <hr className="my-0 border-gray-200" />
-            <div className="flex flex-wrap gap-2 p-3 md:p-4">
-              {apart.apartItems.map(item => (
+      {favoriteApartList.map(region => {
+        const cityName = getCityNameWithRegionCode(region.regionCode);
+        const regionName = getRegionNameWithRegionCode(region.regionCode);
+        const fullRegionName =
+          cityName && regionName ? `${cityName} ${regionName}` : '';
+
+        return (
+          <Card key={region.regionCode} className="p-3 md:p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <Typography variant="large" className="font-semibold">
+                {fullRegionName}
+              </Typography>
+            </div>
+            <div className="flex flex-col gap-y-3">
+              {region.apartItems.map(apart => (
                 <div
-                  key={`${item.apartName}-${item.address}`}
-                  className="border-input bg-background flex flex-shrink-0 rounded-md border"
+                  key={`${apart.apartName}-${apart.address}`}
+                  className="flex items-center justify-between rounded-lg border p-3 hover:bg-gray-50"
                 >
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <div
+                    className="flex-1 cursor-pointer"
                     onClick={() =>
-                      handleClickApart(item.apartName, apart.regionCode)
+                      handleClickApart(apart.apartName, region.regionCode)
                     }
-                    className="whitespace-nowrap rounded-r-none border-0 px-3 py-1.5 text-sm"
                   >
-                    <span className="translate-y-[-0.5px]">
-                      {item.apartName}
-                    </span>
-                  </Button>
+                    <Typography className="font-medium">
+                      {apart.apartName}
+                    </Typography>
+                    <Typography variant="small" className="text-gray-500">
+                      {apart.address}
+                    </Typography>
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleRemoveApart(apart.regionCode, item)}
-                    className="h-full min-w-0 rounded-l-none border-0 px-2 py-1.5"
+                    onClick={() => handleRemoveApart(region.regionCode, apart)}
+                    className="h-8 w-8 p-0"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
             </div>
           </Card>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

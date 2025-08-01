@@ -22,8 +22,12 @@ interface Props {
 export function ApartDetail({ data, apartName, regionCode }: Props) {
   const hasError = !data.tradeItems.length;
   const router = useRouter();
-  const { favoriteApartList, addFavoriteApart, removeFavoriteApart } =
-    useFavoriteApartList();
+  const {
+    favoriteApartList,
+    addFavoriteApart,
+    removeFavoriteApart,
+    refreshFavoriteApartList,
+  } = useFavoriteApartList();
 
   const apartItem: ApartItem = useMemo(
     () => ({
@@ -58,6 +62,18 @@ export function ApartDetail({ data, apartName, regionCode }: Props) {
       console.error('즐겨찾기 토글 실패:', error);
     }
   };
+
+  // 페이지 포커스 시 즐겨찾기 목록 새로고침
+  useEffect(() => {
+    const handleFocus = () => {
+      refreshFavoriteApartList();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [refreshFavoriteApartList]);
 
   useEffect(() => {
     if (hasError) {

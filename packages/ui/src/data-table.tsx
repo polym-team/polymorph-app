@@ -182,6 +182,16 @@ export function DataTable<TData, TValue>({
 
   const showLoading = loading;
 
+  // 공통 로딩 컴포넌트
+  const LoadingOverlay = () => (
+    <div className="absolute inset-0 flex items-center justify-center bg-white/50">
+      <div className="flex flex-col items-center gap-4 rounded-lg border border-gray-100 bg-white/80 p-8">
+        <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
+        <span className="text-sm text-gray-600">데이터를 조회하고 있어요</span>
+      </div>
+    </div>
+  );
+
   return (
     <div className="w-full space-y-4">
       {/* 데스크톱 테이블 뷰 */}
@@ -279,11 +289,7 @@ export function DataTable<TData, TValue>({
             </TableBody>
           </Table>
           {/* PC 로딩 스피너 오버레이 */}
-          {showLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/50">
-              <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
-            </div>
-          )}
+          {showLoading && <LoadingOverlay />}
         </div>
       </div>
 
@@ -441,9 +447,7 @@ export function DataTable<TData, TValue>({
               </div>
             ))}
             {/* 로딩 스피너 오버레이 */}
-            <div className="absolute inset-0 flex items-center justify-center bg-white/50">
-              <div className="border-primary h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" />
-            </div>
+            {showLoading && <LoadingOverlay />}
           </div>
         ) : isClient && table.getRowModel().rows?.length ? (
           table.getRowModel().rows.map(row => {
