@@ -421,7 +421,7 @@ export function DataTable<TData, TValue>({
         {showLoading ? (
           <div className="relative space-y-2">
             {/* 스켈레톤 카드들 */}
-            {Array.from({ length: 3 }).map((_, index) => (
+            {Array.from({ length: 2 }).map((_, index) => (
               <div
                 key={`mobile-skeleton-${index}`}
                 className="rounded border border-gray-200 bg-white p-3 shadow-sm"
@@ -431,8 +431,12 @@ export function DataTable<TData, TValue>({
                     key={`mobile-skeleton-cell-${index}-${colIndex}`}
                     className="flex items-center justify-between py-1 first:pt-0 last:pb-0"
                   >
-                    <div className="mr-3 h-4 w-16 animate-pulse rounded bg-gray-200" />
-                    <div className="h-4 w-20 animate-pulse rounded bg-gray-200" />
+                    <div
+                      className={`mr-3 h-4 animate-pulse rounded bg-gray-200 ${colIndex % 3 === 0 ? 'w-20' : colIndex % 3 === 1 ? 'w-16' : 'w-24'}`}
+                    />
+                    <div
+                      className={`h-4 animate-pulse rounded bg-gray-200 ${colIndex % 3 === 0 ? 'w-24' : colIndex % 3 === 1 ? 'w-32' : 'w-20'}`}
+                    />
                   </div>
                 )) ||
                   columns.map((_, colIndex) => (
@@ -440,8 +444,12 @@ export function DataTable<TData, TValue>({
                       key={`mobile-skeleton-cell-${index}-${colIndex}`}
                       className="flex items-center justify-between py-1 first:pt-0 last:pb-0"
                     >
-                      <div className="mr-3 h-4 w-16 animate-pulse rounded bg-gray-200" />
-                      <div className="h-4 w-20 animate-pulse rounded bg-gray-200" />
+                      <div
+                        className={`mr-3 h-4 animate-pulse rounded bg-gray-200 ${colIndex % 3 === 0 ? 'w-20' : colIndex % 3 === 1 ? 'w-16' : 'w-24'}`}
+                      />
+                      <div
+                        className={`h-4 animate-pulse rounded bg-gray-200 ${colIndex % 3 === 0 ? 'w-24' : colIndex % 3 === 1 ? 'w-32' : 'w-20'}`}
+                      />
                     </div>
                   ))}
               </div>
