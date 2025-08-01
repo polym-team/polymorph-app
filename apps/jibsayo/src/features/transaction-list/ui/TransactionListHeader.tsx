@@ -154,7 +154,11 @@ export function TransactionListHeader({
 
       {/* 필터 (평수 + 아파트명 + 체크박스) */}
       <div className="flex items-start gap-2">
-        <CollapsibleFilter title="필터" value={getCombinedFilterText()}>
+        <CollapsibleFilter
+          title="필터"
+          value={getCombinedFilterText()}
+          hasActiveFilter={hasActiveFilter()}
+        >
           <div className="flex flex-col gap-2">
             {/* 평수 섹션 */}
             <div className="rounded border border-gray-200 bg-white p-3">
