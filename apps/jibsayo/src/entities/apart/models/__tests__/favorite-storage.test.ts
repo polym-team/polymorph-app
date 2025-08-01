@@ -17,13 +17,20 @@ import { ApartItem, FavoriteApartItem } from '../types';
 jest.mock('../../services/api');
 const mockedApi = api as jest.Mocked<typeof api>;
 
-// IndexedDB 모킹
+// localStorage 모킹
 const mockGetItem = jest.fn();
 const mockSetItem = jest.fn();
-jest.mock('@/shared/lib/indexedDB', () => ({
-  getItem: async (...args: any[]) => mockGetItem(...args),
-  setItem: async (...args: any[]) => mockSetItem(...args),
-}));
+const mockLocalStorage = {
+  getItem: mockGetItem,
+  setItem: mockSetItem,
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+};
+
+Object.defineProperty(window, 'localStorage', {
+  value: mockLocalStorage,
+  writable: true,
+});
 
 describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
   const mockApartItem: ApartItem = {
@@ -142,7 +149,7 @@ describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
 
   describe('로컬 기반 즐겨찾기 관리', () => {
     describe('loadFavoriteApartListFromLocal', () => {
-      it('로컬스토리지에서 즐겨찾기 목록을 로드해야 한다', () => {
+      it('로컬스토리지에서 즐겨찾기 목록을 로드해야 한다', async () => {
         const mockLocalData = [
           {
             regionCode: '11680',
@@ -150,9 +157,9 @@ describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
             address: '서울시 강남구 역삼동',
           },
         ];
-        mockGetItem.mockReturnValue(mockLocalData);
+        mockGetItem.mockReturnValue(JSON.stringify(mockLocalData));
 
-        const result = loadFavoriteApartListFromLocal();
+        const result = await loadFavoriteApartListFromLocal();
 
         expect(mockGetItem).toHaveBeenCalledWith(
           STORAGE_KEY.FAVORITE_APART_LIST
@@ -162,15 +169,15 @@ describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
         expect(result[0].apartItems[0].apartName).toBe('강남아파트');
       });
 
-      it('로컬스토리지가 비어있으면 빈 배열을 반환해야 한다', () => {
+      it('로컬스토리지가 비어있으면 빈 배열을 반환해야 한다', async () => {
         mockGetItem.mockReturnValue(null);
 
-        const result = loadFavoriteApartListFromLocal();
+        const result = await loadFavoriteApartListFromLocal();
 
         expect(result).toEqual([]);
       });
 
-      it('기존 FavoriteApartItem[] 형태 데이터를 마이그레이션해야 한다', () => {
+      it('기존 FavoriteApartItem[] 형태 데이터를 마이그레이션해야 한다', async () => {
         const oldFormatData = [
           {
             regionCode: '11680',
@@ -179,27 +186,31 @@ describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
             ],
           },
         ];
-        mockGetItem.mockReturnValue(oldFormatData);
+        mockGetItem.mockReturnValue(JSON.stringify(oldFormatData));
 
-        const result = loadFavoriteApartListFromLocal();
+        const result = await loadFavoriteApartListFromLocal();
 
         expect(mockSetItem).toHaveBeenCalledWith(
           STORAGE_KEY.FAVORITE_APART_LIST,
-          [
+          JSON.stringify([
             {
               regionCode: '11680',
               apartName: '강남아파트',
               address: '서울시 강남구 역삼동',
             },
-          ]
+          ])
         );
         expect(result[0].regionCode).toBe('11680');
       });
     });
 
     describe('addFavoriteApartToLocal', () => {
-      it('새로운 지역에 첫 번째 아파트를 추가해야 한다', () => {
-        const result = addFavoriteApartToLocal([], '11680', mockApartItem);
+      it('새로운 지역에 첫 번째 아파트를 추가해야 한다', async () => {
+        const result = await addFavoriteApartToLocal(
+          [],
+          '11680',
+          mockApartItem
+        );
 
         expect(result).toHaveLength(1);
         expect(result[0].regionCode).toBe('11680');
@@ -208,7 +219,7 @@ describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
         expect(mockSetItem).toHaveBeenCalled();
       });
 
-      it('기존 지역에 새로운 아파트를 추가해야 한다', () => {
+      it('기존 지역에 새로운 아파트를 추가해야 한다', async () => {
         const existingList = [
           {
             regionCode: '11680',
@@ -216,7 +227,7 @@ describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
           },
         ];
 
-        const result = addFavoriteApartToLocal(
+        const result = await addFavoriteApartToLocal(
           existingList,
           '11680',
           mockApartItem
@@ -226,7 +237,7 @@ describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
         expect(result[0].apartItems[1]).toEqual(mockApartItem);
       });
 
-      it('이미 존재하는 아파트는 중복 추가하지 않아야 한다', () => {
+      it('이미 존재하는 아파트는 중복 추가하지 않아야 한다', async () => {
         const existingList = [
           {
             regionCode: '11680',
@@ -234,7 +245,7 @@ describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
           },
         ];
 
-        const result = addFavoriteApartToLocal(
+        const result = await addFavoriteApartToLocal(
           existingList,
           '11680',
           mockApartItem
@@ -243,7 +254,7 @@ describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
         expect(result[0].apartItems).toHaveLength(1);
       });
 
-      it('추가 후 지역코드 순서대로 정렬되어야 한다', () => {
+      it('추가 후 지역코드 순서대로 정렬되어야 한다', async () => {
         const existingList = [
           {
             regionCode: '11680',
@@ -251,7 +262,7 @@ describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
           },
         ];
 
-        const result = addFavoriteApartToLocal(
+        const result = await addFavoriteApartToLocal(
           existingList,
           '11650',
           mockApartItem
@@ -264,8 +275,8 @@ describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
     });
 
     describe('removeFavoriteApartFromLocal', () => {
-      it('지정된 아파트를 삭제해야 한다', () => {
-        const result = removeFavoriteApartFromLocal(
+      it('지정된 아파트를 삭제해야 한다', async () => {
+        const result = await removeFavoriteApartFromLocal(
           mockFavoriteApartList,
           '11680',
           {
@@ -278,8 +289,8 @@ describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
         expect(result[0].apartItems[0].apartName).toBe('역삼타워');
       });
 
-      it('지역의 마지막 아파트 삭제 시 해당 지역을 제거해야 한다', () => {
-        const result = removeFavoriteApartFromLocal(
+      it('지역의 마지막 아파트 삭제 시 해당 지역을 제거해야 한다', async () => {
+        const result = await removeFavoriteApartFromLocal(
           mockFavoriteApartList,
           '11650',
           {
@@ -292,8 +303,8 @@ describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
         expect(result[0].regionCode).toBe('11680');
       });
 
-      it('존재하지 않는 지역에서 삭제 시도 시 변경사항이 없어야 한다', () => {
-        const result = removeFavoriteApartFromLocal(
+      it('존재하지 않는 지역에서 삭제 시도 시 변경사항이 없어야 한다', async () => {
+        const result = await removeFavoriteApartFromLocal(
           mockFavoriteApartList,
           '99999',
           mockApartItem
@@ -366,15 +377,15 @@ describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
   });
 
   describe('에러 처리 및 예외 상황', () => {
-    it('잘못된 데이터 형식에 대해 안전하게 처리해야 한다', () => {
+    it('잘못된 데이터 형식에 대해 안전하게 처리해야 한다', async () => {
       mockGetItem.mockReturnValue('invalid data');
 
-      const result = loadFavoriteApartListFromLocal();
+      const result = await loadFavoriteApartListFromLocal();
 
       expect(result).toEqual([]);
     });
 
-    it('빈 apartItems 배열을 가진 지역은 자동으로 제거되어야 한다', () => {
+    it('빈 apartItems 배열을 가진 지역은 자동으로 제거되어야 한다', async () => {
       const listWithEmptyRegion = [
         {
           regionCode: '11680',
@@ -382,7 +393,7 @@ describe('FavoriteStorage - 즐겨찾기 아파트 관리', () => {
         },
       ];
 
-      const result = addFavoriteApartToLocal(
+      const result = await addFavoriteApartToLocal(
         listWithEmptyRegion,
         '11650',
         mockApartItem
