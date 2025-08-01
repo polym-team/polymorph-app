@@ -1,5 +1,9 @@
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
 
+import {
+  useSearchParams as useNavigationSearchParams,
+  useRouter,
+} from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { ColumnDef, SortingState } from '@package/ui';
@@ -26,25 +30,38 @@ const setItem = <T>(key: string, value: T): void => {
 interface TransactionViewSettings {
   sorting: SortingState;
   pageSize: number;
-  pageIndex: number;
 }
 
-const DEFAULT_SETTINGS: TransactionViewSettings = {
-  sorting: [{ id: 'tradeDate', desc: true }],
+const DEFAULT_SETTINGS = {
+  sorting: [{ id: 'tradeDate', desc: true }] as SortingState,
   pageSize: 20,
-  pageIndex: 0,
 };
 
 export function useTransactionViewSetting() {
+  const navigationSearchParams = useNavigationSearchParams();
+  const router = useRouter();
+
   const [sorting, setSorting] = useState<SortingState>(
     DEFAULT_SETTINGS.sorting
   );
   const [pageSize, setPageSize] = useState<number>(DEFAULT_SETTINGS.pageSize);
-  const [pageIndex, setPageIndex] = useState<number>(
-    DEFAULT_SETTINGS.pageIndex
-  );
+  const [pageIndex, setPageIndex] = useState<number>(0);
 
-  // 초기 설정 로드
+  // URL 쿼리 파라미터에서 pageIndex 읽기
+  useEffect(() => {
+    const urlPageIndex = navigationSearchParams.get('pageIndex');
+    if (urlPageIndex !== null) {
+      const parsedPageIndex = parseInt(urlPageIndex, 10);
+      if (!isNaN(parsedPageIndex) && parsedPageIndex >= 0) {
+        setPageIndex(parsedPageIndex);
+      }
+    } else {
+      // URL에 pageIndex가 없으면 0으로 설정
+      setPageIndex(0);
+    }
+  }, [navigationSearchParams]);
+
+  // 초기 설정 로드 (정렬과 페이지 크기만 localStorage에서)
   useEffect(() => {
     const savedSettings = getItem<TransactionViewSettings>(
       STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS
@@ -53,20 +70,25 @@ export function useTransactionViewSetting() {
     if (savedSettings) {
       setSorting(savedSettings.sorting);
       setPageSize(savedSettings.pageSize);
-      setPageIndex(savedSettings.pageIndex);
     }
   }, []);
 
-  // 설정 저장 함수
+  // 설정 저장 함수 (pageIndex 제외)
   const saveSettings = (newSettings: Partial<TransactionViewSettings>) => {
     const currentSettings = {
       sorting,
       pageSize,
-      pageIndex,
       ...newSettings,
     };
 
     setItem(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS, currentSettings);
+  };
+
+  // URL 쿼리 파라미터 업데이트 함수
+  const updateUrlPageIndex = (newPageIndex: number) => {
+    const newSearchParams = new URLSearchParams(navigationSearchParams);
+    newSearchParams.set('pageIndex', newPageIndex.toString());
+    router.push(`/transactions?${newSearchParams.toString()}`);
   };
 
   // 정렬 업데이트
@@ -79,13 +101,14 @@ export function useTransactionViewSetting() {
   const updatePageSize = (newPageSize: number) => {
     setPageSize(newPageSize);
     setPageIndex(0); // 페이지 크기가 변경되면 첫 페이지로 이동
-    saveSettings({ pageSize: newPageSize, pageIndex: 0 });
+    saveSettings({ pageSize: newPageSize });
+    updateUrlPageIndex(0); // URL도 함께 업데이트
   };
 
   // 페이지 인덱스 업데이트
   const updatePageIndex = (newPageIndex: number) => {
     setPageIndex(newPageIndex);
-    saveSettings({ pageIndex: newPageIndex });
+    updateUrlPageIndex(newPageIndex); // URL만 업데이트
   };
 
   return {
