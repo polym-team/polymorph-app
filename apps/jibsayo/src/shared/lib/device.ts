@@ -1,5 +1,3 @@
-import { getItem, removeItem, setItem } from './indexedDB';
-
 // 디바이스 ID 관련 타입 정의
 declare global {
   interface Window {
@@ -24,7 +22,7 @@ class DeviceManager {
     return DeviceManager.instance;
   }
 
-  // 디바이스 ID 가져오기 (우선순위: window > IndexedDB > sessionStorage)
+  // 디바이스 ID 가져오기 (우선순위: window > localStorage > sessionStorage)
   async getDeviceId(): Promise<string | null> {
     if (this._deviceId) {
       return this._deviceId;
@@ -36,15 +34,15 @@ class DeviceManager {
       return this._deviceId;
     }
 
-    // 2. IndexedDB에서 가져오기
+    // 2. localStorage에서 가져오기
     try {
-      const storedDeviceId = await getItem<string>('JIBSAYO:DEVICE_ID');
+      const storedDeviceId = localStorage.getItem('JIBSAYO:DEVICE_ID');
       if (storedDeviceId) {
         this._deviceId = storedDeviceId;
         return this._deviceId;
       }
     } catch (error) {
-      console.warn('IndexedDB 접근 실패:', error);
+      console.warn('localStorage 접근 실패:', error);
     }
 
     // 3. sessionStorage에서 가져오기 (fallback)
@@ -73,7 +71,18 @@ class DeviceManager {
       return this._deviceId;
     }
 
-    // 2. sessionStorage에서 가져오기 (fallback)
+    // 2. localStorage에서 가져오기
+    try {
+      const storedDeviceId = localStorage.getItem('JIBSAYO:DEVICE_ID');
+      if (storedDeviceId) {
+        this._deviceId = storedDeviceId;
+        return this._deviceId;
+      }
+    } catch (error) {
+      console.warn('localStorage 접근 실패:', error);
+    }
+
+    // 3. sessionStorage에서 가져오기 (fallback)
     try {
       const sessionDeviceId = sessionStorage.getItem('JIBSAYO:DEVICE_ID');
       if (sessionDeviceId) {
@@ -91,11 +100,11 @@ class DeviceManager {
   async setDeviceId(deviceId: string): Promise<void> {
     this._deviceId = deviceId;
 
-    // IndexedDB에 저장 (영구 저장)
+    // localStorage에 저장 (영구 저장)
     try {
-      await setItem('JIBSAYO:DEVICE_ID', deviceId);
+      localStorage.setItem('JIBSAYO:DEVICE_ID', deviceId);
     } catch (error) {
-      console.warn('IndexedDB 저장 실패:', error);
+      console.warn('localStorage 저장 실패:', error);
     }
 
     // window 객체에 설정 (이미 있다면 업데이트)
@@ -111,11 +120,11 @@ class DeviceManager {
   setDeviceIdSync(deviceId: string): void {
     this._deviceId = deviceId;
 
-    // sessionStorage에 저장 (fallback)
+    // localStorage에 저장
     try {
-      sessionStorage.setItem('JIBSAYO:DEVICE_ID', deviceId);
+      localStorage.setItem('JIBSAYO:DEVICE_ID', deviceId);
     } catch (error) {
-      console.warn('sessionStorage 저장 실패:', error);
+      console.warn('localStorage 저장 실패:', error);
     }
 
     // window 객체에 설정 (이미 있다면 업데이트)
@@ -131,13 +140,21 @@ class DeviceManager {
   async clearDeviceId(): Promise<void> {
     this._deviceId = null;
 
+    // localStorage에서 삭제
     try {
-      await removeItem('JIBSAYO:DEVICE_ID');
-      sessionStorage.removeItem('JIBSAYO:DEVICE_ID');
+      localStorage.removeItem('JIBSAYO:DEVICE_ID');
     } catch (error) {
-      console.warn('스토리지 정리 실패:', error);
+      console.warn('localStorage 삭제 실패:', error);
     }
 
+    // sessionStorage에서 삭제
+    try {
+      sessionStorage.removeItem('JIBSAYO:DEVICE_ID');
+    } catch (error) {
+      console.warn('sessionStorage 삭제 실패:', error);
+    }
+
+    // window 객체에서 삭제
     if (typeof window !== 'undefined' && window.jibsayo) {
       delete window.jibsayo.deviceId;
     }
@@ -145,34 +162,40 @@ class DeviceManager {
 
   // 디바이스 ID 유효성 검사
   isValidDeviceId(deviceId: string): boolean {
-    return Boolean(deviceId && deviceId.length > 0 && deviceId.length <= 100);
+    return Boolean(deviceId && deviceId.startsWith('device_'));
   }
 
   // 디바이스 ID 생성 (필요시)
   generateDeviceId(): string {
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(2, 15);
-    return `device_${timestamp}_${random}`;
+    return (
+      'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now()
+    );
   }
 }
 
 // 싱글톤 인스턴스 export
-export const deviceManager = DeviceManager.getInstance();
+const deviceManager = DeviceManager.getInstance();
 
-// 편의 함수들
-export const getDeviceId = async (): Promise<string | null> =>
-  deviceManager.getDeviceId();
-export const getDeviceIdSync = (): string | null =>
-  deviceManager.getDeviceIdSync();
-export const setDeviceId = async (deviceId: string): Promise<void> =>
+// 비동기 함수들
+export const getDeviceId = () => deviceManager.getDeviceId();
+export const setDeviceId = (deviceId: string) =>
   deviceManager.setDeviceId(deviceId);
-export const setDeviceIdSync = (deviceId: string): void =>
+export const clearDeviceId = () => deviceManager.clearDeviceId();
+
+// 동기 함수들 (기존 코드와의 호환성을 위해)
+export const getDeviceIdSync = () => deviceManager.getDeviceIdSync();
+export const setDeviceIdSync = (deviceId: string) =>
   deviceManager.setDeviceIdSync(deviceId);
-export const clearDeviceId = async (): Promise<void> =>
-  deviceManager.clearDeviceId();
-export const isValidDeviceId = (deviceId: string): boolean =>
-  deviceManager.isValidDeviceId(deviceId);
-export const generateDeviceId = (): string => deviceManager.generateDeviceId();
+
+// 디바이스 ID 생성 함수
+export const generateDeviceId = (): string => {
+  return 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+};
+
+// 디바이스 ID 유효성 검사 함수
+export const isValidDeviceId = (deviceId: string): boolean => {
+  return Boolean(deviceId && deviceId.startsWith('device_'));
+};
 
 // 디바이스 타입 감지 관련 함수들
 export const getDeviceType = (): 'mobile' | 'tablet' | 'desktop' => {

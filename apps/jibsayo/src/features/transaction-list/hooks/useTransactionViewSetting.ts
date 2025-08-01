@@ -1,131 +1,99 @@
-import { useSearchParams } from '@/entities/transaction';
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
-import { useQueryParamsManager } from '@/shared/hooks/useQueryParamsManager';
-import {
-  getItem as getLocalItem,
-  setItem as setLocalItem,
-} from '@/shared/lib/indexedDB';
 
-import { useSearchParams as useNavigationSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { SortingState } from '@package/ui';
+import { ColumnDef, SortingState } from '@package/ui';
 
-import { TransactionViewSetting } from '../models/types';
+// localStorage 헬퍼 함수들
+const getItem = <T>(key: string): T | null => {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : null;
+  } catch (error) {
+    console.warn('localStorage getItem 실패:', error);
+    return null;
+  }
+};
 
-interface Return {
+const setItem = <T>(key: string, value: T): void => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.warn('localStorage setItem 실패:', error);
+  }
+};
+
+interface TransactionViewSettings {
   sorting: SortingState;
   pageSize: number;
   pageIndex: number;
-  updateSorting: (sorting: SortingState) => void;
-  updatePageSize: (pageSize: number) => void;
-  updatePageIndex: (pageIndex: number) => void;
 }
 
-export const useTransactionViewSetting = (): Return => {
-  const { searchParams } = useSearchParams();
-  const navigationSearchParams = useNavigationSearchParams();
-  const { updateQueryParams } = useQueryParamsManager();
+const DEFAULT_SETTINGS: TransactionViewSettings = {
+  sorting: [{ id: 'tradeDate', desc: true }],
+  pageSize: 20,
+  pageIndex: 0,
+};
 
-  const [isMounted, setIsMounted] = useState(false);
-  const [settings, setSettings] = useState<
-    Omit<TransactionViewSetting, 'pageIndex'>
-  >({
-    sorting: [],
-    pageSize: 10,
-  });
+export function useTransactionViewSetting() {
+  const [sorting, setSorting] = useState<SortingState>(
+    DEFAULT_SETTINGS.sorting
+  );
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_SETTINGS.pageSize);
+  const [pageIndex, setPageIndex] = useState<number>(
+    DEFAULT_SETTINGS.pageIndex
+  );
 
-  // pageIndex는 항상 쿼리파라미터에서 직접 읽어오기
-  const getPageIndexFromParams = (): number => {
-    const pageIndex = navigationSearchParams.get('pageIndex');
-    return pageIndex ? parseInt(pageIndex, 10) : 0;
-  };
-
-  // 실제 pageIndex 값 (쿼리파라미터에서 실시간으로 읽어옴)
-  const currentPageIndex = getPageIndexFromParams();
-
+  // 초기 설정 로드
   useEffect(() => {
-    const loadSettings = async () => {
-      setIsMounted(true);
+    const savedSettings = getItem<TransactionViewSettings>(
+      STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS
+    );
 
-      const savedSettings = await getLocalItem<
-        Omit<TransactionViewSetting, 'pageIndex'>
-      >(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS);
-
-      if (savedSettings) {
-        setSettings({
-          sorting: savedSettings.sorting,
-          pageSize: savedSettings.pageSize,
-        });
-      }
-    };
-
-    loadSettings();
+    if (savedSettings) {
+      setSorting(savedSettings.sorting);
+      setPageSize(savedSettings.pageSize);
+      setPageIndex(savedSettings.pageIndex);
+    }
   }, []);
 
-  // pageIndex는 쿼리파라미터에서 직접 읽으므로 동기화 불필요
+  // 설정 저장 함수
+  const saveSettings = (newSettings: Partial<TransactionViewSettings>) => {
+    const currentSettings = {
+      sorting,
+      pageSize,
+      pageIndex,
+      ...newSettings,
+    };
 
-  const saveSettings = async (newSettings: Partial<TransactionViewSetting>) => {
-    if (isMounted) {
-      // pageIndex는 별도로 처리 (쿼리파라미터에 저장)
-      if ('pageIndex' in newSettings && newSettings.pageIndex !== undefined) {
-        // 새로운 중앙화된 쿼리파라미터 관리 사용
-        updateQueryParams({
-          type: 'PAGE_UPDATE',
-          payload: {
-            pageIndex: newSettings.pageIndex,
-          },
-        });
-      }
-
-      // sorting과 pageSize는 로컬 상태 및 IndexedDB에 저장
-      const otherSettings = { ...newSettings };
-      delete otherSettings.pageIndex; // pageIndex 제외
-
-      if (Object.keys(otherSettings).length > 0) {
-        const updatedSettings = { ...settings, ...otherSettings };
-        setSettings(updatedSettings);
-
-        await setLocalItem(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS, {
-          sorting: updatedSettings.sorting,
-          pageSize: updatedSettings.pageSize,
-        });
-      }
-    }
+    setItem(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS, currentSettings);
   };
 
-  const updateSorting = async (sorting: SortingState) => {
-    await saveSettings({ sorting });
+  // 정렬 업데이트
+  const updateSorting = (newSorting: SortingState) => {
+    setSorting(newSorting);
+    saveSettings({ sorting: newSorting });
   };
 
-  const updatePageSize = async (pageSize: number) => {
-    await saveSettings({ pageSize });
+  // 페이지 크기 업데이트
+  const updatePageSize = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPageIndex(0); // 페이지 크기가 변경되면 첫 페이지로 이동
+    saveSettings({ pageSize: newPageSize, pageIndex: 0 });
   };
 
-  const updatePageIndex = async (pageIndex: number) => {
-    const currentPageIndex = getPageIndexFromParams();
-    if (currentPageIndex === pageIndex) {
-      console.log(
-        '📄 Skipping pageIndex update - already same value:',
-        pageIndex
-      );
-      return;
-    }
-    console.log(
-      '📄 Updating pageIndex from',
-      currentPageIndex,
-      'to',
-      pageIndex
-    );
-    await saveSettings({ pageIndex });
+  // 페이지 인덱스 업데이트
+  const updatePageIndex = (newPageIndex: number) => {
+    setPageIndex(newPageIndex);
+    saveSettings({ pageIndex: newPageIndex });
   };
 
   return {
-    sorting: isMounted ? settings.sorting : [],
-    pageSize: isMounted ? settings.pageSize : 10,
-    pageIndex: isMounted ? currentPageIndex : 0,
+    sorting,
+    pageSize,
+    pageIndex,
     updateSorting,
     updatePageSize,
     updatePageIndex,
   };
-};
+}

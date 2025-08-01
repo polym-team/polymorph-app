@@ -1,5 +1,4 @@
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
-import { getItem, setItem } from '@/shared/lib/indexedDB';
 
 import {
   addFavoriteApart as addFavoriteApartApi,
@@ -21,11 +20,31 @@ import {
   ServerFavoriteApart,
 } from './types';
 
+// localStorage 헬퍼 함수들
+const getItem = <T>(key: string): T | null => {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : null;
+  } catch (error) {
+    console.warn('localStorage getItem 실패:', error);
+    return null;
+  }
+};
+
+const setItem = <T>(key: string, value: T): void => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.warn('localStorage setItem 실패:', error);
+    throw error;
+  }
+};
+
 // 기존 로컬스토리지 데이터를 새로운 형식으로 마이그레이션
-const migrateOldLocalStorageData = async (): Promise<LocalFavoriteApart[]> => {
+const migrateOldLocalStorageData = (): LocalFavoriteApart[] => {
   try {
     // 기존 FavoriteApartItem[] 형태로 저장된 데이터 확인
-    const oldData = await getItem<FavoriteApartItem[]>(
+    const oldData = getItem<FavoriteApartItem[]>(
       STORAGE_KEY.FAVORITE_APART_LIST
     );
     if (oldData && Array.isArray(oldData)) {
@@ -39,15 +58,12 @@ const migrateOldLocalStorageData = async (): Promise<LocalFavoriteApart[]> => {
       );
 
       // 새로운 형식으로 저장
-      await setItem(STORAGE_KEY.FAVORITE_APART_LIST, newData);
-
-      // 기존 데이터 삭제 (선택사항)
-      // localStorage.removeItem(STORAGE_KEY.FAVORITE_APART_LIST);
+      setItem(STORAGE_KEY.FAVORITE_APART_LIST, newData);
 
       return newData;
     }
   } catch (error) {
-    console.warn('IndexedDB 마이그레이션 실패:', error);
+    console.warn('localStorage 마이그레이션 실패:', error);
   }
 
   return [];
@@ -188,16 +204,15 @@ export const loadFavoriteApartListFromServer = async (
   }
 };
 
-// IndexedDB에서 즐겨찾기 목록 로드
+// localStorage에서 즐겨찾기 목록 로드
 export const loadFavoriteApartListFromLocal = async (): Promise<
   FavoriteApartItem[]
 > => {
   // 기존 데이터 마이그레이션 시도
-  await migrateOldLocalStorageData();
+  migrateOldLocalStorageData();
 
   const localData =
-    (await getItem<LocalFavoriteApart[]>(STORAGE_KEY.FAVORITE_APART_LIST)) ??
-    [];
+    getItem<LocalFavoriteApart[]>(STORAGE_KEY.FAVORITE_APART_LIST) ?? [];
   return convertLocalStorageToFavoriteApartItem(localData);
 };
 
@@ -210,7 +225,7 @@ export const addFavoriteApartToServer = async (
   await addFavoriteApartApi(deviceId, regionCode, apartItem);
 };
 
-// IndexedDB에 즐겨찾기 추가
+// localStorage에 즐겨찾기 추가
 export const addFavoriteApartToLocal = async (
   favoriteApartList: FavoriteApartItem[],
   regionCode: string,
@@ -231,7 +246,7 @@ export const addFavoriteApartToLocal = async (
       );
       const sortedList = sortFavoriteApartList(updatedList);
 
-      // IndexedDB에 저장 (LocalFavoriteApart 형태로)
+      // localStorage에 저장 (LocalFavoriteApart 형태로)
       const localData = sortedList.flatMap(region =>
         region.apartItems.map(item => ({
           regionCode: region.regionCode,
@@ -239,7 +254,7 @@ export const addFavoriteApartToLocal = async (
           apartName: item.apartName,
         }))
       );
-      await setItem(STORAGE_KEY.FAVORITE_APART_LIST, localData);
+      setItem(STORAGE_KEY.FAVORITE_APART_LIST, localData);
 
       return sortedList;
     }
@@ -247,7 +262,7 @@ export const addFavoriteApartToLocal = async (
     const newList = createNewRegion(favoriteApartList, regionCode, apartItem);
     const sortedList = sortFavoriteApartList(newList);
 
-    // IndexedDB에 저장 (LocalFavoriteApart 형태로)
+    // localStorage에 저장 (LocalFavoriteApart 형태로)
     const localData = sortedList.flatMap(region =>
       region.apartItems.map(item => ({
         regionCode: region.regionCode,
@@ -255,7 +270,7 @@ export const addFavoriteApartToLocal = async (
         apartName: item.apartName,
       }))
     );
-    await setItem(STORAGE_KEY.FAVORITE_APART_LIST, localData);
+    setItem(STORAGE_KEY.FAVORITE_APART_LIST, localData);
 
     return sortedList;
   }
@@ -272,7 +287,7 @@ export const removeFavoriteApartFromServer = async (
   await removeFavoriteApartApi(deviceId, regionCode, apartItem);
 };
 
-// IndexedDB에서 즐겨찾기 삭제
+// localStorage에서 즐겨찾기 삭제
 export const removeFavoriteApartFromLocal = async (
   favoriteApartList: FavoriteApartItem[],
   regionCode: string,
@@ -301,7 +316,7 @@ export const removeFavoriteApartFromLocal = async (
 
   const sortedList = sortFavoriteApartList(updatedList);
 
-  // IndexedDB에 저장 (LocalFavoriteApart 형태로)
+  // localStorage에 저장 (LocalFavoriteApart 형태로)
   const localData = sortedList.flatMap(region =>
     region.apartItems.map(item => ({
       regionCode: region.regionCode,
@@ -309,7 +324,7 @@ export const removeFavoriteApartFromLocal = async (
       apartName: item.apartName,
     }))
   );
-  await setItem(STORAGE_KEY.FAVORITE_APART_LIST, localData);
+  setItem(STORAGE_KEY.FAVORITE_APART_LIST, localData);
 
   return sortedList;
 };
