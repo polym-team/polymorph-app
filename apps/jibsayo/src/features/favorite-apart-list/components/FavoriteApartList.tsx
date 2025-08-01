@@ -6,7 +6,6 @@ import {
   getCityNameWithRegionCode,
   getRegionNameWithRegionCode,
 } from '@/entities/region';
-import { LoadingFallback } from '@/features/apart-detail/ui/LoadingFallback';
 import { ROUTE_PATH } from '@/shared/consts/route';
 import { useIsClient } from '@/shared/hooks/useIsClient';
 
@@ -15,6 +14,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { Button, Card, Typography } from '@package/ui';
+
+import { FavoriteApartListSkeleton } from './FavoriteApartListSkeleton';
 
 export function FavoriteApartList() {
   const router = useRouter();
@@ -48,7 +49,7 @@ export function FavoriteApartList() {
   };
 
   if (!isClient) {
-    return <LoadingFallback />;
+    return <FavoriteApartListSkeleton />;
   }
 
   if (favoriteApartList.length === 0) {
