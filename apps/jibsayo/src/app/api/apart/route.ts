@@ -19,6 +19,22 @@ interface Response {
   }[];
 }
 
+// 주소를 목록과 같은 형태로 정규화하는 함수
+const normalizeAddress = (address: string): string => {
+  if (!address) return '';
+
+  // 괄호 안의 내용 제거 (예: "89(양재대로 1218)" → "")
+  const withoutParentheses = address.replace(/\([^)]*\)/g, '').trim();
+
+  // 숫자와 괄호 제거 (예: "89" → "")
+  const withoutNumbers = withoutParentheses.replace(/\d+/g, '').trim();
+
+  // 연속된 공백을 하나로 변환
+  const normalized = withoutNumbers.replace(/\s+/g, ' ').trim();
+
+  return normalized;
+};
+
 const calculateApartInfo = ($: CheerioAPI) => {
   const getTradeInfoTable = () => {
     let tradeInfoTable: Element | null = null;
@@ -52,7 +68,8 @@ const calculateApartInfo = ($: CheerioAPI) => {
       .replace(/<br \/>/g, '')
       .split('\n');
 
-    const address = texts[1] || '';
+    const rawAddress = texts[1] || '';
+    const address = normalizeAddress(rawAddress);
     const housholdsCount = (texts[2] || '').replace('세대수(동수) : ', '');
     const parking = (texts[3] || '').replace('주차 : ', '');
 
