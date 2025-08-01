@@ -14,14 +14,14 @@ import { SearchForm } from '../models/types';
 interface Props {
   form: SearchForm;
   onSubmit: (nextForm?: Partial<SearchForm>) => void;
-  favoriteRegions: string[];
+  favoriteRegionList: string[];
   removeFavoriteRegion: (regionCode: string) => void;
 }
 
 export function FavoriteRegionList({
   form,
   onSubmit,
-  favoriteRegions,
+  favoriteRegionList,
   removeFavoriteRegion,
 }: Props) {
   const handleSelect = (regionCode: string) => {
@@ -36,7 +36,7 @@ export function FavoriteRegionList({
         msOverflowStyle: 'none' /* IE and Edge */,
       }}
     >
-      {favoriteRegions.map(regionCode => (
+      {favoriteRegionList.map(regionCode => (
         <div
           key={regionCode}
           className="border-input bg-background flex flex-shrink-0 rounded-sm border"

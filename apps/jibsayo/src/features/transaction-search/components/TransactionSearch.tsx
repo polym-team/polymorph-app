@@ -9,7 +9,7 @@ export function TransactionSearch() {
   const { form, updateCityName, updateRegionCode, updateDate, onSubmit } =
     useSearchForm();
 
-  const { favoriteRegions, toggleFavoriteRegion, removeFavoriteRegion } =
+  const { favoriteRegionList, addFavoriteRegion, removeFavoriteRegion } =
     useFavoriteRegion();
 
   return (
@@ -20,13 +20,14 @@ export function TransactionSearch() {
         updateRegionCode={updateRegionCode}
         updateDate={updateDate}
         onSubmit={onSubmit}
-        favoriteRegions={favoriteRegions}
-        toggleFavoriteRegion={toggleFavoriteRegion}
+        favoriteRegionList={favoriteRegionList}
+        addFavoriteRegion={addFavoriteRegion}
+        removeFavoriteRegion={removeFavoriteRegion}
       />
       <FavoriteRegionList
         form={form}
         onSubmit={onSubmit}
-        favoriteRegions={favoriteRegions}
+        favoriteRegionList={favoriteRegionList}
         removeFavoriteRegion={removeFavoriteRegion}
       />
     </div>

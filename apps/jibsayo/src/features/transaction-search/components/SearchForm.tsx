@@ -26,8 +26,9 @@ interface Props {
   updateRegionCode: (nextRegionCode: string) => void;
   updateDate: (nextDate: Date) => void;
   onSubmit: () => void;
-  favoriteRegions: string[];
-  toggleFavoriteRegion: (regionCode: string) => void;
+  favoriteRegionList: string[];
+  addFavoriteRegion: (regionCode: string) => void;
+  removeFavoriteRegion: (regionCode: string) => void;
 }
 
 export function SearchForm({
@@ -36,8 +37,9 @@ export function SearchForm({
   updateRegionCode,
   updateDate,
   onSubmit,
-  favoriteRegions,
-  toggleFavoriteRegion,
+  favoriteRegionList,
+  addFavoriteRegion,
+  removeFavoriteRegion,
 }: Props) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -45,8 +47,18 @@ export function SearchForm({
   };
 
   const isCurrentRegionFavorite = form.regionCode
-    ? favoriteRegions.includes(form.regionCode)
+    ? favoriteRegionList.includes(form.regionCode)
     : false;
+
+  const handleToggleFavorite = () => {
+    if (!form.regionCode) return;
+
+    if (isCurrentRegionFavorite) {
+      removeFavoriteRegion(form.regionCode);
+    } else {
+      addFavoriteRegion(form.regionCode);
+    }
+  };
 
   return (
     <form
@@ -104,7 +116,7 @@ export function SearchForm({
           variant="outline"
           size="sm"
           className="h-[37px] w-[37px] flex-shrink-0"
-          onClick={() => toggleFavoriteRegion(form.regionCode)}
+          onClick={handleToggleFavorite}
         >
           <Star
             className={`h-5 w-5 ${
