@@ -136,7 +136,7 @@ export function TransactionList() {
   };
 
   return (
-    <div className="flex flex-col gap-y-2">
+    <div className="flex flex-col gap-y-0 sm:gap-y-2">
       <TransactionListHeader
         fullRegionName={fullRegionName}
         filteredTransactionsLength={filteredTransactions.length}

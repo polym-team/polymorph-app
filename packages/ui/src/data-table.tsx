@@ -193,7 +193,7 @@ export function DataTable<TData, TValue>({
   );
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-2 sm:space-y-4">
       {/* 데스크톱 테이블 뷰 */}
       <div className="hidden overflow-x-auto sm:block">
         <div className="relative">
