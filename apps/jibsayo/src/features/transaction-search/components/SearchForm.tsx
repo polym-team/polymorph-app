@@ -103,11 +103,11 @@ export function SearchForm({
           type="button"
           variant="outline"
           size="sm"
-          className="h-[40px] w-[40px] flex-shrink-0"
+          className="h-[37px] w-[37px] flex-shrink-0"
           onClick={() => toggleFavoriteRegion(form.regionCode)}
         >
           <Star
-            className={`h-6 w-6 ${
+            className={`h-5 w-5 ${
               isCurrentRegionFavorite
                 ? 'fill-yellow-400 text-yellow-400'
                 : 'fill-gray-300 text-gray-300'
