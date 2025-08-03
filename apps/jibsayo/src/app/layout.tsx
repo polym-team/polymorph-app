@@ -9,6 +9,7 @@ import { Toaster } from '@package/ui';
 import '../../../../packages/styles/globals.css';
 import { DeviceIdInitializer } from './DeviceIdInitializer';
 import { Providers } from './providers';
+import { FirebaseInitializer } from './FirebaseInitializer';
 
 const notoSansKr = Noto_Sans_KR({
   weight: ['400', '500', '700'],
@@ -56,6 +57,7 @@ export default function RootLayout({
           <Header />
           <main className="flex-1 bg-gray-50">
             <Providers>
+              <FirebaseInitializer />
               <DeviceIdInitializer />
               <section className="container mx-auto px-4 pb-10 pt-5">
                 {children}
