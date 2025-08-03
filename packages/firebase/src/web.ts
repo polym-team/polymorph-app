@@ -1,0 +1,1 @@
+export { FirebaseWebClient, type FirebaseWebConfig } from './web-client';
