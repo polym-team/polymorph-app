@@ -114,8 +114,7 @@ export function SearchForm({
         <Button
           type="button"
           variant="outline"
-          size="sm"
-          className="h-[37px] w-[37px] flex-shrink-0"
+          className="flex-shrink-0"
           onClick={handleToggleFavorite}
         >
           <Star

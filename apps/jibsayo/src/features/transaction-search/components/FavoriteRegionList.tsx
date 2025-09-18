@@ -39,13 +39,13 @@ export function FavoriteRegionList({
       {favoriteRegionList.map(regionCode => (
         <div
           key={regionCode}
-          className="border-input bg-background flex flex-shrink-0 rounded-sm border"
+          className="border-input bg-background flex overflow-hidden rounded-sm border"
         >
           <Button
             variant="ghost"
             size="sm"
             onClick={() => handleSelect(regionCode)}
-            className="whitespace-nowrap rounded-r-none border-0 px-3 py-1.5 text-sm"
+            className="whitespace-nowrap rounded-none border-0"
           >
             <span className="translate-y-[-0.5px]">
               {getCityNameWithRegionCode(regionCode)}{' '}
@@ -56,7 +56,7 @@ export function FavoriteRegionList({
             variant="ghost"
             size="sm"
             onClick={() => removeFavoriteRegion(regionCode)}
-            className="h-full min-w-0 rounded-l-none border-0 px-2 py-1.5"
+            className="w-[30px] rounded-none"
           >
             <X className="h-3 w-3" />
           </Button>

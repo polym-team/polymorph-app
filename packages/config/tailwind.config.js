@@ -55,9 +55,10 @@ module.exports = (contentPaths = []) => ({
         },
       },
       borderRadius: {
-        lg: '0.5rem',
-        md: 'calc(0.5rem - 2px)',
-        sm: 'calc(0.5rem - 4px)',
+        DEFAULT: '0.5rem', // 이 줄을 추가하면 rounded 클래스가 0.5rem이 됩니다
+        lg: '0.75rem',
+        md: 'calc(0.75rem - 2px)',
+        sm: 'calc(0.75rem - 4px)',
       },
       keyframes: {
         'accordion-down': {
