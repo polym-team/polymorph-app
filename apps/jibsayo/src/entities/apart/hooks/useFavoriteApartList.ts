@@ -1,5 +1,3 @@
-import { getDeviceId, getDeviceIdSync } from '@/shared/lib/device';
-
 import { useEffect, useState } from 'react';
 
 import { toast } from '@package/ui';
@@ -63,7 +61,7 @@ export const useFavoriteApartList = (): Return => {
   }, []);
 
   const loadFavoriteApartList = async () => {
-    const deviceId = await getDeviceId();
+    const deviceId = 'FIXME';
     try {
       if (deviceId) {
         const serverData = await loadFavoriteApartListFromServer(deviceId);
@@ -84,7 +82,7 @@ export const useFavoriteApartList = (): Return => {
   };
 
   const addFavoriteApart = async (regionCode: string, apartItem: ApartItem) => {
-    const deviceId = await getDeviceId();
+    const deviceId = 'FIXME';
     try {
       if (deviceId) {
         await addFavoriteApartToServer(deviceId, regionCode, apartItem);
@@ -113,7 +111,7 @@ export const useFavoriteApartList = (): Return => {
     regionCode: string,
     apartItem: ApartItem
   ) => {
-    const deviceId = await getDeviceId();
+    const deviceId = 'FIXME';
     try {
       if (deviceId) {
         await removeFavoriteApartFromServer(deviceId, regionCode, apartItem);

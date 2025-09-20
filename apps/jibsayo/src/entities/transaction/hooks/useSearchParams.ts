@@ -8,6 +8,7 @@ import {
 interface SearchParams {
   regionCode: string | undefined;
   tradeDate: string | undefined;
+  pageIndex: string | undefined;
 }
 
 interface Return {
@@ -21,7 +22,8 @@ export const useSearchParams = (): Return => {
 
   const regionCode = navigationSearchParams.get('regionCode') ?? undefined;
   const tradeDate = navigationSearchParams.get('tradeDate') ?? undefined;
-  const searchParams = { regionCode, tradeDate };
+  const pageIndex = navigationSearchParams.get('pageIndex') ?? undefined;
+  const searchParams = { regionCode, tradeDate, pageIndex };
 
   const setSearchParams = (params: Partial<SearchParams>) => {
     const newSearchParams = new URLSearchParams(navigationSearchParams);

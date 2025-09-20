@@ -331,26 +331,60 @@ const fetchWithRetry = async (
 ): Promise<string> => {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
+      // 각 시도마다 랜덤 대기 (봇 탐지 우회)
+      if (attempt > 1) {
+        const delay = 2000 + Math.random() * 3000; // 2-5초 랜덤 대기
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
+      // 매번 다른 User-Agent 사용
+      const userAgents = [
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      ];
+
+      const randomUA =
+        userAgents[Math.floor(Math.random() * userAgents.length)];
+
       const response = await fetch(url, {
         headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'User-Agent': randomUA,
           Accept:
-            'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-          'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
+            'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+          'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+          'Accept-Encoding': 'gzip, deflate, br',
+          DNT: '1',
+          Connection: 'keep-alive',
+          'Upgrade-Insecure-Requests': '1',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'same-origin',
+          'Sec-Fetch-User': '?1',
+          Referer: 'https://apt2.me/',
           'Cache-Control': 'no-cache',
+          Pragma: 'no-cache',
+          // 중요: X-Forwarded-For 헤더로 IP 위장
+          'X-Forwarded-For': `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
         },
         signal: controller.signal,
       });
+
+      console.log('response: ', response);
 
       clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
+
+      // 요청 간격 추가 (429 에러 방지)
+      await new Promise(resolve =>
+        setTimeout(resolve, 500 + Math.random() * 1000)
+      );
 
       return await response.text();
     } catch (error) {

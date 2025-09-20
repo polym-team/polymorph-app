@@ -1,5 +1,5 @@
-import { TransactionList } from '@/features/transaction-list/components/TransactionList';
 import { TransactionSearch } from '@/features/transaction-search';
+import { TransactionList } from '@/features/transaction/transaction-list';
 
 import { Suspense } from 'react';
 
