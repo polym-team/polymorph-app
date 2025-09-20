@@ -25,7 +25,7 @@ const columns: ColumnDef<TransactionItem>[] = [
   {
     accessorKey: 'size',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="평수" />
+      <DataTableColumnHeader column={column} title="아파트명" />
     ),
     cell: ({ row }) => (
       <>
@@ -61,6 +61,7 @@ export function TransactionListSimpleTable({
   return (
     <DataTable
       columns={columns}
+      pageSize={20}
       data={items}
       sorting={[]}
       onSortingChange={() => {}}

@@ -2,27 +2,39 @@
 
 import * as SelectPrimitive from '@radix-ui/react-select';
 
+import { cva, type VariantProps } from 'class-variance-authority';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import * as React from 'react';
 
 import { cn } from '@package/utils';
 
-const SelectRoot = SelectPrimitive.Root;
-
 const SelectGroup = SelectPrimitive.Group;
 
 const SelectValue = SelectPrimitive.Value;
 
+const selectTriggerVariants = cva(
+  'border-input bg-background ring-offset-background data-[placeholder]:text-muted-foreground focus:ring-ring flex w-full items-center justify-between rounded border focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
+  {
+    variants: {
+      size: {
+        default: 'px-3 py-2.5',
+        sm: 'px-3 py-[5.25px] text-sm',
+      },
+    },
+    defaultVariants: {
+      size: 'default',
+    },
+  }
+);
+
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> &
+    VariantProps<typeof selectTriggerVariants>
+>(({ className, size, children, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
-    className={cn(
-      'border-input bg-background ring-offset-background data-[placeholder]:text-muted-foreground focus:ring-ring flex w-full items-center justify-between rounded border px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
-      className
-    )}
+    className={cn(selectTriggerVariants({ size, className }))}
     {...props}
   >
     {children}
@@ -147,8 +159,31 @@ const SelectSeparator = React.forwardRef<
 ));
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 
+// Select 컴포넌트 래퍼
+const Select = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root> & {
+    size?: VariantProps<typeof selectTriggerVariants>['size'];
+  }
+>(({ size, children, ...props }) => {
+  return (
+    <SelectPrimitive.Root {...props}>
+      {React.Children.map(children, child => {
+        if (React.isValidElement(child) && child.type === SelectTrigger) {
+          return React.cloneElement(child, {
+            ...child.props,
+            size: size || child.props.size,
+          } as any);
+        }
+        return child;
+      })}
+    </SelectPrimitive.Root>
+  );
+});
+Select.displayName = 'Select';
+
 // 중첩된 컴포넌트 구조 생성
-const Select = Object.assign(SelectRoot, {
+const SelectWithComponents = Object.assign(Select, {
   Trigger: Object.assign(SelectTrigger, {
     Value: SelectValue,
   }),
@@ -161,7 +196,7 @@ const Select = Object.assign(SelectRoot, {
 });
 
 export {
-  Select,
+  SelectWithComponents as Select,
   SelectGroup,
   SelectValue,
   SelectTrigger,

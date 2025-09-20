@@ -7,11 +7,11 @@ import { TransactionListSimpleTable } from './TransactionListSimpleTable';
 export function TransactionListTable({ items }: { items: TransactionItem[] }) {
   const { isMobile } = useGlobalConfigStore();
 
-  console.log('isMobile: ', isMobile);
+  const props = { pageIndex: 0, items };
 
   return isMobile ? (
-    <TransactionListSimpleTable pageIndex={0} items={items} />
+    <TransactionListSimpleTable {...props} />
   ) : (
-    <TransactionListDetailTable pageIndex={0} items={items} />
+    <TransactionListDetailTable {...props} />
   );
 }

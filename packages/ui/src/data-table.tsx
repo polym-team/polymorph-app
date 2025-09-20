@@ -9,8 +9,22 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 
-import { useState } from 'react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from 'lucide-react';
+import { useMemo, useState } from 'react';
 
+import { Button } from './button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './select';
 import {
   Table,
   TableBody,
@@ -29,7 +43,10 @@ interface DataTableProps<TData, TValue> {
   columns: ExtendedColumnDef<TData, TValue>[];
   data: TData[];
   sorting?: SortingState;
+  pageSize?: number;
+  currentPage?: number;
   onSortingChange?: (sorting: SortingState) => void;
+  onPageChange?: (page: number) => void;
   onRowClick?: (row: TData) => void;
 }
 
@@ -37,10 +54,14 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   sorting: externalSorting,
+  pageSize = 10,
+  currentPage: externalCurrentPage,
   onSortingChange,
   onRowClick,
+  onPageChange,
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
+  const [internalCurrentPage, setInternalCurrentPage] = useState(1);
 
   // 외부에서 sorting이 제공되면 그것을 사용, 아니면 내부 상태 사용
   const sorting = externalSorting ?? internalSorting;
@@ -57,8 +78,26 @@ export function DataTable<TData, TValue>({
     }
   };
 
+  // 페이지네이션 상태 관리
+  const currentPage = externalCurrentPage ?? internalCurrentPage;
+  const setCurrentPage = (page: number) => {
+    if (onPageChange) {
+      onPageChange(page);
+    } else {
+      setInternalCurrentPage(page);
+    }
+  };
+
+  // 페이지네이션 계산
+  const totalPages = Math.ceil(data.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedData = useMemo(() => {
+    return data.slice(startIndex, endIndex);
+  }, [data, startIndex, endIndex]);
+
   const table = useReactTable({
-    data,
+    data: paginatedData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -68,8 +107,82 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  // 페이지네이션 컴포넌트
+  const PaginationComponent = () => (
+    <div className="flex items-center justify-between py-2">
+      <div className="flex flex-wrap items-center gap-x-1 text-sm text-gray-700">
+        <div>
+          총 <strong className="text-primary font-bold">{data.length}</strong>건
+        </div>{' '}
+        <div>
+          ({startIndex + 1}-{Math.min(endIndex, data.length)}번째 항목)
+        </div>
+      </div>
+      <div className="flex items-center space-x-1">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage(1)}
+          disabled={currentPage === 1}
+          className="w-8"
+        >
+          <ChevronsLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="w-8"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+
+        {/* 페이지 선택 셀렉트박스 */}
+        <Select
+          value={currentPage.toString()}
+          onValueChange={value => setCurrentPage(parseInt(value))}
+        >
+          <SelectTrigger size="sm" className="w-[52px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+              pageNumber => (
+                <SelectItem key={pageNumber} value={pageNumber.toString()}>
+                  {pageNumber}
+                </SelectItem>
+              )
+            )}
+          </SelectContent>
+        </Select>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="w-8"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage(totalPages)}
+          disabled={currentPage === totalPages}
+          className="w-8"
+        >
+          <ChevronsRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="w-full">
+      {data.length > 0 && <PaginationComponent />}
+
       <div className="overflow-x-auto">
         <Table>
           <colgroup>
@@ -129,6 +242,8 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
+
+      {data.length > 0 && <PaginationComponent />}
     </div>
   );
 }
