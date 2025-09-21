@@ -1,3 +1,10 @@
+export const formatDate = (dateString: string): string => {
+  const [year, month, day] = dateString.split('-');
+  const shortYear = year.slice(-2);
+
+  return `${shortYear}.${month}.${day}`;
+};
+
 export const formatKoreanAmountText = (amount: number): string => {
   const eok = Math.floor(amount / 100000000);
   const man = Math.floor((amount % 100000000) / 10000);

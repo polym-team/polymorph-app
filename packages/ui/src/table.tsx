@@ -10,6 +10,7 @@ const Table = React.forwardRef<
     <table
       ref={ref}
       className={cn('w-full table-fixed caption-bottom text-sm', className)}
+      style={{ tableLayout: 'fixed' }}
       {...props}
     />
   </div>

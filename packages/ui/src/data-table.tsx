@@ -191,29 +191,33 @@ export function DataTable<TData, TValue>({
                 TData,
                 TValue
               >;
-              if (!columnDef.size) {
-                return <col key={header.id} style={{ width: 'auto' }} />;
+
+              if (columnDef.size === Infinity) {
+                return <col key={header.id} width="*" />;
               } else if (typeof columnDef.size === 'number') {
-                return (
-                  <col
-                    key={header.id}
-                    style={{ width: `${columnDef.size}px` }}
-                  />
-                );
+                return <col key={header.id} width={columnDef.size} />;
+              } else {
+                return <col key={header.id} />;
               }
-              return <col key={header.id} />;
             })}
           </colgroup>
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => {
+                {headerGroup.headers.map((header, index) => {
+                  const isLastColumn = index === headerGroup.headers.length - 1;
                   return (
-                    <TableHead key={header.id}>
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                    <TableHead key={header.id} className="overflow-hidden">
+                      <div
+                        className={
+                          isLastColumn ? 'flex translate-x-4 justify-end' : ''
+                        }
+                      >
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                      </div>
                     </TableHead>
                   );
                 })}
@@ -227,9 +231,14 @@ export function DataTable<TData, TValue>({
                 className={onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''}
                 onClick={() => onRowClick?.(row.original)}
               >
-                {row.getVisibleCells().map(cell => {
+                {row.getVisibleCells().map((cell, index) => {
+                  const isLastColumn =
+                    index === row.getVisibleCells().length - 1;
                   return (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      className={isLastColumn ? 'text-right' : ''}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

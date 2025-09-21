@@ -1,9 +1,12 @@
 import { TransactionItem } from '@/entities/transaction';
 import {
+  formatDate,
   formatFloor,
   formatKoreanAmountSimpleText,
   formatSizeWithPyeong,
 } from '@/shared/utils/formatters';
+
+import { Star } from 'lucide-react';
 
 import { ColumnDef, DataTable, DataTableColumnHeader } from '@package/ui';
 
@@ -16,13 +19,29 @@ interface TransactionListDataProps {
 
 const columns: ColumnDef<TransactionItem>[] = [
   {
-    size: 100,
+    size: 30,
+    accessorKey: 'favorite',
+    header: () => <></>,
+    cell: ({ row }) => (
+      <div className="flex">
+        <button type="button" onClick={() => {}}>
+          <Star className="h-[14px] w-[14px]" />
+        </button>
+      </div>
+    ),
+  },
+  {
+    size: 80,
     accessorKey: 'tradeDate',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="거래일" />
     ),
+    cell: ({ row }) => (
+      <SimpleTableText>{formatDate(row.original.tradeDate)}</SimpleTableText>
+    ),
   },
   {
+    size: Infinity,
     accessorKey: 'size',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="아파트명" />
@@ -33,7 +52,7 @@ const columns: ColumnDef<TransactionItem>[] = [
           {row.original.apartName}
         </SimpleTableText>
         {row.original.floor && (
-          <SimpleTableText>
+          <SimpleTableText className="text-sm">
             {formatFloor(row.original.floor)} /{' '}
             {formatSizeWithPyeong(row.original.size)}
           </SimpleTableText>
