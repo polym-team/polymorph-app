@@ -9,7 +9,7 @@ export function TransactionList() {
     useTransactionViewSetting();
 
   return (
-    <div>
+    <div className="flex flex-col gap-y-3">
       <TransactionListHeader />
       <TransactionListData
         pageIndex={pageIndex}

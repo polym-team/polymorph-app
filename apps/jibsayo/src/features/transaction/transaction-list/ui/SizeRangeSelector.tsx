@@ -7,7 +7,6 @@ import { Button, Typography } from '@package/ui';
 interface SizeRangeSelectorProps {
   minSize: number;
   maxSize: number;
-  className?: string;
   onRangeChange: (min: number, max: number) => void;
 }
 
@@ -18,7 +17,6 @@ const HANDLE_RADIUS = 10; // 핸들 반지름 (w-4 + border-2 = 20px / 2)
 export function SizeRangeSelector({
   minSize,
   maxSize,
-  className = '',
   onRangeChange,
 }: SizeRangeSelectorProps) {
   const [localMin, setLocalMin] = useState(minSize ?? MIN_PYEONG);
@@ -178,7 +176,7 @@ export function SizeRangeSelector({
   ];
 
   return (
-    <div className={`flex w-full flex-col gap-3 ${className}`}>
+    <div className="flex w-full flex-col gap-3 rounded border p-3">
       {/* 헤더: 평수 제목과 현재 선택된 범위 */}
       <div className="flex items-center justify-between">
         <Typography variant="small" className="text-sm font-medium">
@@ -251,7 +249,7 @@ export function SizeRangeSelector({
                 ? 'primary'
                 : 'default'
             }
-            className="px-2 py-1 text-xs"
+            className="p-1.5 text-xs"
           >
             {button.label}
           </Button>

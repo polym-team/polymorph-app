@@ -6,9 +6,9 @@ import {
 } from 'next/navigation';
 
 interface SearchParams {
-  regionCode: string | undefined;
-  tradeDate: string | undefined;
-  pageIndex: string | undefined;
+  regionCode: string;
+  tradeDate: string;
+  pageIndex: string;
 }
 
 interface Return {
@@ -20,9 +20,9 @@ export const useSearchParams = (): Return => {
   const navigationSearchParams = useNavigationSearchParams();
   const router = useNavigationRouter();
 
-  const regionCode = navigationSearchParams.get('regionCode') ?? undefined;
-  const tradeDate = navigationSearchParams.get('tradeDate') ?? undefined;
-  const pageIndex = navigationSearchParams.get('pageIndex') ?? undefined;
+  const regionCode = navigationSearchParams.get('regionCode') ?? '';
+  const tradeDate = navigationSearchParams.get('tradeDate') ?? '';
+  const pageIndex = navigationSearchParams.get('pageIndex') ?? '';
   const searchParams = { regionCode, tradeDate, pageIndex };
 
   const setSearchParams = (params: Partial<SearchParams>) => {
