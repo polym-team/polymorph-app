@@ -8,13 +8,21 @@ import {
 
 import { Star } from 'lucide-react';
 
-import { ColumnDef, DataTable, DataTableColumnHeader } from '@package/ui';
+import {
+  ColumnDef,
+  DataTable,
+  DataTableColumnHeader,
+  SortingState,
+} from '@package/ui';
 
 import { SimpleTableText } from './SimpleTableText';
 
 interface TransactionListDataProps {
   pageIndex: number;
+  sorting: SortingState;
   items: TransactionItem[];
+  onSortingChange: (sorting: SortingState) => void;
+  onPageIndexChange: (pageIndex: number) => void;
 }
 
 const columns: ColumnDef<TransactionItem>[] = [
@@ -22,7 +30,7 @@ const columns: ColumnDef<TransactionItem>[] = [
     size: 30,
     accessorKey: 'favorite',
     header: () => <></>,
-    cell: ({ row }) => (
+    cell: () => (
       <div className="flex">
         <button type="button" onClick={() => {}}>
           <Star className="h-[14px] w-[14px]" />
@@ -76,14 +84,20 @@ const columns: ColumnDef<TransactionItem>[] = [
 
 export function TransactionListSimpleTable({
   items,
+  pageIndex,
+  sorting,
+  onSortingChange,
+  onPageIndexChange,
 }: TransactionListDataProps) {
   return (
     <DataTable
       columns={columns}
       pageSize={20}
       data={items}
-      sorting={[]}
-      onSortingChange={() => {}}
+      pageIndex={pageIndex}
+      sorting={sorting}
+      onSortingChange={onSortingChange}
+      onPageIndexChange={onPageIndexChange}
     />
   );
 }

@@ -10,7 +10,13 @@ export const useTransactionListQuery = (): UseQueryResult<
   const { searchParams } = useSearchParams();
 
   return useQuery({
-    queryKey: ['transactionListQuery', searchParams],
+    queryKey: [
+      'transactionListQuery',
+      {
+        tradeDate: searchParams.tradeDate,
+        regionCode: searchParams.regionCode,
+      },
+    ],
     staleTime: 1000 * 60 * 60,
     gcTime: 1000 * 60 * 60,
     enabled: !!searchParams.regionCode && !!searchParams.tradeDate,

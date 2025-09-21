@@ -44,9 +44,9 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   sorting?: SortingState;
   pageSize?: number;
-  currentPage?: number;
+  pageIndex?: number;
   onSortingChange?: (sorting: SortingState) => void;
-  onPageChange?: (page: number) => void;
+  onPageIndexChange?: (pageIndex: number) => void;
   onRowClick?: (row: TData) => void;
 }
 
@@ -55,13 +55,13 @@ export function DataTable<TData, TValue>({
   data,
   sorting: externalSorting,
   pageSize = 10,
-  currentPage: externalCurrentPage,
+  pageIndex: externalPageIndex,
   onSortingChange,
   onRowClick,
-  onPageChange,
+  onPageIndexChange,
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
-  const [internalCurrentPage, setInternalCurrentPage] = useState(1);
+  const [internalPageIndex, setInternalPageIndex] = useState(0);
 
   // 외부에서 sorting이 제공되면 그것을 사용, 아니면 내부 상태 사용
   const sorting = externalSorting ?? internalSorting;
@@ -79,18 +79,18 @@ export function DataTable<TData, TValue>({
   };
 
   // 페이지네이션 상태 관리
-  const currentPage = externalCurrentPage ?? internalCurrentPage;
+  const pageIndex = externalPageIndex ?? internalPageIndex;
   const setCurrentPage = (page: number) => {
-    if (onPageChange) {
-      onPageChange(page);
+    if (onPageIndexChange) {
+      onPageIndexChange(page);
     } else {
-      setInternalCurrentPage(page);
+      setInternalPageIndex(page);
     }
   };
 
   // 페이지네이션 계산
   const totalPages = Math.ceil(data.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
+  const startIndex = pageIndex * pageSize;
   const endIndex = startIndex + pageSize;
   const paginatedData = useMemo(() => {
     return data.slice(startIndex, endIndex);
@@ -122,8 +122,8 @@ export function DataTable<TData, TValue>({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setCurrentPage(1)}
-          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(0)}
+          disabled={pageIndex === 0}
           className="w-8"
         >
           <ChevronsLeft className="h-4 w-4" />
@@ -131,8 +131,8 @@ export function DataTable<TData, TValue>({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(pageIndex - 1)}
+          disabled={pageIndex === 0}
           className="w-8"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -140,28 +140,26 @@ export function DataTable<TData, TValue>({
 
         {/* 페이지 선택 셀렉트박스 */}
         <Select
-          value={currentPage.toString()}
+          value={pageIndex.toString()}
           onValueChange={value => setCurrentPage(parseInt(value))}
         >
           <SelectTrigger size="sm" className="w-[52px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-              pageNumber => (
-                <SelectItem key={pageNumber} value={pageNumber.toString()}>
-                  {pageNumber}
-                </SelectItem>
-              )
-            )}
+            {Array.from({ length: totalPages }, (_, i) => i).map(pageNumber => (
+              <SelectItem key={pageNumber} value={pageNumber.toString()}>
+                {pageNumber + 1}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage(pageIndex + 1)}
+          disabled={pageIndex === totalPages - 1}
           className="w-8"
         >
           <ChevronRight className="h-4 w-4" />
@@ -169,8 +167,8 @@ export function DataTable<TData, TValue>({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setCurrentPage(totalPages)}
-          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage(totalPages - 1)}
+          disabled={pageIndex === totalPages - 1}
           className="w-8"
         >
           <ChevronsRight className="h-4 w-4" />

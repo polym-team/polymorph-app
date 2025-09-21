@@ -11,6 +11,7 @@ import {
 
 interface TransactionListDataProps {
   pageIndex: number;
+  sorting: SortingState;
   items: TransactionItem[];
 }
 
@@ -55,16 +56,16 @@ const columns: ColumnDef<TransactionItem>[] = [
 
 export function TransactionListDetailTable({
   pageIndex,
+  sorting,
   items,
 }: TransactionListDataProps) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-
   return (
     <DataTable
       columns={columns}
       data={items}
+      pageIndex={pageIndex}
       sorting={sorting}
-      onSortingChange={setSorting}
+      onSortingChange={() => {}}
     />
   );
 }
