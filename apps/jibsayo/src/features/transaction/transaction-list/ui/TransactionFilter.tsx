@@ -5,20 +5,11 @@ import { Button, Input, Typography } from '@package/ui';
 import { SizeRangeSelector } from './SizeRangeSelector';
 
 interface TransactionFilterProps {
-  title: string;
+  actived: boolean;
   value: string;
-  children: React.ReactNode;
-  className?: string;
-  hasActiveFilter?: boolean;
 }
 
-export function TransactionFilter({
-  title,
-  value,
-  children,
-  className = '',
-  hasActiveFilter = false,
-}: TransactionFilterProps) {
+export function TransactionFilter({ actived, value }: TransactionFilterProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -43,13 +34,10 @@ export function TransactionFilter({
   }, [isExpanded]);
 
   return (
-    <div
-      ref={containerRef}
-      className={`relative w-full sm:w-[420px] ${className}`}
-    >
+    <div ref={containerRef} className="relative w-full sm:w-[420px]">
       <div
         className={`rounded-sm border bg-white transition-all ${
-          hasActiveFilter ? 'border-primary' : 'border-gray-200'
+          actived ? 'border-primary' : 'border-gray-200'
         }`}
       >
         <button
@@ -60,12 +48,12 @@ export function TransactionFilter({
             필터
           </Typography>
           <div className="ml-4 flex min-w-0 flex-1 items-center justify-end gap-2">
-            <div className="min-w-0 flex-1" title={value}>
+            <div className="min-w-0 flex-1">
               <Typography
                 variant="small"
                 className="block truncate text-right text-sm text-gray-600"
               >
-                적용된 필터 없음
+                {value}
               </Typography>
             </div>
 

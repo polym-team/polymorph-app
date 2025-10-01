@@ -34,15 +34,14 @@ export const formatKoreanAmountSimpleText = (amount: number): string => {
   }
 };
 
+export const formatQuantity = (quantity: number): string => {
+  return `${quantity}건`;
+};
+
 export const formatFloor = (floor: number): string => {
   return `${floor}층`;
 };
 
-export const formatSizeWithPyeong = (
-  exclusiveAreaInSquareMeters: number
-): string => {
-  const supplyArea = exclusiveAreaInSquareMeters * 1.35;
-  const pyeong = Math.round(supplyArea / 3.3);
-
-  return `${pyeong}평`;
+export const formatPyeong = (size: number): string => {
+  return `${size}평`;
 };

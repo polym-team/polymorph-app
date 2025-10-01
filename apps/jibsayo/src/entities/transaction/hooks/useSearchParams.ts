@@ -4,17 +4,23 @@ import {
   useRouter as useNavigationRouter,
   useSearchParams as useNavigationSearchParams,
 } from 'next/navigation';
+import { useMemo } from 'react';
 
-interface SearchParams {
-  regionCode: string;
-  tradeDate: string;
-  pageIndex: string;
-}
+import { RULES } from '../consts/rule';
+import { type SearchParams } from '../models/types';
 
 interface Return {
   searchParams: SearchParams;
   setSearchParams: (params: Partial<SearchParams>) => void;
 }
+
+const parseSearchParam = (value: string | number | boolean) => {
+  if (typeof value === 'boolean' || typeof value === 'number') {
+    return value.toString();
+  }
+
+  return value;
+};
 
 export const useSearchParams = (): Return => {
   const navigationSearchParams = useNavigationSearchParams();
@@ -23,12 +29,44 @@ export const useSearchParams = (): Return => {
   const regionCode = navigationSearchParams.get('regionCode') ?? '';
   const tradeDate = navigationSearchParams.get('tradeDate') ?? '';
   const pageIndex = navigationSearchParams.get('pageIndex') ?? '';
-  const searchParams = { regionCode, tradeDate, pageIndex };
+  const apartName = navigationSearchParams.get('apartName') ?? '';
+  const minSize = navigationSearchParams.get('minSize')
+    ? Number(navigationSearchParams.get('minSize'))
+    : RULES.SEARCH_MIN_SIZE;
+  const maxSize = navigationSearchParams.get('maxSize')
+    ? Number(navigationSearchParams.get('maxSize'))
+    : RULES.SEARCH_MAX_SIZE;
+  const favoriteOnly = navigationSearchParams.get('favoriteOnly') === 'true';
+  const newTransactionOnly =
+    navigationSearchParams.get('newTransactionOnly') === 'true';
+
+  const searchParams = useMemo(
+    () => ({
+      regionCode,
+      tradeDate,
+      pageIndex,
+      apartName,
+      minSize,
+      maxSize,
+      favoriteOnly,
+      newTransactionOnly,
+    }),
+    [
+      regionCode,
+      tradeDate,
+      pageIndex,
+      apartName,
+      minSize,
+      maxSize,
+      favoriteOnly,
+      newTransactionOnly,
+    ]
+  );
 
   const setSearchParams = (params: Partial<SearchParams>) => {
     const newSearchParams = new URLSearchParams(navigationSearchParams);
     Object.entries(params).forEach(([key, value]) => {
-      newSearchParams.set(key, value);
+      newSearchParams.set(key, parseSearchParam(value));
     });
     router.push(`${ROUTE_PATH.TRANSACTIONS}?${newSearchParams.toString()}`);
   };

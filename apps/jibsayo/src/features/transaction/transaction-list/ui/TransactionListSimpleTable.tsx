@@ -1,9 +1,10 @@
 import { TransactionItem } from '@/entities/transaction';
+import { calculateAreaPyeong } from '@/shared/services/transactionCalculator';
 import {
   formatDate,
   formatFloor,
   formatKoreanAmountSimpleText,
-  formatSizeWithPyeong,
+  formatPyeong,
 } from '@/shared/utils/formatters';
 
 import { Star } from 'lucide-react';
@@ -62,7 +63,7 @@ const columns: ColumnDef<TransactionItem>[] = [
         {row.original.floor && (
           <SimpleTableText className="text-sm">
             {formatFloor(row.original.floor)} /{' '}
-            {formatSizeWithPyeong(row.original.size)}
+            {formatPyeong(calculateAreaPyeong(row.original.size))}
           </SimpleTableText>
         )}
       </>
