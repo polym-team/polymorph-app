@@ -1,7 +1,9 @@
 'use client';
 
+import { useTransactionFilter } from '../hooks/useTransactionFilter';
 import { useTransactionSummary } from '../hooks/useTransactionSummary';
 import { useTransactionViewSetting } from '../hooks/useTransactionViewSetting';
+import { TransactionFilter } from '../ui/TransactionFilter';
 import { TransactionSummary } from '../ui/TransactionSummary';
 import { TransactionListData } from './TransactionListData';
 
@@ -12,6 +14,8 @@ export function TransactionList() {
     transactionTotalCount,
     transactionAverageAmount,
   } = useTransactionSummary();
+  const { filter, selectedFilter, changeFilter, submitFilter, resetFilter } =
+    useTransactionFilter();
   const { pageIndex, sorting, updateSorting, updatePageIndex } =
     useTransactionViewSetting();
 
@@ -23,7 +27,13 @@ export function TransactionList() {
         transactionTotalCount={transactionTotalCount}
         transactionAverageAmount={transactionAverageAmount}
       />
-      {/* <TransactionListHeader /> */}
+      <TransactionFilter
+        filter={filter}
+        selectedFilter={selectedFilter}
+        onChangeFilter={changeFilter}
+        onSubmitFilter={submitFilter}
+        onResetFilter={resetFilter}
+      />
       <TransactionListData
         pageIndex={pageIndex}
         sorting={sorting}

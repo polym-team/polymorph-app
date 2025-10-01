@@ -2,41 +2,51 @@ import { RULES, SearchParams, useSearchParams } from '@/entities/transaction';
 
 import { useEffect, useState } from 'react';
 
-interface TransactionFilter {
-  apartName: SearchParams['apartName'];
-  minSize: SearchParams['minSize'];
-  maxSize: SearchParams['maxSize'];
-  favoriteOnly: SearchParams['favoriteOnly'];
-  newTransactionOnly: SearchParams['newTransactionOnly'];
-}
+import { TransactionFilter } from '../models/types';
 
 interface Return {
   filter: TransactionFilter;
+  selectedFilter: TransactionFilter;
   changeFilter: (value: Partial<TransactionFilter>) => void;
-  searchFilter: () => void;
+  submitFilter: () => void;
+  resetFilter: () => void;
 }
+
+const initialState: TransactionFilter = {
+  apartName: '',
+  minSize: RULES.SEARCH_MIN_SIZE,
+  maxSize: RULES.SEARCH_MAX_SIZE,
+  favoriteOnly: false,
+  newTransactionOnly: false,
+};
 
 export const useTransactionFilter = (): Return => {
   const { searchParams, setSearchParams } = useSearchParams();
 
-  const [filter, setFilter] = useState<TransactionFilter>({
-    apartName: '',
-    minSize: RULES.SEARCH_MIN_SIZE,
-    maxSize: RULES.SEARCH_MAX_SIZE,
-    favoriteOnly: false,
-    newTransactionOnly: false,
-  });
+  const [filter, setFilter] = useState<TransactionFilter>(initialState);
+
+  const selectedFilter: TransactionFilter = {
+    apartName: searchParams.apartName,
+    minSize: searchParams.minSize,
+    maxSize: searchParams.maxSize,
+    favoriteOnly: searchParams.favoriteOnly,
+    newTransactionOnly: searchParams.newTransactionOnly,
+  };
 
   const changeFilter = (nextFilter: Partial<TransactionFilter>) => {
     const changedFilter = { ...filter, ...nextFilter };
     setFilter(changedFilter);
   };
 
-  const searchFilter = () => {
+  const submitFilter = () => {
     setSearchParams(filter);
+  };
+
+  const resetFilter = () => {
+    setFilter(initialState);
   };
 
   useEffect(() => {}, [searchParams]);
 
-  return { filter, changeFilter, searchFilter };
+  return { filter, selectedFilter, changeFilter, submitFilter, resetFilter };
 };
