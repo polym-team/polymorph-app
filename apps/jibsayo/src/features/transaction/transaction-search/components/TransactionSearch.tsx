@@ -3,6 +3,7 @@
 import { useSearchParams } from '@/entities/transaction';
 
 import { useFilterForm } from '../hooks/useFilterForm';
+import { useQueryParamInitializer } from '../hooks/useQueryParamInitializer';
 import { useSearchForm } from '../hooks/useSearchForm';
 import { FilterForm } from '../ui/FilterForm';
 import { FormButton } from '../ui/FormButton';
