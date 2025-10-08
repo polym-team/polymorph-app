@@ -14,6 +14,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Loader2,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -40,6 +41,7 @@ type ExtendedColumnDef<TData, TValue> = ColumnDef<TData, TValue> & {
 };
 
 interface DataTableProps<TData, TValue> {
+  loading?: boolean;
   columns: ExtendedColumnDef<TData, TValue>[];
   data: TData[];
   sorting?: SortingState;
@@ -51,6 +53,7 @@ interface DataTableProps<TData, TValue> {
 }
 
 export function DataTable<TData, TValue>({
+  loading = false,
   columns,
   data,
   sorting: externalSorting,
@@ -106,6 +109,120 @@ export function DataTable<TData, TValue>({
       sorting,
     },
   });
+
+  // 로딩 스켈레톤 컴포넌트
+  const LoadingSkeleton = () => {
+    // 고정된 width 배열 (리렌더링 시에도 동일한 패턴 유지)
+    const skeletonWidths = ['w-[60%]', 'w-[70%]', 'w-[80%]'];
+
+    // 각 행과 셀에 대한 고정된 width 패턴 생성
+    const getSkeletonWidth = (rowIndex: number, cellIndex: number) => {
+      const patternIndex =
+        (rowIndex * columns.length + cellIndex) % skeletonWidths.length;
+      return skeletonWidths[patternIndex];
+    };
+
+    return (
+      <div className="relative w-full">
+        {/* 상단 페이지네이션 스켈레톤 */}
+        <div className="flex items-center justify-between py-2">
+          <div className="flex items-center gap-x-1 text-sm text-gray-700">
+            <div className="h-4 w-16 animate-pulse rounded-sm bg-gray-200" />
+            <div className="h-4 w-20 animate-pulse rounded-sm bg-gray-200" />
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="h-8 w-8 animate-pulse rounded bg-gray-200" />
+            <div className="h-8 w-8 animate-pulse rounded bg-gray-200" />
+            <div className="h-8 w-[52px] animate-pulse rounded bg-gray-200" />
+            <div className="h-8 w-8 animate-pulse rounded bg-gray-200" />
+            <div className="h-8 w-8 animate-pulse rounded bg-gray-200" />
+          </div>
+        </div>
+
+        {/* 스켈레톤 테이블 */}
+        <div className="overflow-x-auto">
+          <Table>
+            <colgroup>
+              {columns.map((column, index) => {
+                const columnDef = column as ExtendedColumnDef<TData, TValue>;
+                if (columnDef.size === Infinity) {
+                  return <col key={index} width="*" />;
+                } else if (typeof columnDef.size === 'number') {
+                  return <col key={index} width={columnDef.size} />;
+                } else {
+                  return <col key={index} />;
+                }
+              })}
+            </colgroup>
+            <TableHeader>
+              <TableRow>
+                {columns.map((_, index) => {
+                  const isLastColumn = index === columns.length - 1;
+                  return (
+                    <TableHead key={index} className="overflow-hidden">
+                      <div
+                        className={
+                          isLastColumn ? 'flex justify-end' : 'text-left'
+                        }
+                      >
+                        <div
+                          className={`h-4 ${getSkeletonWidth(0, index)} animate-pulse rounded-sm bg-gray-200 px-2`}
+                        />
+                      </div>
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 5 }, (_, rowIndex) => (
+                <TableRow key={rowIndex}>
+                  {columns.map((_, cellIndex) => {
+                    const isLastColumn = cellIndex === columns.length - 1;
+                    return (
+                      <TableCell
+                        key={cellIndex}
+                        className={isLastColumn ? 'text-right' : 'text-left'}
+                      >
+                        <div
+                          className={`h-4 ${getSkeletonWidth(rowIndex + 1, cellIndex)} max-w-full animate-pulse rounded-sm bg-gray-200 px-2 ${
+                            isLastColumn ? 'ml-auto' : ''
+                          }`}
+                        />
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* 하단 페이지네이션 스켈레톤 */}
+        <div className="flex items-center justify-between py-2">
+          <div className="flex items-center gap-x-1 text-sm text-gray-700">
+            <div className="h-4 w-16 animate-pulse rounded-sm bg-gray-200" />
+            <div className="h-4 w-20 animate-pulse rounded-sm bg-gray-200" />
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="h-8 w-8 animate-pulse rounded bg-gray-200" />
+            <div className="h-8 w-8 animate-pulse rounded bg-gray-200" />
+            <div className="h-8 w-[52px] animate-pulse rounded bg-gray-200" />
+            <div className="h-8 w-8 animate-pulse rounded bg-gray-200" />
+            <div className="h-8 w-8 animate-pulse rounded bg-gray-200" />
+          </div>
+        </div>
+
+        {/* 절대 위치 로딩 메시지 */}
+        <div className="absolute inset-0 flex items-center justify-center bg-white/20">
+          <div className="flex flex-col items-center gap-3 rounded border border-gray-100 bg-white/90 p-6 text-gray-600 shadow-sm">
+            <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+            <span>데이터를 조회하고 있어요</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // 페이지네이션 컴포넌트
   const PaginationComponent = () => (
@@ -176,6 +293,11 @@ export function DataTable<TData, TValue>({
       </div>
     </div>
   );
+
+  // 로딩 상태일 때 스켈레톤 UI 표시
+  if (loading) {
+    return <LoadingSkeleton />;
+  }
 
   return (
     <div className="w-full">

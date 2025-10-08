@@ -6,12 +6,13 @@ import { TransactionListSimpleTable } from '../ui/TransactionListSimpleTable';
 
 export function TransactionListData() {
   const { isMobile } = useGlobalConfigStore();
-  const { transactionData } = useTransactionData();
+  const { isLoading, transactionData } = useTransactionData();
   const { pageIndex, sorting, updateSorting, updatePageIndex } =
     useTransactionViewSetting();
 
   const items = transactionData;
   const props = {
+    isLoading,
     pageIndex,
     sorting,
     items,

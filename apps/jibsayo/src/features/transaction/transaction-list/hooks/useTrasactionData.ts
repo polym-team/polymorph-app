@@ -9,11 +9,12 @@ import { useMemo } from 'react';
 import { filterTransactionListWithFilter } from '../services/filter';
 
 interface Return {
+  isLoading: boolean;
   transactionData: TransactionItem[];
 }
 
 export const useTransactionData = (): Return => {
-  const { data } = useTransactionListQuery();
+  const { isLoading, data } = useTransactionListQuery();
   const { searchParams } = useSearchParams();
 
   const filteredTransactions = useMemo(() => {
@@ -24,5 +25,5 @@ export const useTransactionData = (): Return => {
     return filterTransactionListWithFilter(data.list, searchParams);
   }, [data?.list, searchParams]);
 
-  return { transactionData: filteredTransactions };
+  return { isLoading, transactionData: filteredTransactions };
 };

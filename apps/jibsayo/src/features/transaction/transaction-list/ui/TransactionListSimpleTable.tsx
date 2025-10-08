@@ -19,6 +19,7 @@ import {
 import { SimpleTableText } from './SimpleTableText';
 
 interface TransactionListDataProps {
+  isLoading: boolean;
   pageIndex: number;
   sorting: SortingState;
   items: TransactionItem[];
@@ -84,14 +85,16 @@ const columns: ColumnDef<TransactionItem>[] = [
 ];
 
 export function TransactionListSimpleTable({
-  items,
+  isLoading,
   pageIndex,
+  items,
   sorting,
   onSortingChange,
   onPageIndexChange,
 }: TransactionListDataProps) {
   return (
     <DataTable
+      loading={isLoading}
       columns={columns}
       pageSize={15}
       data={items}
