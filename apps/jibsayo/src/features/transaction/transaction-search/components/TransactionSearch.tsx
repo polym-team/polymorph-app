@@ -2,6 +2,8 @@
 
 import { useSearchParams } from '@/entities/transaction';
 
+import { useRef } from 'react';
+
 import { useFavoriteRegion } from '../hooks/useFavoriteRegion';
 import { useFilterForm } from '../hooks/useFilterForm';
 import { useSearchForm } from '../hooks/useSearchForm';
@@ -17,19 +19,26 @@ export function TransactionSearch() {
   const { favoriteRegionList, addFavoriteRegion, removeFavoriteRegion } =
     useFavoriteRegion();
 
+  const beforeSearchedRegionCode = useRef<string>(form.regionCode);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    const changedRegionCode =
+      beforeSearchedRegionCode.current !== form.regionCode;
+
     setSearchParams({
       regionCode: form.regionCode,
-      tradeDate: form.tradeDate.toISOString().replace(/-/g, '').slice(0, 6),
-      apartName: filter.apartName,
+      tradeDate: `${form.tradeDate.getFullYear()}${String(form.tradeDate.getMonth() + 1).padStart(2, '0')}`,
+      apartName: changedRegionCode ? '' : filter.apartName,
       minSize: filter.minSize,
       maxSize: filter.maxSize,
       favoriteOnly: filter.favoriteOnly,
       newTransactionOnly: filter.newTransactionOnly,
       pageIndex: 0,
     });
+
+    beforeSearchedRegionCode.current = form.regionCode;
   };
 
   return (

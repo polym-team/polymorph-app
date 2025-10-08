@@ -345,29 +345,44 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.map(row => (
-              <TableRow
-                key={row.id}
-                className={onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''}
-                onClick={() => onRowClick?.(row.original)}
-              >
-                {row.getVisibleCells().map((cell, index) => {
-                  const isLastColumn =
-                    index === row.getVisibleCells().length - 1;
-                  return (
-                    <TableCell
-                      key={cell.id}
-                      className={isLastColumn ? 'text-right' : ''}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  );
-                })}
+            {data.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="bg-white py-12 text-center text-gray-500"
+                >
+                  <div className="flex justify-center text-base">
+                    표시할 데이터가 없어요
+                  </div>
+                </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              table.getRowModel().rows.map(row => (
+                <TableRow
+                  key={row.id}
+                  className={
+                    onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''
+                  }
+                  onClick={() => onRowClick?.(row.original)}
+                >
+                  {row.getVisibleCells().map((cell, index) => {
+                    const isLastColumn =
+                      index === row.getVisibleCells().length - 1;
+                    return (
+                      <TableCell
+                        key={cell.id}
+                        className={isLastColumn ? 'text-right' : ''}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

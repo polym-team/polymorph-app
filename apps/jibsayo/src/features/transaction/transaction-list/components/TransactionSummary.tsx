@@ -6,15 +6,12 @@ import {
   useSearchParams,
   useTransactionListQuery,
 } from '@/entities/transaction';
-import {
-  formatKoreanAmountText,
-  formatQuantity,
-} from '@/shared/utils/formatters';
 
 import { calculateTransactionAverageAmount } from '../services/calculator';
+import { Summary } from '../ui/Summary';
 
 export function TransactionSummary() {
-  const { data: transactions } = useTransactionListQuery();
+  const { isLoading, data: transactions } = useTransactionListQuery();
   const { searchParams } = useSearchParams();
 
   const cityName = getCityNameWithRegionCode(searchParams.regionCode);
@@ -30,27 +27,11 @@ export function TransactionSummary() {
     return null;
   }
 
-  return (
-    <div className="flex items-center justify-between">
-      <div>
-        <strong>
-          {cityName} {regionName}
-        </strong>
-      </div>
-      <div className="text-right">
-        <p className="text-sm text-gray-600">
-          총 거래건수{' '}
-          <strong className="text-primary">
-            {formatQuantity(transactionTotalCount)}
-          </strong>
-        </p>
-        <p className="text-sm text-gray-600">
-          평당 거래가격{' '}
-          <strong className="text-primary">
-            {formatKoreanAmountText(transactionAverageAmount)}
-          </strong>
-        </p>
-      </div>
-    </div>
-  );
+  <Summary
+    isLoading={isLoading}
+    cityName={cityName}
+    regionName={regionName}
+    transactionTotalCount={transactionTotalCount}
+    transactionAverageAmount={transactionAverageAmount}
+  />;
 }
