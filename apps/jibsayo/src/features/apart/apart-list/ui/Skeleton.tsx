@@ -1,6 +1,6 @@
 import { Card } from '@package/ui';
 
-export function FavoriteApartListSkeleton() {
+export function Skeleton() {
   return (
     <div className="flex flex-col gap-y-5">
       {[1, 2, 3].map(regionIndex => (
