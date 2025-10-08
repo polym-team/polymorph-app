@@ -28,7 +28,9 @@ export const useSearchParams = (): Return => {
 
   const regionCode = navigationSearchParams.get('regionCode') ?? '';
   const tradeDate = navigationSearchParams.get('tradeDate') ?? '';
-  const pageIndex = navigationSearchParams.get('pageIndex') ?? '';
+  const pageIndex = navigationSearchParams.get('pageIndex')
+    ? Number(navigationSearchParams.get('pageIndex'))
+    : 0;
   const apartName = navigationSearchParams.get('apartName') ?? '';
   const minSize = navigationSearchParams.get('minSize')
     ? Number(navigationSearchParams.get('minSize'))

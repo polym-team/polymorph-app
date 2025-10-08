@@ -44,6 +44,7 @@ export const useTransactionFilter = (): Return => {
 
   const resetFilter = () => {
     setFilter(initialState);
+    setSearchParams(initialState);
   };
 
   useEffect(() => {}, [searchParams]);

@@ -5,7 +5,7 @@ export type TransactionItem = TransactionsResponse['list'][number];
 export interface SearchParams {
   regionCode: string;
   tradeDate: string;
-  pageIndex: string;
+  pageIndex: number;
   apartName: string;
   minSize: number;
   maxSize: number;

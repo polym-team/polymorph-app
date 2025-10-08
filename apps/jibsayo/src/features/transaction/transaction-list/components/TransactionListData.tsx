@@ -1,34 +1,22 @@
-import { useTransactionListQuery } from '@/entities/transaction';
 import { useGlobalConfigStore } from '@/shared/stores/globalConfigStore';
 
-import { SortingState } from '@package/ui';
-
-import { TransactionListDetailTable } from '../ui/TransactionListDetailTable';
+import { useTransactionViewSetting } from '../hooks/useTransactionViewSetting';
+import { useTransactionData } from '../hooks/useTrasactionData';
 import { TransactionListSimpleTable } from '../ui/TransactionListSimpleTable';
 
-interface TransactionListDataProps {
-  pageIndex: number;
-  sorting: SortingState;
-  onSortingChange: (sorting: SortingState) => void;
-  onPageIndexChange: (pageIndex: number) => void;
-}
-
-export function TransactionListData({
-  pageIndex,
-  sorting,
-  onSortingChange,
-  onPageIndexChange,
-}: TransactionListDataProps) {
+export function TransactionListData() {
   const { isMobile } = useGlobalConfigStore();
-  const { data } = useTransactionListQuery();
+  const { transactionData } = useTransactionData();
+  const { pageIndex, sorting, updateSorting, updatePageIndex } =
+    useTransactionViewSetting();
 
-  const items = data?.list ?? [];
+  const items = transactionData;
   const props = {
     pageIndex,
     sorting,
     items,
-    onSortingChange,
-    onPageIndexChange,
+    onSortingChange: updateSorting,
+    onPageIndexChange: updatePageIndex,
   };
 
   return isMobile ? (

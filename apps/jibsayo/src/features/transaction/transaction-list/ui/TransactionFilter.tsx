@@ -22,7 +22,7 @@ export function TransactionFilter({
   onResetFilter,
   onSubmitFilter,
 }: TransactionFilterProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleSubmit = () => {

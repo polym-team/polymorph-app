@@ -71,7 +71,7 @@ const columns: ColumnDef<TransactionItem>[] = [
   },
   {
     size: 100,
-    accessorKey: 'maxTradeAmount',
+    accessorKey: 'tradeAmount',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="거래가격" />
     ),

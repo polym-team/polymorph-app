@@ -1,32 +1,17 @@
 'use client';
 
 import { useTransactionFilter } from '../hooks/useTransactionFilter';
-import { useTransactionSummary } from '../hooks/useTransactionSummary';
-import { useTransactionViewSetting } from '../hooks/useTransactionViewSetting';
 import { TransactionFilter } from '../ui/TransactionFilter';
-import { TransactionSummary } from '../ui/TransactionSummary';
 import { TransactionListData } from './TransactionListData';
+import { TransactionSummary } from './TransactionSummary';
 
 export function TransactionList() {
-  const {
-    cityName,
-    regionName,
-    transactionTotalCount,
-    transactionAverageAmount,
-  } = useTransactionSummary();
   const { filter, selectedFilter, changeFilter, submitFilter, resetFilter } =
     useTransactionFilter();
-  const { pageIndex, sorting, updateSorting, updatePageIndex } =
-    useTransactionViewSetting();
 
   return (
     <div className="flex flex-col gap-y-3">
-      <TransactionSummary
-        cityName={cityName}
-        regionName={regionName}
-        transactionTotalCount={transactionTotalCount}
-        transactionAverageAmount={transactionAverageAmount}
-      />
+      <TransactionSummary />
       <TransactionFilter
         filter={filter}
         selectedFilter={selectedFilter}
@@ -34,12 +19,7 @@ export function TransactionList() {
         onSubmitFilter={submitFilter}
         onResetFilter={resetFilter}
       />
-      <TransactionListData
-        pageIndex={pageIndex}
-        sorting={sorting}
-        onSortingChange={updateSorting}
-        onPageIndexChange={updatePageIndex}
-      />
+      <TransactionListData />
     </div>
   );
 }

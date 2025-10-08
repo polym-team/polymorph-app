@@ -1,21 +1,29 @@
 import {
+  getCityNameWithRegionCode,
+  getRegionNameWithRegionCode,
+} from '@/entities/region';
+import {
+  useSearchParams,
+  useTransactionListQuery,
+} from '@/entities/transaction';
+import {
   formatKoreanAmountText,
   formatQuantity,
 } from '@/shared/utils/formatters';
 
-interface TransactionSummaryProps {
-  cityName: string;
-  regionName: string;
-  transactionTotalCount: number;
-  transactionAverageAmount: number;
-}
+import { calculateTransactionAverageAmount } from '../services/calculator';
 
-export function TransactionSummary({
-  cityName,
-  regionName,
-  transactionTotalCount,
-  transactionAverageAmount,
-}: TransactionSummaryProps) {
+export function TransactionSummary() {
+  const { data: transactions } = useTransactionListQuery();
+  const { searchParams } = useSearchParams();
+
+  const cityName = getCityNameWithRegionCode(searchParams.regionCode);
+  const regionName = getRegionNameWithRegionCode(searchParams.regionCode);
+  const transactionTotalCount = transactions?.list?.length ?? 0;
+  const transactionAverageAmount = calculateTransactionAverageAmount(
+    transactions?.list ?? []
+  );
+
   const isShowSummary = Boolean(cityName && regionName);
 
   if (!isShowSummary) {
