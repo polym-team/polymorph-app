@@ -39,7 +39,7 @@ export function TransactionSummary() {
       </div>
       <div className="text-right">
         <p className="text-sm text-gray-600">
-          총 거래 건수{' '}
+          총 거래건수{' '}
           <strong className="text-primary">
             {formatQuantity(transactionTotalCount)}
           </strong>
