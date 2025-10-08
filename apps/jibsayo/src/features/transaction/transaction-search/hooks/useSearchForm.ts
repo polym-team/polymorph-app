@@ -3,24 +3,17 @@ import { useSearchParams } from '@/entities/transaction';
 
 import { useState } from 'react';
 
-interface Form {
-  cityName: string;
-  regionCode: string;
-  tradeDate: Date;
-}
+import { SearchForm } from '../models/types';
 
 interface Return {
-  form: Form;
-  updateCityName: (nextCityName: string) => void;
-  updateRegionCode: (nextRegionCode: string) => void;
-  updateTradeDate: (nextTradeDate: Date | undefined) => void;
-  submitForm: () => void;
+  form: SearchForm;
+  changeForm: (value: Partial<SearchForm>) => void;
 }
 
 export const useSearchForm = (): Return => {
-  const { searchParams, setSearchParams } = useSearchParams();
+  const { searchParams } = useSearchParams();
 
-  const [form, setForm] = useState<Form>(() => {
+  const [form, setForm] = useState<SearchForm>(() => {
     const defaultRegionCode = searchParams.regionCode || firstRegionCode;
     const defaultTradeDate = searchParams.tradeDate
       ? new Date(
@@ -36,37 +29,12 @@ export const useSearchForm = (): Return => {
     };
   });
 
-  const updateCityName = (nextCityName: string) => {
-    setForm(prev => ({ ...prev, cityName: nextCityName }));
-  };
-
-  const updateRegionCode = (nextRegionCode: string) => {
-    setForm(prev => ({ ...prev, regionCode: nextRegionCode }));
-  };
-
-  const updateTradeDate = (nextTradeDate: Date | undefined) => {
-    if (!nextTradeDate) return;
-    setForm(prev => ({ ...prev, tradeDate: nextTradeDate }));
-  };
-
-  const submitForm = () => {
-    const year = form.tradeDate.getFullYear();
-    const month = String(form.tradeDate.getMonth() + 1).padStart(2, '0');
-    const tradeDate = year + month;
-
-    setSearchParams({
-      regionCode: form.regionCode,
-      tradeDate,
-      pageIndex: 0,
-      apartName: '',
-    });
+  const changeForm = (value: Partial<SearchForm>) => {
+    setForm(prev => ({ ...prev, ...value }));
   };
 
   return {
     form,
-    updateCityName,
-    updateRegionCode,
-    updateTradeDate,
-    submitForm,
+    changeForm,
   };
 };

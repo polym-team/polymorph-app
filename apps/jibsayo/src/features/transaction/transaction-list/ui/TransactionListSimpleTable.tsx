@@ -93,7 +93,7 @@ export function TransactionListSimpleTable({
   return (
     <DataTable
       columns={columns}
-      pageSize={20}
+      pageSize={15}
       data={items}
       pageIndex={pageIndex}
       sorting={sorting}
