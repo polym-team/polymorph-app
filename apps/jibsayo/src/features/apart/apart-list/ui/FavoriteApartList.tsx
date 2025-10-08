@@ -2,24 +2,25 @@ import {
   getCityNameWithRegionCode,
   getRegionNameWithRegionCode,
 } from '@/entities/region';
-import { RegionItem } from '@/entities/region/models/types';
 
 import { X } from 'lucide-react';
 
 import { Card, Typography } from '@package/ui';
 import { Button } from '@package/ui';
 
-interface ApartListProps {
+import { ApartItem, RegionItem } from '../models/types';
+
+interface FavoriteApartListProps {
   regionItems: RegionItem[];
-  onClickApartItem: (regionCode: string, apartName: string) => void;
-  onRemoveApartItem: (regionCode: string, apartName: string) => void;
+  onClickApartItem: (regionCode: string, apartItem: ApartItem) => void;
+  onRemoveApartItem: (regionCode: string, apartItem: ApartItem) => void;
 }
 
-export function ApartList({
+export function FavoriteApartList({
   regionItems,
   onClickApartItem,
   onRemoveApartItem,
-}: ApartListProps) {
+}: FavoriteApartListProps) {
   return (
     <div className="flex flex-col gap-y-5">
       {regionItems.map(region => (
@@ -36,27 +37,21 @@ export function ApartList({
             <div className="flex flex-wrap gap-2 p-3 md:p-4">
               {region.apartItems.map(item => (
                 <div
-                  key={`${item.apartName}-${item.address}`}
+                  key={`${item.name}-${item.address}`}
                   className="border-input bg-background flex flex-shrink-0 rounded-md border"
                 >
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() =>
-                      onClickApartItem(region.code, item.apartName)
-                    }
+                    onClick={() => onClickApartItem(region.code, item)}
                     className="whitespace-nowrap rounded-r-none border-0 px-3 py-1.5 text-sm"
                   >
-                    <span className="translate-y-[-0.5px]">
-                      {item.apartName}
-                    </span>
+                    <span className="translate-y-[-0.5px]">{item.name}</span>
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() =>
-                      onRemoveApartItem(region.code, item.apartName)
-                    }
+                    onClick={() => onRemoveApartItem(region.code, item)}
                     className="h-full min-w-0 rounded-l-none border-0 px-2 py-1.5"
                   >
                     <X className="h-3 w-3" />

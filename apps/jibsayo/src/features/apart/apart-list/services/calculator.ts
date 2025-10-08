@@ -4,7 +4,7 @@ import {
   getRegionNameWithRegionCode,
 } from '@/entities/region';
 
-import { RegionItem } from '../models/types';
+import { ApartItem, RegionItem } from '../models/types';
 
 const sortItems = <T extends { name: string }>(regionItems: T[]): T[] => {
   return regionItems.sort((a, b) => {
@@ -13,48 +13,34 @@ const sortItems = <T extends { name: string }>(regionItems: T[]): T[] => {
 };
 
 const createApartItems = (
-  regionItems: RegionItem[],
+  regionCode: string,
   favoriteApartList: FavoriteApartItem[]
-): RegionItem[] => {
-  regionItems.map(regionItem => {
-    const apartItems = favoriteApartList
-      .filter(item => item.regionCode === regionItem.code)
-      .map(item => ({ name: item.apartName }));
+): ApartItem[] => {
+  const apartItems = favoriteApartList
+    .filter(item => item.regionCode === regionCode)
+    .map(item => ({ name: item.apartName, address: item.address }));
 
-    return {
-      ...regionItem,
-      apartItems: sortItems(apartItems),
-    };
-  });
-
-  return regionItems;
+  return sortItems(apartItems);
 };
 
 const createRegionItems = (
   favoriteApartList: FavoriteApartItem[]
 ): RegionItem[] => {
-
-  const regionCodes = [...new Set(favoriteApartList.map(item => item.regionCode))];
   const regionItems: RegionItem[] = [];
+  const regionCodes = Array.from(
+    new Set(favoriteApartList.map(item => item.regionCode))
+  );
 
-  favoriteApartList.forEach(item => {
-    const regionItem = regionItems.find(
-      regionItem => regionItem.code === item.regionCode
-    );
-
-    if (!regionItem) {
-      regionItems.push({
-        code: item.regionCode,
-        name: `${getCityNameWithRegionCode(item.regionCode)}${getRegionNameWithRegionCode(item.regionCode)}`,
-        apartItems: [],
-      });
-    }
+  regionCodes.forEach(regionCode => {
+    regionItems.push({
+      code: regionCode,
+      name: `${getCityNameWithRegionCode(regionCode)}${getRegionNameWithRegionCode(regionCode)}`,
+      apartItems: createApartItems(regionCode, favoriteApartList),
+    });
   });
 
   return sortItems(regionItems);
 };
-
-
 
 export const calculateRegionItems = (
   favoriteApartList: FavoriteApartItem[]

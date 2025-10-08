@@ -80,11 +80,12 @@ export const useAddFavoriteApartHandler = (): ((
           setItem(STORAGE_KEY.FAVORITE_APART_LIST, afterFavoriteApartList);
         }
 
+        console.log('afterFavoriteApartList: ', afterFavoriteApartList);
         setFavoriteApartList(afterFavoriteApartList);
         toast.success('즐겨찾기에 추가됐어요');
       } catch {}
     },
-    []
+    [favoriteApartList]
   );
 
   return addFavoriteApartHandler;
@@ -115,11 +116,12 @@ export const useRemoveFavoriteApartHandler = (): ((
           setItem(STORAGE_KEY.FAVORITE_APART_LIST, afterFavoriteApartList);
         }
 
+        console.log('afterFavoriteApartList: ', afterFavoriteApartList);
         setFavoriteApartList(afterFavoriteApartList);
         toast.success('즐겨찾기에서 삭제됐어요');
       } catch {}
     },
-    []
+    [favoriteApartList]
   );
 
   return removeFavoriteApartHandler;
