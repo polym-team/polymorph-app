@@ -96,8 +96,20 @@ export function DataTable<TData, TValue>({
   const startIndex = pageIndex * pageSize;
   const endIndex = startIndex + pageSize;
   const paginatedData = useMemo(() => {
-    return data.slice(startIndex, endIndex);
-  }, [data, startIndex, endIndex]);
+    const sortedData = [...data].sort((a, b) => {
+      if (sorting.length === 0) return 0;
+
+      const { id, desc } = sorting[0];
+      const aValue = a[id as keyof TData];
+      const bValue = b[id as keyof TData];
+
+      if (aValue < bValue) return desc ? 1 : -1;
+      if (aValue > bValue) return desc ? -1 : 1;
+      return 0;
+    });
+
+    return sortedData.slice(startIndex, endIndex);
+  }, [data, startIndex, endIndex, sorting]);
 
   const table = useReactTable({
     data: paginatedData,

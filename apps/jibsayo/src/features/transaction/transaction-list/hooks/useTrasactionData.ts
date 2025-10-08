@@ -31,7 +31,7 @@ export const useTransactionData = (): Return => {
   const { isLoading, data } = useTransactionListQuery();
   const { searchParams } = useSearchParams();
 
-  const filteredTransactions = useMemo(() => {
+  const mappedTransactions = useMemo(() => {
     if (!data?.list) {
       return [];
     }
@@ -68,7 +68,7 @@ export const useTransactionData = (): Return => {
 
   return {
     isLoading,
-    transactionData: filteredTransactions,
+    transactionData: mappedTransactions,
     toggleFavoriteApart,
   };
 };

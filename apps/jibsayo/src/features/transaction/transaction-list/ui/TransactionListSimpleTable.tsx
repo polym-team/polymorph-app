@@ -64,7 +64,7 @@ const createColumns = (
     },
     {
       size: Infinity,
-      accessorKey: 'size',
+      accessorKey: 'apartName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="아파트명" />
       ),
