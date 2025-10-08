@@ -165,9 +165,10 @@ const Select = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root> & {
     size?: VariantProps<typeof selectTriggerVariants>['size'];
   }
->(({ size, children, ...props }) => {
+>(({ size, children, ...props }, ref) => {
+  // ← ref 파라미터 추가
   return (
-    <SelectPrimitive.Root {...props}>
+    <SelectPrimitive.Root ref={ref} {...props}>
       {React.Children.map(children, child => {
         if (React.isValidElement(child) && child.type === SelectTrigger) {
           return React.cloneElement(child, {

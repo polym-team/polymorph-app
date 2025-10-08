@@ -1,6 +1,6 @@
 import { Column } from '@tanstack/react-table';
 
-import { ArrowDown, ArrowUp, ChevronsUpDown, EyeOff } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
 import { cn } from '@package/utils';
 
@@ -11,6 +11,30 @@ interface DataTableColumnHeaderProps
   column: Column<any, unknown>;
   title: string;
 }
+
+const ArrowDown = dynamic(
+  () => import('lucide-react').then(mod => ({ default: mod.ArrowDown })),
+  {
+    ssr: false,
+    loading: () => <div className="ml-2 h-4 w-4" />,
+  }
+);
+
+const ArrowUp = dynamic(
+  () => import('lucide-react').then(mod => ({ default: mod.ArrowUp })),
+  {
+    ssr: false,
+    loading: () => <div className="ml-2 h-4 w-4" />,
+  }
+);
+
+const ChevronsUpDown = dynamic(
+  () => import('lucide-react').then(mod => ({ default: mod.ChevronsUpDown })),
+  {
+    ssr: false,
+    loading: () => <div className="ml-2 h-4 w-4" />,
+  }
+);
 
 export function DataTableColumnHeader({
   column,
