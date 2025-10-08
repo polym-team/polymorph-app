@@ -4,6 +4,7 @@ import {
   useFavoriteApartList,
   useRemoveFavoriteApartHandler,
 } from '@/entities/apart';
+import { ROUTE_PATH } from '@/shared/consts/route';
 
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
@@ -22,7 +23,7 @@ export function ApartList() {
   }, [favoriteApartList]);
 
   const handleClickApartItem = (regionCode: string, apartItem: ApartItem) => {
-    router.push(`/apart/${regionCode}/${apartItem.name}`);
+    router.push(`${ROUTE_PATH.APART}/${regionCode}/${apartItem.name}`);
   };
 
   const handleRemoveApartItem = (regionCode: string, apartItem: ApartItem) => {

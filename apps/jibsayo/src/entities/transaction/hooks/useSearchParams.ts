@@ -70,7 +70,7 @@ export const useSearchParams = (): Return => {
     Object.entries(params).forEach(([key, value]) => {
       newSearchParams.set(key, parseSearchParam(value));
     });
-    router.push(`${ROUTE_PATH.TRANSACTIONS}?${newSearchParams.toString()}`);
+    router.push(`${ROUTE_PATH.TRANSACTION}?${newSearchParams.toString()}`);
   };
 
   return { searchParams, setSearchParams };

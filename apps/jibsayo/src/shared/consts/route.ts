@@ -1,4 +1,4 @@
 export const ROUTE_PATH = {
-  TRANSACTIONS: '/transactions',
-  APARTS: '/aparts',
+  TRANSACTION: '/transaction',
+  APART: '/apart',
 } as const;

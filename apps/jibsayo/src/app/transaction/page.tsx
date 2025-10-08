@@ -3,7 +3,7 @@ import { TransactionSearch } from '@/features/transaction/transaction-search';
 
 import { Suspense } from 'react';
 
-export default async function TransactionsPage() {
+export default async function TransactionPage() {
   return (
     <div className="flex flex-col gap-y-5">
       <Suspense fallback={null}>

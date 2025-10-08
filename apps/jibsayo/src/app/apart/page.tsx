@@ -1,5 +1,5 @@
 import { ApartList } from '@/features/apart/apart-list';
 
-export default function FavoriteApartPage() {
+export default function ApartPage() {
   return <ApartList />;
 }

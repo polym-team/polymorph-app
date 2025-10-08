@@ -10,8 +10,8 @@ export function Header() {
   const pathname = usePathname();
 
   const navItems = [
-    { href: ROUTE_PATH.TRANSACTIONS, label: '실거래가 조회' },
-    { href: ROUTE_PATH.APARTS, label: '저장된 아파트' },
+    { href: ROUTE_PATH.TRANSACTION, label: '실거래가 조회' },
+    { href: ROUTE_PATH.APART, label: '저장된 아파트' },
   ];
 
   const getLinkClassName = (href: string) => {
@@ -30,7 +30,7 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link
-            href={ROUTE_PATH.TRANSACTIONS}
+            href={ROUTE_PATH.TRANSACTION}
             className="flex h-[56px] items-center space-x-2 overflow-hidden transition-all duration-200"
           >
             <img
