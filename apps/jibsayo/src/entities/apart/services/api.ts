@@ -1,16 +1,16 @@
-import { ApartItem, ServerFavoriteApart } from '../models/types';
+import { FavoriteApartItem, ServerFavoriteApart } from '../models/types';
 
 // API 응답 타입들
 interface ApiResponse<T> {
   success: boolean;
-  data?: T;
   error?: string;
+  data?: T;
 }
 
 // 즐겨찾기 아파트 목록 조회
-export const fetchFavoriteApartList = async (
+export const getFavoriteApartListFromServer = async (
   deviceId: string
-): Promise<ServerFavoriteApart[]> => {
+): Promise<FavoriteApartItem[]> => {
   try {
     const response = await fetch(`/api/favorite-apart?deviceId=${deviceId}`);
     const result: ApiResponse<ServerFavoriteApart[]> = await response.json();
@@ -19,7 +19,15 @@ export const fetchFavoriteApartList = async (
       throw new Error(result.error || '즐겨찾기 목록 조회에 실패했습니다.');
     }
 
-    return result.data || [];
+    if (!result.data) {
+      return [];
+    }
+
+    return result.data.map(item => ({
+      regionCode: item.regionCode,
+      apartName: item.apartName,
+      address: item.address,
+    }));
   } catch (error) {
     console.error('즐겨찾기 목록 조회 실패:', error);
     throw error;
@@ -27,11 +35,10 @@ export const fetchFavoriteApartList = async (
 };
 
 // 즐겨찾기 아파트 추가
-export const addFavoriteApart = async (
+export const addFavoriteApartToServer = async (
   deviceId: string,
-  regionCode: string,
-  apartItem: ApartItem
-): Promise<ServerFavoriteApart> => {
+  item: FavoriteApartItem
+): Promise<void> => {
   try {
     const response = await fetch('/api/favorite-apart', {
       method: 'POST',
@@ -40,9 +47,9 @@ export const addFavoriteApart = async (
       },
       body: JSON.stringify({
         deviceId,
-        regionCode,
-        address: apartItem.address,
-        apartName: apartItem.apartName,
+        regionCode: item.regionCode,
+        address: item.address,
+        apartName: item.apartName,
       }),
     });
 
@@ -51,8 +58,6 @@ export const addFavoriteApart = async (
     if (!result.success) {
       throw new Error(result.error || '즐겨찾기 추가에 실패했습니다.');
     }
-
-    return result.data!;
   } catch (error) {
     console.error('즐겨찾기 추가 실패:', error);
     throw error;
@@ -60,17 +65,16 @@ export const addFavoriteApart = async (
 };
 
 // 즐겨찾기 아파트 삭제
-export const removeFavoriteApart = async (
+export const removeFavoriteApartToServer = async (
   deviceId: string,
-  regionCode: string,
-  apartItem: ApartItem
+  item: FavoriteApartItem
 ): Promise<void> => {
   try {
     const params = new URLSearchParams({
       deviceId,
-      regionCode,
-      address: apartItem.address,
-      apartName: apartItem.apartName,
+      regionCode: item.regionCode,
+      address: item.address,
+      apartName: item.apartName,
     });
 
     const response = await fetch(`/api/favorite-apart?${params}`, {

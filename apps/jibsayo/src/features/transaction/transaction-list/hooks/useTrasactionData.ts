@@ -1,19 +1,33 @@
 import {
-  TransactionItem,
+  useAddFavoriteApartHandler,
+  useFavoriteApartList,
+  useRemoveFavoriteApartHandler,
+} from '@/entities/apart';
+import {
   useSearchParams,
   useTransactionListQuery,
 } from '@/entities/transaction';
 
 import { useMemo } from 'react';
 
-import { filterTransactionListWithFilter } from '../services/filter';
+import { TransactionItemWithFavorite } from '../models/types';
+import {
+  filterFavoriteApartListWithRegionCode,
+  filterTransactionListWithFilter,
+} from '../services/filter';
+import { mapTramsactionItemWithFavorite } from '../services/mapper';
 
 interface Return {
   isLoading: boolean;
-  transactionData: TransactionItem[];
+  transactionData: TransactionItemWithFavorite[];
+  toggleFavoriteApart: (transaction: TransactionItemWithFavorite) => void;
 }
 
 export const useTransactionData = (): Return => {
+  const favoriteApartList = useFavoriteApartList();
+  const addFavoriteApartHandler = useAddFavoriteApartHandler();
+  const removeFavoriteApartHandler = useRemoveFavoriteApartHandler();
+
   const { isLoading, data } = useTransactionListQuery();
   const { searchParams } = useSearchParams();
 
@@ -22,8 +36,39 @@ export const useTransactionData = (): Return => {
       return [];
     }
 
-    return filterTransactionListWithFilter(data.list, searchParams);
-  }, [data?.list, searchParams]);
+    const filteredFavoriteApartList = filterFavoriteApartListWithRegionCode(
+      searchParams.regionCode,
+      favoriteApartList
+    );
 
-  return { isLoading, transactionData: filteredTransactions };
+    const filteredTransactions = filterTransactionListWithFilter(
+      data.list,
+      searchParams
+    );
+
+    return mapTramsactionItemWithFavorite(
+      searchParams.regionCode,
+      filteredTransactions,
+      filteredFavoriteApartList
+    );
+  }, [data?.list, favoriteApartList, searchParams]);
+
+  const toggleFavoriteApart = (transaction: TransactionItemWithFavorite) => {
+    const targetApartItem = {
+      ...transaction,
+      regionCode: searchParams.regionCode,
+    };
+
+    if (transaction.isFavorite) {
+      removeFavoriteApartHandler(targetApartItem);
+    } else {
+      addFavoriteApartHandler(targetApartItem);
+    }
+  };
+
+  return {
+    isLoading,
+    transactionData: filteredTransactions,
+    toggleFavoriteApart,
+  };
 };

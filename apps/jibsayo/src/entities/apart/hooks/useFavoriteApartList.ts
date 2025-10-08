@@ -1,145 +1,126 @@
-import { useEffect, useState } from 'react';
+import { STORAGE_KEY } from '@/shared/consts/storageKey';
+import { useOnceEffect } from '@/shared/hooks';
+import { getItem, setItem } from '@/shared/lib/localStorage';
+import { isSameApartItem } from '@/shared/services/helper';
+import { useGlobalConfigStore } from '@/shared/stores/globalConfigStore';
+
+import { useCallback, useMemo } from 'react';
 
 import { toast } from '@package/ui';
 
+import { useFavoriteApartListStore } from '../models/storage';
+import { FavoriteApartItem } from '../models/types';
 import {
-  addFavoriteApartToLocal,
   addFavoriteApartToServer,
-  loadFavoriteApartListFromLocal,
-  loadFavoriteApartListFromServer,
-  removeFavoriteApartFromLocal,
-  removeFavoriteApartFromServer,
-  removeFromLocalStateOnly,
-  updateLocalStateOnly,
-} from '../models/favorite-storage';
-import { ApartItem, FavoriteApartItem } from '../models/types';
+  getFavoriteApartListFromServer,
+  removeFavoriteApartToServer,
+} from '../services/api';
 
-// 전역 상태로 즐겨찾기 목록 관리
-let globalFavoriteApartList: FavoriteApartItem[] = [];
-let globalListeners: Set<() => void> = new Set();
+let globalFavoriteApartList: FavoriteApartItem[] | null = null;
 
-// 전역 상태 업데이트 함수
-const updateGlobalState = (newList: FavoriteApartItem[]) => {
-  globalFavoriteApartList = newList;
-  globalListeners.forEach(listener => listener());
-};
-
-// 전역 상태 구독 함수
-const subscribeToGlobalState = (listener: () => void) => {
-  globalListeners.add(listener);
-  return () => {
-    globalListeners.delete(listener);
-  };
-};
-
-interface Return {
-  favoriteApartList: FavoriteApartItem[];
-  addFavoriteApart: (regionCode: string, apartItem: ApartItem) => void;
-  removeFavoriteApart: (regionCode: string, apartItem: ApartItem) => void;
-  refreshFavoriteApartList: () => Promise<void>;
-}
-
-export const useFavoriteApartList = (): Return => {
-  const [favoriteApartList, setFavoriteApartList] = useState<
-    FavoriteApartItem[]
-  >(globalFavoriteApartList);
-
-  useEffect(() => {
-    // 전역 상태 구독
-    const unsubscribe = subscribeToGlobalState(() => {
-      setFavoriteApartList(globalFavoriteApartList);
-    });
-
-    // 초기 로드 (전역 상태가 비어있을 때만)
-    if (globalFavoriteApartList.length === 0) {
-      loadFavoriteApartList();
-    } else {
-      setFavoriteApartList(globalFavoriteApartList);
-    }
-
-    return unsubscribe;
-  }, []);
+export const useFavoriteApartList = (): FavoriteApartItem[] => {
+  const isInApp = useGlobalConfigStore(state => state.isInApp);
+  const deviceId = useGlobalConfigStore(state => state.deviceId);
+  const favoriteApartList = useFavoriteApartListStore(
+    state => state.favoriteApartList
+  );
+  const setFavoriteApartList = useFavoriteApartListStore(
+    state => state.setFavoriteApartList
+  );
 
   const loadFavoriteApartList = async () => {
-    const deviceId = 'FIXME';
-    try {
-      if (deviceId) {
-        const serverData = await loadFavoriteApartListFromServer(deviceId);
-        updateGlobalState(serverData);
-      } else {
-        const localData = await loadFavoriteApartListFromLocal();
-        updateGlobalState(localData);
-      }
-    } catch (error) {
-      console.error('즐겨찾기 목록 로드 실패:', error);
-      const localData = await loadFavoriteApartListFromLocal();
-      updateGlobalState(localData);
+    if (globalFavoriteApartList) {
+      setFavoriteApartList(globalFavoriteApartList);
+      return;
     }
+
+    const data = isInApp
+      ? await getFavoriteApartListFromServer(deviceId)
+      : (getItem<FavoriteApartItem[]>(STORAGE_KEY.FAVORITE_APART_LIST) ?? []);
+
+    setFavoriteApartList(data);
   };
 
-  const refreshFavoriteApartList = async () => {
-    await loadFavoriteApartList();
-  };
+  const sortedFavoriteApartList = useMemo(() => {
+    return favoriteApartList.sort((a, b) => {
+      return `${a.regionCode}-${a.apartName}-${a.address}`.localeCompare(
+        `${b.regionCode}-${b.apartName}-${b.address}`,
+        'ko'
+      );
+    });
+  }, [favoriteApartList]);
 
-  const addFavoriteApart = async (regionCode: string, apartItem: ApartItem) => {
-    const deviceId = 'FIXME';
-    try {
-      if (deviceId) {
-        await addFavoriteApartToServer(deviceId, regionCode, apartItem);
-        const updatedList = updateLocalStateOnly(
-          globalFavoriteApartList,
-          regionCode,
-          apartItem
-        );
-        updateGlobalState(updatedList);
-      } else {
-        const updatedList = await addFavoriteApartToLocal(
-          globalFavoriteApartList,
-          regionCode,
-          apartItem
-        );
-        updateGlobalState(updatedList);
-      }
-      toast.success(`즐겨찾기에 추가되었습니다. (${apartItem.apartName})`);
-    } catch (error) {
-      console.error('즐겨찾기 추가 실패:', error);
-      toast.error('즐겨찾기 추가에 실패했습니다.');
-    }
-  };
+  useOnceEffect(true, () => {
+    loadFavoriteApartList();
+  });
 
-  const removeFavoriteApart = async (
-    regionCode: string,
-    apartItem: ApartItem
-  ) => {
-    const deviceId = 'FIXME';
-    try {
-      if (deviceId) {
-        await removeFavoriteApartFromServer(deviceId, regionCode, apartItem);
-        const updatedList = removeFromLocalStateOnly(
-          globalFavoriteApartList,
-          regionCode,
-          apartItem
-        );
-        updateGlobalState(updatedList);
-      } else {
-        const updatedList = await removeFavoriteApartFromLocal(
-          globalFavoriteApartList,
-          regionCode,
-          apartItem
-        );
-        updateGlobalState(updatedList);
-      }
-      toast.success(`즐겨찾기에서 삭제되었습니다. (${apartItem.apartName})`);
-    } catch (error) {
-      console.error('즐겨찾기 삭제 실패:', error);
-      toast.error('즐겨찾기 삭제에 실패했습니다.');
-    }
-  };
+  return sortedFavoriteApartList;
+};
 
-  return {
-    favoriteApartList,
-    addFavoriteApart,
-    removeFavoriteApart,
-    refreshFavoriteApartList,
-  };
+export const useAddFavoriteApartHandler = (): ((
+  item: FavoriteApartItem
+) => Promise<void>) => {
+  const isInApp = useGlobalConfigStore(state => state.isInApp);
+  const deviceId = useGlobalConfigStore(state => state.deviceId);
+  const favoriteApartList = useFavoriteApartListStore(
+    state => state.favoriteApartList
+  );
+  const setFavoriteApartList = useFavoriteApartListStore(
+    state => state.setFavoriteApartList
+  );
+
+  const addFavoriteApartHandler = useCallback(
+    async (item: FavoriteApartItem) => {
+      try {
+        const afterFavoriteApartList = [...favoriteApartList, item];
+
+        if (isInApp) {
+          await addFavoriteApartToServer(deviceId, item);
+        } else {
+          setItem(STORAGE_KEY.FAVORITE_APART_LIST, afterFavoriteApartList);
+        }
+
+        setFavoriteApartList(afterFavoriteApartList);
+        toast.success('즐겨찾기에 추가됐어요');
+      } catch {}
+    },
+    []
+  );
+
+  return addFavoriteApartHandler;
+};
+
+export const useRemoveFavoriteApartHandler = (): ((
+  item: FavoriteApartItem
+) => Promise<void>) => {
+  const isInApp = useGlobalConfigStore(state => state.isInApp);
+  const deviceId = useGlobalConfigStore(state => state.deviceId);
+  const favoriteApartList = useFavoriteApartListStore(
+    state => state.favoriteApartList
+  );
+  const setFavoriteApartList = useFavoriteApartListStore(
+    state => state.setFavoriteApartList
+  );
+
+  const removeFavoriteApartHandler = useCallback(
+    async (item: FavoriteApartItem) => {
+      try {
+        const afterFavoriteApartList = favoriteApartList.filter(
+          savedItem => !isSameApartItem(savedItem, item)
+        );
+
+        if (isInApp) {
+          await removeFavoriteApartToServer(deviceId, item);
+        } else {
+          setItem(STORAGE_KEY.FAVORITE_APART_LIST, afterFavoriteApartList);
+        }
+
+        setFavoriteApartList(afterFavoriteApartList);
+        toast.success('즐겨찾기에서 삭제됐어요');
+      } catch {}
+    },
+    []
+  );
+
+  return removeFavoriteApartHandler;
 };

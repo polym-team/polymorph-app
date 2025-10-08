@@ -1,3 +1,4 @@
+import { FavoriteApartItem } from '@/entities/apart/models/types';
 import { RULES, SearchParams, TransactionItem } from '@/entities/transaction';
 import { calculateAreaPyeong } from '@/shared/services/transactionCalculator';
 
@@ -71,4 +72,11 @@ export const filterTransactionListWithFilter = (
         filter.newTransactionOnly
       )
   );
+};
+
+export const filterFavoriteApartListWithRegionCode = (
+  regionCode: SearchParams['regionCode'],
+  data: FavoriteApartItem[]
+) => {
+  return data.filter(item => item.regionCode === regionCode);
 };

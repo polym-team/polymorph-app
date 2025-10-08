@@ -1,12 +1,10 @@
-import { useGlobalConfigStore } from '@/shared/stores/globalConfigStore';
-
 import { useTransactionViewSetting } from '../hooks/useTransactionViewSetting';
 import { useTransactionData } from '../hooks/useTrasactionData';
 import { TransactionListSimpleTable } from '../ui/TransactionListSimpleTable';
 
 export function TransactionListData() {
-  const { isMobile } = useGlobalConfigStore();
-  const { isLoading, transactionData } = useTransactionData();
+  const { isLoading, transactionData, toggleFavoriteApart } =
+    useTransactionData();
   const { pageIndex, sorting, updateSorting, updatePageIndex } =
     useTransactionViewSetting();
 
@@ -18,11 +16,8 @@ export function TransactionListData() {
     items,
     onSortingChange: updateSorting,
     onPageIndexChange: updatePageIndex,
+    onFavoriteToggle: toggleFavoriteApart,
   };
 
-  return isMobile ? (
-    <TransactionListSimpleTable {...props} />
-  ) : (
-    <TransactionListSimpleTable {...props} />
-  );
+  return <TransactionListSimpleTable {...props} />;
 }
