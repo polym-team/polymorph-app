@@ -2,12 +2,9 @@
 
 import { ApartDetailResponse } from '@/app/api/apart/types';
 
-import { useState } from 'react';
-
-import { SortingState } from '@package/ui';
-
 import { useTransactionHistoryTableData } from '../hooks/useTransactionHistoryTableData';
-import { mapTradeItemsWithPriceChangeRate } from '../services/mapper';
+import { ApartTransactionHistoryChart } from '../ui/ApartTransactionHistoryChart';
+import { ApartTransactionHistoryLayout } from '../ui/ApartTransactionHistoryLayout';
 import { ApartTransactionHistoryTable } from '../ui/ApartTransactionHistoryTable';
 
 interface ApartTransactionHistoryProps {
@@ -21,10 +18,13 @@ export function ApartTransactionHistory({
     useTransactionHistoryTableData(tradeItems);
 
   return (
-    <ApartTransactionHistoryTable
-      sorting={sorting}
-      tradeItems={mappedTradeItems}
-      onChangeSorting={changeSorting}
-    />
+    <ApartTransactionHistoryLayout>
+      <ApartTransactionHistoryChart tradeItems={tradeItems} />
+      <ApartTransactionHistoryTable
+        sorting={sorting}
+        tradeItems={mappedTradeItems}
+        onChangeSorting={changeSorting}
+      />
+    </ApartTransactionHistoryLayout>
   );
 }

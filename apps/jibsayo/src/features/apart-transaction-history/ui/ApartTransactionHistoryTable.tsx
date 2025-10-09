@@ -85,17 +85,12 @@ export function ApartTransactionHistoryTable({
   onChangeSorting,
 }: ApartTransactionHistoryTableProps) {
   return (
-    <Card className="p-3">
-      <Typography variant="large" className="font-semibold">
-        거래 내역
-      </Typography>
-      <DataTable
-        pageSize={20}
-        columns={columns}
-        data={tradeItems}
-        sorting={sorting}
-        onSortingChange={onChangeSorting}
-      />
-    </Card>
+    <DataTable
+      pageSize={20}
+      columns={columns}
+      data={tradeItems}
+      sorting={sorting}
+      onSortingChange={onChangeSorting}
+    />
   );
 }
