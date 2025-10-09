@@ -31,13 +31,7 @@ export default function ApartDetailPage({ params }: ApartDetailPageRequest) {
           redirect(ROUTE_PATH.TRANSACTION);
         }
 
-        return (
-          <ApartDetailInfo
-            data={data}
-            regionCode={regionCode}
-            apartName={decodedApartName}
-          />
-        );
+        return <ApartDetailInfo data={data} />;
       })()}
     </Suspense>
   );

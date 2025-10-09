@@ -1,8 +1,4 @@
-import {
-  useAddFavoriteApartHandler,
-  useFavoriteApartList,
-  useRemoveFavoriteApartHandler,
-} from '@/entities/apart';
+import { useFavoriteApartList } from '@/entities/apart';
 import {
   useSearchParams,
   useTransactionListQuery,
@@ -20,13 +16,10 @@ import { mapTramsactionItemWithFavorite } from '../services/mapper';
 interface Return {
   isLoading: boolean;
   transactionData: TransactionItemWithFavorite[];
-  toggleFavoriteApart: (transaction: TransactionItemWithFavorite) => void;
 }
 
 export const useTransactionData = (): Return => {
   const favoriteApartList = useFavoriteApartList();
-  const addFavoriteApartHandler = useAddFavoriteApartHandler();
-  const removeFavoriteApartHandler = useRemoveFavoriteApartHandler();
 
   const { isLoading, data } = useTransactionListQuery();
   const { searchParams } = useSearchParams();
@@ -53,22 +46,8 @@ export const useTransactionData = (): Return => {
     );
   }, [data?.list, favoriteApartList, searchParams]);
 
-  const toggleFavoriteApart = (transaction: TransactionItemWithFavorite) => {
-    const targetApartItem = {
-      ...transaction,
-      regionCode: searchParams.regionCode,
-    };
-
-    if (transaction.isFavorite) {
-      removeFavoriteApartHandler(targetApartItem);
-    } else {
-      addFavoriteApartHandler(targetApartItem);
-    }
-  };
-
   return {
     isLoading,
     transactionData: mappedTransactions,
-    toggleFavoriteApart,
   };
 };

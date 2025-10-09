@@ -12,7 +12,11 @@ export async function fetchApartDetail(
     );
 
     if (response.ok) {
-      return response.json();
+      return {
+        regionCode,
+        apartName: decodeURIComponent(apartName),
+        ...(await response.json()),
+      };
     }
 
     return null;
