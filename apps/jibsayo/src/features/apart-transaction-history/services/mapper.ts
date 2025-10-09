@@ -6,18 +6,21 @@ import { TradeItemWithPriceChangeRate } from '../models/types';
 export const mapTradeItemsWithPriceChangeRate = (
   tradeItems: ApartDetailTradeHistoryItem[]
 ): TradeItemWithPriceChangeRate[] => {
-  // 거래일 기준으로 정렬 (최신순)
-  const sortedItems = [...tradeItems].sort(
-    (a, b) => new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime()
-  );
-
-  return sortedItems.map((item, index) => {
+  return tradeItems.map(item => {
     const currentPyeong = calculateAreaPyeong(item.size);
+    const currentDate = new Date(item.tradeDate);
 
-    // 같은 평수의 직전 거래 찾기
-    const previousSamePyeongItem = sortedItems
-      .slice(index + 1) // 현재 아이템 이후의 거래들 중에서
-      .find(prevItem => calculateAreaPyeong(prevItem.size) === currentPyeong);
+    // 같은 평수의 직전 거래 찾기 (시간상 가장 가까운 이전 거래)
+    const previousSamePyeongItem = tradeItems
+      .filter(prevItem => {
+        const prevPyeong = calculateAreaPyeong(prevItem.size);
+        const prevDate = new Date(prevItem.tradeDate);
+        return prevPyeong === currentPyeong && prevDate < currentDate;
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime()
+      )[0]; // 최신순 정렬 // 가장 최근의 이전 거래
 
     let priceChangeRate = 1; // 기본값
 
