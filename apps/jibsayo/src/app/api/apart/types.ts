@@ -1,3 +1,10 @@
+export interface ApartDetailTradeHistoryItem {
+  tradeDate: string;
+  size: number;
+  floor: number;
+  tradeAmount: number;
+}
+
 export interface ApartDetailResponse {
   regionCode: string;
   apartName: string;
@@ -6,10 +13,5 @@ export interface ApartDetailResponse {
   parking: string;
   floorAreaRatio: number;
   buildingCoverageRatio: number;
-  tradeItems: {
-    tradeDate: string;
-    size: number;
-    floor: number;
-    tradeAmount: number;
-  }[];
+  tradeItems: ApartDetailTradeHistoryItem[];
 }

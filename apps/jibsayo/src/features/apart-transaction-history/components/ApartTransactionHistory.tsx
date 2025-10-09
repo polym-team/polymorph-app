@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 import { SortingState } from '@package/ui';
 
+import { mapTradeItemsWithPriceChangeRate } from '../services/mapper';
 import { ApartTransactionHistoryTable } from '../ui/ApartTransactionHistoryTable';
 
 interface ApartTransactionHistoryProps {
@@ -19,6 +20,8 @@ export function ApartTransactionHistory({
     { id: 'tradeDate', desc: true },
   ]);
 
+  const mappedTradeItems = mapTradeItemsWithPriceChangeRate(tradeItems);
+
   const changeSorting = (newSorting: SortingState) => {
     setSorting(newSorting);
   };
@@ -26,7 +29,7 @@ export function ApartTransactionHistory({
   return (
     <ApartTransactionHistoryTable
       sorting={sorting}
-      tradeItems={tradeItems}
+      tradeItems={mappedTradeItems}
       onChangeSorting={changeSorting}
     />
   );

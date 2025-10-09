@@ -4,6 +4,7 @@ import {
   formatDate,
   formatFloor,
   formatKoreanAmountSimpleText,
+  formatPercent,
   formatPyeong,
   formatSize,
 } from '@/shared/utils/formatters';
@@ -16,14 +17,17 @@ import {
   SortingState,
   Typography,
 } from '@package/ui';
+import { cn } from '@package/utils';
+
+import { TradeItemWithPriceChangeRate } from '../models/types';
 
 interface ApartTransactionHistoryTableProps {
   sorting: SortingState;
-  tradeItems: ApartDetailResponse['tradeItems'];
+  tradeItems: TradeItemWithPriceChangeRate[];
   onChangeSorting: (newSorting: SortingState) => void;
 }
 
-const columns: ColumnDef<ApartDetailResponse['tradeItems'][number]>[] = [
+const columns: ColumnDef<TradeItemWithPriceChangeRate>[] = [
   {
     size: 80,
     accessorKey: 'tradeDate',
@@ -53,11 +57,23 @@ const columns: ColumnDef<ApartDetailResponse['tradeItems'][number]>[] = [
       <DataTableColumnHeader column={column} title="거래가격" />
     ),
     cell: ({ row }) => (
-      <div>
+      <div className="flex items-center justify-end gap-x-1">
+        {row.original.priceChangeRate !== 0 && (
+          <span
+            className={cn(
+              'rounded-full px-1 pb-0.5 text-xs',
+              row.original.priceChangeRate > 0
+                ? 'bg-red-100 text-red-700'
+                : 'bg-blue-100 text-blue-700'
+            )}
+          >
+            {row.original.priceChangeRate > 0 ? '↗' : '↘'}{' '}
+            {formatPercent(row.original.priceChangeRate)}
+          </span>
+        )}
         <span className="text-primary font-bold">
           {formatKoreanAmountSimpleText(row.original.tradeAmount)}
         </span>
-        ↗10.09%
       </div>
     ),
   },

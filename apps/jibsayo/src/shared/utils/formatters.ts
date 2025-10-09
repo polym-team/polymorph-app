@@ -42,6 +42,10 @@ export const formatKoreanAmountSimpleText = (amount: number): string => {
   }
 };
 
+export const formatPercent = (percent: number): string => {
+  return `${percent}%`;
+};
+
 export const formatQuantity = (quantity: number): string => {
   return `${quantity}건`;
 };
