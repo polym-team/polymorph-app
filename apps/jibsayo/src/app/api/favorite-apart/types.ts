@@ -1,5 +1,5 @@
 export interface FavoriteApart {
-  id?: string;
+  id: string;
   regionCode: string;
   address: string;
   apartName: string;

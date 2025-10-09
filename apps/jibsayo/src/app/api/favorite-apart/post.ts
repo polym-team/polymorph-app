@@ -1,3 +1,5 @@
+import { createApartItemKey } from '@/shared/services/transactionService';
+
 import { NextRequest, NextResponse } from 'next/server';
 
 import { CreateFavoriteApartRequest, FavoriteApartResponse } from './types';
@@ -31,13 +33,14 @@ export async function POST(
       );
     }
 
-    // 이미 존재하는 즐겨찾기인지 확인
-    const existingFavorite = await findExistingFavoriteApart(
-      deviceId,
+    const id = createApartItemKey({
       regionCode,
       address,
-      apartName
-    );
+      apartName,
+    });
+
+    // 이미 존재하는 즐겨찾기인지 확인
+    const existingFavorite = await findExistingFavoriteApart(id, deviceId);
 
     if (existingFavorite) {
       return NextResponse.json(
@@ -48,6 +51,7 @@ export async function POST(
 
     // 새 즐겨찾기 아파트 생성
     const favoriteApartData = mapFavoriteApartToFirestore({
+      id,
       deviceId,
       regionCode,
       address,
@@ -58,7 +62,7 @@ export async function POST(
 
     if (result.success) {
       const newFavoriteApart = {
-        id: result.id,
+        id,
         deviceId,
         regionCode,
         address,

@@ -1,3 +1,5 @@
+import { removeSpecialCharacters } from '../utils/formatters';
+
 export const isSameApartItem = (
   targetApartItem: {
     apartName: string;
@@ -11,8 +13,11 @@ export const isSameApartItem = (
   }
 ) => {
   return (
-    targetApartItem.apartName === compareApartItem.apartName &&
-    targetApartItem.regionCode === compareApartItem.regionCode &&
-    targetApartItem.address === compareApartItem.address
+    removeSpecialCharacters(targetApartItem.apartName) ===
+      removeSpecialCharacters(compareApartItem.apartName) &&
+    removeSpecialCharacters(targetApartItem.regionCode) ===
+      removeSpecialCharacters(compareApartItem.regionCode) &&
+    removeSpecialCharacters(targetApartItem.address) ===
+      removeSpecialCharacters(compareApartItem.address)
   );
 };

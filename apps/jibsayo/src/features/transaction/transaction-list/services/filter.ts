@@ -1,6 +1,6 @@
 import { FavoriteApartItem } from '@/entities/apart/models/types';
 import { RULES, SearchParams, TransactionItem } from '@/entities/transaction';
-import { calculateAreaPyeong } from '@/shared/services/transactionCalculator';
+import { calculateAreaPyeong } from '@/shared/services/transactionService';
 
 const filterTransactionItemWithApartName = (
   transaction: TransactionItem,

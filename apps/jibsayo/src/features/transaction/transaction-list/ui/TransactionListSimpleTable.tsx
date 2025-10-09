@@ -1,4 +1,4 @@
-import { calculateAreaPyeong } from '@/shared/services/transactionCalculator';
+import { calculateAreaPyeong } from '@/shared/services/transactionService';
 import {
   formatDate,
   formatFloor,

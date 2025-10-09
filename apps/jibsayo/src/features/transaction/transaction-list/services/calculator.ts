@@ -1,5 +1,5 @@
 import { TransactionItem } from '@/entities/transaction';
-import { calculateAreaPyeong } from '@/shared/services/transactionCalculator';
+import { calculateAreaPyeong } from '@/shared/services/transactionService';
 
 export const calculateTransactionAverageAmount = (
   transactions: TransactionItem[]

@@ -1,3 +1,11 @@
+export const removeSpecialCharacters = (str: string) => {
+  return str.replace(/[^a-zA-Z0-9가-힣\s]/g, '');
+};
+
+export const formatNumberWithCommas = (number: number): string => {
+  return number.toLocaleString();
+};
+
 export const formatDate = (dateString: string): string => {
   const [year, month, day] = dateString.split('-');
   const shortYear = year.slice(-2);

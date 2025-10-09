@@ -7,7 +7,6 @@ import { Toaster } from '@package/ui';
 
 import '../../../../packages/styles/globals.css';
 import { QueryClientProvider } from './components/QueryClientProvider';
-import { ViewportResizer } from './components/ViewportResizer';
 
 const notoSansKr = Noto_Sans_KR({
   weight: ['400', '500', '700'],
@@ -45,7 +44,6 @@ export default function RootLayout({
             </QueryClientProvider>
           </main>
         </div>
-        <ViewportResizer />
         <Toaster />
       </body>
     </html>

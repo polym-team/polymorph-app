@@ -5,7 +5,7 @@ export interface FavoriteApartItem {
 }
 
 export interface ServerFavoriteApart {
-  id?: string;
+  id: string;
   regionCode: string;
   address: string;
   apartName: string;

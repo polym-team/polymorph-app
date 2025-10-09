@@ -149,51 +149,88 @@ const calculateTradeItems = ($: CheerioAPI): Response['tradeItems'] => {
 
 const fetchTradeDetail = async (
   apartName: string,
-  area: string
+  area: string,
+  retries = 3
 ): Promise<string> => {
-  try {
-    // 먼저 메인 페이지에 접근해서 세션 확보
-    const mainResponse = await fetch('https://apt2.me/', {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      },
-    });
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      // 먼저 메인 페이지에 접근해서 세션 확보
+      const mainResponse = await fetch('https://apt2.me/', {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        },
+      });
 
-    const cookies = mainResponse.headers.get('set-cookie') || '';
+      const cookies = mainResponse.headers.get('set-cookie') || '';
 
-    const url = `https://apt2.me/apt/AptReal.jsp?danji_nm=${encodeURIComponent(apartName)}&area=${area}`;
+      // 랜덤 지연 추가 (봇 탐지 우회)
+      if (attempt > 1) {
+        const delay = 2000 + Math.random() * 3000; // 2-5초 랜덤 대기
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
 
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        Accept:
-          'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
-        'Accept-Encoding': 'gzip, deflate, br',
-        Connection: 'keep-alive',
-        'Upgrade-Insecure-Requests': '1',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'same-origin',
-        Referer: 'https://apt2.me/',
-        'Cache-Control': 'max-age=0',
-        Cookie: cookies,
-      },
-    });
+      const url = `https://apt2.me/apt/AptReal.jsp?danji_nm=${encodeURIComponent(apartName)}&area=${area}`;
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      // 매번 다른 User-Agent 사용
+      const userAgents = [
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      ];
+
+      const randomUA =
+        userAgents[Math.floor(Math.random() * userAgents.length)];
+
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': randomUA,
+          Accept:
+            'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+          'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+          'Accept-Encoding': 'gzip, deflate, br',
+          DNT: '1',
+          Connection: 'keep-alive',
+          'Upgrade-Insecure-Requests': '1',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'same-origin',
+          'Sec-Fetch-User': '?1',
+          Referer: 'https://apt2.me/',
+          'Cache-Control': 'no-cache',
+          Pragma: 'no-cache',
+          Cookie: cookies,
+          // IP 위장 헤더 추가
+          'X-Forwarded-For': `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      // 요청 간격 추가 (429 에러 방지)
+      await new Promise(resolve =>
+        setTimeout(resolve, 500 + Math.random() * 1000)
+      );
+
+      const html = await response.text();
+      return html;
+    } catch (error) {
+      console.warn(`Attempt ${attempt} failed:`, error);
+
+      if (attempt === retries) {
+        console.error('크롤링 에러:', error);
+        throw error;
+      }
+
+      // 지수 백오프 대기
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
-
-    const html = await response.text();
-
-    return html;
-  } catch (error) {
-    console.error('크롤링 에러:', error);
-    throw error;
   }
+
+  throw new Error('Max retries exceeded');
 };
 
 const createResponse = async (

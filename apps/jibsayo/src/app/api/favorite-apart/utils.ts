@@ -38,10 +38,11 @@ export function mapFirestoreToFavoriteApart(doc: any): FavoriteApart {
 
 // FavoriteApart를 Firestore 데이터로 변환
 export function mapFavoriteApartToFirestore(
-  favoriteApart: Omit<FavoriteApart, 'id' | 'createdAt' | 'updatedAt'>
+  favoriteApart: Omit<FavoriteApart, 'createdAt' | 'updatedAt'>
 ): any {
   const now = new Date();
   return {
+    id: favoriteApart.id,
     regionCode: favoriteApart.regionCode,
     address: favoriteApart.address,
     apartName: favoriteApart.apartName,
@@ -53,18 +54,14 @@ export function mapFavoriteApartToFirestore(
 
 // 디바이스 ID와 아파트 정보로 기존 즐겨찾기 찾기
 export async function findExistingFavoriteApart(
-  deviceId: string,
-  regionCode: string,
-  address: string,
-  apartName: string
+  itemId: string,
+  deviceId: string
 ): Promise<FavoriteApart | null> {
   try {
     const documents = await firestoreClient.getDocuments({
       where: [
         { field: 'deviceId', operator: '==', value: deviceId },
-        { field: 'regionCode', operator: '==', value: regionCode },
-        { field: 'address', operator: '==', value: address },
-        { field: 'apartName', operator: '==', value: apartName },
+        { field: 'id', operator: '==', value: itemId },
       ],
     });
 

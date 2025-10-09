@@ -1,39 +1,20 @@
-import { ApartDetailResponse } from '@/app/api/apart/types';
-import { ApartDetail } from '@/features/apart-detail';
-import { LoadingFallback } from '@/features/apart-detail/ui/LoadingFallback';
+import { ApartDetailInfo } from '@/features/apart-detail-info';
+import { ROUTE_PATH } from '@/shared/consts/route';
 
+import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 
-interface Props {
+import { fetchApartDetail } from './services';
+import { Skeleton } from './Skeleton';
+
+interface ApartDetailPageRequest {
   params: {
     regionCode: string;
     apartName: string;
   };
 }
 
-async function getApartDetail(
-  apartName: string,
-  regionCode: string
-): Promise<ApartDetailResponse | null> {
-  try {
-    const response = await fetch(
-      `${process.env.BASE_URL}/api/apart?apartName=${encodeURIComponent(
-        apartName
-      )}&area=${regionCode}`
-    );
-
-    if (response.ok) {
-      return response.json();
-    }
-
-    return null;
-  } catch (error) {
-    console.error('아파트 데이터 조회 실패:', error);
-    return null;
-  }
-}
-
-export default function ApartDetailPage({ params }: Props) {
+export default function ApartDetailPage({ params }: ApartDetailPageRequest) {
   const { apartName, regionCode } = params;
   const decodedApartName = decodeURIComponent(apartName);
 
@@ -42,19 +23,19 @@ export default function ApartDetailPage({ params }: Props) {
   }
 
   return (
-    <Suspense fallback={<LoadingFallback />}>
+    <Suspense fallback={<Skeleton />}>
       {(async () => {
-        const data = await getApartDetail(apartName, regionCode);
+        const data = await fetchApartDetail(regionCode, apartName);
 
         if (!data) {
-          return null;
+          redirect(ROUTE_PATH.TRANSACTION);
         }
 
         return (
-          <ApartDetail
+          <ApartDetailInfo
             data={data}
-            apartName={decodedApartName}
             regionCode={regionCode}
+            apartName={decodedApartName}
           />
         );
       })()}

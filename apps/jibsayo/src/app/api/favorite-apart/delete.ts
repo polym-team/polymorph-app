@@ -1,3 +1,5 @@
+import { createApartItemKey } from '@/shared/services/transactionService';
+
 import { NextRequest, NextResponse } from 'next/server';
 
 import { DeleteFavoriteApartResponse } from './types';
@@ -16,8 +18,8 @@ export async function DELETE(
 ): Promise<NextResponse<DeleteFavoriteApartResponse>> {
   try {
     const { searchParams } = new URL(request.url);
-    const deviceId = searchParams.get('deviceId');
-    const regionCode = searchParams.get('regionCode');
+    const deviceId = searchParams.get('deviceId') ?? '';
+    const regionCode = searchParams.get('regionCode') ?? '';
     const address = searchParams.get('address');
     const apartName = searchParams.get('apartName');
 
@@ -47,13 +49,14 @@ export async function DELETE(
       );
     }
 
-    // 삭제할 즐겨찾기 찾기
-    const existingFavorite = await findExistingFavoriteApart(
-      deviceId,
+    const id = createApartItemKey({
       regionCode,
       address,
-      apartName
-    );
+      apartName,
+    });
+
+    // 삭제할 즐겨찾기 찾기
+    const existingFavorite = await findExistingFavoriteApart(id, deviceId);
 
     if (!existingFavorite) {
       return NextResponse.json(
@@ -63,7 +66,7 @@ export async function DELETE(
     }
 
     // 즐겨찾기 삭제
-    const result = await firestoreClient.deleteDocument(existingFavorite.id!);
+    const result = await firestoreClient.deleteDocument(existingFavorite.id);
 
     if (result.success) {
       return NextResponse.json({ success: true }, { status: 200 });

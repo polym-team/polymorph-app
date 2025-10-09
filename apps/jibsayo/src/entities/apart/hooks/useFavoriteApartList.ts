@@ -1,7 +1,7 @@
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
 import { useOnceEffect } from '@/shared/hooks';
 import { getItem, setItem } from '@/shared/lib/localStorage';
-import { isSameApartItem } from '@/shared/services/helper';
+import { createApartItemKey } from '@/shared/services/transactionService';
 import { useGlobalConfigStore } from '@/shared/stores/globalConfigStore';
 
 import { useCallback, useMemo } from 'react';
@@ -80,7 +80,6 @@ export const useAddFavoriteApartHandler = (): ((
           setItem(STORAGE_KEY.FAVORITE_APART_LIST, afterFavoriteApartList);
         }
 
-        console.log('afterFavoriteApartList: ', afterFavoriteApartList);
         setFavoriteApartList(afterFavoriteApartList);
         toast.success('즐겨찾기에 추가됐어요');
       } catch {}
@@ -107,7 +106,8 @@ export const useRemoveFavoriteApartHandler = (): ((
     async (item: FavoriteApartItem) => {
       try {
         const afterFavoriteApartList = favoriteApartList.filter(
-          savedItem => !isSameApartItem(savedItem, item)
+          savedItem =>
+            createApartItemKey(savedItem) !== createApartItemKey(item)
         );
 
         if (isInApp) {
@@ -116,7 +116,6 @@ export const useRemoveFavoriteApartHandler = (): ((
           setItem(STORAGE_KEY.FAVORITE_APART_LIST, afterFavoriteApartList);
         }
 
-        console.log('afterFavoriteApartList: ', afterFavoriteApartList);
         setFavoriteApartList(afterFavoriteApartList);
         toast.success('즐겨찾기에서 삭제됐어요');
       } catch {}
