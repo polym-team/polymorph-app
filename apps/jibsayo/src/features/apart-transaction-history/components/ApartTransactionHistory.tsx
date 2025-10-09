@@ -3,13 +3,12 @@
 import { ApartDetailResponse } from '@/app/api/apart/types';
 
 import { useTransactionHistoryFilter } from '../hooks/useTransactionHistoryFilter';
-import { useTransactionHistoryTableData } from '../hooks/useTransactionHistoryTableData';
 import { calculateSizes } from '../services/calculator';
 import { filterTradeItems } from '../services/filter';
 import { ApartTransactionHistoryChart } from '../ui/ApartTransactionHistoryChart';
 import { ApartTransactionHistoryFilter } from '../ui/ApartTransactionHistoryFilter';
 import { ApartTransactionHistoryLayout } from '../ui/ApartTransactionHistoryLayout';
-import { ApartTransactionHistoryTable } from '../ui/ApartTransactionHistoryTable';
+import { ApartTransactionHistoryTable } from './ApartTransactionHistoryTable';
 
 interface ApartTransactionHistoryProps {
   tradeItems: ApartDetailResponse['tradeItems'];
@@ -27,9 +26,6 @@ export function ApartTransactionHistory({
     selectedSizes,
   });
 
-  const { sorting, mappedTradeItems, changeSorting } =
-    useTransactionHistoryTableData(filteredTradeItems);
-
   return (
     <ApartTransactionHistoryLayout>
       <ApartTransactionHistoryFilter
@@ -40,11 +36,7 @@ export function ApartTransactionHistory({
         onChangeSizes={changeSizes}
       />
       <ApartTransactionHistoryChart tradeItems={filteredTradeItems} />
-      <ApartTransactionHistoryTable
-        sorting={sorting}
-        tradeItems={mappedTradeItems}
-        onChangeSorting={changeSorting}
-      />
+      <ApartTransactionHistoryTable tradeItems={filteredTradeItems} />
     </ApartTransactionHistoryLayout>
   );
 }

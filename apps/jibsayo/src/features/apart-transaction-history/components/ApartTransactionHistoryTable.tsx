@@ -1,4 +1,4 @@
-import { ApartDetailResponse } from '@/app/api/apart/types';
+import { ApartDetailTradeHistoryItem } from '@/app/api/apart/types';
 import { calculateAreaPyeong } from '@/shared/services/transactionService';
 import {
   formatDate,
@@ -6,25 +6,16 @@ import {
   formatKoreanAmountSimpleText,
   formatPercent,
   formatPyeong,
-  formatSize,
 } from '@/shared/utils/formatters';
 
-import {
-  Card,
-  ColumnDef,
-  DataTable,
-  DataTableColumnHeader,
-  SortingState,
-  Typography,
-} from '@package/ui';
+import { ColumnDef, DataTable, DataTableColumnHeader } from '@package/ui';
 import { cn } from '@package/utils';
 
+import { useTransactionHistoryTableData } from '../hooks/useTransactionHistoryTableData';
 import { TradeItemWithPriceChangeRate } from '../models/types';
 
 interface ApartTransactionHistoryTableProps {
-  sorting: SortingState;
-  tradeItems: TradeItemWithPriceChangeRate[];
-  onChangeSorting: (newSorting: SortingState) => void;
+  tradeItems: ApartDetailTradeHistoryItem[];
 }
 
 const columns: ColumnDef<TradeItemWithPriceChangeRate>[] = [
@@ -80,17 +71,18 @@ const columns: ColumnDef<TradeItemWithPriceChangeRate>[] = [
 ];
 
 export function ApartTransactionHistoryTable({
-  sorting,
   tradeItems,
-  onChangeSorting,
 }: ApartTransactionHistoryTableProps) {
+  const { sorting, mappedTradeItems, changeSorting } =
+    useTransactionHistoryTableData(tradeItems);
+
   return (
     <DataTable
       pageSize={20}
       columns={columns}
-      data={tradeItems}
+      data={mappedTradeItems}
       sorting={sorting}
-      onSortingChange={onChangeSorting}
+      onSortingChange={changeSorting}
     />
   );
 }

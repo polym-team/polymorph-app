@@ -1,8 +1,9 @@
 import { formatPyeong } from '@/shared/utils/formatters';
 
 import { Button, Card } from '@package/ui';
+import { cn } from '@package/utils';
 
-import { PERIODS } from '../consts/config';
+import { CHART_COLORS, PERIODS } from '../consts/config';
 import { PeriodValue, SizesValue } from '../models/types';
 
 interface ApartTransactionHistoryFilterProps {
@@ -36,15 +37,16 @@ export function ApartTransactionHistoryFilter({
         ))}
       </div>
       <hr className="my-0 border-gray-200" />
-      <div className="flex gap-1 p-2">
-        {Array.from(sizes).map(size => {
+      <div className="flex flex-wrap gap-1 p-2">
+        {Array.from(sizes).map((size, index) => {
           const isSelected = selectedSizes.has(size);
           return (
-            <Button
+            <button
               key={size}
-              variant={isSelected ? 'primary' : 'secondary'}
-              size="xs"
-              className="text-xs"
+              className={cn(
+                'flex items-center gap-1 rounded-sm border bg-gray-100 px-2.5 py-1.5 text-xs',
+                !isSelected && 'opacity-40'
+              )}
               onClick={() =>
                 onChangeSizes(
                   isSelected
@@ -53,8 +55,14 @@ export function ApartTransactionHistoryFilter({
                 )
               }
             >
+              <span
+                className="block h-2 w-2 rounded-sm"
+                style={{
+                  backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
+                }}
+              />
               {formatPyeong(size)}
-            </Button>
+            </button>
           );
         })}
       </div>
