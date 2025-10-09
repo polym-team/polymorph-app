@@ -33,7 +33,7 @@ export default function ApartDetailPage({ params }: ApartDetailPageRequest) {
         }
 
         return (
-          <div>
+          <div className="flex flex-col gap-y-5">
             <ApartDetailInfo data={data} />
             <ApartTransactionHistory tradeItems={data.tradeItems} />
           </div>
