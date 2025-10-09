@@ -17,7 +17,7 @@ export const useTransactionHistoryFilter = (
 ): Return => {
   const [selectedPeriod, setPeriod] = useState<PeriodValue>('60');
   const [selectedSizes, setSelectedSizes] = useState<Set<number>>(
-    calculateSizes(tradeItems)
+    new Set(calculateSizes(tradeItems))
   );
 
   const changePeriod = (value: PeriodValue) => {

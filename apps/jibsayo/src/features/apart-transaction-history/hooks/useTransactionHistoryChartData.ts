@@ -4,8 +4,7 @@ import { ApartDetailResponse } from '@/app/api/apart/types';
 import { calculateAreaPyeong } from '@/shared/services/transactionService';
 
 import * as d3 from 'd3';
-import { subMonths } from 'date-fns';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { CHART_COLORS } from '../../apart-detail-legacy/consts/colors';
 
@@ -26,39 +25,19 @@ export interface LegendItem {
 
 interface Props {
   tradeItems: ApartDetailResponse['tradeItems'];
-  period: number;
-  selectedPyeongs: Set<number>;
+  allSizes: number[];
 }
 
 export const useTransactionHistoryChartData = ({
   tradeItems,
-  period,
-  selectedPyeongs,
+  allSizes,
 }: Props) => {
   // 차트 데이터 계산
   const chartData = useMemo(() => {
     if (!tradeItems.length) return [];
 
-    // 기간 필터링
-    const now = new Date();
-    const filteredItems =
-      period === 0
-        ? tradeItems
-        : tradeItems.filter(item => {
-            const tradeDate = new Date(item.tradeDate);
-            return tradeDate >= subMonths(now, period);
-          });
-
-    // 선택된 평형만 필터링
-    const selectedItems =
-      selectedPyeongs.size > 0
-        ? filteredItems.filter(item =>
-            selectedPyeongs.has(calculateAreaPyeong(item.size))
-          )
-        : filteredItems;
-
     // 월별로 그룹화
-    const monthlyData = d3.group(selectedItems, d =>
+    const monthlyData = d3.group(tradeItems, d =>
       d3.timeMonth(new Date(d.tradeDate))
     );
 
@@ -92,39 +71,28 @@ export const useTransactionHistoryChartData = ({
     });
 
     return result.sort((a, b) => a.date.getTime() - b.date.getTime());
-  }, [tradeItems, period, selectedPyeongs]);
+  }, [tradeItems]);
 
   // 범례 데이터 계산
   const legendData = useMemo(() => {
     if (!tradeItems.length) return [];
 
-    const now = new Date();
-    const filteredItems =
-      period === 0
-        ? tradeItems
-        : tradeItems.filter(item => {
-            const tradeDate = new Date(item.tradeDate);
-            return tradeDate >= subMonths(now, period);
-          });
-
-    const sizeGroups = d3.group(filteredItems, d =>
-      calculateAreaPyeong(d.size)
-    );
-    const sortedPyeongs = Array.from(sizeGroups.keys()).sort((a, b) => a - b);
-
-    return sortedPyeongs.map((pyeong, index) => {
-      const items = sizeGroups.get(pyeong) || [];
-      const allSizes = Array.from(new Set(items.map(item => item.size))).sort(
-        (a, b) => a - b
+    // 이미 정렬된 평형 배열 사용
+    return allSizes.map((pyeong, index) => {
+      const items = tradeItems.filter(
+        item => calculateAreaPyeong(item.size) === pyeong
       );
+      const allSizesForPyeong = Array.from(
+        new Set(items.map(item => item.size))
+      ).sort((a, b) => a - b);
 
       return {
         pyeong,
         color: CHART_COLORS[index % CHART_COLORS.length],
-        sizes: allSizes,
+        sizes: allSizesForPyeong,
       };
     });
-  }, [tradeItems, period]);
+  }, [tradeItems, allSizes]);
 
   return {
     chartData,

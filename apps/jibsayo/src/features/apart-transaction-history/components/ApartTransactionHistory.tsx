@@ -5,9 +5,9 @@ import { ApartDetailResponse } from '@/app/api/apart/types';
 import { useTransactionHistoryFilter } from '../hooks/useTransactionHistoryFilter';
 import { calculateSizes } from '../services/calculator';
 import { filterTradeItems } from '../services/filter';
-import { ApartTransactionHistoryChart } from '../ui/ApartTransactionHistoryChart';
 import { ApartTransactionHistoryFilter } from '../ui/ApartTransactionHistoryFilter';
 import { ApartTransactionHistoryLayout } from '../ui/ApartTransactionHistoryLayout';
+import { ApartTransactionHistoryChart } from './ApartTransactionHistoryChart';
 import { ApartTransactionHistoryTable } from './ApartTransactionHistoryTable';
 
 interface ApartTransactionHistoryProps {
@@ -29,13 +29,16 @@ export function ApartTransactionHistory({
   return (
     <ApartTransactionHistoryLayout>
       <ApartTransactionHistoryFilter
-        sizes={sizes}
+        allSizes={sizes}
         selectedPeriod={selectedPeriod}
         selectedSizes={selectedSizes}
         onChangePeriod={changePeriod}
         onChangeSizes={changeSizes}
       />
-      <ApartTransactionHistoryChart tradeItems={filteredTradeItems} />
+      <ApartTransactionHistoryChart
+        tradeItems={filteredTradeItems}
+        allSizes={sizes}
+      />
       <ApartTransactionHistoryTable tradeItems={filteredTradeItems} />
     </ApartTransactionHistoryLayout>
   );

@@ -1,66 +1,25 @@
-'use client';
-
-import { ApartDetailResponse } from '@/app/api/apart/types';
-
 import * as d3 from 'd3';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Button, Card, Typography } from '@package/ui';
+import { LegendItem, TransactionHistoryChartData } from './useTransactionHistoryChartData';
 
-import {
-  LegendItem,
-  TransactionHistoryChartData,
-  useTransactionHistoryChartData,
-} from '../hooks/useTransactionHistoryChartData';
-
-interface Props {
-  tradeItems: ApartDetailResponse['tradeItems'];
+interface UseTransactionHistoryChartViewProps {
+  chartData: TransactionHistoryChartData[];
+  legendData: LegendItem[];
+  height: number;
+  margin: { top: number; right: number; bottom: number; left: number };
 }
 
-const PERIODS = [
-  { value: '0', label: '전체' },
-  { value: '12', label: '최근 1년' },
-  { value: '24', label: '최근 2년' },
-  { value: '36', label: '최근 3년' },
-  { value: '60', label: '최근 5년' },
-] as const;
-
-type PeriodValue = (typeof PERIODS)[number]['value'];
-
-export function ApartTransactionHistoryChart({ tradeItems }: Props) {
+export const useTransactionHistoryChartView = ({
+  chartData,
+  legendData,
+  height,
+  margin,
+}: UseTransactionHistoryChartViewProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
-  const [period, setPeriod] = useState<PeriodValue>('60');
-  const [mounted, setMounted] = useState(false);
-  const [selectedPyeongs, setSelectedPyeongs] = useState<Set<number>>(
-    new Set()
-  );
   const [isLoading, setIsLoading] = useState(true);
   const [containerWidth, setContainerWidth] = useState(1024);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const margin = { top: 20, right: 35, bottom: 30, left: 30 };
-  const height = useMemo(() => {
-    return 250;
-  }, [mounted]);
-
-  const chartContainerStyle = useMemo(
-    () => ({
-      width: '100%',
-      height: `${height}px`,
-      touchAction: 'none',
-    }),
-    [height]
-  );
-
-  const { chartData, legendData } = useTransactionHistoryChartData({
-    tradeItems,
-    period: Number(period),
-    selectedPyeongs,
-  });
 
   // 컨테이너 너비 감지
   useEffect(() => {
@@ -82,13 +41,6 @@ export function ApartTransactionHistoryChart({ tradeItems }: Props) {
       resizeObserver.disconnect();
     };
   }, [svgRef]);
-
-  // 초기 선택 상태 설정
-  useEffect(() => {
-    if (legendData.length > 0 && selectedPyeongs.size === 0) {
-      setSelectedPyeongs(new Set(legendData.map(item => item.pyeong)));
-    }
-  }, [legendData]);
 
   // 차트 영역 크기 계산
   const chartWidth = Math.max(containerWidth - margin.left - margin.right, 0);
@@ -163,22 +115,6 @@ export function ApartTransactionHistoryChart({ tradeItems }: Props) {
 
   // 날짜를 문자열로 변환하는 헬퍼 함수
   const formatDateForScale = (date: Date) => d3.timeFormat('%Y-%m')(date);
-
-  const togglePyeong = (pyeong: number) => {
-    setSelectedPyeongs(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(pyeong)) {
-        newSet.delete(pyeong);
-      } else {
-        newSet.add(pyeong);
-      }
-      return newSet;
-    });
-  };
-
-  const handlePeriodChange = (value: PeriodValue) => {
-    setPeriod(value);
-  };
 
   // 차트 렌더링
   useEffect(() => {
@@ -370,56 +306,11 @@ export function ApartTransactionHistoryChart({ tradeItems }: Props) {
     legendData,
   ]);
 
-  return (
-    <div className="relative w-full">
-      <div className="relative" style={chartContainerStyle}>
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80">
-            <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
-          </div>
-        )}
-        <svg
-          ref={svgRef}
-          style={{
-            width: '100%',
-            height: '100%',
-            touchAction: 'none',
-          }}
-        />
-      </div>
-
-      <div className="mt-4 flex min-h-[60px] flex-wrap items-center justify-center gap-2">
-        {legendData.length > 0 && (
-          <>
-            {legendData.map((item: LegendItem) => {
-              const isSelected = selectedPyeongs.has(item.pyeong);
-              return (
-                <button
-                  key={item.pyeong}
-                  onClick={() => togglePyeong(item.pyeong)}
-                  className={`flex items-center gap-2 rounded-md border px-2 py-1 transition-all ${
-                    isSelected
-                      ? 'border-gray-300 bg-gray-100 shadow-sm'
-                      : 'border-gray-200 bg-gray-50 opacity-50 hover:opacity-75'
-                  }`}
-                >
-                  <div
-                    className="h-3 w-3 rounded-sm"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span
-                    className={`text-sm font-medium ${
-                      isSelected ? 'text-gray-800' : 'text-gray-600'
-                    }`}
-                  >
-                    {item.pyeong}평
-                  </span>
-                </button>
-              );
-            })}
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
+  return {
+    svgRef,
+    isLoading,
+    containerWidth,
+    chartWidth,
+    chartHeight,
+  };
+};

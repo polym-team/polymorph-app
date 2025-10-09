@@ -7,7 +7,7 @@ import { CHART_COLORS, PERIODS } from '../consts/config';
 import { PeriodValue, SizesValue } from '../models/types';
 
 interface ApartTransactionHistoryFilterProps {
-  sizes: SizesValue;
+  allSizes: number[];
   selectedPeriod: PeriodValue;
   selectedSizes: SizesValue;
   onChangePeriod: (value: PeriodValue) => void;
@@ -15,7 +15,7 @@ interface ApartTransactionHistoryFilterProps {
 }
 
 export function ApartTransactionHistoryFilter({
-  sizes,
+  allSizes,
   selectedPeriod,
   selectedSizes,
   onChangePeriod,
@@ -38,7 +38,7 @@ export function ApartTransactionHistoryFilter({
       </div>
       <hr className="my-0 border-gray-200" />
       <div className="flex flex-wrap gap-1 p-2">
-        {Array.from(sizes).map((size, index) => {
+        {allSizes.map((size, index) => {
           const isSelected = selectedSizes.has(size);
           return (
             <button
