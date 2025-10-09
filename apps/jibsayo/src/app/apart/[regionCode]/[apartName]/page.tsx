@@ -1,4 +1,5 @@
 import { ApartDetailInfo } from '@/features/apart-detail-info';
+import { ApartTransactionHistory } from '@/features/apart-transaction-history';
 import { ROUTE_PATH } from '@/shared/consts/route';
 
 import { redirect } from 'next/navigation';
@@ -31,7 +32,12 @@ export default function ApartDetailPage({ params }: ApartDetailPageRequest) {
           redirect(ROUTE_PATH.TRANSACTION);
         }
 
-        return <ApartDetailInfo data={data} />;
+        return (
+          <div>
+            <ApartDetailInfo data={data} />
+            <ApartTransactionHistory tradeItems={data.tradeItems} />
+          </div>
+        );
       })()}
     </Suspense>
   );

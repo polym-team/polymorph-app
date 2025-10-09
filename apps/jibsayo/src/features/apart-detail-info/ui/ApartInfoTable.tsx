@@ -30,7 +30,7 @@ export function ApartInfoTable({ isFavorite, data }: ApartInfoTableProps) {
   ];
 
   return (
-    <Card className="p-3 md:p-5">
+    <Card className="p-3">
       <div className="mb-2 flex items-center gap-1 px-1">
         <Typography variant="large" className="text-primary font-semibold">
           {data.apartName}

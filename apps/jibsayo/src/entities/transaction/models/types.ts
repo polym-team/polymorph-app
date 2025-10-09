@@ -12,3 +12,11 @@ export interface SearchParams {
   favoriteOnly: boolean;
   newTransactionOnly: boolean;
 }
+
+export interface DataTableCellProps {
+  apartName: string;
+  tradeDate: string;
+  tradeAmount: number;
+  floor: number | null;
+  size: number;
+}

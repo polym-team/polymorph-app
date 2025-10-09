@@ -50,6 +50,10 @@ export const formatFloor = (floor: number): string => {
   return `${floor}층`;
 };
 
+export const formatSize = (size: number): string => {
+  return `${size}㎡`;
+};
+
 export const formatPyeong = (size: number): string => {
   return `${size}평`;
 };

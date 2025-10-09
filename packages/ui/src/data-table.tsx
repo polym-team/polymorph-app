@@ -338,11 +338,16 @@ export function DataTable<TData, TValue>({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header, index) => {
                   const isLastColumn = index === headerGroup.headers.length - 1;
+                  const isSortable = header.column.getCanSort();
                   return (
                     <TableHead key={header.id} className="overflow-hidden">
                       <div
                         className={
-                          isLastColumn ? 'flex translate-x-4 justify-end' : ''
+                          isLastColumn && isSortable
+                            ? 'flex translate-x-4 justify-end'
+                            : isLastColumn
+                              ? 'flex justify-end'
+                              : ''
                         }
                       >
                         {flexRender(
