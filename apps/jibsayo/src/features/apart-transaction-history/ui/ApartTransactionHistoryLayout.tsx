@@ -12,7 +12,7 @@ export function ApartTransactionHistoryLayout({
       <Typography variant="large" className="font-semibold">
         거래 내역
       </Typography>
-      <div className="flex flex-col gap-y-5">{children}</div>
+      <div className="mt-2 flex flex-col gap-y-5">{children}</div>
     </Card>
   );
 }

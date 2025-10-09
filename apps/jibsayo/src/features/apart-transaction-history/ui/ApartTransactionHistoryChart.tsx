@@ -371,73 +371,55 @@ export function ApartTransactionHistoryChart({ tradeItems }: Props) {
   ]);
 
   return (
-    <>
-      <div className="mb-5 flex flex-col gap-4">
-        <div className="flex flex-wrap gap-1">
-          {PERIODS.map(p => (
-            <Button
-              key={p.value}
-              variant={p.value === period ? 'primary' : 'secondary'}
-              size="sm"
-              className="min-w-0 flex-1"
-              onClick={() => handlePeriodChange(p.value)}
-            >
-              {p.label}
-            </Button>
-          ))}
-        </div>
+    <div className="relative w-full">
+      <div className="relative" style={chartContainerStyle}>
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/80">
+            <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
+          </div>
+        )}
+        <svg
+          ref={svgRef}
+          style={{
+            width: '100%',
+            height: '100%',
+            touchAction: 'none',
+          }}
+        />
       </div>
 
-      <div className="relative w-full">
-        <div className="relative" style={chartContainerStyle}>
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/80">
-              <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
-            </div>
-          )}
-          <svg
-            ref={svgRef}
-            style={{
-              width: '100%',
-              height: '100%',
-              touchAction: 'none',
-            }}
-          />
-        </div>
-
-        <div className="mt-4 flex min-h-[60px] flex-wrap items-center justify-center gap-2">
-          {legendData.length > 0 && (
-            <>
-              {legendData.map((item: LegendItem) => {
-                const isSelected = selectedPyeongs.has(item.pyeong);
-                return (
-                  <button
-                    key={item.pyeong}
-                    onClick={() => togglePyeong(item.pyeong)}
-                    className={`flex items-center gap-2 rounded-md border px-2 py-1 transition-all ${
-                      isSelected
-                        ? 'border-gray-300 bg-gray-100 shadow-sm'
-                        : 'border-gray-200 bg-gray-50 opacity-50 hover:opacity-75'
+      <div className="mt-4 flex min-h-[60px] flex-wrap items-center justify-center gap-2">
+        {legendData.length > 0 && (
+          <>
+            {legendData.map((item: LegendItem) => {
+              const isSelected = selectedPyeongs.has(item.pyeong);
+              return (
+                <button
+                  key={item.pyeong}
+                  onClick={() => togglePyeong(item.pyeong)}
+                  className={`flex items-center gap-2 rounded-md border px-2 py-1 transition-all ${
+                    isSelected
+                      ? 'border-gray-300 bg-gray-100 shadow-sm'
+                      : 'border-gray-200 bg-gray-50 opacity-50 hover:opacity-75'
+                  }`}
+                >
+                  <div
+                    className="h-3 w-3 rounded-sm"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span
+                    className={`text-sm font-medium ${
+                      isSelected ? 'text-gray-800' : 'text-gray-600'
                     }`}
                   >
-                    <div
-                      className="h-3 w-3 rounded-sm"
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <span
-                      className={`text-sm font-medium ${
-                        isSelected ? 'text-gray-800' : 'text-gray-600'
-                      }`}
-                    >
-                      {item.pyeong}평
-                    </span>
-                  </button>
-                );
-              })}
-            </>
-          )}
-        </div>
+                    {item.pyeong}평
+                  </span>
+                </button>
+              );
+            })}
+          </>
+        )}
       </div>
-    </>
+    </div>
   );
 }
