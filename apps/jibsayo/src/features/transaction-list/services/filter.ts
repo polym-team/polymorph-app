@@ -1,8 +1,11 @@
 import { FavoriteApartItem } from '@/entities/apart/models/types';
 import { RULES, SearchParams, TransactionItem } from '@/entities/transaction';
-import { calculateAreaPyeong } from '@/shared/services/transactionService';
+import {
+  calculateAreaPyeong,
+  createApartItemKey,
+} from '@/shared/services/transactionService';
 
-const filterTransactionItemWithApartName = (
+export const filterTransactionItemWithApartName = (
   transaction: TransactionItem,
   apartName: SearchParams['apartName']
 ) => {
@@ -12,7 +15,7 @@ const filterTransactionItemWithApartName = (
   return transaction.apartName.toLowerCase().includes(apartName.toLowerCase());
 };
 
-const filterTransactionItemWithSize = (
+export const filterTransactionItemWithSize = (
   transaction: TransactionItem,
   minSize: SearchParams['minSize'],
   maxSize: SearchParams['maxSize']
@@ -28,17 +31,26 @@ const filterTransactionItemWithSize = (
   return pyeong >= minSize && pyeong <= maxSize;
 };
 
-const filterTransactionItemWithFavorite = (
+export const filterTransactionItemWithFavorite = (
   transaction: TransactionItem,
+  favoriteApartList: FavoriteApartItem[],
   favoriteOnly: SearchParams['favoriteOnly']
 ) => {
   if (!favoriteOnly) {
     return true;
   }
-  return false; // FIXME: 수정 필요
+  return favoriteApartList.some(favoriteApart => {
+    const currentApartItemKey = createApartItemKey(favoriteApart);
+    const targetApartItemKey = createApartItemKey({
+      regionCode: favoriteApart.regionCode,
+      address: transaction.address,
+      apartName: transaction.apartName,
+    });
+    return currentApartItemKey === targetApartItemKey;
+  });
 };
 
-const filterTransactionItemWithNewTransaction = (
+export const filterTransactionItemWithNewTransaction = (
   transaction: TransactionItem,
   newTransactionOnly: SearchParams['newTransactionOnly']
 ) => {
@@ -46,32 +58,6 @@ const filterTransactionItemWithNewTransaction = (
     return true;
   }
   return false; // FIXME: 수정 필요
-};
-
-export const filterTransactionListWithFilter = (
-  data: TransactionItem[],
-  filter: {
-    apartName: SearchParams['apartName'];
-    minSize: SearchParams['minSize'];
-    maxSize: SearchParams['maxSize'];
-    favoriteOnly: SearchParams['favoriteOnly'];
-    newTransactionOnly: SearchParams['newTransactionOnly'];
-  }
-): TransactionItem[] => {
-  return data.filter(
-    transaction =>
-      filterTransactionItemWithApartName(transaction, filter.apartName) &&
-      filterTransactionItemWithSize(
-        transaction,
-        filter.minSize,
-        filter.maxSize
-      ) &&
-      filterTransactionItemWithFavorite(transaction, filter.favoriteOnly) &&
-      filterTransactionItemWithNewTransaction(
-        transaction,
-        filter.newTransactionOnly
-      )
-  );
 };
 
 export const filterFavoriteApartListWithRegionCode = (
