@@ -26,7 +26,7 @@ export function FavoriteApartList({
       {regionItems.map(region => (
         <div key={region.code}>
           <Card className="flex flex-col">
-            <Typography variant="small" className="p-3 md:p-5">
+            <Typography variant="h4" className="p-3 md:p-5">
               {getCityNameWithRegionCode(region.code)}{' '}
               {getRegionNameWithRegionCode(region.code)}{' '}
               <strong className="text-primary">
