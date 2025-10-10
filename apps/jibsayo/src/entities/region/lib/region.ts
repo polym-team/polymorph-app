@@ -2,6 +2,10 @@ import codes from '../models/codes.json';
 import { RegionItem } from '../models/types';
 
 export const cityNameList: string[] = codes.map(item => item.name);
+export const regionList: RegionItem[] = codes.reduce(
+  (acc, item) => [...acc, ...item.children],
+  [] as RegionItem[]
+);
 export const firstRegionCode: string = codes[0].children[0].code;
 
 export const getRegionsWithCityName = (cityName: string): RegionItem[] =>

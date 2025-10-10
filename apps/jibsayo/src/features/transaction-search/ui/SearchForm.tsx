@@ -5,6 +5,7 @@ import {
 } from '@/entities/region';
 
 import { Star } from 'lucide-react';
+import { useMemo } from 'react';
 
 import {
   Button,
@@ -18,6 +19,10 @@ import {
 import { cn } from '@package/utils';
 
 import { SearchForm as SearchFormType } from '../models/types';
+import {
+  calculateFavoriteRegionList,
+  calculateNotFavoritedRegionList,
+} from '../services/calculator';
 
 interface SearchFormProps {
   form: SearchFormType;
@@ -36,20 +41,14 @@ export function SearchForm({
 }: SearchFormProps) {
   const savedFavoriteRegion = favoriteRegionList.includes(form.regionCode);
 
-  const isFavoritedRegion = (regionCode: string) => {
-    return favoriteRegionList.includes(regionCode);
-  };
+  const favoriteRegionItems = useMemo(() => {
+    return calculateFavoriteRegionList(favoriteRegionList);
+  }, [favoriteRegionList]);
 
-  const sortedRegionList = () => {
+  const notFavoriteRegionItems = useMemo(() => {
     const allRegionList = getRegionsWithCityName(form.cityName);
-    const favoritedRegionList = allRegionList.filter(region =>
-      isFavoritedRegion(region.code)
-    );
-    const notFavoritedRegionList = allRegionList.filter(
-      region => !isFavoritedRegion(region.code)
-    );
-    return [...favoritedRegionList, ...notFavoritedRegionList];
-  };
+    return calculateNotFavoritedRegionList(favoriteRegionList, allRegionList);
+  }, [favoriteRegionList, form.cityName]);
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:gap-x-2">
@@ -79,38 +78,30 @@ export function SearchForm({
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {sortedRegionList().map(region => {
-              const isFavorited = isFavoritedRegion(region.code);
-              return (
-                <SelectItem key={region.code} value={region.code}>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className={isFavorited ? 'font-bold' : ''}>
-                      {region.name}
-                    </span>
-                    {isFavorited && (
-                      <span
-                        onClick={e => {
-                          if (isFavorited) {
-                            onRemoveFavoriteRegion(region.code);
-                          } else {
-                            onAddFavoriteRegion(region.code);
-                          }
-                        }}
-                      >
-                        <Star
-                          className={cn(
-                            'h-4 w-4 translate-y-[-0.5px]',
-                            isFavorited
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'fill-gray-300 text-gray-300'
-                          )}
-                        />
-                      </span>
-                    )}
-                  </div>
-                </SelectItem>
-              );
-            })}
+            {favoriteRegionItems.map(region => (
+              <SelectItem key={region.code} value={region.code}>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold">{region.name}</span>
+                  <span
+                    onClick={() => {
+                      onRemoveFavoriteRegion(region.code);
+                    }}
+                  >
+                    <Star
+                      className={cn(
+                        'h-4 w-4 translate-y-[-0.5px]',
+                        'fill-yellow-400 text-yellow-400'
+                      )}
+                    />
+                  </span>
+                </div>
+              </SelectItem>
+            ))}
+            {notFavoriteRegionItems.map(region => (
+              <SelectItem key={region.code} value={region.code}>
+                {region.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         {savedFavoriteRegion && (

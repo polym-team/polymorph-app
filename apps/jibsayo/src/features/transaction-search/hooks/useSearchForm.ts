@@ -30,7 +30,13 @@ export const useSearchForm = (): Return => {
   });
 
   const changeForm = (value: Partial<SearchForm>) => {
-    setForm(prev => ({ ...prev, ...value }));
+    const afterValue = { ...form, ...value };
+    const afterValueWithCityName = {
+      ...afterValue,
+      cityName: getCityNameWithRegionCode(afterValue.regionCode),
+    };
+
+    setForm(afterValueWithCityName);
   };
 
   return {
