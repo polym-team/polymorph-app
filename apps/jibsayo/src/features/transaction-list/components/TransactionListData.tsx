@@ -1,14 +1,26 @@
 import { useSearchParams } from '@/entities/transaction';
+import { ROUTE_PATH } from '@/shared/consts/route';
+
+import { useRouter } from 'next/navigation';
 
 import { useTransactionViewSetting } from '../hooks/useTransactionViewSetting';
 import { useTransactionData } from '../hooks/useTrasactionData';
+import { TransactionItemWithFavorite } from '../models/types';
 import { TransactionListSimpleTable } from '../ui/TransactionListSimpleTable';
 
 export function TransactionListData() {
+  const router = useRouter();
+
   const { isLoading, transactionData } = useTransactionData();
   const { pageIndex, sorting, updateSorting, updatePageIndex } =
     useTransactionViewSetting();
   const { searchParams } = useSearchParams();
+
+  const handleRowClick = (row: TransactionItemWithFavorite) => {
+    router.push(
+      `${ROUTE_PATH.APART}/${searchParams.regionCode}/${row.apartName}`
+    );
+  };
 
   const items = transactionData;
   const regionCode = searchParams.regionCode;
@@ -18,6 +30,7 @@ export function TransactionListData() {
     sorting,
     items,
     regionCode,
+    onRowClick: handleRowClick,
     onSortingChange: updateSorting,
     onPageIndexChange: updatePageIndex,
   };

@@ -25,6 +25,7 @@ interface TransactionListDataProps {
   sorting: SortingState;
   items: TransactionItemWithFavorite[];
   regionCode: string;
+  onRowClick: (row: TransactionItemWithFavorite) => void;
   onSortingChange: (sorting: SortingState) => void;
   onPageIndexChange: (pageIndex: number) => void;
 }
@@ -35,6 +36,7 @@ export function TransactionListSimpleTable({
   items,
   sorting,
   regionCode,
+  onRowClick,
   onSortingChange,
   onPageIndexChange,
 }: TransactionListDataProps) {
@@ -111,6 +113,7 @@ export function TransactionListSimpleTable({
       data={items}
       pageIndex={pageIndex}
       sorting={sorting}
+      onRowClick={onRowClick}
       onSortingChange={onSortingChange}
       onPageIndexChange={onPageIndexChange}
     />
