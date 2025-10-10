@@ -60,10 +60,6 @@ export function MonthPicker({
     setOpen(false);
   };
 
-  const handleYearChange = (direction: 'prev' | 'next') => {
-    setCurrentYear(prev => (direction === 'prev' ? prev - 1 : prev + 1));
-  };
-
   // 이전달/다음달 네비게이션
   const handleMonthNavigation = (direction: 'prev' | 'next') => {
     if (!isMounted) return;
@@ -159,6 +155,30 @@ export function MonthPicker({
     }
   }, [value]);
 
+  // 팝오버가 열릴 때 현재 선택된 년도와 월에 스크롤
+  React.useEffect(() => {
+    if (open && value) {
+      // DOM이 완전히 렌더링된 후에 스크롤 실행
+      setTimeout(() => {
+        // 년도 스크롤
+        const yearButton = document.querySelector(
+          `[data-year="${value.getFullYear()}"]`
+        ) as HTMLElement;
+        if (yearButton) {
+          yearButton.scrollIntoView({ behavior: 'instant', block: 'center' });
+        }
+
+        // 월 스크롤
+        const monthButton = document.querySelector(
+          `[data-month="${value.getMonth()}"]`
+        ) as HTMLElement;
+        if (monthButton) {
+          monthButton.scrollIntoView({ behavior: 'instant', block: 'center' });
+        }
+      }, 0);
+    }
+  }, [open, value]);
+
   return (
     <div className={cn('relative flex items-center', className)}>
       <Popover open={open} onOpenChange={setOpen}>
@@ -208,51 +228,72 @@ export function MonthPicker({
           <ChevronRight className="h-4 w-4" />
         </Button>
 
-        <PopoverContent className="w-auto p-4">
-          <div className="space-y-4">
-            {/* Year Navigation */}
-            <div className="flex items-center justify-between">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => handleYearChange('prev')}
-                className="h-7 w-7"
+        <PopoverContent
+          className="w-[var(--radix-popover-trigger-width)] p-0"
+          align="start"
+        >
+          <div className="flex h-[385px]">
+            {/* Year Selection - Left Side */}
+            <div className="w-full flex-1 border-r">
+              <div
+                className="h-full overflow-y-auto p-1"
+                style={{ scrollBehavior: 'smooth' }}
               >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="font-semibold">{currentYear}년</div>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => handleYearChange('next')}
-                className="h-7 w-7"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+                {Array.from(
+                  { length: new Date().getFullYear() - 2000 + 1 },
+                  (_, i) => {
+                    const year = 2000 + i;
+                    return (
+                      <button
+                        key={year}
+                        type="button"
+                        data-year={year}
+                        onClick={() => {
+                          setCurrentYear(year);
+                          // 년도 변경 시 현재 선택된 월을 유지하면서 새로운 날짜 생성
+                          if (value) {
+                            const newDate = new Date(year, value.getMonth(), 1);
+                            onChange?.(newDate);
+                          }
+                        }}
+                        className={cn(
+                          'hover:bg-accent hover:text-accent-foreground w-full rounded-md px-3 py-2 text-center text-sm transition-colors',
+                          value?.getFullYear() === year &&
+                            'bg-accent text-accent-foreground'
+                        )}
+                      >
+                        {year}년
+                      </button>
+                    );
+                  }
+                )}
+              </div>
             </div>
 
-            {/* Month Grid */}
-            <div className="grid grid-cols-3 gap-2">
-              {months.map((month, index) => (
-                <Button
-                  key={month}
-                  type="button"
-                  variant={
-                    value &&
-                    value.getFullYear() === currentYear &&
-                    value.getMonth() === index
-                      ? 'primary'
-                      : 'outline'
-                  }
-                  size="sm"
-                  onClick={() => handleMonthSelect(index)}
-                  className="h-9"
-                >
-                  {month}
-                </Button>
-              ))}
+            {/* Month Selection - Right Side */}
+            <div className="w-full flex-1">
+              <div
+                className="h-full overflow-y-auto p-1"
+                style={{ scrollBehavior: 'smooth' }}
+              >
+                {months.map((month, index) => (
+                  <button
+                    key={month}
+                    type="button"
+                    data-month={index}
+                    onClick={() => handleMonthSelect(index)}
+                    className={cn(
+                      'hover:bg-accent hover:text-accent-foreground w-full rounded-md px-3 py-2 text-center text-sm transition-colors',
+                      value &&
+                        value.getFullYear() === currentYear &&
+                        value.getMonth() === index &&
+                        'bg-accent text-accent-foreground'
+                    )}
+                  >
+                    {month}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </PopoverContent>
