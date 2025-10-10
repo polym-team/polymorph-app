@@ -7,13 +7,13 @@ export function Skeleton() {
         <div key={regionIndex}>
           <Card className="flex flex-col">
             {/* 지역명 스켈레톤 */}
-            <div className="p-3 md:p-5">
+            <div className="p-3">
               <div className="h-4 w-32 animate-pulse rounded bg-gray-200" />
             </div>
             <hr className="my-0 border-gray-200" />
 
             {/* 아파트 버튼들 스켈레톤 */}
-            <div className="flex flex-wrap gap-2 p-3 md:p-4">
+            <div className="flex flex-wrap gap-2 p-3">
               {[1, 2, 3, 4].map(apartIndex => (
                 <div
                   key={apartIndex}

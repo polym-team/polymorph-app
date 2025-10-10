@@ -33,10 +33,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className={`${notoSansKr.variable} ${notoSansKr.className}`}>
-        <div className="flex min-h-screen flex-col">
+      <body
+        className={`${notoSansKr.variable} ${notoSansKr.className} bg-gray-50`}
+      >
+        <div className="flex min-h-screen flex-col items-center">
           <Header />
-          <main className="flex-1 bg-gray-50">
+          <main className="w-full max-w-[640px] flex-1">
             <QueryClientProvider>
               <section className="container mx-auto px-4 pb-10 pt-5">
                 {children}

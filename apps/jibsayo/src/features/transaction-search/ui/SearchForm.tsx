@@ -52,7 +52,7 @@ export function SearchForm({
   }, [favoriteRegionList, form.cityName]);
 
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:gap-x-2">
+    <div className="flex flex-col gap-2">
       <div className="flex gap-2">
         <Select
           value={form.cityName}
@@ -63,7 +63,7 @@ export function SearchForm({
             })
           }
         >
-          <SelectTrigger className="flex-1 sm:w-[150px]">
+          <SelectTrigger className="flex-1">
             <SelectValue placeholder="시/도 선택">{form.cityName}</SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -83,7 +83,7 @@ export function SearchForm({
             })
           }
         >
-          <SelectTrigger className="flex-1 sm:w-[150px]">
+          <SelectTrigger className="flex-1">
             <SelectValue placeholder="시/군/구 선택">
               {getRegionNameWithRegionCode(form.regionCode)}
             </SelectValue>

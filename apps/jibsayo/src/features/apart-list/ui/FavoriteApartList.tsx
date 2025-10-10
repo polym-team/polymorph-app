@@ -22,11 +22,11 @@ export function FavoriteApartList({
   onRemoveApartItem,
 }: FavoriteApartListProps) {
   return (
-    <div className="flex flex-col gap-y-5">
+    <div className="flex w-full flex-col gap-y-5">
       {regionItems.map(region => (
         <div key={region.code}>
           <Card className="flex flex-col">
-            <Typography variant="h4" className="p-3 md:p-5">
+            <Typography variant="h4" className="p-3">
               {getCityNameWithRegionCode(region.code)}{' '}
               {getRegionNameWithRegionCode(region.code)}{' '}
               <strong className="text-primary">
@@ -34,7 +34,7 @@ export function FavoriteApartList({
               </strong>
             </Typography>
             <hr className="my-0 border-gray-200" />
-            <div className="flex flex-wrap gap-2 p-3 md:p-4">
+            <div className="flex flex-wrap gap-2 p-3">
               {region.apartItems.map(item => (
                 <div
                   key={`${item.name}-${item.address}`}

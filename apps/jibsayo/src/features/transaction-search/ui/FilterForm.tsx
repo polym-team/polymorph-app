@@ -19,7 +19,7 @@ export function FilterForm({ filter, onChangeFilter }: FilterFormProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="relative w-full sm:w-[420px]">
+    <div className="relative w-full">
       <div
         className={cn(
           'overflow-hidden rounded border border-gray-200 bg-white transition-colors',

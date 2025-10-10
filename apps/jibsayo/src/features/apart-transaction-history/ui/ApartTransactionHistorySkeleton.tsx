@@ -8,7 +8,7 @@ export function ApartTransactionHistorySkeleton() {
 
       <div className="flex flex-col gap-y-5">
         {/* 필터 섹션 */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3">
           {/* 기간 필터 */}
           <div className="flex items-center gap-2">
             <div className="h-9 w-20 animate-pulse rounded-md bg-gray-200" />

@@ -27,7 +27,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto max-w-[640px] px-4">
         <div className="flex h-16 items-center justify-between">
           <Link
             href={ROUTE_PATH.TRANSACTION}
@@ -36,7 +36,7 @@ export function Header() {
             <img
               src={logo.src}
               alt="집사요"
-              className="h-[120px] h-[96px] w-auto -translate-x-[6px] translate-y-[3px] md:h-[120px]"
+              className="h-[96px] w-auto -translate-x-[6px] translate-y-[3px]"
             />
           </Link>
 
@@ -48,7 +48,7 @@ export function Header() {
                 href={item.href}
                 className={getLinkClassName(item.href)}
               >
-                <span className="text-sm sm:text-base">{item.label}</span>
+                <span className="text-sm">{item.label}</span>
               </Link>
             ))}
           </nav>

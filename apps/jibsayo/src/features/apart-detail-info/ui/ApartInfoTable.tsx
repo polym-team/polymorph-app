@@ -47,7 +47,7 @@ export function ApartInfoTable({ isFavorite, data }: ApartInfoTableProps) {
           key={index}
           className="flex items-center border-t px-1 py-2 last:pb-0"
         >
-          <div className="w-[110px] py-2 lg:w-40 xl:w-64">
+          <div className="w-[110px] py-2">
             <Typography className="text-sm font-medium text-gray-500">
               {item.label}
             </Typography>
