@@ -27,11 +27,13 @@ export function TransactionSummary() {
     return null;
   }
 
-  <Summary
-    isLoading={isLoading}
-    cityName={cityName}
-    regionName={regionName}
-    transactionTotalCount={transactionTotalCount}
-    transactionAverageAmount={transactionAverageAmount}
-  />;
+  return (
+    <Summary
+      isLoading={isLoading}
+      cityName={cityName}
+      regionName={regionName}
+      transactionTotalCount={transactionTotalCount}
+      transactionAverageAmount={transactionAverageAmount}
+    />
+  );
 }

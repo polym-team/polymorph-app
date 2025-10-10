@@ -1,12 +1,13 @@
-import { ApartDetailInfo } from '@/features/apart-detail-info';
-import { ApartTransactionHistory } from '@/features/apart-transaction-history';
 import { ROUTE_PATH } from '@/shared/consts/route';
+import {
+  ApartDetailPageSkeleton,
+  ApartDetailPageWidget,
+} from '@/wigets/apart-detail';
 
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 
 import { fetchApartDetail } from './services';
-import { Skeleton } from './Skeleton';
 
 interface ApartDetailPageRequest {
   params: {
@@ -24,21 +25,15 @@ export default function ApartDetailPage({ params }: ApartDetailPageRequest) {
   }
 
   return (
-    <Suspense fallback={<Skeleton />}>
-      {(async () => {
-        const data = await fetchApartDetail(regionCode, apartName);
+    <div className="flex flex-col gap-y-5">
+      <Suspense fallback={<ApartDetailPageSkeleton />}>
+        {(async () => {
+          const data = await fetchApartDetail(regionCode, apartName);
+          if (!data) redirect(ROUTE_PATH.TRANSACTION);
 
-        if (!data) {
-          redirect(ROUTE_PATH.TRANSACTION);
-        }
-
-        return (
-          <div className="flex flex-col gap-y-5">
-            <ApartDetailInfo data={data} />
-            <ApartTransactionHistory tradeItems={data.tradeItems} />
-          </div>
-        );
-      })()}
-    </Suspense>
+          return <ApartDetailPageWidget data={data} />;
+        })()}
+      </Suspense>
+    </div>
   );
 }

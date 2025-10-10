@@ -6,7 +6,7 @@ import { calculateAreaPyeong } from '@/shared/services/transactionService';
 import * as d3 from 'd3';
 import { useMemo } from 'react';
 
-import { CHART_COLORS } from '../../apart-detail-legacy/consts/colors';
+import { CHART_COLORS } from '../consts/config';
 
 export interface TransactionHistoryChartData {
   date: Date;

@@ -20,7 +20,7 @@ export function Summary({
 }: SummaryProps) {
   if (isLoading) {
     return (
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between">
         <div>
           <div className="h-5 w-32 animate-pulse rounded bg-gray-200"></div>
         </div>
@@ -33,7 +33,7 @@ export function Summary({
   }
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-start justify-between">
       <div>
         <strong>
           {cityName} {regionName}

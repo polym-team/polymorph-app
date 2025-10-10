@@ -1,4 +1,4 @@
-import { ApartList } from '@/features/apart/apart-list';
+import { ApartList } from '@/features/apart-list';
 
 export default function ApartPage() {
   return <ApartList />;
