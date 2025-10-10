@@ -37,7 +37,7 @@ export const useAddFavoriteApartHandler = (): ((
         toast.success('즐겨찾기에 추가됐어요');
       } catch {}
     },
-    [favoriteApartList]
+    [deviceId, isInApp, favoriteApartList, setFavoriteApartList]
   );
 
   return addFavoriteApartHandler;

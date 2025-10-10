@@ -33,6 +33,7 @@ export function Header() {
             href={ROUTE_PATH.TRANSACTION}
             className="flex h-[56px] items-center space-x-2 overflow-hidden transition-all duration-200"
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={logo.src}
               alt="집사요"

@@ -41,7 +41,7 @@ export const useRemoveFavoriteApartHandler = (): ((
         toast.success('즐겨찾기에서 삭제됐어요');
       } catch {}
     },
-    [favoriteApartList]
+    [deviceId, isInApp, favoriteApartList, setFavoriteApartList]
   );
 
   return removeFavoriteApartHandler;

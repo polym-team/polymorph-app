@@ -8,5 +8,6 @@ export const useOnceEffect = (flag: boolean, effect: () => void) => {
       effect();
       isEffect.current = true;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flag]);
 };

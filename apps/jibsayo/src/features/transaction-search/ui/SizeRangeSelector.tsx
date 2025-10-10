@@ -128,7 +128,7 @@ export function SizeRangeSelector({
         document.removeEventListener('touchend', handleMouseUp);
       };
     }
-  }, [dragging, localMin, localMax]);
+  }, [dragging, localMin, localMax, handleMouseMove, handleMouseUp]);
 
   // 슬라이더 바 클릭/터치
   const handleSliderClick = (e: React.MouseEvent | React.TouchEvent) => {

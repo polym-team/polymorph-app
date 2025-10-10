@@ -15,7 +15,7 @@
   "dependencies": {
     "@tanstack/react-query": "5.80.7",
     "date-fns": "4.1.0",
-    "expo-server-sdk": "^3.15.0",
+    "expo-server-sdk": "3.15.0",
     "lucide-react": "0.511.0",
     "next": "14.2.29",
     "p-limit": "^6.2.0",
@@ -27,6 +27,8 @@
     "@types/node": "20.17.9",
     "@types/react": "18.3.17",
     "@types/react-dom": "18.3.5",
+    "eslint": "8.57.0",
+    "eslint-config-next": "15.5.4",
     "prettier": "3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "typescript": "5.7.2"
