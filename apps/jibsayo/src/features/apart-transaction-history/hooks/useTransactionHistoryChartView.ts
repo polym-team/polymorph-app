@@ -1,20 +1,23 @@
 import * as d3 from 'd3';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { LegendItem, TransactionHistoryChartData } from './useTransactionHistoryChartData';
+import {
+  LegendItem,
+  TransactionHistoryChartData,
+} from './useTransactionHistoryChartData';
 
 interface UseTransactionHistoryChartViewProps {
   chartData: TransactionHistoryChartData[];
   legendData: LegendItem[];
   height: number;
-  margin: { top: number; right: number; bottom: number; left: number };
 }
+
+const MARGIN = { top: 20, right: 35, bottom: 30, left: 30 };
 
 export const useTransactionHistoryChartView = ({
   chartData,
   legendData,
   height,
-  margin,
 }: UseTransactionHistoryChartViewProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
@@ -43,8 +46,8 @@ export const useTransactionHistoryChartView = ({
   }, [svgRef]);
 
   // 차트 영역 크기 계산
-  const chartWidth = Math.max(containerWidth - margin.left - margin.right, 0);
-  const chartHeight = height - margin.top - margin.bottom;
+  const chartWidth = Math.max(containerWidth - MARGIN.left - MARGIN.right, 0);
+  const chartHeight = height - MARGIN.top - MARGIN.bottom;
 
   // 스케일 계산
   const xScale = useMemo(() => {
@@ -133,7 +136,7 @@ export const useTransactionHistoryChartView = ({
 
     const g = svg
       .append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
+      .attr('transform', `translate(${MARGIN.left},${MARGIN.top})`);
 
     // 툴팁 생성
     if (!tooltipRef.current) {
@@ -301,7 +304,6 @@ export const useTransactionHistoryChartView = ({
     xScale,
     yPriceScale,
     yCountScale,
-    margin,
     containerWidth,
     legendData,
   ]);
