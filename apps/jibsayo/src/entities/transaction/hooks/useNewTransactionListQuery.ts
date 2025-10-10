@@ -1,4 +1,4 @@
-import { TransactionItem } from '@/features/transaction-list/models/types';
+import { TransactionItem } from '@/entities/transaction/models/types';
 import { useQuery } from '@tanstack/react-query';
 
 interface NewTransactionListResponse {
