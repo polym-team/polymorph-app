@@ -1,5 +1,6 @@
 import {
   cityNameList,
+  getCityNameWithRegionCode,
   getRegionNameWithRegionCode,
   getRegionsWithCityName,
 } from '@/entities/region';
@@ -55,7 +56,12 @@ export function SearchForm({
       <div className="flex gap-2">
         <Select
           value={form.cityName}
-          onValueChange={cityName => onChangeForm({ cityName })}
+          onValueChange={cityName =>
+            onChangeForm({
+              cityName,
+              regionCode: getRegionsWithCityName(cityName)[0].code,
+            })
+          }
         >
           <SelectTrigger className="flex-1 sm:w-[150px]">
             <SelectValue placeholder="시/도 선택">{form.cityName}</SelectValue>
@@ -70,7 +76,12 @@ export function SearchForm({
         </Select>
         <Select
           value={form.regionCode}
-          onValueChange={regionCode => onChangeForm({ regionCode })}
+          onValueChange={regionCode =>
+            onChangeForm({
+              cityName: getCityNameWithRegionCode(regionCode),
+              regionCode,
+            })
+          }
         >
           <SelectTrigger className="flex-1 sm:w-[150px]">
             <SelectValue placeholder="시/군/구 선택">
