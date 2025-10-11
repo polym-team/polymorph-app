@@ -10,6 +10,9 @@ import { COLLECTIONS } from '../consts';
 import { validateToken } from '../push-token/utils';
 import { obfuscateKorean } from '../utils';
 
+// Force dynamic route
+export const dynamic = 'force-dynamic';
+
 interface TransactionData {
   apartId: string;
   apartName: string;
