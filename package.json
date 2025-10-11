@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "scaffolding": "pnpm --filter scaffolding",
-    "jibsayo": "pnpm --filter jibsayo"
+    "jibsayo": "pnpm --filter jibsayo",
+    "prepare": "husky"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -29,8 +30,16 @@
     "@types/react-dom": "18.3.5",
     "eslint": "8.57.0",
     "eslint-config-next": "15.5.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.4",
     "prettier": "3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "typescript": "5.7.2"
+  },
+  "lint-staged": {
+    "**/*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "tsc --noEmit"
+    ]
   }
 }
