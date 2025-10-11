@@ -159,27 +159,8 @@ const SelectSeparator = React.forwardRef<
 ));
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 
-// Select 컴포넌트 래퍼
-const Select = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root> & {
-    size?: VariantProps<typeof selectTriggerVariants>['size'];
-  }
->(({ size, children, ...props }) => {
-  return (
-    <SelectPrimitive.Root {...props}>
-      {React.Children.map(children, child => {
-        if (React.isValidElement(child) && child.type === SelectTrigger) {
-          return React.cloneElement(child, {
-            ...child.props,
-            size: size || child.props.size,
-          } as any);
-        }
-        return child;
-      })}
-    </SelectPrimitive.Root>
-  );
-});
+// Select는 단순히 SelectPrimitive.Root를 래핑
+const Select = SelectPrimitive.Root;
 Select.displayName = 'Select';
 
 // 중첩된 컴포넌트 구조 생성

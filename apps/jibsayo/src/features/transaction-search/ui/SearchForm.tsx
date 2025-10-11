@@ -75,6 +75,7 @@ export function SearchForm({
           </SelectContent>
         </Select>
         <Select
+          key={form.cityName}
           value={form.regionCode}
           onValueChange={regionCode =>
             onChangeForm({
@@ -119,6 +120,7 @@ export function SearchForm({
           <Button
             type="button"
             variant="warning"
+            className="w-16"
             onClick={() => onRemoveFavoriteRegion(form.regionCode)}
           >
             저장됨
@@ -128,6 +130,7 @@ export function SearchForm({
           <Button
             type="button"
             variant="warning"
+            className="w-16"
             onClick={() => onAddFavoriteRegion(form.regionCode)}
           >
             저장
