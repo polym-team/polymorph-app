@@ -1,0 +1,16 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "vars": "all",
+        "args": "after-used",
+        "ignoreRestSiblings": false
+      }
+    ],
+    "no-html-link-for-pages": "off"
+  }
+}

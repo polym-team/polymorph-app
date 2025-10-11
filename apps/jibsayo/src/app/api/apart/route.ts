@@ -263,7 +263,7 @@ export async function GET(request: Request) {
 
   try {
     return Response.json(await createResponse(apartName, area));
-  } catch (error) {
+  } catch {
     return Response.json(
       { message: '서버 오류가 발생했습니다.' },
       { status: 500 }

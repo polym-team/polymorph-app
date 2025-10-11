@@ -1,4 +1,4 @@
-export * from './src/button';
+export { Button } from './src/button';
 export { Typography } from './src/typography';
 export { Input } from './src/input';
 export { Checkbox } from './src/checkbox';

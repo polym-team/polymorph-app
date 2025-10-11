@@ -63,13 +63,6 @@ const optimizedSplitCellText = (text: string): string[] => {
   return text.replace(REGEXES.whitespace, '').split('\n').filter(Boolean);
 };
 
-// 숫자 추출 최적화
-const extractNumber = (str: string | undefined): number => {
-  if (!str) return 0;
-  const match = str.match(/\d+/);
-  return match ? parseInt(match[0], 10) : 0;
-};
-
 // 한국어 금액 파싱 로직 개선
 const parseAmount = (amountText: string): number => {
   if (!amountText) return 0;

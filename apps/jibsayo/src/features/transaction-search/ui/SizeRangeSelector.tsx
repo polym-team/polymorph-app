@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button, Typography } from '@package/ui';
 
@@ -41,7 +41,7 @@ export function SizeRangeSelector({
   }, []);
 
   // 위치를 평수로 변환
-  const positionToValue = (x: number): number => {
+  const positionToValue = useCallback((x: number): number => {
     if (!sliderRef.current) return MIN_PYEONG;
 
     const rect = sliderRef.current.getBoundingClientRect();
@@ -56,7 +56,7 @@ export function SizeRangeSelector({
     const ratio = (clampedX - HANDLE_RADIUS) / effectiveWidth;
 
     return Math.round(MIN_PYEONG + ratio * (MAX_PYEONG - MIN_PYEONG));
-  };
+  }, []);
 
   // 평수를 위치로 변환
   const valueToPosition = (value: number): number => {
@@ -83,33 +83,36 @@ export function SizeRangeSelector({
   };
 
   // 드래그 중
-  const handleMouseMove = (e: MouseEvent | TouchEvent) => {
-    if (!dragging) return;
+  const handleMouseMove = useCallback(
+    (e: MouseEvent | TouchEvent) => {
+      if (!dragging) return;
 
-    // 드래그 중일 때만 터치 스크롤 방지
-    if ('touches' in e) {
-      e.preventDefault();
-    }
+      // 드래그 중일 때만 터치 스크롤 방지
+      if ('touches' in e) {
+        e.preventDefault();
+      }
 
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const newValue = positionToValue(clientX);
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const newValue = positionToValue(clientX);
 
-    if (dragging === 'min') {
-      const clampedValue = Math.max(MIN_PYEONG, Math.min(newValue, localMax));
-      setLocalMin(clampedValue);
-    } else {
-      const clampedValue = Math.min(MAX_PYEONG, Math.max(newValue, localMin));
-      setLocalMax(clampedValue);
-    }
-  };
+      if (dragging === 'min') {
+        const clampedValue = Math.max(MIN_PYEONG, Math.min(newValue, localMax));
+        setLocalMin(clampedValue);
+      } else {
+        const clampedValue = Math.min(MAX_PYEONG, Math.max(newValue, localMin));
+        setLocalMax(clampedValue);
+      }
+    },
+    [dragging, localMax, localMin, positionToValue]
+  );
 
   // 드래그 종료 - 이때 실제 필터 적용
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     if (dragging) {
       onRangeChange(localMin, localMax);
     }
     setDragging(null);
-  };
+  }, [dragging, localMin, localMax, onRangeChange]);
 
   // 전역 이벤트 리스너
   useEffect(() => {

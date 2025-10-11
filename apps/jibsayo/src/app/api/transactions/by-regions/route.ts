@@ -1,6 +1,6 @@
 import { AdminFirestoreClient } from '@polymorph/firebase';
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 interface TransactionData {
   apartId: string;
@@ -82,7 +82,7 @@ async function getNewTransactionsByArea(
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     console.log(
       '🔍 즐겨찾기 지역 기반 거래 데이터 조회 및 푸시 알림 처리 시작...'

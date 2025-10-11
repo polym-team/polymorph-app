@@ -9,6 +9,10 @@
   "devDependencies": {
     "tailwindcss": "3.4.17",
     "postcss": "8.5.1",
-    "autoprefixer": "10.4.20"
+    "autoprefixer": "10.4.20",
+    "@typescript-eslint/eslint-plugin": "^8.46.0",
+    "@typescript-eslint/parser": "^8.46.0",
+    "eslint": "8.57.0",
+    "eslint-config-next": "15.5.4"
   }
 }

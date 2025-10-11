@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { RULES } from '@/entities/transaction';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button, Typography } from '@package/ui';
 
@@ -10,8 +12,6 @@ interface SizeRangeSelectorProps {
   onRangeChange: (min: number, max: number) => void;
 }
 
-const MIN_PYEONG = 0;
-const MAX_PYEONG = 50;
 const HANDLE_RADIUS = 10; // 핸들 반지름 (w-4 + border-2 = 20px / 2)
 
 export function SizeRangeSelector({
@@ -19,16 +19,16 @@ export function SizeRangeSelector({
   maxSize,
   onRangeChange,
 }: SizeRangeSelectorProps) {
-  const [localMin, setLocalMin] = useState(minSize ?? MIN_PYEONG);
-  const [localMax, setLocalMax] = useState(maxSize ?? MAX_PYEONG);
+  const [localMin, setLocalMin] = useState(minSize ?? RULES.SEARCH_MIN_SIZE);
+  const [localMax, setLocalMax] = useState(maxSize ?? RULES.SEARCH_MAX_SIZE);
   const [dragging, setDragging] = useState<'min' | 'max' | null>(null);
   const [isSliderMounted, setIsSliderMounted] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
 
   // 외부 값 변경 시 동기화
   useEffect(() => {
-    setLocalMin(minSize ?? MIN_PYEONG);
-    setLocalMax(maxSize ?? MAX_PYEONG);
+    setLocalMin(minSize ?? RULES.SEARCH_MIN_SIZE);
+    setLocalMax(maxSize ?? RULES.SEARCH_MAX_SIZE);
   }, [minSize, maxSize]);
 
   // 슬라이더가 마운트된 후 위치 재계산
@@ -43,8 +43,8 @@ export function SizeRangeSelector({
   }, []);
 
   // 위치를 평수로 변환
-  const positionToValue = (x: number): number => {
-    if (!sliderRef.current) return MIN_PYEONG;
+  const positionToValue = useCallback((x: number): number => {
+    if (!sliderRef.current) return RULES.SEARCH_MIN_SIZE;
 
     const rect = sliderRef.current.getBoundingClientRect();
     const sliderWidth = rect.width;
@@ -57,61 +57,81 @@ export function SizeRangeSelector({
     );
     const ratio = (clampedX - HANDLE_RADIUS) / effectiveWidth;
 
-    return Math.round(MIN_PYEONG + ratio * (MAX_PYEONG - MIN_PYEONG));
-  };
+    return Math.round(
+      RULES.SEARCH_MIN_SIZE +
+        ratio * (RULES.SEARCH_MAX_SIZE - RULES.SEARCH_MIN_SIZE)
+    );
+  }, []);
 
   // 평수를 위치로 변환
-  const valueToPosition = (value: number): number => {
+  const valueToPosition = useCallback((value: number): number => {
     if (!sliderRef.current || !isSliderMounted) return HANDLE_RADIUS;
 
     const rect = sliderRef.current.getBoundingClientRect();
     const sliderWidth = rect.width;
 
-    const ratio = (value - MIN_PYEONG) / (MAX_PYEONG - MIN_PYEONG);
+    const ratio =
+      (value - RULES.SEARCH_MIN_SIZE) /
+      (RULES.SEARCH_MAX_SIZE - RULES.SEARCH_MIN_SIZE);
     // 핸들 반지름을 고려해서 위치 계산
     const effectiveWidth = sliderWidth - HANDLE_RADIUS * 2;
     return HANDLE_RADIUS + ratio * effectiveWidth;
-  };
+  }, []);
 
   // 드래그 시작
-  const handleMouseDown = (e: React.MouseEvent, type: 'min' | 'max') => {
-    e.preventDefault();
-    setDragging(type);
-  };
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent, type: 'min' | 'max') => {
+      e.preventDefault();
+      setDragging(type);
+    },
+    []
+  );
 
-  const handleTouchStart = (e: React.TouchEvent, type: 'min' | 'max') => {
-    e.preventDefault(); // 핸들에서만 기본 동작 방지
-    setDragging(type);
-  };
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent, type: 'min' | 'max') => {
+      e.preventDefault(); // 핸들에서만 기본 동작 방지
+      setDragging(type);
+    },
+    []
+  );
 
   // 드래그 중
-  const handleMouseMove = (e: MouseEvent | TouchEvent) => {
-    if (!dragging) return;
+  const handleMouseMove = useCallback(
+    (e: MouseEvent | TouchEvent) => {
+      if (!dragging) return;
 
-    // 드래그 중일 때만 터치 스크롤 방지
-    if ('touches' in e) {
-      e.preventDefault();
-    }
+      // 드래그 중일 때만 터치 스크롤 방지
+      if ('touches' in e) {
+        e.preventDefault();
+      }
 
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const newValue = positionToValue(clientX);
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const newValue = positionToValue(clientX);
 
-    if (dragging === 'min') {
-      const clampedValue = Math.max(MIN_PYEONG, Math.min(newValue, localMax));
-      setLocalMin(clampedValue);
-    } else {
-      const clampedValue = Math.min(MAX_PYEONG, Math.max(newValue, localMin));
-      setLocalMax(clampedValue);
-    }
-  };
+      if (dragging === 'min') {
+        const clampedValue = Math.max(
+          RULES.SEARCH_MIN_SIZE,
+          Math.min(newValue, localMax)
+        );
+        setLocalMin(clampedValue);
+      } else {
+        const clampedValue = Math.min(
+          RULES.SEARCH_MAX_SIZE,
+          Math.max(newValue, localMin)
+        );
+        setLocalMax(clampedValue);
+      }
+    },
+    [dragging, localMax, localMin, positionToValue]
+  );
 
   // 드래그 종료 - 이때 실제 필터 적용
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     if (dragging) {
       onRangeChange(localMin, localMax);
     }
     setDragging(null);
-  };
+  }, [dragging, localMin, localMax, onRangeChange]);
 
   // 전역 이벤트 리스너
   useEffect(() => {
@@ -133,31 +153,43 @@ export function SizeRangeSelector({
   }, [dragging, localMin, localMax, handleMouseMove, handleMouseUp]);
 
   // 슬라이더 바 클릭/터치
-  const handleSliderClick = (e: React.MouseEvent | React.TouchEvent) => {
-    if (dragging) return;
+  const handleSliderClick = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      if (dragging) return;
 
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clickValue = positionToValue(clientX);
-    const distToMin = Math.abs(clickValue - localMin);
-    const distToMax = Math.abs(clickValue - localMax);
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clickValue = positionToValue(clientX);
+      const distToMin = Math.abs(clickValue - localMin);
+      const distToMax = Math.abs(clickValue - localMax);
 
-    if (distToMin <= distToMax) {
-      const newMin = Math.max(MIN_PYEONG, Math.min(clickValue, localMax));
-      setLocalMin(newMin);
-      onRangeChange(newMin, localMax);
-    } else {
-      const newMax = Math.min(MAX_PYEONG, Math.max(clickValue, localMin));
-      setLocalMax(newMax);
-      onRangeChange(localMin, newMax);
-    }
-  };
+      if (distToMin <= distToMax) {
+        const newMin = Math.max(
+          RULES.SEARCH_MIN_SIZE,
+          Math.min(clickValue, localMax)
+        );
+        setLocalMin(newMin);
+        onRangeChange(newMin, localMax);
+      } else {
+        const newMax = Math.min(
+          RULES.SEARCH_MAX_SIZE,
+          Math.max(clickValue, localMin)
+        );
+        setLocalMax(newMax);
+        onRangeChange(localMin, newMax);
+      }
+    },
+    [dragging, localMin, localMax, onRangeChange, positionToValue]
+  );
 
   // 평수대별 빠른 선택
-  const handleQuickSelect = (range: { min: number; max: number }) => {
-    setLocalMin(range.min);
-    setLocalMax(range.max);
-    onRangeChange(range.min, range.max);
-  };
+  const handleQuickSelect = useCallback(
+    (range: { min: number; max: number }) => {
+      setLocalMin(range.min);
+      setLocalMax(range.max);
+      onRangeChange(range.min, range.max);
+    },
+    [onRangeChange]
+  );
 
   const minPosition = valueToPosition(localMin);
   const maxPosition = valueToPosition(localMax);

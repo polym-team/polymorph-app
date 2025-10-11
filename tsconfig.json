@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./apps/jibsayo" },
+    { "path": "./apps/scaffolding" },
+    { "path": "./packages/ui" },
+    { "path": "./packages/firebase" },
+    { "path": "./packages/config" }
+  ]
+}

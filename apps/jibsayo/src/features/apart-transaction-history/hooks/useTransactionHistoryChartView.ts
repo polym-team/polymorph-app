@@ -83,7 +83,7 @@ export const useTransactionHistoryChartView = ({
       .domain(dateStrings)
       .range([marginPadding, chartWidth - marginPadding])
       .padding(0);
-  }, [chartData, chartWidth, containerWidth]);
+  }, [chartData, chartWidth]);
 
   const yPriceScale = useMemo(() => {
     if (!chartData.length) {
@@ -279,21 +279,6 @@ export const useTransactionHistoryChartView = ({
         .duration(600)
         .delay((_, i) => i * 100)
         .attr('stroke-dashoffset', 0);
-
-      // 데이터 포인트
-      const points = g
-        .selectAll(`.point-${pyeong}`)
-        .data(data)
-        .enter()
-        .append('circle')
-        .attr('class', `point-${pyeong}`)
-        .attr('cx', d => xScale(formatDateForScale(d.date)) || 0)
-        .attr('cy', d => yPriceScale(d.averagePrice))
-        .attr('r', 4)
-        .attr('fill', color)
-        .attr('stroke', 'white')
-        .attr('stroke-width', 2)
-        .style('opacity', 0);
     });
 
     setIsLoading(false);
