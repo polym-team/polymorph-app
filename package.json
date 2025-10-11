@@ -41,6 +41,9 @@
   "lint-staged": {
     "**/*.{ts,tsx,js,jsx}": [
       "eslint --fix"
+    ],
+    "apps/jibsayo/**/*.{ts,tsx}": [
+      "bash -c 'cd apps/jibsayo && pnpm tsc'"
     ]
   }
 }
