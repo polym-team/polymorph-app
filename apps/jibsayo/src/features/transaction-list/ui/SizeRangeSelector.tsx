@@ -64,19 +64,22 @@ export function SizeRangeSelector({
   }, []);
 
   // 평수를 위치로 변환
-  const valueToPosition = useCallback((value: number): number => {
-    if (!sliderRef.current || !isSliderMounted) return HANDLE_RADIUS;
+  const valueToPosition = useCallback(
+    (value: number): number => {
+      if (!sliderRef.current || !isSliderMounted) return HANDLE_RADIUS;
 
-    const rect = sliderRef.current.getBoundingClientRect();
-    const sliderWidth = rect.width;
+      const rect = sliderRef.current.getBoundingClientRect();
+      const sliderWidth = rect.width;
 
-    const ratio =
-      (value - RULES.SEARCH_MIN_SIZE) /
-      (RULES.SEARCH_MAX_SIZE - RULES.SEARCH_MIN_SIZE);
-    // 핸들 반지름을 고려해서 위치 계산
-    const effectiveWidth = sliderWidth - HANDLE_RADIUS * 2;
-    return HANDLE_RADIUS + ratio * effectiveWidth;
-  }, []);
+      const ratio =
+        (value - RULES.SEARCH_MIN_SIZE) /
+        (RULES.SEARCH_MAX_SIZE - RULES.SEARCH_MIN_SIZE);
+      // 핸들 반지름을 고려해서 위치 계산
+      const effectiveWidth = sliderWidth - HANDLE_RADIUS * 2;
+      return HANDLE_RADIUS + ratio * effectiveWidth;
+    },
+    [isSliderMounted]
+  );
 
   // 드래그 시작
   const handleMouseDown = useCallback(

@@ -46,10 +46,8 @@ interface PushNotificationData {
 // Expo Push Notification Client 초기화
 
 // Firebase Admin SDK 초기화 (FCM용)
-let firebaseApp: admin.app.App;
-
 if (!admin.apps.length) {
-  firebaseApp = admin.initializeApp({
+  admin.initializeApp({
     credential: admin.credential.cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
       privateKeyId: process.env.FIREBASE_PRIVATE_KEY_ID,
@@ -58,9 +56,8 @@ if (!admin.apps.length) {
       clientId: process.env.FIREBASE_CLIENT_ID,
     } as any),
   });
-} else {
-  firebaseApp = admin.app();
 }
+
 const expoPushClient = new ExpoPushNotificationClient();
 
 // Firestore Admin 클라이언트 초기화 (즐겨찾기 아파트용)
