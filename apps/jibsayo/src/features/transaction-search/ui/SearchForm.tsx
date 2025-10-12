@@ -95,9 +95,12 @@ export function SearchForm({
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-bold">{region.name}</span>
                   <span
-                    onClick={() => {
+                    onPointerDown={e => {
+                      e.preventDefault(); // 기본 동작 방지
+                      e.stopPropagation(); // 이벤트 버블링 방지
                       onRemoveFavoriteRegion(region.code);
                     }}
+                    className="cursor-pointer"
                   >
                     <Star
                       className={cn(

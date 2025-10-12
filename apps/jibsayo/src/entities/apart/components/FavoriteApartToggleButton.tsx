@@ -25,13 +25,18 @@ export function FavoriteApartToggleButton({
   const addFavoriteApart = useAddFavoriteApartHandler();
   const removeFavoriteApart = useRemoveFavoriteApartHandler();
 
-  const handleClick = useCallback(() => {
-    if (isFavorite) {
-      removeFavoriteApart(data);
-    } else {
-      addFavoriteApart(data);
-    }
-  }, [isFavorite, data, removeFavoriteApart, addFavoriteApart]);
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+
+      if (isFavorite) {
+        removeFavoriteApart(data);
+      } else {
+        addFavoriteApart(data);
+      }
+    },
+    [isFavorite, data, removeFavoriteApart, addFavoriteApart]
+  );
 
   return (
     <button type="button" onClick={handleClick}>
