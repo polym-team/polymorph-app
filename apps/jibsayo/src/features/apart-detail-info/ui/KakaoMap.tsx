@@ -95,7 +95,7 @@ export function KakaoMap({ address, apartName }: KakaoMapProps) {
   }, [isLoaded, address, apartName]);
 
   return (
-    <div className="rounded border">
+    <div className="overflow-hidden rounded border">
       <div
         ref={mapRef}
         className="h-[250px] w-full"
