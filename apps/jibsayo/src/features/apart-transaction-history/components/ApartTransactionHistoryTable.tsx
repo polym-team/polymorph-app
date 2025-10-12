@@ -52,7 +52,7 @@ const columns: ColumnDef<TradeItemWithPriceChangeRate>[] = [
         {row.original.priceChangeRate !== 0 && (
           <span
             className={cn(
-              'rounded-full px-1 pb-0.5 text-xs',
+              'rounded-full px-1.5 py-0.5 text-xs',
               row.original.priceChangeRate > 0
                 ? 'bg-red-100 text-red-700'
                 : 'bg-blue-100 text-blue-700'
