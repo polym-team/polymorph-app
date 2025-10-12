@@ -98,8 +98,8 @@ export function KakaoMap({ address, apartName }: KakaoMapProps) {
     <div className="rounded border">
       <div
         ref={mapRef}
-        className="h-[300px] w-full"
-        style={{ minHeight: '300px' }}
+        className="h-[250px] w-full"
+        style={{ minHeight: '250px' }}
       />
     </div>
   );
