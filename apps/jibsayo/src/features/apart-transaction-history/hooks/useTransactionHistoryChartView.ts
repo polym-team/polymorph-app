@@ -249,7 +249,21 @@ export const useTransactionHistoryChartView = ({
     });
 
     const uniqueDates = Array.from(dateCountMap.keys()).sort();
-    const barWidth = 2;
+
+    // 바 너비 동적 계산 (기본 3px, 간격 최소 1px 유지)
+    const defaultBarWidth = 3;
+    const minGap = 1;
+    const idealSpacePerBar = defaultBarWidth + minGap;
+    const totalIdealWidth = uniqueDates.length * idealSpacePerBar;
+
+    let barWidth: number;
+    if (totalIdealWidth > chartWidth) {
+      // 공간이 부족하면 너비를 줄이되, 최소 1px 간격 유지
+      barWidth = Math.max(1, chartWidth / uniqueDates.length - minGap);
+    } else {
+      // 충분한 공간이 있으면 기본 3px 사용
+      barWidth = defaultBarWidth;
+    }
 
     // 거래건수 바 차트 (하단 차트)
     uniqueDates.forEach(dateString => {
@@ -268,8 +282,7 @@ export const useTransactionHistoryChartView = ({
         .attr('y', countChartHeight)
         .attr('height', 0)
         .transition()
-        .duration(500)
-        .delay((_, i) => i * 30)
+        .duration(300)
         .attr('y', yCountScale(totalCount))
         .attr('height', countChartHeight - yCountScale(totalCount));
     });
@@ -283,6 +296,10 @@ export const useTransactionHistoryChartView = ({
             ]?.color || '#3b82f6'
           : '#3b82f6';
 
+      const sortedData = data.sort(
+        (a, b) => a.date.getTime() - b.date.getTime()
+      );
+
       const line = d3
         .line<TransactionHistoryChartData>()
         .x(d => xScale(formatDateForScale(d.date)) || 0)
@@ -291,7 +308,7 @@ export const useTransactionHistoryChartView = ({
 
       const path = priceGroup
         .append('path')
-        .datum(data.sort((a, b) => a.date.getTime() - b.date.getTime()))
+        .datum(sortedData)
         .attr('fill', 'none')
         .attr('stroke', color)
         .attr('stroke-width', 2)
@@ -305,9 +322,28 @@ export const useTransactionHistoryChartView = ({
           return this.getTotalLength();
         })
         .transition()
-        .duration(600)
-        .delay((_, i) => i * 100)
+        .duration(300)
         .attr('stroke-dashoffset', 0);
+
+      // 각 데이터 포인트에 점 추가 (원형, 흰색 테두리)
+      const pointRadius = 2;
+      sortedData.forEach(d => {
+        const xPos = xScale(formatDateForScale(d.date)) || 0;
+        const yPos = yPriceScale(d.averagePrice);
+
+        const point = priceGroup
+          .append('circle')
+          .attr('class', 'price-point')
+          .attr('cx', xPos)
+          .attr('cy', yPos)
+          .attr('r', pointRadius)
+          .attr('fill', color)
+          .attr('stroke', '#ffffff')
+          .attr('stroke-width', 1)
+          .attr('opacity', 0);
+
+        point.transition().duration(300).delay(300).attr('opacity', 1);
+      });
     });
 
     // 인터랙션용 수직선 생성 (전체 차트를 관통하는 하나의 선)
