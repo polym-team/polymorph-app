@@ -14,7 +14,7 @@ interface UseTransactionHistoryChartViewProps {
   height: number;
 }
 
-const MARGIN = { top: 20, right: 35, bottom: 30, left: 30 };
+const MARGIN = { top: 20, right: 0, bottom: 30, left: 30 };
 
 export const useTransactionHistoryChartView = ({
   chartData,
@@ -47,9 +47,12 @@ export const useTransactionHistoryChartView = ({
     };
   }, [svgRef]);
 
-  // 차트 영역 크기 계산
+  // 차트 영역 크기 계산 (상하로 분리)
   const chartWidth = Math.max(containerWidth - MARGIN.left - MARGIN.right, 0);
-  const chartHeight = height - MARGIN.top - MARGIN.bottom;
+  const totalHeight = height - MARGIN.top - MARGIN.bottom;
+  const chartGap = 20; // 상하 차트 사이 간격
+  const priceChartHeight = Math.floor(((totalHeight - chartGap) * 2) / 3);
+  const countChartHeight = Math.floor(((totalHeight - chartGap) * 1) / 3);
 
   // 스케일 계산
   const xScale = useMemo(() => {
@@ -89,19 +92,19 @@ export const useTransactionHistoryChartView = ({
 
   const yPriceScale = useMemo(() => {
     if (!chartData.length) {
-      return d3.scaleLinear().domain([0, 100000]).range([chartHeight, 0]);
+      return d3.scaleLinear().domain([0, 100000]).range([priceChartHeight, 0]);
     }
 
     const maxPrice = d3.max(chartData, d => d.averagePrice) || 0;
     return d3
       .scaleLinear()
       .domain([0, maxPrice * 1.1])
-      .range([chartHeight, 0]);
-  }, [chartData, chartHeight]);
+      .range([priceChartHeight, 0]);
+  }, [chartData, priceChartHeight]);
 
   const yCountScale = useMemo(() => {
     if (!chartData.length) {
-      return d3.scaleLinear().domain([0, 10]).range([chartHeight, 0]);
+      return d3.scaleLinear().domain([0, 10]).range([countChartHeight, 0]);
     }
 
     // 날짜별 거래건수 합산하여 최대값 계산
@@ -115,8 +118,8 @@ export const useTransactionHistoryChartView = ({
     return d3
       .scaleLinear()
       .domain([0, maxCount * 1.1])
-      .range([chartHeight, 0]);
-  }, [chartData, chartHeight]);
+      .range([countChartHeight, 0]);
+  }, [chartData, countChartHeight]);
 
   // 날짜를 문자열로 변환하는 헬퍼 함수
   const formatDateForScale = (date: Date) => d3.timeFormat('%Y-%m')(date);
@@ -127,7 +130,8 @@ export const useTransactionHistoryChartView = ({
       !svgRef.current ||
       !chartData.length ||
       chartWidth <= 0 ||
-      chartHeight <= 0
+      priceChartHeight <= 0 ||
+      countChartHeight <= 0
     ) {
       setIsLoading(false);
       return;
@@ -136,9 +140,18 @@ export const useTransactionHistoryChartView = ({
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
-    const g = svg
+    // 상단 차트 그룹 (가격)
+    const priceGroup = svg
       .append('g')
       .attr('transform', `translate(${MARGIN.left},${MARGIN.top})`);
+
+    // 하단 차트 그룹 (건수)
+    const countGroup = svg
+      .append('g')
+      .attr(
+        'transform',
+        `translate(${MARGIN.left},${MARGIN.top + priceChartHeight + chartGap})`
+      );
 
     // 툴팁 생성
     if (!tooltipRef.current) {
@@ -160,7 +173,7 @@ export const useTransactionHistoryChartView = ({
         .node() as HTMLDivElement;
     }
 
-    // x축
+    // x축 (하단 차트에만)
     const allDates = xScale.domain();
     const yearFirstDates = new Map<string, string>();
     allDates.forEach(dateString => {
@@ -173,9 +186,9 @@ export const useTransactionHistoryChartView = ({
     const yearTicks = Array.from(yearFirstDates.values()).sort();
     const displayTicks = yearTicks.filter((_, index) => index % 2 === 0);
 
-    const xAxis = g
+    const xAxis = countGroup
       .append('g')
-      .attr('transform', `translate(0,${chartHeight})`)
+      .attr('transform', `translate(0,${countChartHeight})`)
       .call(
         d3
           .axisBottom(xScale)
@@ -192,18 +205,38 @@ export const useTransactionHistoryChartView = ({
       .attr('dy', '0.15em')
       .attr('transform', 'rotate(-45)');
 
-    // 왼쪽 y축 (가격)
-    g.append('g').call(
+    // 왼쪽 y축 (상단: 가격) - 5억 단위
+    const maxPrice = yPriceScale.domain()[1];
+    const priceTickValues = [];
+    for (let i = 500000000; i <= maxPrice; i += 500000000) {
+      priceTickValues.push(i);
+    }
+
+    priceGroup.append('g').call(
       d3
         .axisLeft(yPriceScale)
         .tickFormat(d => `${Math.round(Number(d) / 100000000)}억`)
-        .tickValues(yPriceScale.ticks().filter(tick => tick > 0))
+        .tickValues(priceTickValues)
     );
 
-    // 오른쪽 y축 (건수)
-    g.append('g')
-      .attr('transform', `translate(${chartWidth},0)`)
-      .call(d3.axisRight(yCountScale).tickFormat(d => `${d}건`));
+    // 왼쪽 y축 (하단: 건수) - 최대 5개 tick
+    const maxCount = yCountScale.domain()[1];
+    const countTickValues = [];
+    const tickCount = 5;
+    const interval = Math.ceil(maxCount / (tickCount - 1) / 5) * 5; // 5의 배수로 올림
+
+    for (let i = interval; i <= maxCount; i += interval) {
+      if (countTickValues.length < tickCount - 1) {
+        countTickValues.push(i);
+      }
+    }
+
+    countGroup.append('g').call(
+      d3
+        .axisLeft(yCountScale)
+        .tickFormat(d => `${d}건`)
+        .tickValues(countTickValues)
+    );
 
     // 평형별로 그룹화
     const pyeongGroups = d3.group(chartData, d => d.pyeong);
@@ -218,30 +251,30 @@ export const useTransactionHistoryChartView = ({
     const uniqueDates = Array.from(dateCountMap.keys()).sort();
     const barWidth = 2;
 
-    // 거래건수 바 차트
+    // 거래건수 바 차트 (하단 차트)
     uniqueDates.forEach(dateString => {
       const totalCount = dateCountMap.get(dateString) || 0;
       const xPos = xScale(dateString) || 0;
 
-      const bar = g
+      const bar = countGroup
         .append('rect')
         .attr('class', 'count-bar')
         .attr('x', xPos - barWidth / 2)
         .attr('width', barWidth)
-        .attr('fill', '#e5e7eb')
-        .attr('opacity', 0.7);
+        .attr('fill', '#9ca3af')
+        .attr('opacity', 0.8);
 
       bar
-        .attr('y', chartHeight)
+        .attr('y', countChartHeight)
         .attr('height', 0)
         .transition()
         .duration(500)
         .delay((_, i) => i * 30)
         .attr('y', yCountScale(totalCount))
-        .attr('height', chartHeight - yCountScale(totalCount));
+        .attr('height', countChartHeight - yCountScale(totalCount));
     });
 
-    // 평형별 실거래가 라인 차트
+    // 평형별 실거래가 라인 차트 (상단 차트)
     Array.from(pyeongGroups, ([pyeong, data]) => {
       const color =
         legendData.findIndex(l => l.pyeong === pyeong) % legendData.length >= 0
@@ -256,7 +289,7 @@ export const useTransactionHistoryChartView = ({
         .y(d => yPriceScale(d.averagePrice))
         .curve(d3.curveMonotoneX);
 
-      const path = g
+      const path = priceGroup
         .append('path')
         .datum(data.sort((a, b) => a.date.getTime() - b.date.getTime()))
         .attr('fill', 'none')
@@ -277,8 +310,12 @@ export const useTransactionHistoryChartView = ({
         .attr('stroke-dashoffset', 0);
     });
 
-    // 인터랙션용 수직선 생성
-    const verticalLine = g
+    // 인터랙션용 수직선 생성 (전체 차트를 관통하는 하나의 선)
+    const verticalLineGroup = svg
+      .append('g')
+      .attr('transform', `translate(${MARGIN.left},${MARGIN.top})`);
+
+    const verticalLine = verticalLineGroup
       .append('line')
       .attr('class', 'vertical-guide-line')
       .attr('stroke', '#000000')
@@ -286,14 +323,18 @@ export const useTransactionHistoryChartView = ({
       .attr('stroke-dasharray', '2 2')
       .style('opacity', 0)
       .attr('y1', 0)
-      .attr('y2', chartHeight);
+      .attr('y2', priceChartHeight + chartGap + countChartHeight);
 
-    // 인터랙션 레이어 추가
-    const interactionLayer = g
+    // 인터랙션 레이어 추가 (전체 차트 영역)
+    const interactionGroup = svg
+      .append('g')
+      .attr('transform', `translate(${MARGIN.left},${MARGIN.top})`);
+
+    const interactionLayer = interactionGroup
       .append('rect')
       .attr('class', 'interaction-layer')
       .attr('width', chartWidth)
-      .attr('height', chartHeight)
+      .attr('height', priceChartHeight + chartGap + countChartHeight)
       .attr('fill', 'transparent')
       .style('cursor', 'crosshair');
 
@@ -318,7 +359,7 @@ export const useTransactionHistoryChartView = ({
     const showTooltip = (dateString: string) => {
       const xPos = xScale(dateString) || 0;
 
-      // y축 구분선 표시
+      // y축 구분선 표시 (전체 관통)
       verticalLine.attr('x1', xPos).attr('x2', xPos).style('opacity', 1);
 
       // 날짜 포맷 (YYYY-MM -> YYYY년 M월)
@@ -480,12 +521,14 @@ export const useTransactionHistoryChartView = ({
   }, [
     chartData,
     chartWidth,
-    chartHeight,
+    priceChartHeight,
+    countChartHeight,
     xScale,
     yPriceScale,
     yCountScale,
     containerWidth,
     legendData,
+    chartGap,
   ]);
 
   return {
@@ -493,6 +536,6 @@ export const useTransactionHistoryChartView = ({
     isLoading,
     containerWidth,
     chartWidth,
-    chartHeight,
+    chartHeight: totalHeight,
   };
 };
