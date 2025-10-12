@@ -1,3 +1,5 @@
+import { formatKoreanAmountSimpleText } from '@/shared/utils/formatters';
+
 import * as d3 from 'd3';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -145,15 +147,16 @@ export const useTransactionHistoryChartView = ({
         .append('div')
         .style('position', 'absolute')
         .style('visibility', 'hidden')
-        .style('background-color', 'rgba(0, 0, 0, 0.8)')
+        .style('background-color', '#404040')
         .style('color', 'white')
-        .style('padding', '8px 12px')
-        .style('border-radius', '4px')
-        .style('font-size', '12px')
+        .style('padding', '12px 16px')
+        .style('border-radius', '8px')
+        .style('font-size', '13px')
         .style('pointer-events', 'none')
         .style('z-index', '10')
-        .style('max-width', '200px')
-        .style('word-wrap', 'break-word')
+        .style('box-shadow', '0 4px 6px rgba(0, 0, 0, 0.1)')
+        .style('max-height', '300px')
+        .style('overflow-y', 'auto')
         .node() as HTMLDivElement;
     }
 
@@ -213,14 +216,7 @@ export const useTransactionHistoryChartView = ({
     });
 
     const uniqueDates = Array.from(dateCountMap.keys()).sort();
-    const barMargin = 0.5;
-    const barWidth =
-      uniqueDates.length > 0
-        ? Math.max(
-            1,
-            (chartWidth - uniqueDates.length * barMargin) / uniqueDates.length
-          )
-        : 0;
+    const barWidth = 2;
 
     // 거래건수 바 차트
     uniqueDates.forEach(dateString => {
@@ -281,7 +277,206 @@ export const useTransactionHistoryChartView = ({
         .attr('stroke-dashoffset', 0);
     });
 
+    // 인터랙션용 수직선 생성
+    const verticalLine = g
+      .append('line')
+      .attr('class', 'vertical-guide-line')
+      .attr('stroke', '#000000')
+      .attr('stroke-width', 1)
+      .attr('stroke-dasharray', '2 2')
+      .style('opacity', 0)
+      .attr('y1', 0)
+      .attr('y2', chartHeight);
+
+    // 인터랙션 레이어 추가
+    const interactionLayer = g
+      .append('rect')
+      .attr('class', 'interaction-layer')
+      .attr('width', chartWidth)
+      .attr('height', chartHeight)
+      .attr('fill', 'transparent')
+      .style('cursor', 'crosshair');
+
+    // 가장 가까운 날짜 찾기 함수
+    const findNearestDate = (mouseX: number): string | null => {
+      let nearestDate: string | null = null;
+      let minDistance = Infinity;
+
+      uniqueDates.forEach(dateString => {
+        const xPos = xScale(dateString) || 0;
+        const distance = Math.abs(mouseX - xPos);
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestDate = dateString;
+        }
+      });
+
+      return nearestDate;
+    };
+
+    // 툴팁 표시 함수
+    const showTooltip = (dateString: string) => {
+      const xPos = xScale(dateString) || 0;
+
+      // y축 구분선 표시
+      verticalLine.attr('x1', xPos).attr('x2', xPos).style('opacity', 1);
+
+      // 날짜 포맷 (YYYY-MM -> YYYY년 M월)
+      const [year, month] = dateString.split('-');
+      const formattedDate = `${year}년 ${parseInt(month)}월`;
+
+      // 해당 날짜의 평형별 데이터 가져오기
+      const dataForDate = chartData.filter(
+        d => formatDateForScale(d.date) === dateString
+      );
+
+      // 평형별로 그룹화하고 정렬
+      const pyeongDataMap = new Map<
+        number,
+        { count: number; totalPrice: number }
+      >();
+      dataForDate.forEach(d => {
+        const existing = pyeongDataMap.get(d.pyeong) || {
+          count: 0,
+          totalPrice: 0,
+        };
+        pyeongDataMap.set(d.pyeong, {
+          count: existing.count + d.count,
+          totalPrice: existing.totalPrice + d.averagePrice * d.count,
+        });
+      });
+
+      // 평형 오름차순 정렬
+      const sortedPyeongData = Array.from(pyeongDataMap.entries()).sort(
+        (a, b) => a[0] - b[0]
+      );
+
+      // 평형별 데이터 HTML 생성
+      const pyeongDataHTML = sortedPyeongData
+        .map(([pyeong, data]) => {
+          const avgPrice = data.totalPrice / data.count;
+          const formattedPrice = formatKoreanAmountSimpleText(avgPrice).replace(
+            '원',
+            ''
+          );
+          return `
+            <div style="font-size: 12px; margin-top: 2px;">- <strong>${pyeong}평</strong>: ${data.count}건 / 평균 ${formattedPrice}</div>
+          `;
+        })
+        .join('');
+
+      // 툴팁 내용
+      const tooltipContent = `
+        <div style="line-height: 1.6;">
+          <div style="font-weight: 600; margin-bottom: 4px;">${formattedDate}</div>
+          ${pyeongDataHTML}
+        </div>
+      `;
+
+      if (tooltipRef.current) {
+        tooltipRef.current.innerHTML = tooltipContent;
+        tooltipRef.current.style.visibility = 'visible';
+
+        // 툴팁 위치 계산 (차트 컨테이너 기준 상대 좌표)
+        const tooltipWidth = tooltipRef.current.offsetWidth;
+        const chartCenter = chartWidth / 2;
+        const tooltipOffset = 12; // 구분선과 툴팁 사이 간격
+
+        // 좌측/우측 판단
+        const isLeftSide = xPos < chartCenter;
+
+        let tooltipLeft: number;
+        if (isLeftSide) {
+          // 좌측: 구분선 우측에 배치
+          tooltipLeft = MARGIN.left + xPos + tooltipOffset;
+        } else {
+          // 우측: 구분선 좌측에 배치
+          tooltipLeft = MARGIN.left + xPos - tooltipWidth - tooltipOffset;
+        }
+
+        // 툴팁이 차트 영역을 벗어나지 않도록 제한
+        const minLeft = MARGIN.left + 8;
+        const maxLeft = MARGIN.left + chartWidth - tooltipWidth - 8;
+        tooltipLeft = Math.max(minLeft, Math.min(maxLeft, tooltipLeft));
+
+        tooltipRef.current.style.left = `${tooltipLeft}px`;
+        tooltipRef.current.style.top = `${MARGIN.top + 10}px`;
+      }
+    };
+
+    // 툴팁 숨김 함수
+    const hideTooltip = () => {
+      verticalLine.style('opacity', 0);
+      if (tooltipRef.current) {
+        tooltipRef.current.style.visibility = 'hidden';
+      }
+    };
+
+    // 이벤트 핸들러
+    let isInteracting = false;
+
+    const handlePointerMove = (event: PointerEvent) => {
+      if (!isInteracting) return;
+
+      const svgRect = svgRef.current?.getBoundingClientRect();
+      if (!svgRect) return;
+
+      const mouseX = event.clientX - svgRect.left - MARGIN.left;
+      const nearestDate = findNearestDate(mouseX);
+
+      if (nearestDate) {
+        showTooltip(nearestDate);
+      }
+    };
+
+    const handlePointerDown = (event: PointerEvent) => {
+      isInteracting = true;
+      handlePointerMove(event);
+    };
+
+    const handlePointerUp = () => {
+      isInteracting = false;
+      hideTooltip();
+    };
+
+    const handlePointerLeave = () => {
+      if (isInteracting) {
+        isInteracting = false;
+        hideTooltip();
+      }
+    };
+
+    // 이벤트 리스너 등록
+    const interactionNode = interactionLayer.node();
+    if (interactionNode) {
+      interactionNode.addEventListener('pointerdown', handlePointerDown);
+      interactionNode.addEventListener('pointermove', handlePointerMove);
+      interactionNode.addEventListener('pointerup', handlePointerUp);
+      interactionNode.addEventListener('pointerleave', handlePointerLeave);
+      interactionNode.addEventListener('pointercancel', handlePointerUp);
+    }
+
     setIsLoading(false);
+
+    // 최초 진입 시 가장 우측 툴팁 자동 노출
+    if (uniqueDates.length > 0) {
+      const lastDate = uniqueDates[uniqueDates.length - 1];
+      // 애니메이션 완료 후 툴팁 표시
+      setTimeout(() => {
+        showTooltip(lastDate);
+      }, 800);
+    }
+
+    // 클린업
+    return () => {
+      if (interactionNode) {
+        interactionNode.removeEventListener('pointerdown', handlePointerDown);
+        interactionNode.removeEventListener('pointermove', handlePointerMove);
+        interactionNode.removeEventListener('pointerup', handlePointerUp);
+        interactionNode.removeEventListener('pointerleave', handlePointerLeave);
+        interactionNode.removeEventListener('pointercancel', handlePointerUp);
+      }
+    };
   }, [
     chartData,
     chartWidth,
