@@ -1,7 +1,6 @@
 import { formatPyeong } from '@/shared/utils/formatters';
 
 import { Button, Card } from '@package/ui';
-import { cn } from '@package/utils';
 
 import { CHART_COLORS, PERIODS } from '../consts/config';
 import { PeriodValue, SizesValue } from '../models/types';
@@ -27,7 +26,7 @@ export function ApartTransactionHistoryFilter({
         {PERIODS.map(p => (
           <Button
             key={p.value}
-            variant={p.value === selectedPeriod ? 'primary' : 'secondary'}
+            variant={p.value === selectedPeriod ? 'primary-outline' : 'outline'}
             size="sm"
             className="min-w-0 flex-1 text-xs"
             onClick={() => onChangePeriod(p.value)}
@@ -41,12 +40,10 @@ export function ApartTransactionHistoryFilter({
         {allSizes.map((size, index) => {
           const isSelected = selectedSizes.has(size);
           return (
-            <button
+            <Button
               key={size}
-              className={cn(
-                'flex items-center gap-1 rounded-sm border bg-gray-100 px-2.5 py-1.5 text-xs',
-                !isSelected && 'opacity-40'
-              )}
+              size="xs"
+              variant={isSelected ? 'primary-outline' : 'outline'}
               onClick={() =>
                 onChangeSizes(
                   isSelected
@@ -62,7 +59,7 @@ export function ApartTransactionHistoryFilter({
                 }}
               />
               {formatPyeong(size)}
-            </button>
+            </Button>
           );
         })}
       </div>

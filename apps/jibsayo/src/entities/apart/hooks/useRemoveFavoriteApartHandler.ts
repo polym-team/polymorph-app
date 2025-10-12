@@ -38,7 +38,7 @@ export const useRemoveFavoriteApartHandler = (): ((
         }
 
         setFavoriteApartList(afterFavoriteApartList);
-        toast.success('즐겨찾기에서 삭제됐어요');
+        toast.success(`${item.apartName} 아파트가 즐겨찾기에서 삭제됐어요`);
       } catch {}
     },
     [deviceId, isInApp, favoriteApartList, setFavoriteApartList]

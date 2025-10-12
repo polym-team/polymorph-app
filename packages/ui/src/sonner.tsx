@@ -11,20 +11,18 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps['theme']}
-      className="toaster group"
-      position="top-right"
+      className="toaster group [&]:!left-1/2 [&]:!top-1/2 [&]:!-translate-x-1/2 [&]:!-translate-y-1/2 [&_li]:!mx-auto [&_ol]:!flex [&_ol]:!flex-col [&_ol]:!items-center [&_ol]:!justify-center"
+      position="top-center"
       closeButton={true}
+      visibleToasts={1}
+      duration={3000}
       toastOptions={{
         classNames: {
           toast:
-            'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg relative cursor-pointer hover:opacity-90 transition-opacity',
-          description: 'group-[.toast]:text-muted-foreground',
-          actionButton:
-            'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
-          cancelButton:
-            'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
+            '!bg-gray-800 !text-white !border-gray-700 !shadow-lg !w-fit !max-w-[90vw] !text-center [&_[data-icon]]:!hidden [&_svg]:!hidden',
+          description: '!text-gray-200 !text-center',
           closeButton:
-            'group-[.toast]:text-transparent hover:group-[.toast]:text-transparent !absolute !top-0 !left-0 !right-0 !bottom-0 !w-full !h-full !p-0 !m-0 !border-0 !bg-transparent !cursor-pointer [&>*]:!hidden [&>*]:!opacity-0 [&>*]:!invisible !z-50 !pointer-events-auto',
+            '!absolute !top-0 !left-0 !w-full !h-full !bg-transparent !border-0 !cursor-pointer [&>*]:!hidden',
         },
       }}
       {...props}

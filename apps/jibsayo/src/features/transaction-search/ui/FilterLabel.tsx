@@ -1,5 +1,7 @@
 import { XIcon } from 'lucide-react';
 
+import { Button } from '@package/ui';
+
 interface FilterLabelProps {
   children: React.ReactNode;
   onRemove: () => void;
@@ -12,11 +14,11 @@ export function FilterLabel({ children, onRemove }: FilterLabelProps) {
   };
 
   return (
-    <span className="bg-primary text-primary-foreground flex items-center gap-1 whitespace-nowrap rounded-sm px-2.5 py-1.5 text-xs">
+    <Button size="xs" variant="primary-outline" className="pr-1">
       {children}
       <span className="bg-transparent" onClick={handleClick}>
         <XIcon className="h-4 w-4" />
       </span>
-    </span>
+    </Button>
   );
 }

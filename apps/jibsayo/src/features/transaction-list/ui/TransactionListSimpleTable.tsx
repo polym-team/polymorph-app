@@ -47,15 +47,17 @@ export function TransactionListSimpleTable({
         accessorKey: 'favorite',
         header: () => <></>,
         cell: ({ row }) => (
-          <FavoriteApartToggleButton
-            size="base"
-            isFavorite={row.original.isFavorite}
-            data={{
-              regionCode,
-              apartName: row.original.apartName,
-              address: row.original.address,
-            }}
-          />
+          <div className="flex items-center">
+            <FavoriteApartToggleButton
+              size="base"
+              isFavorite={row.original.isFavorite}
+              data={{
+                regionCode,
+                apartName: row.original.apartName,
+                address: row.original.address,
+              }}
+            />
+          </div>
         ),
       },
       {

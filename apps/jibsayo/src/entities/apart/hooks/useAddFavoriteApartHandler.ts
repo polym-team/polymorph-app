@@ -34,7 +34,7 @@ export const useAddFavoriteApartHandler = (): ((
         }
 
         setFavoriteApartList(afterFavoriteApartList);
-        toast.success('즐겨찾기에 추가됐어요');
+        toast.success(`${item.apartName} 아파트가 즐겨찾기에 추가됐어요`);
       } catch {}
     },
     [deviceId, isInApp, favoriteApartList, setFavoriteApartList]

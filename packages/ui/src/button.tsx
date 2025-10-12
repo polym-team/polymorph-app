@@ -14,6 +14,7 @@ const buttonVariants = cva(
           'border-transparent bg-default text-default-foreground hover:bg-default/80',
         primary:
           'border-transparent bg-primary text-primary-foreground hover:bg-primary/90',
+        'primary-outline': 'border-primary bg-primary/10 hover:bg-primary/20',
         danger:
           'border-transparent bg-danger text-danger-foreground hover:bg-danger/90',
         warning:
@@ -28,7 +29,7 @@ const buttonVariants = cva(
       },
       size: {
         default: 'px-4 py-2.5',
-        xs: 'rounded px-2 py-1 pb-1.5 text-xs',
+        xs: 'rounded px-2 py-1.5 text-xs',
         sm: 'rounded px-3 py-2 text-sm',
         lg: 'rounded px-8 py-3.5 text-base',
         icon: 'p-3 text-sm',

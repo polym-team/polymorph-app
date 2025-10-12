@@ -26,10 +26,9 @@ export function FilterForm({ filter, onChangeFilter }: FilterFormProps) {
           isExpanded && 'border-primary'
         )}
       >
-        <button
-          type="button"
+        <div
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex min-h-[38.5px] w-full items-center justify-between rounded-sm px-3 py-2 text-left transition-colors hover:bg-gray-50"
+          className="flex min-h-[40.5px] w-full items-center justify-between rounded-sm px-3 py-2 text-left transition-colors hover:bg-gray-50"
         >
           <Typography variant="small" className="text-sm font-medium">
             세부 필터
@@ -87,7 +86,7 @@ export function FilterForm({ filter, onChangeFilter }: FilterFormProps) {
               />
             </svg>
           </div>
-        </button>
+        </div>
 
         {isExpanded && (
           <div className="animate-in fade-in slide-in-from-top-2 scale-in-95 border-t bg-white shadow-lg duration-200">
@@ -111,7 +110,7 @@ export function FilterForm({ filter, onChangeFilter }: FilterFormProps) {
                 <Button
                   size="sm"
                   className="w-full"
-                  variant={filter.favoriteOnly ? 'primary' : 'outline'}
+                  variant={filter.favoriteOnly ? 'primary-outline' : 'outline'}
                   onClick={() =>
                     onChangeFilter({ favoriteOnly: !filter.favoriteOnly })
                   }
@@ -121,7 +120,9 @@ export function FilterForm({ filter, onChangeFilter }: FilterFormProps) {
                 <Button
                   size="sm"
                   className="w-full"
-                  variant={filter.newTransactionOnly ? 'primary' : 'outline'}
+                  variant={
+                    filter.newTransactionOnly ? 'primary-outline' : 'outline'
+                  }
                   onClick={() =>
                     onChangeFilter({
                       newTransactionOnly: !filter.newTransactionOnly,

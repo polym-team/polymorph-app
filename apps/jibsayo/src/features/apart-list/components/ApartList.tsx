@@ -11,6 +11,7 @@ import { useMemo } from 'react';
 
 import { ApartItem } from '../models/types';
 import { calculateRegionItems } from '../services/calculator';
+import { EmptyApartList } from '../ui/EmptyApartList';
 import { FavoriteApartList } from '../ui/FavoriteApartList';
 
 export function ApartList() {
@@ -33,6 +34,10 @@ export function ApartList() {
       address: apartItem.address,
     });
   };
+
+  if (regionItems.length === 0) {
+    return <EmptyApartList />;
+  }
 
   return (
     <FavoriteApartList

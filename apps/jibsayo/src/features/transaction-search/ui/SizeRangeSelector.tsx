@@ -245,13 +245,12 @@ export function SizeRangeSelector({
             key={button.label}
             type="button"
             onClick={() => handleQuickSelect(button)}
-            size="sm"
+            size="xs"
             variant={
               localMin === button.min && localMax === button.max
-                ? 'primary'
-                : 'default'
+                ? 'primary-outline'
+                : 'outline'
             }
-            className="p-1.5 text-xs"
           >
             {button.label}
           </Button>
