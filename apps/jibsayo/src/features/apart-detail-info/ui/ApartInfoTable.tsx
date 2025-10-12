@@ -5,6 +5,8 @@ import { formatNumberWithCommas } from '@/shared/utils/formatters';
 import { Card } from '@package/ui';
 import { Typography } from '@package/ui';
 
+import { KakaoMap } from './KakaoMap';
+
 interface ApartInfoTableProps {
   isFavorite: boolean;
   data: ApartDetailResponse;
@@ -52,6 +54,8 @@ export function ApartInfoTable({ isFavorite, data }: ApartInfoTableProps) {
           <div className="flex-1 py-3">{item.value || '-'}</div>
         </div>
       ))}
+
+      <KakaoMap address={address} apartName={data.apartName} />
     </Card>
   );
 }
