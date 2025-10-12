@@ -10,7 +10,7 @@ interface Props {
   allSizes: number[];
 }
 
-const HEIGHT = 350;
+const HEIGHT = 300;
 
 export function ApartTransactionHistoryChart({ tradeItems, allSizes }: Props) {
   const { chartData, legendData } = useTransactionHistoryChartData({

@@ -51,8 +51,8 @@ export const useTransactionHistoryChartView = ({
   const chartWidth = Math.max(containerWidth - MARGIN.left - MARGIN.right, 0);
   const totalHeight = height - MARGIN.top - MARGIN.bottom;
   const chartGap = 20; // 상하 차트 사이 간격
-  const priceChartHeight = Math.floor(((totalHeight - chartGap) * 2) / 3);
-  const countChartHeight = Math.floor(((totalHeight - chartGap) * 1) / 3);
+  const priceChartHeight = Math.floor(((totalHeight - chartGap) * 3) / 4);
+  const countChartHeight = Math.floor(((totalHeight - chartGap) * 1) / 4);
 
   // 스케일 계산
   const xScale = useMemo(() => {
@@ -159,7 +159,7 @@ export const useTransactionHistoryChartView = ({
         .select(svgRef.current?.parentElement)
         .append('div')
         .style('position', 'absolute')
-        .style('visibility', 'hidden')
+        .style('opacity', '0')
         .style('background-color', '#404040')
         .style('color', 'white')
         .style('padding', '12px 16px')
@@ -170,6 +170,7 @@ export const useTransactionHistoryChartView = ({
         .style('box-shadow', '0 4px 6px rgba(0, 0, 0, 0.1)')
         .style('max-height', '300px')
         .style('overflow-y', 'auto')
+        .style('min-width', '150px')
         .node() as HTMLDivElement;
     }
 
@@ -194,16 +195,16 @@ export const useTransactionHistoryChartView = ({
           .axisBottom(xScale)
           .tickValues(displayTicks)
           .tickFormat(dateString => {
-            return dateString.split('-')[0];
+            const [year, month] = dateString.split('-');
+            return `${year.slice(-2)}.${month}`; // 2024-01 -> 24.01
           })
+          .tickSize(0)
       );
 
-    xAxis
-      .selectAll('text')
-      .style('text-anchor', 'end')
-      .attr('dx', '-0.8em')
-      .attr('dy', '0.15em')
-      .attr('transform', 'rotate(-45)');
+    // x축 도메인 라인 제거
+    xAxis.select('.domain').remove();
+
+    xAxis.selectAll('text').style('text-anchor', 'middle').attr('dy', '1em');
 
     // 왼쪽 y축 (상단: 가격) - 5억 단위
     const maxPrice = yPriceScale.domain()[1];
@@ -212,12 +213,29 @@ export const useTransactionHistoryChartView = ({
       priceTickValues.push(i);
     }
 
-    priceGroup.append('g').call(
+    // 가격 그리드 라인 추가 (연한 수평선)
+    priceTickValues.forEach(value => {
+      priceGroup
+        .append('line')
+        .attr('x1', 0)
+        .attr('x2', chartWidth)
+        .attr('y1', yPriceScale(value))
+        .attr('y2', yPriceScale(value))
+        .attr('stroke', '#e5e7eb')
+        .attr('stroke-width', 1)
+        .attr('opacity', 0.5);
+    });
+
+    const priceAxis = priceGroup.append('g').call(
       d3
         .axisLeft(yPriceScale)
         .tickFormat(d => `${Math.round(Number(d) / 100000000)}억`)
         .tickValues(priceTickValues)
+        .tickSize(0)
     );
+
+    // y축 도메인 라인 제거
+    priceAxis.select('.domain').remove();
 
     // 왼쪽 y축 (하단: 건수) - 최대 5개 tick
     const maxCount = yCountScale.domain()[1];
@@ -231,12 +249,29 @@ export const useTransactionHistoryChartView = ({
       }
     }
 
-    countGroup.append('g').call(
+    // 건수 그리드 라인 추가 (연한 수평선)
+    countTickValues.forEach(value => {
+      countGroup
+        .append('line')
+        .attr('x1', 0)
+        .attr('x2', chartWidth)
+        .attr('y1', yCountScale(value))
+        .attr('y2', yCountScale(value))
+        .attr('stroke', '#e5e7eb')
+        .attr('stroke-width', 1)
+        .attr('opacity', 0.5);
+    });
+
+    const countAxis = countGroup.append('g').call(
       d3
         .axisLeft(yCountScale)
         .tickFormat(d => `${d}건`)
         .tickValues(countTickValues)
+        .tickSize(0)
     );
+
+    // y축 도메인 라인 제거
+    countAxis.select('.domain').remove();
 
     // 평형별로 그룹화
     const pyeongGroups = d3.group(chartData, d => d.pyeong);
@@ -428,6 +463,13 @@ export const useTransactionHistoryChartView = ({
         (a, b) => a[0] - b[0]
       );
 
+      // 총 거래건수 계산
+      const totalCountForDate = sortedPyeongData.reduce(
+        (sum, [, data]) => sum + data.count,
+        0
+      );
+      const formattedDateWithCount = `${formattedDate} (총 ${totalCountForDate}건)`;
+
       // 평형별 데이터 HTML 생성
       const pyeongDataHTML = sortedPyeongData
         .map(([pyeong, data]) => {
@@ -437,7 +479,7 @@ export const useTransactionHistoryChartView = ({
             ''
           );
           return `
-            <div style="font-size: 12px; margin-top: 2px;">- <strong>${pyeong}평</strong>: ${data.count}건 / 평균 ${formattedPrice}</div>
+            <div style="font-size: 12px; margin-top: 2px; white-space: nowrap;">- <strong>${pyeong}평</strong>: ${data.count}건 / 평균 ${formattedPrice}</div>
           `;
         })
         .join('');
@@ -445,14 +487,17 @@ export const useTransactionHistoryChartView = ({
       // 툴팁 내용
       const tooltipContent = `
         <div style="line-height: 1.6;">
-          <div style="font-weight: 600; margin-bottom: 4px;">${formattedDate}</div>
+          <div style="font-weight: 600; margin-bottom: 4px; white-space: nowrap;">${formattedDateWithCount}</div>
           ${pyeongDataHTML}
         </div>
       `;
 
       if (tooltipRef.current) {
         tooltipRef.current.innerHTML = tooltipContent;
-        tooltipRef.current.style.visibility = 'visible';
+
+        // 브라우저가 레이아웃을 다시 계산하도록 강제
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        tooltipRef.current.offsetHeight;
 
         // 툴팁 위치 계산 (차트 컨테이너 기준 상대 좌표)
         const tooltipWidth = tooltipRef.current.offsetWidth;
@@ -478,6 +523,7 @@ export const useTransactionHistoryChartView = ({
 
         tooltipRef.current.style.left = `${tooltipLeft}px`;
         tooltipRef.current.style.top = `${MARGIN.top + 10}px`;
+        tooltipRef.current.style.opacity = '1';
       }
     };
 
@@ -485,12 +531,14 @@ export const useTransactionHistoryChartView = ({
     const hideTooltip = () => {
       verticalLine.style('opacity', 0);
       if (tooltipRef.current) {
-        tooltipRef.current.style.visibility = 'hidden';
+        tooltipRef.current.style.opacity = '0';
       }
     };
 
     // 이벤트 핸들러
     let isInteracting = false;
+    let hasMoved = false;
+    let startX = 0;
 
     const handlePointerMove = (event: PointerEvent) => {
       if (!isInteracting) return;
@@ -499,6 +547,12 @@ export const useTransactionHistoryChartView = ({
       if (!svgRect) return;
 
       const mouseX = event.clientX - svgRect.left - MARGIN.left;
+
+      // 드래그 감지 (5px 이상 이동 시)
+      if (Math.abs(mouseX - startX) > 5) {
+        hasMoved = true;
+      }
+
       const nearestDate = findNearestDate(mouseX);
 
       if (nearestDate) {
@@ -508,17 +562,30 @@ export const useTransactionHistoryChartView = ({
 
     const handlePointerDown = (event: PointerEvent) => {
       isInteracting = true;
+      hasMoved = false;
+
+      const svgRect = svgRef.current?.getBoundingClientRect();
+      if (svgRect) {
+        startX = event.clientX - svgRect.left - MARGIN.left;
+      }
+
       handlePointerMove(event);
     };
 
     const handlePointerUp = () => {
       isInteracting = false;
-      hideTooltip();
+
+      // 드래그 없이 단순 터치만 했을 경우에만 숨김
+      if (!hasMoved) {
+        hideTooltip();
+      }
+      // 드래그가 있었으면 마지막 위치에 고정 노출
     };
 
     const handlePointerLeave = () => {
       if (isInteracting) {
         isInteracting = false;
+        // 차트 영역을 벗어나면 항상 숨김
         hideTooltip();
       }
     };
@@ -538,9 +605,14 @@ export const useTransactionHistoryChartView = ({
     // 최초 진입 시 가장 우측 툴팁 자동 노출
     if (uniqueDates.length > 0) {
       const lastDate = uniqueDates[uniqueDates.length - 1];
-      // 애니메이션 완료 후 툴팁 표시
+      // 애니메이션 완료 후 레이아웃 계산이 완전히 끝나도록 지연
       setTimeout(() => {
-        showTooltip(lastDate);
+        // requestAnimationFrame을 사용하여 레이아웃 계산 완료 보장
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            showTooltip(lastDate);
+          });
+        });
       }, 800);
     }
 
