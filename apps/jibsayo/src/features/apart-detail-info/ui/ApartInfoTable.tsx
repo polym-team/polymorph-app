@@ -43,16 +43,13 @@ export function ApartInfoTable({ isFavorite, data }: ApartInfoTableProps) {
       </div>
 
       {rows.map((item, index) => (
-        <div
-          key={index}
-          className="flex items-center border-t px-1 py-2 last:pb-0"
-        >
-          <div className="w-[110px] py-2">
+        <div key={index} className="flex items-start border-t px-1 last:pb-0">
+          <div className="w-[110px] py-3.5">
             <Typography className="text-sm font-medium text-gray-500">
               {item.label}
             </Typography>
           </div>
-          <div className="flex-1">{item.value || '-'}</div>
+          <div className="flex-1 py-3">{item.value || '-'}</div>
         </div>
       ))}
     </Card>
