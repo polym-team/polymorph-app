@@ -50,44 +50,49 @@ export function KakaoMap({ address, apartName }: KakaoMapProps) {
     };
 
     const map = new window.kakao.maps.Map(container, options);
+    const places = new window.kakao.maps.services.Places();
     const geocoder = new window.kakao.maps.services.Geocoder();
 
-    const searchAddress = `${address} ${apartName}`;
+    const displayMarker = (coords: any) => {
+      const marker = new window.kakao.maps.Marker({
+        map: map,
+        position: coords,
+      });
 
-    geocoder.addressSearch(searchAddress, (result: any, status: any) => {
+      const infowindow = new window.kakao.maps.InfoWindow({
+        content: `<div style="padding:5px 10px;font-size:12px;white-space:nowrap;">${apartName}</div>`,
+      });
+
+      infowindow.open(map, marker);
+      map.setCenter(coords);
+    };
+
+    // 1차 시도: 키워드 검색 (가장 정확)
+    const keywordSearch = `${address} ${apartName}`;
+    places.keywordSearch(keywordSearch, (result: any, status: any) => {
       if (status === window.kakao.maps.services.Status.OK) {
         const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
-
-        const marker = new window.kakao.maps.Marker({
-          map: map,
-          position: coords,
-        });
-
-        const infowindow = new window.kakao.maps.InfoWindow({
-          content: `<div style="padding:5px 10px;font-size:12px;white-space:nowrap;">${apartName}</div>`,
-        });
-
-        infowindow.open(map, marker);
-        map.setCenter(coords);
+        displayMarker(coords);
       } else {
-        geocoder.addressSearch(address, (result2: any, status2: any) => {
+        // 2차 시도: 주소 + 아파트명으로 주소 검색
+        geocoder.addressSearch(keywordSearch, (result2: any, status2: any) => {
           if (status2 === window.kakao.maps.services.Status.OK) {
             const coords = new window.kakao.maps.LatLng(
               result2[0].y,
               result2[0].x
             );
-
-            const marker = new window.kakao.maps.Marker({
-              map: map,
-              position: coords,
+            displayMarker(coords);
+          } else {
+            // 3차 시도: 주소만으로 검색
+            geocoder.addressSearch(address, (result3: any, status3: any) => {
+              if (status3 === window.kakao.maps.services.Status.OK) {
+                const coords = new window.kakao.maps.LatLng(
+                  result3[0].y,
+                  result3[0].x
+                );
+                displayMarker(coords);
+              }
             });
-
-            const infowindow = new window.kakao.maps.InfoWindow({
-              content: `<div style="padding:5px 10px;font-size:12px;white-space:nowrap;">${apartName}</div>`,
-            });
-
-            infowindow.open(map, marker);
-            map.setCenter(coords);
           }
         });
       }
