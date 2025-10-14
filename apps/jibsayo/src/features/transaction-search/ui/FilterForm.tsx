@@ -42,20 +42,25 @@ export function FilterForm({
           </Typography>
           <div className="ml-4 flex min-w-0 flex-1 items-center justify-end gap-2">
             <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-1">
-              {(appliedFilter.minSize !== RULES.SEARCH_MIN_SIZE ||
-                appliedFilter.maxSize !== RULES.SEARCH_MAX_SIZE) && (
-                <FilterLabel
-                  onRemove={() =>
-                    onRemoveFilter({
-                      minSize: RULES.SEARCH_MIN_SIZE,
-                      maxSize: RULES.SEARCH_MAX_SIZE,
-                    })
-                  }
-                >
-                  {formatPyeong(appliedFilter.minSize)} ~{' '}
-                  {formatPyeong(appliedFilter.maxSize)}{' '}
-                </FilterLabel>
-              )}
+              {!(
+                appliedFilter.minSize === 0 &&
+                appliedFilter.maxSize === Infinity
+              ) &&
+                (appliedFilter.minSize !== RULES.SEARCH_MIN_SIZE ||
+                  appliedFilter.maxSize !== RULES.SEARCH_MAX_SIZE) && (
+                  <FilterLabel
+                    onRemove={() =>
+                      onRemoveFilter({
+                        minSize: RULES.SEARCH_MIN_SIZE,
+                        maxSize: RULES.SEARCH_MAX_SIZE,
+                      })
+                    }
+                  >
+                    {appliedFilter.maxSize === Infinity
+                      ? `${formatPyeong(appliedFilter.minSize)} 이상`
+                      : `${formatPyeong(appliedFilter.minSize)}~${formatPyeong(appliedFilter.maxSize)}`}
+                  </FilterLabel>
+                )}
               {appliedFilter.apartName && (
                 <FilterLabel onRemove={() => onRemoveFilter({ apartName: '' })}>
                   {filter.apartName}

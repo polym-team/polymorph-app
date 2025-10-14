@@ -37,7 +37,7 @@ export const useSearchParams = (): Return => {
     : RULES.SEARCH_MIN_SIZE;
   const maxSize = navigationSearchParams.get('maxSize')
     ? Number(navigationSearchParams.get('maxSize'))
-    : RULES.SEARCH_MAX_SIZE;
+    : Infinity;
   const favoriteOnly = navigationSearchParams.get('favoriteOnly') === 'true';
   const newTransactionOnly =
     navigationSearchParams.get('newTransactionOnly') === 'true';

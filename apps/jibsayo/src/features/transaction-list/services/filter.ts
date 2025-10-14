@@ -23,7 +23,7 @@ export const filterTransactionItemWithSize = (
   if (
     !minSize ||
     !maxSize ||
-    (minSize === RULES.SEARCH_MIN_SIZE && maxSize === RULES.SEARCH_MAX_SIZE)
+    (minSize === RULES.SEARCH_MIN_SIZE && maxSize === Infinity)
   ) {
     return true;
   }
