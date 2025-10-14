@@ -1,9 +1,14 @@
 import { Button } from '@package/ui';
 
-export function FormButton() {
+interface FormButtonProps {
+  isLoading: boolean;
+  isChanged: boolean;
+}
+
+export function FormButton({ isChanged }: FormButtonProps) {
   return (
     <Button type="submit" variant="primary">
-      검색
+      {isChanged ? '다시 검색' : '검색'}
     </Button>
   );
 }

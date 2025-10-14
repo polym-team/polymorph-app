@@ -1,45 +1,31 @@
 'use client';
 
-import { useTransactionPageSearchParams } from '@/entities/transaction';
-
-import { useRef } from 'react';
+import {
+  useTransactionListQuery,
+  useTransactionPageSearchParams,
+} from '@/entities/transaction';
 
 import { useFavoriteRegion } from '../hooks/useFavoriteRegion';
 import { useFilterForm } from '../hooks/useFilterForm';
 import { useSearchForm } from '../hooks/useSearchForm';
+import { useSearchFormAction } from '../hooks/useSearchFormAction';
 import { FilterForm } from '../ui/FilterForm';
 import { FormButton } from '../ui/FormButton';
 import { SearchForm } from '../ui/SearchForm';
 
 export function TransactionSearch() {
   const { setSearchParams } = useTransactionPageSearchParams();
+  const { isLoading } = useTransactionListQuery();
 
   const { form, changeForm } = useSearchForm();
   const { filter, appliedFilter, changeFilter, removeFilter } = useFilterForm();
   const { favoriteRegionList, addFavoriteRegion, removeFavoriteRegion } =
     useFavoriteRegion();
-
-  const beforeSearchedRegionCode = useRef<string>(form.regionCode);
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const changedRegionCode =
-      beforeSearchedRegionCode.current !== form.regionCode;
-
-    setSearchParams({
-      regionCode: form.regionCode,
-      tradeDate: `${form.tradeDate.getFullYear()}${String(form.tradeDate.getMonth() + 1).padStart(2, '0')}`,
-      apartName: changedRegionCode ? '' : filter.apartName,
-      minSize: filter.minSize,
-      maxSize: filter.maxSize,
-      favoriteOnly: filter.favoriteOnly,
-      newTransactionOnly: filter.newTransactionOnly,
-      pageIndex: 0,
-    });
-
-    beforeSearchedRegionCode.current = form.regionCode;
-  };
+  const { isChanged, handleSubmit } = useSearchFormAction({
+    form,
+    filter,
+    setSearchParams,
+  });
 
   return (
     <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
@@ -56,7 +42,7 @@ export function TransactionSearch() {
         onChangeFilter={changeFilter}
         onRemoveFilter={removeFilter}
       />
-      <FormButton />
+      <FormButton isLoading={isLoading} isChanged={isChanged} />
     </form>
   );
 }
