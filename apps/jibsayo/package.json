@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:app": "NEXT_PUBLIC_TEST_DEVICE_ID=test-device next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

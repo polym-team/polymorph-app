@@ -2,12 +2,14 @@
 
 import logo from '@/assets/logo.png';
 import { ROUTE_PATH } from '@/shared/consts/route';
+import { useGlobalConfigStore } from '@/shared/stores/globalConfigStore';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 export function Header() {
   const pathname = usePathname();
+  const isInApp = useGlobalConfigStore(state => state.isInApp);
 
   const navItems = [
     { href: ROUTE_PATH.TRANSACTION, label: '실거래가 조회' },
@@ -24,6 +26,8 @@ export function Header() {
       ? `${baseClass} ${activeClass}`
       : `${baseClass} ${inactiveClass}`;
   };
+
+  if (isInApp) return null;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/80">

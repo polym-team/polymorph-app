@@ -6,6 +6,7 @@ import { Noto_Sans_KR } from 'next/font/google';
 import { Toaster } from '@package/ui';
 
 import '../../../../packages/styles/globals.css';
+import { Client } from './Client';
 import { QueryClientProvider } from './components/QueryClientProvider';
 
 const notoSansKr = Noto_Sans_KR({
@@ -43,6 +44,7 @@ export default function RootLayout({
             <QueryClientProvider>
               <section className="container mx-auto px-4 pb-10 pt-5">
                 {children}
+                <Client />
               </section>
             </QueryClientProvider>
           </main>
