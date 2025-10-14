@@ -34,12 +34,15 @@ export function QueryParamProvider({ children }: QueryParamProviderProps) {
       STORAGE_KEY.TRANSACTION_QUERY_PARAMS
     );
 
-    if (savedSearchParams) {
-      setSearchParams({
-        ...savedSearchParams,
-        maxSize: savedSearchParams.maxSize ?? Infinity,
-      });
+    if (!savedSearchParams) {
+      setIsInitialized(true);
+      return;
     }
+
+    setSearchParams({
+      ...savedSearchParams,
+      maxSize: savedSearchParams.maxSize ?? Infinity,
+    });
   });
 
   if (!isInitialized) return null;

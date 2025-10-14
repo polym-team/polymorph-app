@@ -49,7 +49,7 @@ export function Header() {
                 href={item.href}
                 className={getLinkClassName(item.href)}
               >
-                <span className="text-sm">{item.label}</span>
+                {item.label}
               </Link>
             ))}
           </nav>
