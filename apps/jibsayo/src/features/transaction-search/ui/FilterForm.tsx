@@ -63,7 +63,7 @@ export function FilterForm({
                 )}
               {appliedFilter.apartName && (
                 <FilterLabel onRemove={() => onRemoveFilter({ apartName: '' })}>
-                  {filter.apartName}
+                  {appliedFilter.apartName}
                 </FilterLabel>
               )}
               {appliedFilter.favoriteOnly && (
@@ -113,7 +113,7 @@ export function FilterForm({
               <div>
                 <Input
                   size="sm"
-                  placeholder="아파트명"
+                  placeholder="아파트명 입력"
                   value={filter.apartName}
                   onChange={e => onChangeFilter({ apartName: e.target.value })}
                 />

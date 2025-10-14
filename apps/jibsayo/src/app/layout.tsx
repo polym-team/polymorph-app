@@ -21,6 +21,7 @@ export const metadata: Metadata = {
   viewport: {
     width: 'device-width',
     initialScale: 1,
+    minimumScale: 1,
     maximumScale: 1,
     userScalable: false,
   },
@@ -36,7 +37,7 @@ export default function RootLayout({
       <body
         className={`${notoSansKr.variable} ${notoSansKr.className} bg-gray-50`}
       >
-        <div className="flex min-h-screen flex-col items-center">
+        <div className="flex min-h-dvh flex-col items-center">
           <Header />
           <main className="w-full max-w-[640px] flex-1">
             <QueryClientProvider>

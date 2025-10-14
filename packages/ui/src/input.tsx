@@ -9,7 +9,7 @@ const inputVariants = cva(
     variants: {
       size: {
         default: 'px-3 py-2.5',
-        sm: 'px-3 py-2 text-sm',
+        sm: 'px-3 py-2',
       },
     },
     defaultVariants: {
@@ -23,11 +23,27 @@ export interface InputProps
     VariantProps<typeof inputVariants> {}
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, size, ...props }, ref) => {
+  ({ className, type, size, style, ...props }, ref) => {
+    // size variant에 따른 fontSize 설정
+    const targetFontSize = size === 'sm' ? 14 : 16;
+
+    // iOS Safari 확대 방지를 위해 16px 고정 + scale로 크기 조정
+    const fontScale = targetFontSize / 16;
+
+    const inputStyle: React.CSSProperties = {
+      fontSize: '16px',
+      ...(fontScale !== 1 && {
+        transform: `scale(${fontScale})`,
+        transformOrigin: 'left top',
+      }),
+      ...style,
+    };
+
     return (
       <input
         type={type}
         className={cn(inputVariants({ size, className }))}
+        style={inputStyle}
         ref={ref}
         {...props}
       />

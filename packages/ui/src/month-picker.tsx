@@ -237,7 +237,10 @@ export function MonthPicker({
             <div className="w-full flex-1 border-r">
               <div
                 className="h-full overflow-y-auto p-1"
-                style={{ scrollBehavior: 'smooth' }}
+                style={{
+                  scrollBehavior: 'smooth',
+                  overscrollBehavior: 'contain',
+                }}
               >
                 {Array.from(
                   { length: new Date().getFullYear() - 2000 + 1 },
@@ -274,7 +277,10 @@ export function MonthPicker({
             <div className="w-full flex-1">
               <div
                 className="h-full overflow-y-auto p-1"
-                style={{ scrollBehavior: 'smooth' }}
+                style={{
+                  scrollBehavior: 'smooth',
+                  overscrollBehavior: 'contain',
+                }}
               >
                 {months.map((month, index) => (
                   <button

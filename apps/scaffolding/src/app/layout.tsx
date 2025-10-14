@@ -11,6 +11,13 @@ const notoSansKr = Noto_Sans_KR({
 export const metadata: Metadata = {
   title: 'Polymorph Scaffolding App',
   description: 'A scaffolding app for rapid prototyping',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    minimumScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({
