@@ -12,10 +12,17 @@ import { SizeRangeSelector } from './SizeRangeSelector';
 
 interface FilterFormProps {
   filter: FilterFormType;
+  appliedFilter: FilterFormType;
   onChangeFilter: (filter: Partial<FilterFormType>) => void;
+  onRemoveFilter: (filter: Partial<FilterFormType>) => void;
 }
 
-export function FilterForm({ filter, onChangeFilter }: FilterFormProps) {
+export function FilterForm({
+  filter,
+  appliedFilter,
+  onChangeFilter,
+  onRemoveFilter,
+}: FilterFormProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -35,35 +42,35 @@ export function FilterForm({ filter, onChangeFilter }: FilterFormProps) {
           </Typography>
           <div className="ml-4 flex min-w-0 flex-1 items-center justify-end gap-2">
             <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-1">
-              {(filter.minSize !== RULES.SEARCH_MIN_SIZE ||
-                filter.maxSize !== RULES.SEARCH_MAX_SIZE) && (
+              {(appliedFilter.minSize !== RULES.SEARCH_MIN_SIZE ||
+                appliedFilter.maxSize !== RULES.SEARCH_MAX_SIZE) && (
                 <FilterLabel
                   onRemove={() =>
-                    onChangeFilter({
+                    onRemoveFilter({
                       minSize: RULES.SEARCH_MIN_SIZE,
                       maxSize: RULES.SEARCH_MAX_SIZE,
                     })
                   }
                 >
-                  {formatPyeong(filter.minSize)} ~{' '}
-                  {formatPyeong(filter.maxSize)}{' '}
+                  {formatPyeong(appliedFilter.minSize)} ~{' '}
+                  {formatPyeong(appliedFilter.maxSize)}{' '}
                 </FilterLabel>
               )}
-              {filter.apartName && (
-                <FilterLabel onRemove={() => onChangeFilter({ apartName: '' })}>
+              {appliedFilter.apartName && (
+                <FilterLabel onRemove={() => onRemoveFilter({ apartName: '' })}>
                   {filter.apartName}
                 </FilterLabel>
               )}
-              {filter.favoriteOnly && (
+              {appliedFilter.favoriteOnly && (
                 <FilterLabel
-                  onRemove={() => onChangeFilter({ favoriteOnly: false })}
+                  onRemove={() => onRemoveFilter({ favoriteOnly: false })}
                 >
                   저장된 아파트
                 </FilterLabel>
               )}
-              {filter.newTransactionOnly && (
+              {appliedFilter.newTransactionOnly && (
                 <FilterLabel
-                  onRemove={() => onChangeFilter({ newTransactionOnly: false })}
+                  onRemove={() => onRemoveFilter({ newTransactionOnly: false })}
                 >
                   신규 거래
                 </FilterLabel>

@@ -537,8 +537,6 @@ export const useTransactionHistoryChartView = ({
 
     // 이벤트 핸들러
     let isInteracting = false;
-    let hasMoved = false;
-    let startX = 0;
 
     const handlePointerMove = (event: PointerEvent) => {
       if (!isInteracting) return;
@@ -547,11 +545,6 @@ export const useTransactionHistoryChartView = ({
       if (!svgRect) return;
 
       const mouseX = event.clientX - svgRect.left - MARGIN.left;
-
-      // 드래그 감지 (5px 이상 이동 시)
-      if (Math.abs(mouseX - startX) > 5) {
-        hasMoved = true;
-      }
 
       const nearestDate = findNearestDate(mouseX);
 
@@ -562,24 +555,12 @@ export const useTransactionHistoryChartView = ({
 
     const handlePointerDown = (event: PointerEvent) => {
       isInteracting = true;
-      hasMoved = false;
-
-      const svgRect = svgRef.current?.getBoundingClientRect();
-      if (svgRect) {
-        startX = event.clientX - svgRect.left - MARGIN.left;
-      }
-
       handlePointerMove(event);
     };
 
     const handlePointerUp = () => {
       isInteracting = false;
-
-      // 드래그 없이 단순 터치만 했을 경우에만 숨김
-      if (!hasMoved) {
-        hideTooltip();
-      }
-      // 드래그가 있었으면 마지막 위치에 고정 노출
+      hideTooltip();
     };
 
     const handlePointerLeave = () => {
@@ -601,20 +582,6 @@ export const useTransactionHistoryChartView = ({
     }
 
     setIsLoading(false);
-
-    // 최초 진입 시 가장 우측 툴팁 자동 노출
-    if (uniqueDates.length > 0) {
-      const lastDate = uniqueDates[uniqueDates.length - 1];
-      // 애니메이션 완료 후 레이아웃 계산이 완전히 끝나도록 지연
-      setTimeout(() => {
-        // requestAnimationFrame을 사용하여 레이아웃 계산 완료 보장
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            showTooltip(lastDate);
-          });
-        });
-      }, 800);
-    }
 
     // 클린업
     return () => {
