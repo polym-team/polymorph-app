@@ -1,4 +1,4 @@
-import { useSearchParams } from '@/entities/transaction';
+import { useTransactionPageSearchParams } from '@/entities/transaction';
 import { ROUTE_PATH } from '@/shared/consts/route';
 
 import { useRouter } from 'next/navigation';
@@ -14,7 +14,7 @@ export function TransactionListData() {
   const { isLoading, transactionData } = useTransactionData();
   const { pageIndex, sorting, updateSorting, updatePageIndex } =
     useTransactionViewSetting();
-  const { searchParams } = useSearchParams();
+  const { searchParams } = useTransactionPageSearchParams();
 
   const handleRowClick = (row: TransactionItemWithFavorite) => {
     router.push(

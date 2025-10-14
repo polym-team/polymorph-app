@@ -1,4 +1,4 @@
-import { useSearchParams } from '@/entities/transaction';
+import { useTransactionPageSearchParams } from '@/entities/transaction';
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
 import { useOnceEffect } from '@/shared/hooks';
 import { getItem, setItem } from '@/shared/lib/localStorage';
@@ -17,7 +17,7 @@ interface Return {
 const DEFAULT_SORTING: SortingState = [{ id: 'tradeDate', desc: true }];
 
 export const useTransactionViewSetting = (): Return => {
-  const { searchParams, setSearchParams } = useSearchParams();
+  const { searchParams, setSearchParams } = useTransactionPageSearchParams();
 
   const [sorting, setSorting] = useState<SortingState>(DEFAULT_SORTING);
 

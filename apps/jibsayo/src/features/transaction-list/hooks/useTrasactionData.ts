@@ -1,7 +1,7 @@
 import { useFavoriteApartList } from '@/entities/apart';
 import {
-  useSearchParams,
   useTransactionListQuery,
+  useTransactionPageSearchParams,
 } from '@/entities/transaction';
 
 import { useMemo } from 'react';
@@ -25,7 +25,7 @@ export const useTransactionData = (): Return => {
   const favoriteApartList = useFavoriteApartList();
 
   const { isLoading, data } = useTransactionListQuery();
-  const { searchParams } = useSearchParams();
+  const { searchParams } = useTransactionPageSearchParams();
 
   const filteredFavoriteApartList = useMemo(() => {
     return filterFavoriteApartListWithRegionCode(

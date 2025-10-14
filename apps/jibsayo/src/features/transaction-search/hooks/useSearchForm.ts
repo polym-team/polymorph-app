@@ -1,5 +1,5 @@
 import { firstRegionCode, getCityNameWithRegionCode } from '@/entities/region';
-import { useSearchParams } from '@/entities/transaction';
+import { useTransactionPageSearchParams } from '@/entities/transaction';
 
 import { useState } from 'react';
 
@@ -11,7 +11,7 @@ interface Return {
 }
 
 export const useSearchForm = (): Return => {
-  const { searchParams } = useSearchParams();
+  const { searchParams } = useTransactionPageSearchParams();
 
   const [form, setForm] = useState<SearchForm>(() => {
     const defaultRegionCode = searchParams.regionCode || firstRegionCode;

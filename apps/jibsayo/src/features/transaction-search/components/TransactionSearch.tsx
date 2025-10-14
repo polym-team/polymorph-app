@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from '@/entities/transaction';
+import { useTransactionPageSearchParams } from '@/entities/transaction';
 
 import { useRef } from 'react';
 
@@ -12,7 +12,7 @@ import { FormButton } from '../ui/FormButton';
 import { SearchForm } from '../ui/SearchForm';
 
 export function TransactionSearch() {
-  const { setSearchParams } = useSearchParams();
+  const { setSearchParams } = useTransactionPageSearchParams();
 
   const { form, changeForm } = useSearchForm();
   const { filter, appliedFilter, changeFilter, removeFilter } = useFilterForm();

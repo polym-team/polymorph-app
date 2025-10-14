@@ -3,8 +3,8 @@ import {
   getRegionNameWithRegionCode,
 } from '@/entities/region';
 import {
-  useSearchParams,
   useTransactionListQuery,
+  useTransactionPageSearchParams,
 } from '@/entities/transaction';
 
 import { calculateTransactionAverageAmount } from '../services/calculator';
@@ -12,7 +12,7 @@ import { Summary } from '../ui/Summary';
 
 export function TransactionSummary() {
   const { isLoading, data: transactions } = useTransactionListQuery();
-  const { searchParams } = useSearchParams();
+  const { searchParams } = useTransactionPageSearchParams();
 
   const cityName = getCityNameWithRegionCode(searchParams.regionCode);
   const regionName = getRegionNameWithRegionCode(searchParams.regionCode);

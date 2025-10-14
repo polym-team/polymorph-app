@@ -1,4 +1,4 @@
-import { useSearchParams } from '@/entities/transaction';
+import { useTransactionPageSearchParams } from '@/entities/transaction';
 
 import { useState } from 'react';
 
@@ -12,7 +12,7 @@ interface Return {
 }
 
 export const useFilterForm = (): Return => {
-  const { searchParams, setSearchParams } = useSearchParams();
+  const { searchParams, setSearchParams } = useTransactionPageSearchParams();
 
   const [filter, setFilter] = useState<FilterForm>(() => {
     return {

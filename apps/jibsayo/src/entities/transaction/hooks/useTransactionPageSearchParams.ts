@@ -22,7 +22,7 @@ const parseSearchParam = (value: string | number | boolean) => {
   return value;
 };
 
-export const useSearchParams = (): Return => {
+export const useTransactionPageSearchParams = (): Return => {
   const navigationSearchParams = useNavigationSearchParams();
   const router = useNavigationRouter();
 
