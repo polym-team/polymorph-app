@@ -18,7 +18,7 @@ export function TransactionListData() {
 
   const handleRowClick = (row: TransactionItemWithFavorite) => {
     router.push(
-      `${ROUTE_PATH.APART}/${searchParams.regionCode}/${row.apartName}`
+      `${ROUTE_PATH.APART_DETAIL}/${searchParams.regionCode}/${row.apartName}`
     );
   };
 

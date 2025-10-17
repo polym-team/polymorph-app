@@ -4,12 +4,12 @@ import * as React from 'react';
 import { cn } from '@package/utils';
 
 const inputVariants = cva(
-  'border-input bg-background ring-offset-background file:text-foreground placeholder:text-muted-foreground focus-visible:ring-ring flex w-full rounded-sm border file:border-0 file:bg-transparent file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+  'border-input bg-background ring-offset-background file:text-foreground placeholder:text-muted-foreground focus-visible:ring-ring flex w-full rounded-sm border file:border-0 file:bg-transparent file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-100 ease-out active:shadow-lg active:shadow-gray-400/30',
   {
     variants: {
       size: {
         default: 'px-3 py-2.5',
-        sm: 'px-3 py-2',
+        sm: 'px-3 py-[8.15px] active:shadow-md active:shadow-gray-400/25',
       },
     },
     defaultVariants: {
@@ -34,7 +34,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       fontSize: '16px',
       ...(fontScale !== 1 && {
         transform: `scale(${fontScale})`,
-        transformOrigin: 'left top',
+        transformOrigin: 'left center',
+        width: `${100 / fontScale}%`,
+        height: `${100 / fontScale}%`,
       }),
       ...style,
     };

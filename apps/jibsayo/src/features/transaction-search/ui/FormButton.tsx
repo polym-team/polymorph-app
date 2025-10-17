@@ -5,9 +5,9 @@ interface FormButtonProps {
   isChanged: boolean;
 }
 
-export function FormButton({ isChanged }: FormButtonProps) {
+export function FormButton({ isLoading, isChanged }: FormButtonProps) {
   return (
-    <Button type="submit" variant="primary">
+    <Button isLoading={isLoading} type="submit" variant="primary">
       {isChanged ? '다시 검색' : '검색'}
     </Button>
   );

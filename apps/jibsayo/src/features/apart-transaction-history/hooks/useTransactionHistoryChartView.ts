@@ -206,25 +206,30 @@ export const useTransactionHistoryChartView = ({
 
     xAxis.selectAll('text').style('text-anchor', 'middle').attr('dy', '1em');
 
-    // 왼쪽 y축 (상단: 가격) - 5억 단위
+    // 왼쪽 y축 (상단: 가격) - 5억 단위로 8개 틱
     const maxPrice = yPriceScale.domain()[1];
+    const minPrice = yPriceScale.domain()[0];
+
+    // 5억 단위로 조정
+    const tickInterval = 500000000; // 5억
+    const startTick = Math.ceil(minPrice / tickInterval) * tickInterval;
+    const endTick = Math.floor(maxPrice / tickInterval) * tickInterval;
+
     const priceTickValues = [];
-    for (let i = 500000000; i <= maxPrice; i += 500000000) {
-      priceTickValues.push(i);
+    for (let tick = startTick; tick <= endTick; tick += tickInterval) {
+      priceTickValues.push(tick);
     }
 
-    // 가격 그리드 라인 추가 (연한 수평선)
-    priceTickValues.forEach(value => {
-      priceGroup
-        .append('line')
-        .attr('x1', 0)
-        .attr('x2', chartWidth)
-        .attr('y1', yPriceScale(value))
-        .attr('y2', yPriceScale(value))
-        .attr('stroke', '#e5e7eb')
-        .attr('stroke-width', 1)
-        .attr('opacity', 0.5);
-    });
+    // 8개를 초과하면 간격을 늘려서 조정
+    if (priceTickValues.length > 8) {
+      const adjustedInterval =
+        Math.ceil((endTick - startTick) / (8 - 1) / tickInterval) *
+        tickInterval;
+      priceTickValues.length = 0;
+      for (let tick = startTick; tick <= endTick; tick += adjustedInterval) {
+        priceTickValues.push(tick);
+      }
+    }
 
     const priceAxis = priceGroup.append('g').call(
       d3
@@ -233,6 +238,20 @@ export const useTransactionHistoryChartView = ({
         .tickValues(priceTickValues)
         .tickSize(0)
     );
+
+    // 가격 그리드 라인 추가 (연한 수평선) - 자동 계산된 틱 값 사용
+    priceAxis.selectAll('.tick').each(function () {
+      const tickValue = d3.select(this).datum() as number;
+      priceGroup
+        .append('line')
+        .attr('x1', 0)
+        .attr('x2', chartWidth)
+        .attr('y1', yPriceScale(tickValue))
+        .attr('y2', yPriceScale(tickValue))
+        .attr('stroke', '#e5e7eb')
+        .attr('stroke-width', 1)
+        .attr('opacity', 0.5);
+    });
 
     // y축 도메인 라인 제거
     priceAxis.select('.domain').remove();

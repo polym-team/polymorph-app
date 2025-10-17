@@ -1,4 +1,18 @@
+'use client';
+
+import { useEffect } from 'react';
+
 export function Skeleton() {
+  useEffect(() => {
+    // 스켈레톤이 표시되는 동안 스크롤 막기
+    document.body.style.overflow = 'hidden';
+
+    // 컴포넌트 언마운트 시 스크롤 복원
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   return (
     <div className="space-y-5">
       {/* ApartInfo 스켈레톤 */}

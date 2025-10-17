@@ -1,17 +1,13 @@
 import { create } from 'zustand';
 
-import { getDeviceId } from '../services/webviewService';
-
 interface GlobalConfigStore {
   isInApp: boolean;
   deviceId: string;
+  init: (params: { isInApp: boolean; deviceId: string }) => void;
 }
 
-export const useGlobalConfigStore = create<GlobalConfigStore>(() => {
-  const deviceId = getDeviceId();
-
-  return {
-    isInApp: !!deviceId,
-    deviceId,
-  };
-});
+export const useGlobalConfigStore = create<GlobalConfigStore>(set => ({
+  isInApp: true,
+  deviceId: '',
+  init: ({ isInApp, deviceId }) => set({ isInApp, deviceId }),
+}));

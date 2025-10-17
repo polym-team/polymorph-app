@@ -6,8 +6,8 @@ import { Noto_Sans_KR } from 'next/font/google';
 import { Toaster } from '@package/ui';
 
 import '../../../../packages/styles/globals.css';
-import { Client } from './Client';
 import { QueryClientProvider } from './components/QueryClientProvider';
+import { WebviewProvider } from './components/WebviewProvider';
 
 const notoSansKr = Noto_Sans_KR({
   weight: ['400', '500', '700'],
@@ -38,18 +38,19 @@ export default function RootLayout({
       <body
         className={`${notoSansKr.variable} ${notoSansKr.className} bg-gray-50`}
       >
-        <div className="flex min-h-dvh flex-col items-center">
-          <Header />
-          <main className="w-full max-w-[640px] flex-1">
-            <QueryClientProvider>
-              <section className="container mx-auto px-4 pb-10 pt-5">
-                {children}
-                <Client />
-              </section>
-            </QueryClientProvider>
-          </main>
-        </div>
-        <Toaster />
+        <WebviewProvider>
+          <QueryClientProvider>
+            <div className="flex min-h-dvh flex-col items-center">
+              <Header />
+              <main className="w-full max-w-[640px] flex-1">
+                <section className="container mx-auto px-4 pb-10 pt-5">
+                  {children}
+                </section>
+              </main>
+            </div>
+            <Toaster />
+          </QueryClientProvider>
+        </WebviewProvider>
       </body>
     </html>
   );
