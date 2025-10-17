@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
-import { Noto_Sans_KR } from 'next/font/google';
 
 import '../../../../packages/styles/globals.css';
-
-const notoSansKr = Noto_Sans_KR({
-  weight: ['400', '500', '700'],
-  subsets: ['latin'],
-});
 
 export const metadata: Metadata = {
   title: 'Polymorph Scaffolding App',
@@ -27,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className={notoSansKr.className}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

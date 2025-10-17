@@ -1,19 +1,12 @@
 import { Header } from '@/wigets/ui/Header';
 
 import type { Metadata } from 'next';
-import { Noto_Sans_KR } from 'next/font/google';
 
 import { Toaster } from '@package/ui';
 
 import '../../../../packages/styles/globals.css';
 import { QueryClientProvider } from './components/QueryClientProvider';
 import { WebviewProvider } from './components/WebviewProvider';
-
-const notoSansKr = Noto_Sans_KR({
-  weight: ['400', '500', '700'],
-  subsets: ['latin'],
-  variable: '--font-noto-sans-kr',
-});
 
 export const metadata: Metadata = {
   title: '집사요 - 실거래가 기반 부동산 정보 플랫폼',
@@ -35,9 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body
-        className={`${notoSansKr.variable} ${notoSansKr.className} bg-gray-50`}
-      >
+      <body className="bg-gray-50">
         <WebviewProvider>
           <QueryClientProvider>
             <div className="flex min-h-dvh flex-col items-center">
