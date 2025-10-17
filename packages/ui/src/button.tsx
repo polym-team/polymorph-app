@@ -56,8 +56,8 @@ const buttonVariants = cva(
       },
       size: {
         default: 'px-4 py-3',
-        xs: 'rounded px-2 py-1.5 text-xs active:shadow-sm active:shadow-gray-500/40',
-        sm: 'rounded px-3 py-2.5 text-sm active:shadow-sm active:shadow-gray-500/45',
+        xs: 'rounded px-3 pt-[8px] pb-[7px] text-xs active:shadow-sm active:shadow-gray-500/40',
+        sm: 'rounded px-4 py-[9px] text-sm active:shadow-sm active:shadow-gray-500/45',
         lg: 'rounded px-8 py-3.5 text-base',
         icon: 'p-3 text-sm',
       },

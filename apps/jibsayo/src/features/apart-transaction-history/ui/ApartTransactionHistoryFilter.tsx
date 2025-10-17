@@ -28,7 +28,7 @@ export function ApartTransactionHistoryFilter({
             key={p.value}
             variant={p.value === selectedPeriod ? 'primary-outline' : 'outline'}
             size="sm"
-            className="min-w-0 flex-1 text-xs"
+            className="min-w-0 flex-1"
             onClick={() => onChangePeriod(p.value)}
           >
             {p.label}
@@ -53,7 +53,7 @@ export function ApartTransactionHistoryFilter({
               }
             >
               <span
-                className="block h-2 w-2 rounded-sm"
+                className="block h-2 w-2 translate-y-[-1px] rounded-sm"
                 style={{
                   backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
                 }}
