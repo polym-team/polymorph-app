@@ -37,6 +37,7 @@ export const mapTradeItemsWithPriceChangeRate = (
     return {
       ...item,
       priceChangeRate,
+      previousTradeItem: previousSamePyeongItem,
     };
   });
 };

@@ -5,6 +5,7 @@ import { PERIODS } from '../consts/config';
 export interface TradeItemWithPriceChangeRate
   extends ApartDetailTradeHistoryItem {
   priceChangeRate: number;
+  previousTradeItem?: ApartDetailTradeHistoryItem;
 }
 
 export type PeriodValue = (typeof PERIODS)[number]['value'];

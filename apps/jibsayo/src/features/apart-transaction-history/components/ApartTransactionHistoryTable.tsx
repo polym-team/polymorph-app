@@ -4,15 +4,14 @@ import {
   formatDate,
   formatFloor,
   formatKoreanAmountSimpleText,
-  formatPercent,
   formatPyeong,
 } from '@/shared/utils/formatters';
 
 import { ColumnDef, DataTable, DataTableColumnHeader } from '@package/ui';
-import { cn } from '@package/utils';
 
 import { useTransactionHistoryTableData } from '../hooks/useTransactionHistoryTableData';
 import { TradeItemWithPriceChangeRate } from '../models/types';
+import { PriceChangeRateBadge } from '../ui/PriceChangeRateBadge';
 
 interface ApartTransactionHistoryTableProps {
   tradeItems: ApartDetailTradeHistoryItem[];
@@ -50,17 +49,10 @@ const columns: ColumnDef<TradeItemWithPriceChangeRate>[] = [
     cell: ({ row }) => (
       <div className="flex items-center justify-end gap-x-1">
         {row.original.priceChangeRate !== 0 && (
-          <span
-            className={cn(
-              'rounded-full px-1.5 py-0.5 text-xs',
-              row.original.priceChangeRate > 0
-                ? 'bg-red-100 text-red-700'
-                : 'bg-blue-100 text-blue-700'
-            )}
-          >
-            {row.original.priceChangeRate > 0 ? '↗' : '↘'}{' '}
-            {formatPercent(row.original.priceChangeRate)}
-          </span>
+          <PriceChangeRateBadge
+            priceChangeRate={row.original.priceChangeRate}
+            previousTradeItem={row.original.previousTradeItem}
+          />
         )}
         <span className="text-primary font-bold">
           {formatKoreanAmountSimpleText(row.original.tradeAmount)}

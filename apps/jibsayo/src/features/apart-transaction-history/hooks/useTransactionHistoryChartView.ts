@@ -23,8 +23,10 @@ export const useTransactionHistoryChartView = ({
 }: UseTransactionHistoryChartViewProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
+  const lastShownTooltipDateRef = useRef<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [containerWidth, setContainerWidth] = useState(1024);
+  const [isTooltipVisible, setIsTooltipVisible] = useState(false);
 
   // 컨테이너 너비 감지
   useEffect(() => {
@@ -449,6 +451,10 @@ export const useTransactionHistoryChartView = ({
     const showTooltip = (dateString: string) => {
       const xPos = xScale(dateString) || 0;
 
+      // 마지막 툴팁 날짜 업데이트
+      lastShownTooltipDateRef.current = dateString;
+      setIsTooltipVisible(true);
+
       // y축 구분선 표시 (전체 관통)
       verticalLine.attr('x1', xPos).attr('x2', xPos).style('opacity', 1);
 
@@ -552,10 +558,14 @@ export const useTransactionHistoryChartView = ({
       if (tooltipRef.current) {
         tooltipRef.current.style.opacity = '0';
       }
+      setIsTooltipVisible(false);
     };
 
     // 이벤트 핸들러
     let isInteracting = false;
+    let startX = 0;
+    let startY = 0;
+    const DRAG_THRESHOLD = 5; // 드래그로 판단할 최소 거리 (픽셀)
 
     const handlePointerMove = (event: PointerEvent) => {
       if (!isInteracting) return;
@@ -574,12 +584,35 @@ export const useTransactionHistoryChartView = ({
 
     const handlePointerDown = (event: PointerEvent) => {
       isInteracting = true;
+      startX = event.clientX;
+      startY = event.clientY;
       handlePointerMove(event);
     };
 
-    const handlePointerUp = () => {
+    const handlePointerUp = (event: PointerEvent) => {
       isInteracting = false;
-      hideTooltip();
+
+      // 드래그 거리 계산
+      const dragDistance = Math.sqrt(
+        Math.pow(event.clientX - startX, 2) +
+          Math.pow(event.clientY - startY, 2)
+      );
+
+      if (dragDistance < DRAG_THRESHOLD) {
+        // 클릭인 경우: 툴팁 닫기
+        if (isTooltipVisible) {
+          setIsTooltipVisible(false);
+          hideTooltip();
+        }
+      } else {
+        // 드래그인 경우: 마지막 노출됐던 툴팁을 노출
+        if (lastShownTooltipDateRef.current) {
+          setIsTooltipVisible(true);
+          showTooltip(lastShownTooltipDateRef.current);
+        } else {
+          hideTooltip();
+        }
+      }
     };
 
     const handlePointerLeave = () => {
@@ -598,6 +631,14 @@ export const useTransactionHistoryChartView = ({
       interactionNode.addEventListener('pointerup', handlePointerUp);
       interactionNode.addEventListener('pointerleave', handlePointerLeave);
       interactionNode.addEventListener('pointercancel', handlePointerUp);
+    }
+
+    // 기본적으로 맨 우측 툴팁 노출
+    if (uniqueDates.length > 0) {
+      const rightmostDate = uniqueDates[uniqueDates.length - 1];
+      lastShownTooltipDateRef.current = rightmostDate;
+      setIsTooltipVisible(true);
+      showTooltip(rightmostDate);
     }
 
     setIsLoading(false);
