@@ -1,6 +1,7 @@
 import { Header } from '@/wigets/ui/Header';
 
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 
 import { Toaster } from '@package/ui';
 
@@ -29,19 +30,21 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="bg-gray-50">
-        <WebviewProvider>
-          <QueryClientProvider>
-            <div className="flex min-h-dvh flex-col items-center">
-              <Header />
-              <main className="w-full max-w-[640px] flex-1">
-                <section className="container mx-auto px-4 pb-10 pt-5">
-                  {children}
-                </section>
-              </main>
-            </div>
-            <Toaster />
-          </QueryClientProvider>
-        </WebviewProvider>
+        <Suspense fallback={null}>
+          <WebviewProvider>
+            <QueryClientProvider>
+              <div className="flex min-h-dvh flex-col items-center">
+                <Header />
+                <main className="w-full max-w-[640px] flex-1">
+                  <section className="container mx-auto px-4 pb-10 pt-5">
+                    {children}
+                  </section>
+                </main>
+              </div>
+              <Toaster />
+            </QueryClientProvider>
+          </WebviewProvider>
+        </Suspense>
       </body>
     </html>
   );

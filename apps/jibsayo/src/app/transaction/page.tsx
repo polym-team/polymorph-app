@@ -7,13 +7,15 @@ import { QueryParamProvider } from './QueryParamProvider';
 
 export default async function TransactionPage() {
   return (
-    <Suspense fallback={null}>
-      <QueryParamProvider>
-        <div className="flex flex-col gap-y-5">
+    <QueryParamProvider>
+      <div className="flex flex-col gap-y-5">
+        <Suspense fallback={null}>
           <TransactionSearch />
+        </Suspense>
+        <Suspense fallback={null}>
           <TransactionList />
-        </div>
-      </QueryParamProvider>
-    </Suspense>
+        </Suspense>
+      </div>
+    </QueryParamProvider>
   );
 }
