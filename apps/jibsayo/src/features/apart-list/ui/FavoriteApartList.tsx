@@ -42,17 +42,17 @@ export function FavoriteApartList({
                 >
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="xs"
                     onClick={() => onClickApartItem(region.code, item)}
-                    className="whitespace-nowrap rounded-r-none border-0 pr-0"
+                    className="whitespace-nowrap rounded-r-none border-0"
                   >
                     <span className="translate-y-[-0.5px]">{item.name}</span>
                   </Button>
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="xs"
                     onClick={() => onRemoveApartItem(region.code, item)}
-                    className="h-full min-w-0 rounded-l-none border-0 px-3"
+                    className="-ml-3 rounded-l-none border-0 px-2.5"
                   >
                     <X className="h-3 w-3 translate-y-[-0.5px]" />
                   </Button>
