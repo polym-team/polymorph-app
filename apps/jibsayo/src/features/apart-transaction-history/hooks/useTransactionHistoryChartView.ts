@@ -3,6 +3,7 @@ import { formatKoreanAmountSimpleText } from '@/shared/utils/formatters';
 import * as d3 from 'd3';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { useSelectedMonth } from '../contexts/SelectedMonthContext';
 import {
   LegendItem,
   TransactionHistoryChartData,
@@ -26,7 +27,7 @@ export const useTransactionHistoryChartView = ({
   const lastShownTooltipDateRef = useRef<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [containerWidth, setContainerWidth] = useState(1024);
-  const [isTooltipVisible, setIsTooltipVisible] = useState(false);
+  const { setSelectedMonth } = useSelectedMonth();
 
   // 컨테이너 너비 감지
   useEffect(() => {
@@ -453,7 +454,6 @@ export const useTransactionHistoryChartView = ({
 
       // 마지막 툴팁 날짜 업데이트
       lastShownTooltipDateRef.current = dateString;
-      setIsTooltipVisible(true);
 
       // y축 구분선 표시 (전체 관통)
       verticalLine.attr('x1', xPos).attr('x2', xPos).style('opacity', 1);
@@ -558,14 +558,15 @@ export const useTransactionHistoryChartView = ({
       if (tooltipRef.current) {
         tooltipRef.current.style.opacity = '0';
       }
-      setIsTooltipVisible(false);
     };
 
     // 이벤트 핸들러
     let isInteracting = false;
     let startX = 0;
     let startY = 0;
+    let interactionStartTime = 0;
     const DRAG_THRESHOLD = 5; // 드래그로 판단할 최소 거리 (픽셀)
+    const TOOLTIP_DELAY = 150; // 툴팁 표시 지연 시간 (밀리초)
 
     const handlePointerMove = (event: PointerEvent) => {
       if (!isInteracting) return;
@@ -573,12 +574,23 @@ export const useTransactionHistoryChartView = ({
       const svgRect = svgRef.current?.getBoundingClientRect();
       if (!svgRect) return;
 
-      const mouseX = event.clientX - svgRect.left - MARGIN.left;
+      let mouseX = event.clientX - svgRect.left - MARGIN.left;
+
+      // 차트 영역을 벗어나면 경계값으로 제한
+      if (mouseX < 0) {
+        mouseX = 0;
+      } else if (mouseX > chartWidth) {
+        mouseX = chartWidth;
+      }
 
       const nearestDate = findNearestDate(mouseX);
 
       if (nearestDate) {
-        showTooltip(nearestDate);
+        // 지연 시간이 지났으면 툴팁 표시
+        const elapsed = Date.now() - interactionStartTime;
+        if (elapsed >= TOOLTIP_DELAY) {
+          showTooltip(nearestDate);
+        }
       }
     };
 
@@ -586,7 +598,9 @@ export const useTransactionHistoryChartView = ({
       isInteracting = true;
       startX = event.clientX;
       startY = event.clientY;
-      handlePointerMove(event);
+      interactionStartTime = Date.now();
+      // 터치다운 시 툴팁 숨김 (선택된 월은 유지)
+      hideTooltip();
     };
 
     const handlePointerUp = (event: PointerEvent) => {
@@ -599,18 +613,13 @@ export const useTransactionHistoryChartView = ({
       );
 
       if (dragDistance < DRAG_THRESHOLD) {
-        // 클릭인 경우: 툴팁 닫기
-        if (isTooltipVisible) {
-          setIsTooltipVisible(false);
-          hideTooltip();
-        }
+        // 클릭인 경우: 툴팁 숨김 및 전체보기로 전환
+        hideTooltip();
+        setSelectedMonth(null);
       } else {
-        // 드래그인 경우: 마지막 노출됐던 툴팁을 노출
+        // 드래그인 경우: 드래그업 시 선택된 월 업데이트
         if (lastShownTooltipDateRef.current) {
-          setIsTooltipVisible(true);
-          showTooltip(lastShownTooltipDateRef.current);
-        } else {
-          hideTooltip();
+          setSelectedMonth(lastShownTooltipDateRef.current);
         }
       }
     };
@@ -618,8 +627,10 @@ export const useTransactionHistoryChartView = ({
     const handlePointerLeave = () => {
       if (isInteracting) {
         isInteracting = false;
-        // 차트 영역을 벗어나면 항상 숨김
-        hideTooltip();
+        // 차트 영역을 벗어나도 마지막 선택된 월로 업데이트
+        if (lastShownTooltipDateRef.current) {
+          setSelectedMonth(lastShownTooltipDateRef.current);
+        }
       }
     };
 
@@ -633,11 +644,11 @@ export const useTransactionHistoryChartView = ({
       interactionNode.addEventListener('pointercancel', handlePointerUp);
     }
 
-    // 기본적으로 맨 우측 툴팁 노출
+    // 기본적으로 맨 우측 툴팁 노출 및 선택된 월 설정
     if (uniqueDates.length > 0) {
       const rightmostDate = uniqueDates[uniqueDates.length - 1];
       lastShownTooltipDateRef.current = rightmostDate;
-      setIsTooltipVisible(true);
+      setSelectedMonth(rightmostDate);
       showTooltip(rightmostDate);
     }
 
@@ -664,6 +675,7 @@ export const useTransactionHistoryChartView = ({
     containerWidth,
     legendData,
     chartGap,
+    setSelectedMonth,
   ]);
 
   return {

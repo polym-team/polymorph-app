@@ -2,6 +2,7 @@
 
 import { ApartDetailResponse } from '@/app/api/apart/types';
 
+import { SelectedMonthProvider } from '../contexts/SelectedMonthContext';
 import { useTransactionHistoryFilter } from '../hooks/useTransactionHistoryFilter';
 import { calculateSizes } from '../services/calculator';
 import { filterTradeItems } from '../services/filter';
@@ -29,23 +30,25 @@ export function ApartTransactionHistory({
   });
 
   return (
-    <ApartTransactionHistoryLayout>
-      <ApartTransactionHistoryFilter
-        allSizes={sizes}
-        selectedPeriod={selectedPeriod}
-        selectedSizes={selectedSizes}
-        onChangePeriod={changePeriod}
-        onChangeSizes={changeSizes}
-      />
-      <ApartTransactionHistoryChart
-        tradeItems={filteredTradeItems}
-        allSizes={sizes}
-      />
-      <ApartTransactionHistoryTable
-        apartName={apartName}
-        regionCode={regionCode}
-        tradeItems={filteredTradeItems}
-      />
-    </ApartTransactionHistoryLayout>
+    <SelectedMonthProvider>
+      <ApartTransactionHistoryLayout>
+        <ApartTransactionHistoryFilter
+          allSizes={sizes}
+          selectedPeriod={selectedPeriod}
+          selectedSizes={selectedSizes}
+          onChangePeriod={changePeriod}
+          onChangeSizes={changeSizes}
+        />
+        <ApartTransactionHistoryChart
+          tradeItems={filteredTradeItems}
+          allSizes={sizes}
+        />
+        <ApartTransactionHistoryTable
+          apartName={apartName}
+          regionCode={regionCode}
+          tradeItems={filteredTradeItems}
+        />
+      </ApartTransactionHistoryLayout>
+    </SelectedMonthProvider>
   );
 }

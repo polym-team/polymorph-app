@@ -8,8 +8,17 @@ import {
   formatPyeong,
 } from '@/shared/utils/formatters';
 
-import { ColumnDef, DataTable, DataTableColumnHeader } from '@package/ui';
+import { useState } from 'react';
 
+import {
+  Button,
+  Card,
+  ColumnDef,
+  DataTable,
+  DataTableColumnHeader,
+} from '@package/ui';
+
+import { useSelectedMonth } from '../contexts/SelectedMonthContext';
 import { useTransactionHistoryTableData } from '../hooks/useTransactionHistoryTableData';
 import { TradeItemViewModel } from '../models/types';
 import { PriceChangeRateBadge } from '../ui/PriceChangeRateBadge';
@@ -77,16 +86,51 @@ export function ApartTransactionHistoryTable({
   regionCode,
   tradeItems,
 }: ApartTransactionHistoryTableProps) {
+  const { selectedMonth } = useSelectedMonth();
+  const [isFilterEnabled, setIsFilterEnabled] = useState(true);
+
   const { sorting, mappedTradeItems, changeSorting } =
-    useTransactionHistoryTableData({ apartName, regionCode, tradeItems });
+    useTransactionHistoryTableData({
+      apartName,
+      regionCode,
+      tradeItems,
+      filterMonth: isFilterEnabled ? selectedMonth : null,
+    });
+
+  const formatSelectedMonth = (month: string) => {
+    const [year, monthNum] = month.split('-');
+    return `${year}년 ${parseInt(monthNum)}월`;
+  };
 
   return (
-    <DataTable
-      pageSize={20}
-      columns={columns}
-      data={mappedTradeItems}
-      sorting={sorting}
-      onSortingChange={changeSorting}
-    />
+    <div className="space-y-2">
+      <Card className="flex gap-2 p-2">
+        <Button
+          variant={!isFilterEnabled ? 'primary-outline' : 'outline'}
+          size="sm"
+          className="min-w-0 flex-1"
+          onClick={() => setIsFilterEnabled(false)}
+        >
+          전체보기
+        </Button>
+        {selectedMonth && (
+          <Button
+            variant={isFilterEnabled ? 'primary-outline' : 'outline'}
+            size="sm"
+            className="min-w-0 flex-1"
+            onClick={() => setIsFilterEnabled(true)}
+          >
+            {formatSelectedMonth(selectedMonth)} 보기
+          </Button>
+        )}
+      </Card>
+      <DataTable
+        pageSize={20}
+        columns={columns}
+        data={mappedTradeItems}
+        sorting={sorting}
+        onSortingChange={changeSorting}
+      />
+    </div>
   );
 }

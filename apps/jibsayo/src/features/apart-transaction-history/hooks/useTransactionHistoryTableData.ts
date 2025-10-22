@@ -13,6 +13,7 @@ interface Params {
   apartName: string;
   regionCode: string;
   tradeItems: ApartDetailResponse['tradeItems'];
+  filterMonth?: string | null;
 }
 
 interface Return {
@@ -25,6 +26,7 @@ export const useTransactionHistoryTableData = ({
   apartName,
   regionCode,
   tradeItems,
+  filterMonth,
 }: Params): Return => {
   const { data: newTransactionData } = useNewTransactionListQuery(regionCode);
 
@@ -37,12 +39,31 @@ export const useTransactionHistoryTableData = ({
   }, [newTransactionData?.list, apartName]);
 
   const mappedTradeItems = useMemo(() => {
-    return mapTradeHistoryItems({ apartName, tradeItems, newTransactionList });
-  }, [apartName, tradeItems, newTransactionList]);
+    const allItems = mapTradeHistoryItems({
+      apartName,
+      tradeItems,
+      newTransactionList,
+    });
+
+    // 필터 월이 있으면 해당 월의 데이터만 필터링
+    if (filterMonth) {
+      return allItems.filter(item => {
+        const itemDate = new Date(item.tradeDate);
+        const itemMonth = `${itemDate.getFullYear()}-${String(itemDate.getMonth() + 1).padStart(2, '0')}`;
+        return itemMonth === filterMonth;
+      });
+    }
+
+    return allItems;
+  }, [apartName, tradeItems, newTransactionList, filterMonth]);
 
   const changeSorting = (newSorting: SortingState) => {
     setSorting(newSorting);
   };
 
-  return { sorting, mappedTradeItems, changeSorting };
+  return {
+    sorting,
+    mappedTradeItems,
+    changeSorting,
+  };
 };
