@@ -12,7 +12,7 @@ export function ApartDetailPageWidget({ data }: ApartDetailPageWidgetProps) {
   return (
     <ApartDetailPageLayout>
       <ApartDetailInfo data={data} />
-      <ApartTransactionHistory tradeItems={data.tradeItems} />
+      <ApartTransactionHistory data={data} />
     </ApartDetailPageLayout>
   );
 }

@@ -1,26 +1,44 @@
 import { ApartDetailResponse } from '@/app/api/apart/types';
+import { useNewTransactionListQuery } from '@/entities/transaction';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { SortingState } from '@package/ui';
 
-import { TradeItemWithPriceChangeRate } from '../models/types';
-import { mapTradeItemsWithPriceChangeRate } from '../services/mapper';
+import { TradeItemViewModel } from '../models/types';
+import { filterNewTransactionList } from '../services/filter';
+import { mapTradeHistoryItems } from '../services/mapper';
+
+interface Params {
+  apartName: string;
+  regionCode: string;
+  tradeItems: ApartDetailResponse['tradeItems'];
+}
 
 interface Return {
   sorting: SortingState;
-  mappedTradeItems: TradeItemWithPriceChangeRate[];
+  mappedTradeItems: TradeItemViewModel[];
   changeSorting: (newSorting: SortingState) => void;
 }
 
-export const useTransactionHistoryTableData = (
-  tradeItems: ApartDetailResponse['tradeItems']
-): Return => {
+export const useTransactionHistoryTableData = ({
+  apartName,
+  regionCode,
+  tradeItems,
+}: Params): Return => {
+  const { data: newTransactionData } = useNewTransactionListQuery(regionCode);
+
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'tradeDate', desc: true },
   ]);
 
-  const mappedTradeItems = mapTradeItemsWithPriceChangeRate(tradeItems);
+  const newTransactionList = useMemo(() => {
+    return filterNewTransactionList(newTransactionData?.list || [], apartName);
+  }, [newTransactionData?.list, apartName]);
+
+  const mappedTradeItems = useMemo(() => {
+    return mapTradeHistoryItems({ apartName, tradeItems, newTransactionList });
+  }, [apartName, tradeItems, newTransactionList]);
 
   const changeSorting = (newSorting: SortingState) => {
     setSorting(newSorting);

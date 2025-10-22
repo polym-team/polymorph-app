@@ -1,12 +1,14 @@
 import { useFavoriteApartList } from '@/entities/apart';
 import {
+  useNewTransactionListQuery,
   useTransactionListQuery,
   useTransactionPageSearchParams,
 } from '@/entities/transaction';
 
 import { useMemo } from 'react';
 
-import { TransactionItemWithFavorite } from '../models/types';
+import { TransactionDetailItem } from '../models/types';
+import { calculateNewTransactionIdList } from '../services/calculator';
 import {
   filterFavoriteApartListWithRegionCode,
   filterTransactionItemWithApartName,
@@ -18,57 +20,69 @@ import { mapTramsactionItemWithFavorite } from '../services/mapper';
 
 interface Return {
   isLoading: boolean;
-  transactionData: TransactionItemWithFavorite[];
+  transactionData: TransactionDetailItem[];
 }
 
 export const useTransactionData = (): Return => {
+  const { searchParams } = useTransactionPageSearchParams();
   const favoriteApartList = useFavoriteApartList();
 
-  const { isLoading, data } = useTransactionListQuery();
-  const { searchParams } = useTransactionPageSearchParams();
+  const { isLoading, data: transactionData } = useTransactionListQuery();
+  const { data: newTransactionData } = useNewTransactionListQuery(
+    searchParams.regionCode
+  );
+
+  const newTransactionIdList = useMemo(
+    () =>
+      newTransactionData?.list
+        ? calculateNewTransactionIdList(newTransactionData.list)
+        : [],
+    [newTransactionData?.list]
+  );
 
   const filteredFavoriteApartList = useMemo(() => {
     return filterFavoriteApartListWithRegionCode(
-      searchParams.regionCode,
+      searchParams,
       favoriteApartList
     );
-  }, [favoriteApartList, searchParams.regionCode]);
+  }, [favoriteApartList, searchParams]);
 
   const filteredTransactions = useMemo(() => {
-    if (!data?.list) {
+    if (!transactionData?.list) {
       return [];
     }
 
-    return data.list.filter(
+    return transactionData.list.filter(
       transaction =>
-        filterTransactionItemWithApartName(
-          transaction,
-          searchParams.apartName
-        ) &&
-        filterTransactionItemWithSize(
-          transaction,
-          searchParams.minSize,
-          searchParams.maxSize
-        ) &&
+        filterTransactionItemWithApartName(transaction, searchParams) &&
+        filterTransactionItemWithSize(transaction, searchParams) &&
         filterTransactionItemWithFavorite(
           transaction,
           filteredFavoriteApartList,
-          searchParams.favoriteOnly
+          searchParams
         ) &&
         filterTransactionItemWithNewTransaction(
           transaction,
-          searchParams.newTransactionOnly
+          newTransactionIdList,
+          searchParams
         )
     );
-  }, [data?.list, filteredFavoriteApartList, searchParams]);
+  }, [
+    transactionData?.list,
+    filteredFavoriteApartList,
+    newTransactionIdList,
+    searchParams,
+  ]);
 
   const mappedTransactions = useMemo(() => {
     return mapTramsactionItemWithFavorite(
       searchParams.regionCode,
       filteredTransactions,
-      filteredFavoriteApartList
+      filteredFavoriteApartList,
+      newTransactionIdList
     );
   }, [
+    newTransactionIdList,
     filteredFavoriteApartList,
     filteredTransactions,
     searchParams.regionCode,

@@ -1,5 +1,6 @@
 import { TransactionItem } from '@/entities/transaction';
 
-export interface TransactionItemWithFavorite extends TransactionItem {
+export interface TransactionDetailItem extends TransactionItem {
   isFavorite: boolean;
+  isNewTransaction: boolean;
 }

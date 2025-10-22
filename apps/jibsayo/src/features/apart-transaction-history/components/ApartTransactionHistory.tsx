@@ -11,12 +11,14 @@ import { ApartTransactionHistoryChart } from './ApartTransactionHistoryChart';
 import { ApartTransactionHistoryTable } from './ApartTransactionHistoryTable';
 
 interface ApartTransactionHistoryProps {
-  tradeItems: ApartDetailResponse['tradeItems'];
+  data: ApartDetailResponse;
 }
 
 export function ApartTransactionHistory({
-  tradeItems,
+  data,
 }: ApartTransactionHistoryProps) {
+  const { tradeItems, apartName, regionCode } = data;
+
   const { selectedPeriod, selectedSizes, changePeriod, changeSizes } =
     useTransactionHistoryFilter(tradeItems);
 
@@ -39,7 +41,11 @@ export function ApartTransactionHistory({
         tradeItems={filteredTradeItems}
         allSizes={sizes}
       />
-      <ApartTransactionHistoryTable tradeItems={filteredTradeItems} />
+      <ApartTransactionHistoryTable
+        apartName={apartName}
+        regionCode={regionCode}
+        tradeItems={filteredTradeItems}
+      />
     </ApartTransactionHistoryLayout>
   );
 }

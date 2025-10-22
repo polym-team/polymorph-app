@@ -7,36 +7,38 @@ import {
 
 export const filterTransactionItemWithApartName = (
   transaction: TransactionItem,
-  apartName: SearchParams['apartName']
+  searchParams: SearchParams
 ) => {
-  if (!apartName) {
+  if (!searchParams.apartName) {
     return true;
   }
-  return transaction.apartName.toLowerCase().includes(apartName.toLowerCase());
+  return transaction.apartName
+    .toLowerCase()
+    .includes(searchParams.apartName.toLowerCase());
 };
 
 export const filterTransactionItemWithSize = (
   transaction: TransactionItem,
-  minSize: SearchParams['minSize'],
-  maxSize: SearchParams['maxSize']
+  searchParams: SearchParams
 ) => {
   if (
-    !minSize ||
-    !maxSize ||
-    (minSize === RULES.SEARCH_MIN_SIZE && maxSize === Infinity)
+    !searchParams.minSize ||
+    !searchParams.maxSize ||
+    (searchParams.minSize === RULES.SEARCH_MIN_SIZE &&
+      searchParams.maxSize === Infinity)
   ) {
     return true;
   }
   const pyeong = calculateAreaPyeong(transaction.size);
-  return pyeong >= minSize && pyeong <= maxSize;
+  return pyeong >= searchParams.minSize && pyeong <= searchParams.maxSize;
 };
 
 export const filterTransactionItemWithFavorite = (
   transaction: TransactionItem,
   favoriteApartList: FavoriteApartItem[],
-  favoriteOnly: SearchParams['favoriteOnly']
+  searchParams: SearchParams
 ) => {
-  if (!favoriteOnly) {
+  if (!searchParams.favoriteOnly) {
     return true;
   }
   return favoriteApartList.some(favoriteApart => {
@@ -52,17 +54,20 @@ export const filterTransactionItemWithFavorite = (
 
 export const filterTransactionItemWithNewTransaction = (
   transaction: TransactionItem,
-  newTransactionOnly: SearchParams['newTransactionOnly']
+  newTransactionIdList: string[],
+  searchParams: SearchParams
 ) => {
-  if (!newTransactionOnly) {
+  if (!searchParams.newTransactionOnly) {
     return true;
   }
-  return false; // FIXME: 수정 필요
+  return newTransactionIdList.includes(transaction.apartId);
 };
 
 export const filterFavoriteApartListWithRegionCode = (
-  regionCode: SearchParams['regionCode'],
-  data: FavoriteApartItem[]
+  searchParams: SearchParams,
+  favoriteApartList: FavoriteApartItem[]
 ) => {
-  return data.filter(item => item.regionCode === regionCode);
+  return favoriteApartList.filter(
+    item => item.regionCode === searchParams.regionCode
+  );
 };

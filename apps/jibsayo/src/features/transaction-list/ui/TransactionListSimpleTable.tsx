@@ -1,5 +1,6 @@
 import { FavoriteApartToggleButton } from '@/entities/apart';
 import { calculateAreaPyeong } from '@/shared/services/transactionService';
+import { NewIcon } from '@/shared/ui/NewIcon';
 import {
   formatDate,
   formatFloor,
@@ -16,16 +17,16 @@ import {
   SortingState,
 } from '@package/ui';
 
-import { TransactionItemWithFavorite } from '../models/types';
+import { TransactionDetailItem } from '../models/types';
 import { SimpleTableText } from './SimpleTableText';
 
 interface TransactionListDataProps {
   isLoading: boolean;
   pageIndex: number;
   sorting: SortingState;
-  items: TransactionItemWithFavorite[];
+  items: TransactionDetailItem[];
   regionCode: string;
-  onRowClick: (row: TransactionItemWithFavorite) => void;
+  onRowClick: (row: TransactionDetailItem) => void;
   onSortingChange: (sorting: SortingState) => void;
   onPageIndexChange: (pageIndex: number) => void;
 }
@@ -33,14 +34,14 @@ interface TransactionListDataProps {
 export function TransactionListSimpleTable({
   isLoading,
   pageIndex,
-  items,
   sorting,
+  items,
   regionCode,
   onRowClick,
   onSortingChange,
   onPageIndexChange,
 }: TransactionListDataProps) {
-  const columns: ColumnDef<TransactionItemWithFavorite>[] = useMemo(() => {
+  const columns: ColumnDef<TransactionDetailItem>[] = useMemo(() => {
     return [
       {
         size: 30,
@@ -61,15 +62,18 @@ export function TransactionListSimpleTable({
         ),
       },
       {
-        size: 80,
+        size: 70,
         accessorKey: 'tradeDate',
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="거래일" />
         ),
         cell: ({ row }) => (
-          <SimpleTableText>
-            {formatDate(row.original.tradeDate)}
-          </SimpleTableText>
+          <div className="flex flex-col items-start gap-y-1">
+            {row.original.isNewTransaction && <NewIcon />}
+            <SimpleTableText>
+              {formatDate(row.original.tradeDate)}
+            </SimpleTableText>
+          </div>
         ),
       },
       {
@@ -80,7 +84,7 @@ export function TransactionListSimpleTable({
         ),
         cell: ({ row }) => (
           <>
-            <SimpleTableText className="font-bold">
+            <SimpleTableText className="flex items-center gap-x-1 font-bold">
               {row.original.apartName}
             </SimpleTableText>
             {row.original.floor && (

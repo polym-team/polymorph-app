@@ -1,5 +1,6 @@
 import { ApartDetailTradeHistoryItem } from '@/app/api/apart/types';
 import { calculateAreaPyeong } from '@/shared/services/transactionService';
+import { NewIcon } from '@/shared/ui/NewIcon';
 import {
   formatDate,
   formatFloor,
@@ -10,21 +11,28 @@ import {
 import { ColumnDef, DataTable, DataTableColumnHeader } from '@package/ui';
 
 import { useTransactionHistoryTableData } from '../hooks/useTransactionHistoryTableData';
-import { TradeItemWithPriceChangeRate } from '../models/types';
+import { TradeItemViewModel } from '../models/types';
 import { PriceChangeRateBadge } from '../ui/PriceChangeRateBadge';
 
 interface ApartTransactionHistoryTableProps {
+  apartName: string;
+  regionCode: string;
   tradeItems: ApartDetailTradeHistoryItem[];
 }
 
-const columns: ColumnDef<TradeItemWithPriceChangeRate>[] = [
+const columns: ColumnDef<TradeItemViewModel>[] = [
   {
     size: 80,
     accessorKey: 'tradeDate',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="거래일" />
     ),
-    cell: ({ row }) => formatDate(row.original.tradeDate),
+    cell: ({ row }) => (
+      <div className="flex flex-col items-start gap-y-1">
+        {row.original.isNewTransaction && <NewIcon />}
+        {formatDate(row.original.tradeDate)}
+      </div>
+    ),
   },
   {
     size: 100,
@@ -63,10 +71,12 @@ const columns: ColumnDef<TradeItemWithPriceChangeRate>[] = [
 ];
 
 export function ApartTransactionHistoryTable({
+  apartName,
+  regionCode,
   tradeItems,
 }: ApartTransactionHistoryTableProps) {
   const { sorting, mappedTradeItems, changeSorting } =
-    useTransactionHistoryTableData(tradeItems);
+    useTransactionHistoryTableData({ apartName, regionCode, tradeItems });
 
   return (
     <DataTable

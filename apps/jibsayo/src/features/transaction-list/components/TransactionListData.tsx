@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 import { useTransactionViewSetting } from '../hooks/useTransactionViewSetting';
 import { useTransactionData } from '../hooks/useTrasactionData';
-import { TransactionItemWithFavorite } from '../models/types';
+import { TransactionDetailItem } from '../models/types';
 import { TransactionListSimpleTable } from '../ui/TransactionListSimpleTable';
 
 export function TransactionListData() {
@@ -16,7 +16,7 @@ export function TransactionListData() {
     useTransactionViewSetting();
   const { searchParams } = useTransactionPageSearchParams();
 
-  const handleRowClick = (row: TransactionItemWithFavorite) => {
+  const handleRowClick = (row: TransactionDetailItem) => {
     router.push(
       `${ROUTE_PATH.APART_DETAIL}/${searchParams.regionCode}/${row.apartName}`
     );
