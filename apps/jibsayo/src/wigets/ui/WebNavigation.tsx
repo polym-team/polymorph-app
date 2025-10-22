@@ -2,20 +2,16 @@ import logo from '@/assets/logo.png';
 import { ROUTE_PATH, ROUTE_PATH_LABEL } from '@/shared/consts/route';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+
+import { Button } from '@package/ui';
 
 export function WebNavigation() {
+  const router = useRouter();
   const pathname = usePathname();
 
-  const getLinkClassName = (href: string) => {
-    const baseClass =
-      'relative text-gray-600 transition-colors hover:text-gray-900 py-2 px-3 rounded-md ';
-    const activeClass = 'text-gray-900 bg-gray-100';
-    const inactiveClass = 'hover:bg-gray-50';
-
-    return pathname.startsWith(href)
-      ? `${baseClass} ${activeClass}`
-      : `${baseClass} ${inactiveClass}`;
+  const handleClick = (item: 'TRANSACTION' | 'APART') => {
+    router.push(ROUTE_PATH[item]);
   };
 
   return (
@@ -36,13 +32,16 @@ export function WebNavigation() {
         {/* 네비게이션 */}
         <nav className="flex items-center space-x-2">
           {['TRANSACTION' as const, 'APART' as const].map(item => (
-            <Link
+            <Button
               key={item}
-              href={ROUTE_PATH[item]}
-              className={getLinkClassName(ROUTE_PATH[item])}
+              size="sm"
+              variant={
+                pathname.startsWith(ROUTE_PATH[item]) ? 'default' : 'ghost'
+              }
+              onClick={() => handleClick(item)}
             >
               {ROUTE_PATH_LABEL[item]}
-            </Link>
+            </Button>
           ))}
         </nav>
       </div>

@@ -53,7 +53,7 @@ export function ApartTransactionHistoryFilter({
               }
             >
               <span
-                className="block h-2 w-2 translate-y-[-1px] rounded-sm"
+                className="block h-2 w-2 rounded-sm"
                 style={{
                   backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
                 }}

@@ -9,43 +9,43 @@ import { cn } from '@package/utils';
 const LoadingIcon = () => (
   <div className="flex items-center gap-1.5">
     <div
-      className="h-2 w-2 animate-bounce rounded-full bg-current"
+      className="h-2 w-2 animate-pulse rounded-full bg-current"
       style={{
         animationDelay: '0ms',
-        animationDuration: '600ms',
+        animationDuration: '1000ms',
       }}
     />
     <div
-      className="h-2 w-2 animate-bounce rounded-full bg-current"
+      className="h-2 w-2 animate-pulse rounded-full bg-current"
       style={{
-        animationDelay: '150ms',
-        animationDuration: '600ms',
+        animationDelay: '200ms',
+        animationDuration: '1000ms',
       }}
     />
     <div
-      className="h-2 w-2 animate-bounce rounded-full bg-current"
+      className="h-2 w-2 animate-pulse rounded-full bg-current"
       style={{
-        animationDelay: '300ms',
-        animationDuration: '600ms',
+        animationDelay: '400ms',
+        animationDuration: '1000ms',
       }}
     />
   </div>
 );
 
 const buttonVariants = cva(
-  'relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded ring-offset-background transition-all duration-100 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border active:shadow-md active:shadow-gray-500/50',
+  'relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded ring-offset-background transition-all duration-100 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border active:shadow-inner active:shadow-gray-500/50',
   {
     variants: {
       variant: {
         default:
           'border-transparent bg-default text-default-foreground hover:bg-default/80',
         primary:
-          'border-transparent bg-primary text-primary-foreground hover:bg-primary/90',
+          'border-transparent bg-primary text-primary-foreground hover:bg-primary/90 active:shadow-inner active:shadow-black/30',
         'primary-outline': 'border-primary bg-primary/10 hover:bg-primary/20',
         danger:
-          'border-transparent bg-danger text-danger-foreground hover:bg-danger/90',
+          'border-transparent bg-danger text-danger-foreground hover:bg-danger/90 active:shadow-inner active:shadow-black/30',
         warning:
-          'border-transparent bg-warning text-warning-foreground hover:bg-warning/90',
+          'border-transparent bg-warning text-warning-foreground hover:bg-warning/90 active:shadow-inner active:shadow-black/30',
         outline:
           'border-input bg-background hover:bg-accent hover:text-accent-foreground',
         secondary:
@@ -55,9 +55,9 @@ const buttonVariants = cva(
         link: 'border-transparent text-primary underline-offset-4 hover:underline',
       },
       size: {
-        default: 'px-4 py-3',
-        xs: 'rounded px-3 pt-[8px] pb-[7px] text-xs active:shadow-sm active:shadow-gray-500/40',
-        sm: 'rounded px-4 py-[9px] text-sm active:shadow-sm active:shadow-gray-500/45',
+        default: 'h-[46px] px-4 py-[15px]',
+        xs: 'h-[30px] rounded px-3 py-[6px] text-sm active:shadow-inner active:shadow-gray-500/40',
+        sm: 'h-[36px] rounded px-4 py-[10px] text-sm active:shadow-inner active:shadow-gray-500/45',
         lg: 'rounded px-8 py-3.5 text-base',
         icon: 'p-3 text-sm',
       },
@@ -101,7 +101,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {isLoading ? (
           <>
             <div className="invisible">{children}</div>
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center">
               <LoadingIcon />
             </div>
           </>

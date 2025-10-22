@@ -24,6 +24,14 @@
       sans-serif;
   }
 
+  /* 버튼, 인풋 등 요소의 텍스트 정렬 보정 */
+  button,
+  input,
+  select,
+  textarea {
+    line-height: 1;
+  }
+
   /* 모바일 확대 방지 */
   input,
   textarea,

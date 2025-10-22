@@ -44,7 +44,7 @@ export function FavoriteApartList({
                     variant="ghost"
                     size="sm"
                     onClick={() => onClickApartItem(region.code, item)}
-                    className="whitespace-nowrap rounded-r-none border-0 px-3 py-1.5 text-sm"
+                    className="whitespace-nowrap rounded-r-none border-0 pr-0"
                   >
                     <span className="translate-y-[-0.5px]">{item.name}</span>
                   </Button>
@@ -52,9 +52,9 @@ export function FavoriteApartList({
                     variant="ghost"
                     size="sm"
                     onClick={() => onRemoveApartItem(region.code, item)}
-                    className="h-full min-w-0 rounded-l-none border-0 px-2 py-1.5"
+                    className="h-full min-w-0 rounded-l-none border-0 px-3"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-3 w-3 translate-y-[-0.5px]" />
                   </Button>
                 </div>
               ))}
