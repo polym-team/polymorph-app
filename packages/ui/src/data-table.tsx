@@ -16,7 +16,7 @@ import {
   ChevronsRight,
   Loader2,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from './button';
 import {
@@ -65,6 +65,9 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
   const [internalPageIndex, setInternalPageIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [displayData, setDisplayData] = useState(data);
+  const previousDataLengthRef = useRef(data.length);
 
   // 외부에서 sorting이 제공되면 그것을 사용, 아니면 내부 상태 사용
   const sorting = externalSorting ?? internalSorting;
@@ -91,12 +94,29 @@ export function DataTable<TData, TValue>({
     }
   };
 
+  // 데이터 변경 감지 및 애니메이션
+  useEffect(() => {
+    if (previousDataLengthRef.current !== data.length) {
+      // 먼저 페이드 아웃
+      setIsAnimating(true);
+
+      // 페이드 아웃 후 데이터 교체 및 페이드 인
+      const fadeOutTimer = setTimeout(() => {
+        setDisplayData(data);
+        setIsAnimating(false);
+      }, 150); // 150ms 페이드 아웃 후 데이터 교체
+
+      previousDataLengthRef.current = data.length;
+      return () => clearTimeout(fadeOutTimer);
+    }
+  }, [data]);
+
   // 페이지네이션 계산
-  const totalPages = Math.ceil(data.length / pageSize);
+  const totalPages = Math.ceil(displayData.length / pageSize);
   const startIndex = pageIndex * pageSize;
   const endIndex = startIndex + pageSize;
   const paginatedData = useMemo(() => {
-    const sortedData = [...data].sort((a, b) => {
+    const sortedData = [...displayData].sort((a, b) => {
       if (sorting.length === 0) return 0;
 
       const { id, desc } = sorting[0];
@@ -109,7 +129,7 @@ export function DataTable<TData, TValue>({
     });
 
     return sortedData.slice(startIndex, endIndex);
-  }, [data, startIndex, endIndex, sorting]);
+  }, [displayData, startIndex, endIndex, sorting]);
 
   const table = useReactTable({
     data: paginatedData,
@@ -241,10 +261,14 @@ export function DataTable<TData, TValue>({
     <div className="flex items-center justify-between py-2">
       <div className="flex flex-wrap items-center gap-x-1 text-sm text-gray-700">
         <div>
-          총 <strong className="text-primary font-bold">{data.length}</strong>건
+          총{' '}
+          <strong className="text-primary font-bold">
+            {displayData.length}
+          </strong>
+          건
         </div>{' '}
         <div>
-          ({startIndex + 1}-{Math.min(endIndex, data.length)}번째 항목)
+          ({startIndex + 1}-{Math.min(endIndex, displayData.length)}번째 항목)
         </div>
       </div>
       <div className="flex items-center space-x-1">
@@ -313,7 +337,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="w-full">
-      {data.length > 0 && <PaginationComponent />}
+      {displayData.length > 0 && <PaginationComponent />}
 
       <div className="overflow-x-auto">
         <Table>
@@ -361,8 +385,12 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {data.length === 0 ? (
+          <TableBody
+            className={`transition-opacity duration-150 ${
+              isAnimating ? 'opacity-0' : 'opacity-100'
+            }`}
+          >
+            {displayData.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
@@ -404,7 +432,7 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-      {data.length > 0 && <PaginationComponent />}
+      {displayData.length > 0 && <PaginationComponent />}
     </div>
   );
 }
