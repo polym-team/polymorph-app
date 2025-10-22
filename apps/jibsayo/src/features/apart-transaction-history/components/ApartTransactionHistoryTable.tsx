@@ -28,8 +28,10 @@ const columns: ColumnDef<TradeItemViewModel>[] = [
       <DataTableColumnHeader column={column} title="거래일" />
     ),
     cell: ({ row }) => (
-      <div className="flex flex-col items-start gap-y-1">
-        {row.original.isNewTransaction && <NewIcon />}
+      <div className="relative">
+        <div className="absolute left-0 top-[-16px]">
+          {row.original.isNewTransaction && <NewIcon />}
+        </div>
         {formatDate(row.original.tradeDate)}
       </div>
     ),
