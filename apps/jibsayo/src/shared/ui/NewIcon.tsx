@@ -1,7 +1,7 @@
 export function NewIcon() {
   return (
     <div className="relative">
-      <span className="bg-danger text-primary-foreground flex h-4 items-center justify-center rounded-[4px] px-1 pb-[1px] text-[9px]">
+      <span className="bg-danger text-primary-foreground flex h-4 items-center justify-center rounded-[4px] px-1 pt-[1px] text-[9px]">
         NEW
       </span>
       <div className="absolute left-1/2 top-full -translate-x-1/2">
