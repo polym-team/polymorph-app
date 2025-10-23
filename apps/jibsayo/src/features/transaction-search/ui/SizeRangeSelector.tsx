@@ -225,12 +225,13 @@ export function SizeRangeSelector({
     (localMax === 50 || localMax === Infinity);
 
   const quickSelectButtons = [
-    { label: '전체', min: 0, max: Infinity },
     { label: '10평대', min: 10, max: 19 },
     { label: '20평대', min: 20, max: 29 },
     { label: '30평대', min: 30, max: 39 },
     { label: '40평대', min: 40, max: 49 },
     { label: '50평 이상', min: 50, max: Infinity },
+    { label: '전체', min: 0, max: Infinity },
+    { label: '국민평수', min: 33, max: 35 },
   ];
 
   return (
@@ -298,22 +299,47 @@ export function SizeRangeSelector({
       </div>
 
       {/* 2행: 빠른 선택 버튼들 */}
-      <div className="grid w-full grid-cols-6 gap-1">
-        {quickSelectButtons.map(button => (
-          <Button
-            key={button.label}
-            type="button"
-            onClick={() => handleQuickSelect(button)}
-            size="xs"
-            variant={
-              localMin === button.min && localMax === button.max
-                ? 'primary-outline'
-                : 'outline'
-            }
-          >
-            {button.label}
-          </Button>
-        ))}
+      <div className="flex w-full flex-col gap-1">
+        {/* 첫 번째 줄: 0~4 인덱스 */}
+        <div className="grid w-full grid-cols-5 gap-1">
+          {quickSelectButtons.slice(0, 5).map(button => (
+            <Button
+              key={button.label}
+              type="button"
+              onClick={() => handleQuickSelect(button)}
+              size="xs"
+              variant={
+                localMin === button.min && localMax === button.max
+                  ? 'primary-outline'
+                  : 'outline'
+              }
+            >
+              {button.label}
+            </Button>
+          ))}
+        </div>
+
+        {/* 두 번째 줄: 나머지 버튼들 */}
+        {quickSelectButtons.length > 5 && (
+          <div className="flex w-full gap-1">
+            {quickSelectButtons.slice(5).map(button => (
+              <Button
+                key={button.label}
+                type="button"
+                onClick={() => handleQuickSelect(button)}
+                size="xs"
+                variant={
+                  localMin === button.min && localMax === button.max
+                    ? 'primary-outline'
+                    : 'outline'
+                }
+                className="flex-1"
+              >
+                {button.label}
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
