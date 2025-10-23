@@ -37,7 +37,7 @@ export const useFavoriteRegion = (): Return => {
       setFavoriteRegionList(newList);
       setItem(STORAGE_KEY.FAVORITE_REGION_LIST, newList);
       toast.success(
-        `${getCityNameWithRegionCode(regionCode)} ${getRegionNameWithRegionCode(regionCode)} 지역이 즐겨찾기에 추가됐어요`
+        `${getCityNameWithRegionCode(regionCode)} ${getRegionNameWithRegionCode(regionCode)} 지역이 관심목록에 추가됐어요`
       );
     }
   };
@@ -47,7 +47,7 @@ export const useFavoriteRegion = (): Return => {
     setFavoriteRegionList(newList);
     setItem(STORAGE_KEY.FAVORITE_REGION_LIST, newList);
     toast.success(
-      `${getCityNameWithRegionCode(regionCode)} ${getRegionNameWithRegionCode(regionCode)} 지역이 즐겨찾기에서 삭제됐어요`
+      `${getCityNameWithRegionCode(regionCode)} ${getRegionNameWithRegionCode(regionCode)} 지역이 관심목록에서 삭제됐어요`
     );
   };
 
