@@ -16,16 +16,16 @@ export function FormButton({ isLoading, isChanged }: FormButtonProps) {
       className="font-extrabold"
     >
       {isChanged && (
-        <>
-          <RotateCw className="h-5 w-5 animate-spin stroke-[3.5]" />
+        <span className="inline-flex animate-[pulse_1s_ease-in-out_infinite] items-center gap-2">
+          <RotateCw className="h-5 w-5 stroke-[3.5]" />
           다시 검색
-        </>
+        </span>
       )}
       {!isChanged && (
-        <>
+        <span className="inline-flex items-center gap-2">
           <Search className="h-5 w-5 stroke-[3.5]" />
           검색
-        </>
+        </span>
       )}
     </Button>
   );
