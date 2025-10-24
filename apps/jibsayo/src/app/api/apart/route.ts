@@ -5,6 +5,40 @@ import { formatToAmount } from '../utils';
 // 동적 라우트로 설정 (정적 빌드 시 request.url 사용으로 인한 오류 방지)
 export const dynamic = 'force-dynamic';
 
+/**
+ * 🎯 패턴 기반 크롤링 전략
+ *
+ * HTML 구조 변경에 유연하게 대응하기 위해 다음 전략을 사용합니다:
+ *
+ * 1. **텍스트 패턴 기반 파싱**: td 개수나 순서에 의존하지 않고 정규식으로 필요한 데이터 추출
+ * 2. **유연한 데이터 추출**:
+ *    - 날짜: \d{4}\.\d{2}\.\d{2} 패턴
+ *    - 금액: N억N천N백 형태의 한글 패턴
+ *    - 면적: 소수점 3자리 이상의 숫자 (제곱미터)
+ *    - 층수: N층 패턴
+ * 3. **구조 독립성**: table > tr > td 구조가 변경되어도 텍스트만 추출할 수 있으면 작동
+ * 4. **Fallback 지원**: 여러 패턴을 시도하여 다양한 형태의 데이터 처리
+ *
+ * @example
+ * // HTML 구조 변경 전 (td 3개):
+ * <tr>
+ *   <td>2025.09.24</td>
+ *   <td>146.7139㎡ 54A평<br>6층</td>
+ *   <td>36억 (고)</td>
+ * </tr>
+ *
+ * // HTML 구조 변경 후 (td 2개):
+ * <tr>
+ *   <td>2025.09.24개인:개인</td>
+ *   <td>36억 (고) 146.7139 54A평 6층</td>
+ * </tr>
+ *
+ * // 둘 다 패턴 기반으로 파싱 가능!
+ *
+ * @note 디버깅 로그가 많이 출력됩니다.
+ *       운영 환경에서는 console.log를 제거하거나 조건부로 처리하세요.
+ */
+
 interface Response {
   address: string;
   housholdsCount: string;
@@ -38,13 +72,25 @@ const normalizeAddress = (address: string): string => {
 const calculateApartInfo = ($: CheerioAPI) => {
   const getTradeInfoTable = () => {
     let tradeInfoTable: Element | null = null;
+    let tableCount = 0;
 
     $('table').each((_, table) => {
-      if (!tradeInfoTable && $(table).text().includes('주소복사')) {
+      tableCount++;
+      const tableText = $(table).text();
+      console.log(
+        `📊 테이블 ${tableCount} 텍스트 미리보기:`,
+        tableText.substring(0, 100)
+      );
+
+      if (!tradeInfoTable && tableText.includes('주소복사')) {
+        console.log('✅ "주소복사" 테이블 발견!');
         tradeInfoTable = table;
       }
     });
 
+    console.log(
+      `📊 전체 테이블 개수: ${tableCount}, 주소복사 테이블 발견: ${!!tradeInfoTable}`
+    );
     return tradeInfoTable;
   };
 
@@ -61,23 +107,61 @@ const calculateApartInfo = ($: CheerioAPI) => {
       };
     }
 
-    const texts = $(tradeInfoTable)
-      .find('td')
-      .text()
-      .replace(/^\s+|\s+$/gm, '')
-      .replace(/<br \/>/g, '')
-      .split('\n');
+    // td 구조에 의존하지 않고 전체 텍스트에서 패턴 기반으로 추출
+    const fullText = $(tradeInfoTable).text();
+    console.log(
+      '📝 아파트 정보 테이블 전체 텍스트:',
+      fullText.substring(0, 300)
+    );
 
-    const rawAddress = texts[1] || '';
+    // 1. 주소 추출: "서울특별시", "경기도" 등으로 시작하는 주소
+    let rawAddress = '';
+    const addressMatch = fullText.match(
+      /(서울특별시|경기도|인천광역시|부산광역시|대구광역시|광주광역시|대전광역시|울산광역시|세종특별자치시|제주특별자치도|강원도|충청북도|충청남도|전라북도|전라남도|경상북도|경상남도)\s+[^\n]+/
+    );
+    if (addressMatch) {
+      rawAddress = addressMatch[0].split('세대수')[0].trim();
+    }
     const address = normalizeAddress(rawAddress);
-    const housholdsCount = (texts[2] || '').replace('세대수(동수) : ', '');
-    const parking = (texts[3] || '').replace('주차 : ', '');
 
-    const rateTexts = (texts[4] || '').split('%');
-    const floorAreaRatio =
-      Number((rateTexts[0] || '').replace('용적률 : ', '')) || 0;
-    const buildingCoverageRatio =
-      Number((rateTexts[1] || '').replace('건폐율:', '')) || 0;
+    // 2. 세대수 추출: "세대수(동수) : 400세대(10동)" 형태
+    let housholdsCount = '';
+    const housholdsMatch = fullText.match(/세대수\(동수\)\s*[:：]\s*([^\n]+)/);
+    if (housholdsMatch) {
+      housholdsCount = housholdsMatch[1].trim();
+    }
+
+    // 3. 주차 정보 추출: "주차 : 840대(세대당 2.1대)" 형태
+    let parking = '';
+    const parkingMatch = fullText.match(/주차\s*[:：]\s*([^\n]+)/);
+    if (parkingMatch) {
+      parking = parkingMatch[1].trim();
+    }
+
+    // 4. 용적률 추출: "용적률 : 199.0%" 형태
+    let floorAreaRatio = 0;
+    const floorAreaMatch = fullText.match(/용적률\s*[:：]\s*(\d+\.?\d*)%/);
+    if (floorAreaMatch) {
+      floorAreaRatio = Number(floorAreaMatch[1]);
+    }
+
+    // 5. 건폐율 추출: "건폐율:24.0%" 또는 "건폐율 : 24.0%" 형태
+    let buildingCoverageRatio = 0;
+    const buildingCoverageMatch = fullText.match(
+      /건폐율\s*[:：]\s*(\d+\.?\d*)%/
+    );
+    if (buildingCoverageMatch) {
+      buildingCoverageRatio = Number(buildingCoverageMatch[1]);
+    }
+
+    console.log('🏢 파싱된 아파트 정보:', {
+      rawAddress,
+      address,
+      housholdsCount,
+      parking,
+      floorAreaRatio,
+      buildingCoverageRatio,
+    });
 
     return {
       address,
@@ -94,9 +178,20 @@ const calculateApartInfo = ($: CheerioAPI) => {
 const calculateTradeItems = ($: CheerioAPI): Response['tradeItems'] => {
   const getTrs = () => {
     const trs: Element[] = [];
+    let tableCount = 0;
+    let foundTable = false;
 
     $('table').each((_, table) => {
-      if ($(table).text().includes('계약일')) {
+      tableCount++;
+      const tableText = $(table).text();
+      console.log(
+        `💰 거래 테이블 ${tableCount} 텍스트 미리보기:`,
+        tableText.substring(0, 150)
+      );
+
+      if (tableText.includes('계약일')) {
+        console.log(`✅ "계약일" 테이블 발견! (테이블 ${tableCount})`);
+        foundTable = true;
         $(table)
           .find('tr:not(:first-child)')
           .each((_, tr) => {
@@ -105,42 +200,82 @@ const calculateTradeItems = ($: CheerioAPI): Response['tradeItems'] => {
       }
     });
 
+    console.log(
+      `💰 전체 테이블 개수: ${tableCount}, 계약일 테이블 발견: ${foundTable}, 거래 행 개수: ${trs.length}`
+    );
     return trs;
   };
 
   const getTradeItems = (trs: Element[]) => {
     const tradeItems: Response['tradeItems'] = [];
+    let rowNum = 0;
 
     $(trs).each((_, tr) => {
-      const tds = $(tr).find('td');
+      rowNum++;
 
-      if (tds.length < 3) return; // td가 충분하지 않으면 skip
+      // td 구조에 상관없이 전체 텍스트를 가져와서 패턴 기반으로 파싱
+      const rowText = $(tr).text().trim();
 
-      const firstTdText = $(tds[0])
-        .text()
-        .replace(/^\s+|\s+$/gm, '')
-        .split('\n');
-      const secondTdText = $(tds[1])
-        .text()
-        .replace(/^\s+|\s+$/gm, '')
-        .split('\n');
-      const thirdTdText = $(tds[2])
-        .text()
-        .replace(/^\s+|\s+$/gm, '')
-        .split('\n');
+      console.log(`  📌 행 ${rowNum} 원본 텍스트:`, rowText);
 
-      const tradeDate = (firstTdText[0] || '').replace(/\./g, '-');
-      const size = Number((secondTdText[0] || '').split(' ')[0]) || 0;
-      const floor = Number((secondTdText[1] || '').split('층')[0]) || 0;
-      const tradeAmount = formatToAmount(
-        (thirdTdText[0] || '').replace('(고)', '')
-      );
+      // 빈 행이거나 의미없는 행은 스킵
+      if (!rowText || rowText.length < 10) {
+        console.log(`  ⚠️ 행 ${rowNum}: 텍스트가 너무 짧아 스킵`);
+        return;
+      }
 
+      // 1. 계약일 파싱: "2025.09.24" 형태의 날짜
+      const tradeDateMatch = rowText.match(/(\d{4})\.(\d{2})\.(\d{2})/);
+      const tradeDate = tradeDateMatch
+        ? `${tradeDateMatch[1]}-${tradeDateMatch[2]}-${tradeDateMatch[3]}`
+        : '';
+
+      // 2. 금액 파싱: "36억", "31억7천", "1억2천500" 등
+      //    "(고)" 표시가 있을 수 있음
+      const amountMatch = rowText.match(/(\d+억[^\s]*?)(?:\s|$|\(고\))/);
+      const amountText = amountMatch ? amountMatch[1] : '';
+      const tradeAmount = formatToAmount(amountText);
+
+      // 3. 면적 파싱: "146.7139", "124.5792" 등의 제곱미터 값
+      //    패턴: 숫자(소수점 포함) 뒤에 공백 또는 평 또는 A/B/C/D/P 등의 타입
+      //    "146.7139 54A평" 또는 "124.5792 46평" 형태
+      const sizeMatches = rowText.match(/(\d+\.\d{3,})/g);
+      let size = 0;
+      if (sizeMatches && sizeMatches.length > 0) {
+        // 첫 번째로 나오는 소수점 3자리 이상의 숫자를 면적으로 간주
+        size = Number(sizeMatches[0]);
+      } else {
+        // 소수점이 없는 경우 "46평", "54A평" 형태에서 숫자 추출
+        const pyeongMatch = rowText.match(/(\d+)[A-Z]?평/);
+        if (pyeongMatch) {
+          size = Number(pyeongMatch[1]) * 3.3058; // 평을 제곱미터로 변환
+        }
+      }
+
+      // 4. 층수 파싱: "6층", "12층" 등
+      const floorMatch = rowText.match(/(\d+)층/);
+      const floor = floorMatch ? Number(floorMatch[1]) : 0;
+
+      console.log(`  💵 행 ${rowNum} 파싱 결과:`, {
+        tradeDate,
+        size,
+        floor,
+        tradeAmount,
+        amountText,
+      });
+
+      // 필수 항목이 있으면 추가
       if (tradeDate && size && tradeAmount) {
         tradeItems.push({ tradeDate, size, floor, tradeAmount });
+        console.log(`  ✅ 행 ${rowNum}: 거래 항목 추가됨`);
+      } else {
+        console.log(
+          `  ❌ 행 ${rowNum}: 조건 미충족 (tradeDate: ${!!tradeDate}, size: ${!!size}, tradeAmount: ${!!tradeAmount})`
+        );
       }
     });
 
+    console.log(`💰 최종 거래 항목 개수: ${tradeItems.length}`);
     return tradeItems;
   };
 
@@ -171,6 +306,10 @@ const fetchTradeDetail = async (
       }
 
       const url = `https://apt2.me/apt/AptReal.jsp?danji_nm=${encodeURIComponent(apartName)}&area=${area}`;
+
+      // URL 로깅
+      console.log('🔗 요청 URL:', url);
+      console.log('📝 아파트명:', apartName, '/ 면적:', area);
 
       // 매번 다른 User-Agent 사용
       const userAgents = [
@@ -215,6 +354,15 @@ const fetchTradeDetail = async (
       );
 
       const html = await response.text();
+
+      // HTML 구조 로깅
+      console.log('📄 HTML 길이:', html.length);
+      console.log('🔍 HTML 미리보기 (처음 500자):\n', html.substring(0, 500));
+      console.log(
+        '🔍 HTML 미리보기 (마지막 500자):\n',
+        html.substring(html.length - 500)
+      );
+
       return html;
     } catch (error) {
       console.warn(`Attempt ${attempt} failed:`, error);
@@ -237,16 +385,28 @@ const createResponse = async (
   apartName: string,
   area: string
 ): Promise<Response> => {
+  console.log('\n🚀 ===== 크롤링 시작 =====');
+  console.log(`📍 아파트: ${apartName}, 면적: ${area}`);
+
   const html = await fetchTradeDetail(apartName, area);
   const $ = cheerio.load(html);
 
+  console.log('\n📊 ===== 아파트 정보 파싱 =====');
   const apartInfo = calculateApartInfo($);
+
+  console.log('\n💰 ===== 거래 내역 파싱 =====');
   const tradeItems = calculateTradeItems($);
 
-  return {
+  const result = {
     ...apartInfo,
     tradeItems,
   };
+
+  console.log('\n✨ ===== 최종 결과 =====');
+  console.log(JSON.stringify(result, null, 2));
+  console.log('🏁 ===== 크롤링 완료 =====\n');
+
+  return result;
 };
 
 export async function GET(request: Request) {
