@@ -29,6 +29,7 @@ export default function ApartDetailPage({ params }: ApartDetailPageRequest) {
       <Suspense fallback={<ApartDetailPageSkeleton />}>
         {(async () => {
           const data = await fetchApartDetail(regionCode, apartName);
+          console.log('아파트 상세 정보 ', data);
           if (!data) redirect(ROUTE_PATH.TRANSACTION);
 
           return <ApartDetailPageWidget data={data} />;
