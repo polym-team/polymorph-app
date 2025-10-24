@@ -236,19 +236,49 @@ const calculateTradeItems = ($: CheerioAPI): Response['tradeItems'] => {
       const amountText = amountMatch ? amountMatch[1] : '';
       const tradeAmount = formatToAmount(amountText);
 
-      // 3. 면적 파싱: "146.7139", "124.5792" 등의 제곱미터 값
-      //    패턴: 숫자(소수점 포함) 뒤에 공백 또는 평 또는 A/B/C/D/P 등의 타입
-      //    "146.7139 54A평" 또는 "124.5792 46평" 형태
-      const sizeMatches = rowText.match(/(\d+\.\d{3,})/g);
+      // 3. 면적 파싱: 다양한 형태의 면적 정보 처리
+      //    - "146.7139" (제곱미터)
+      //    - "25.10.15" (제곱미터, 소수점 2자리) - 이는 면적이 아닐 수 있음
+      //    - "46평", "54A평" (평 단위)
       let size = 0;
+      
+      // 먼저 제곱미터 형태의 숫자들을 찾기 (소수점 2자리 이상)
+      const sizeMatches = rowText.match(/(\d+\.\d{2,})/g);
       if (sizeMatches && sizeMatches.length > 0) {
-        // 첫 번째로 나오는 소수점 3자리 이상의 숫자를 면적으로 간주
-        size = Number(sizeMatches[0]);
-      } else {
-        // 소수점이 없는 경우 "46평", "54A평" 형태에서 숫자 추출
+        // 면적으로 보이는 숫자들을 필터링
+        // 일반적으로 아파트 면적은 20㎡ 이상이므로 작은 숫자들은 제외
+        // 또한 "25.10.15"와 같은 형태는 면적이 아닐 가능성이 높음
+        const validSizes = sizeMatches
+          .map(match => Number(match))
+          .filter(s => {
+            // 면적으로 보이는 조건들
+            return s >= 20 && // 20㎡ 이상
+                   s <= 500 && // 500㎡ 이하 (너무 큰 면적 제외)
+                   !Number.isInteger(s) && // 정수가 아닌 소수점 포함
+                   s.toString().split('.')[1].length >= 2; // 소수점 2자리 이상
+          });
+        
+        if (validSizes.length > 0) {
+          // 가장 큰 숫자를 면적으로 간주 (일반적으로 면적이 가장 큰 숫자)
+          size = Math.max(...validSizes);
+          console.log(`  📏 제곱미터 형태 면적 발견: ${sizeMatches}, 유효한 면적: ${validSizes}, 선택된 면적: ${size}`);
+        } else {
+          console.log(`  ⚠️ 제곱미터 형태 숫자 발견했지만 면적으로 보이지 않음: ${sizeMatches}`);
+        }
+      }
+      
+      // 제곱미터 형태를 찾지 못한 경우 평 단위 형태 찾기
+      if (size === 0) {
         const pyeongMatch = rowText.match(/(\d+)[A-Z]?평/);
         if (pyeongMatch) {
-          size = Number(pyeongMatch[1]) * 3.3058; // 평을 제곱미터로 변환
+          const pyeongValue = Number(pyeongMatch[1]);
+          // 평 단위도 합리적인 범위인지 확인 (5평 이상, 200평 이하)
+          if (pyeongValue >= 5 && pyeongValue <= 200) {
+            size = pyeongValue * 3.3058; // 평을 제곱미터로 변환
+            console.log(`  📏 평 단위 면적 발견: ${pyeongMatch[1]}평 → ${size}㎡`);
+          } else {
+            console.log(`  ⚠️ 평 단위 숫자 발견했지만 면적으로 보이지 않음: ${pyeongMatch[1]}평`);
+          }
         }
       }
 
@@ -262,6 +292,7 @@ const calculateTradeItems = ($: CheerioAPI): Response['tradeItems'] => {
         floor,
         tradeAmount,
         amountText,
+        rowText, // 원본 텍스트도 로그에 포함
       });
 
       // 필수 항목이 있으면 추가
