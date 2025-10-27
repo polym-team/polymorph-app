@@ -241,7 +241,7 @@ const calculateTradeItems = ($: CheerioAPI): Response['tradeItems'] => {
       //    - "25.10.15" (제곱미터, 소수점 2자리) - 이는 면적이 아닐 수 있음
       //    - "46평", "54A평" (평 단위)
       let size = 0;
-      
+
       // 먼저 제곱미터 형태의 숫자들을 찾기 (소수점 2자리 이상)
       const sizeMatches = rowText.match(/(\d+\.\d{2,})/g);
       if (sizeMatches && sizeMatches.length > 0) {
@@ -252,21 +252,27 @@ const calculateTradeItems = ($: CheerioAPI): Response['tradeItems'] => {
           .map(match => Number(match))
           .filter(s => {
             // 면적으로 보이는 조건들
-            return s >= 20 && // 20㎡ 이상
-                   s <= 500 && // 500㎡ 이하 (너무 큰 면적 제외)
-                   !Number.isInteger(s) && // 정수가 아닌 소수점 포함
-                   s.toString().split('.')[1].length >= 2; // 소수점 2자리 이상
+            return (
+              s >= 20 && // 20㎡ 이상
+              s <= 500 && // 500㎡ 이하 (너무 큰 면적 제외)
+              !Number.isInteger(s) && // 정수가 아닌 소수점 포함
+              s.toString().split('.')[1].length >= 2
+            ); // 소수점 2자리 이상
           });
-        
+
         if (validSizes.length > 0) {
           // 가장 큰 숫자를 면적으로 간주 (일반적으로 면적이 가장 큰 숫자)
           size = Math.max(...validSizes);
-          console.log(`  📏 제곱미터 형태 면적 발견: ${sizeMatches}, 유효한 면적: ${validSizes}, 선택된 면적: ${size}`);
+          console.log(
+            `  📏 제곱미터 형태 면적 발견: ${sizeMatches}, 유효한 면적: ${validSizes}, 선택된 면적: ${size}`
+          );
         } else {
-          console.log(`  ⚠️ 제곱미터 형태 숫자 발견했지만 면적으로 보이지 않음: ${sizeMatches}`);
+          console.log(
+            `  ⚠️ 제곱미터 형태 숫자 발견했지만 면적으로 보이지 않음: ${sizeMatches}`
+          );
         }
       }
-      
+
       // 제곱미터 형태를 찾지 못한 경우 평 단위 형태 찾기
       if (size === 0) {
         const pyeongMatch = rowText.match(/(\d+)[A-Z]?평/);
@@ -275,9 +281,13 @@ const calculateTradeItems = ($: CheerioAPI): Response['tradeItems'] => {
           // 평 단위도 합리적인 범위인지 확인 (5평 이상, 200평 이하)
           if (pyeongValue >= 5 && pyeongValue <= 200) {
             size = pyeongValue * 3.3058; // 평을 제곱미터로 변환
-            console.log(`  📏 평 단위 면적 발견: ${pyeongMatch[1]}평 → ${size}㎡`);
+            console.log(
+              `  📏 평 단위 면적 발견: ${pyeongMatch[1]}평 → ${size}㎡`
+            );
           } else {
-            console.log(`  ⚠️ 평 단위 숫자 발견했지만 면적으로 보이지 않음: ${pyeongMatch[1]}평`);
+            console.log(
+              `  ⚠️ 평 단위 숫자 발견했지만 면적으로 보이지 않음: ${pyeongMatch[1]}평`
+            );
           }
         }
       }

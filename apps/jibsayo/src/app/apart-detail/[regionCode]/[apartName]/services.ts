@@ -12,10 +12,11 @@ export async function fetchApartDetail(
     );
 
     if (response.ok) {
+      const jsonData = await response.json();
       return {
         regionCode,
-        apartName: decodeURIComponent(apartName),
-        ...(await response.json()),
+        apartName,
+        ...jsonData,
       };
     }
 

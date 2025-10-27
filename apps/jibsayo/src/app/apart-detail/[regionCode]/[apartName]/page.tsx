@@ -28,7 +28,7 @@ export default function ApartDetailPage({ params }: ApartDetailPageRequest) {
     <div className="flex flex-col gap-y-5">
       <Suspense fallback={<ApartDetailPageSkeleton />}>
         {(async () => {
-          const data = await fetchApartDetail(regionCode, apartName);
+          const data = await fetchApartDetail(regionCode, decodedApartName);
           console.log('아파트 상세 정보 ', data);
           if (!data) redirect(ROUTE_PATH.TRANSACTION);
 

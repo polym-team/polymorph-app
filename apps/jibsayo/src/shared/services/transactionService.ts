@@ -1,14 +1,18 @@
 export const createApartItemKey = (params: {
-  regionCode: string;
-  address: string;
-  apartName: string;
+  regionCode?: string;
+  address?: string;
+  apartName?: string;
 }) => {
-  const replacedRegionCode = params.regionCode.replace(
+  const safeRegionCode = params.regionCode || '';
+  const safeAddress = params.address || '';
+  const safeApartName = params.apartName || '';
+
+  const replacedRegionCode = safeRegionCode.replace(
     /[^a-zA-Z0-9가-힣]/g,
     ''
   );
-  const replacedAddress = params.address.replace(/[^a-zA-Z0-9가-힣]/g, '');
-  const replacedApartName = params.apartName.replace(/[^a-zA-Z0-9가-힣]/g, '');
+  const replacedAddress = safeAddress.replace(/[^a-zA-Z0-9가-힣]/g, '');
+  const replacedApartName = safeApartName.replace(/[^a-zA-Z0-9가-힣]/g, '');
 
   return `${replacedRegionCode}__${replacedAddress}__${replacedApartName}`;
 };
