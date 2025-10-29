@@ -4,7 +4,6 @@ import { NewIcon } from '@/shared/ui/NewIcon';
 import {
   formatDate,
   formatFloor,
-  formatHouseholdsNumber,
   formatKoreanAmountSimpleText,
   formatPyeong,
 } from '@/shared/utils/formatters';
@@ -94,8 +93,6 @@ export function TransactionListSimpleTable({
               <SimpleTableText className="text-sm">
                 {formatFloor(row.original.floor)} /{' '}
                 {formatPyeong(calculateAreaPyeong(row.original.size))} /{' '}
-                {row.original.householdsNumber &&
-                  formatHouseholdsNumber(row.original.householdsNumber)}
               </SimpleTableText>
             )}
           </>
