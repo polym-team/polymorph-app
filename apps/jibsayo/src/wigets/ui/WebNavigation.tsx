@@ -30,7 +30,7 @@ export function WebNavigation() {
         </Link>
 
         {/* 네비게이션 */}
-        <nav className="flex items-center space-x-1">
+        <nav className="flex items-center">
           {['TRANSACTION' as const, 'APART' as const].map(item => (
             <Button
               key={item}

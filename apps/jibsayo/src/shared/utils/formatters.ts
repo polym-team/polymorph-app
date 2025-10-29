@@ -61,3 +61,7 @@ export const formatSize = (size: number): string => {
 export const formatPyeong = (size: number): string => {
   return `${size}평`;
 };
+
+export const formatHouseholdsNumber = (householdsNumber: number): string => {
+  return `${householdsNumber}세대`;
+};

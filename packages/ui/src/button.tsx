@@ -33,19 +33,19 @@ const LoadingIcon = () => (
 );
 
 const buttonVariants = cva(
-  'relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded ring-offset-background transition-all duration-100 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border active:shadow-inner active:shadow-gray-500/50',
+  'relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded ring-offset-background transition-transform duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border will-change-transform scale-x-[1] scale-y-[1] active:scale-95',
   {
     variants: {
       variant: {
         default:
           'border-transparent bg-default text-default-foreground hover:bg-default/80',
         primary:
-          'border-transparent bg-primary text-primary-foreground hover:bg-primary/90 active:shadow-inner active:shadow-black/30',
+          'border-transparent bg-primary text-primary-foreground hover:bg-primary/90',
         'primary-outline': 'border-primary bg-primary/10 hover:bg-primary/20',
         danger:
-          'border-transparent bg-danger text-danger-foreground hover:bg-danger/90 active:shadow-inner active:shadow-black/30',
+          'border-transparent bg-danger text-danger-foreground hover:bg-danger/90',
         warning:
-          'border-transparent bg-warning text-warning-foreground hover:bg-warning/90 active:shadow-inner active:shadow-black/30',
+          'border-transparent bg-warning text-warning-foreground hover:bg-warning/90',
         outline:
           'border-input bg-background hover:bg-accent hover:text-accent-foreground',
         secondary:
@@ -56,8 +56,8 @@ const buttonVariants = cva(
       },
       size: {
         default: 'h-[46px] px-4 py-[15px]',
-        xs: 'h-[30px] rounded px-3 py-[6px] text-sm active:shadow-inner active:shadow-gray-500/40',
-        sm: 'h-[36px] rounded px-4 py-[10px] text-sm active:shadow-inner active:shadow-gray-500/45',
+        xs: 'h-[30px] rounded px-3 py-[6px] text-sm',
+        sm: 'h-[36px] rounded px-4 py-[10px] text-sm',
         lg: 'rounded px-8 py-3.5 text-base',
         icon: 'p-3 text-sm',
       },

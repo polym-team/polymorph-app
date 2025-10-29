@@ -211,7 +211,7 @@ export function MonthPicker({
           size="icon"
           onClick={() => handleMonthNavigation('prev')}
           disabled={disabled}
-          className="hover:bg-accent absolute left-1 top-1/2 z-10 h-7 w-7 -translate-y-1/2"
+          className="hover:bg-accent absolute left-1 top-1/2 z-10 h-full w-7 -translate-y-1/2"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -223,7 +223,7 @@ export function MonthPicker({
           size="icon"
           onClick={() => handleMonthNavigation('next')}
           disabled={disabled}
-          className="hover:bg-accent absolute right-1 top-1/2 z-10 h-7 w-7 -translate-y-1/2"
+          className="hover:bg-accent absolute right-1 top-1/2 z-10 h-full w-7 -translate-y-1/2"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
