@@ -92,7 +92,7 @@ export function TransactionListSimpleTable({
             {row.original.floor && (
               <SimpleTableText className="text-sm">
                 {formatFloor(row.original.floor)} /{' '}
-                {formatPyeong(calculateAreaPyeong(row.original.size))} /{' '}
+                {formatPyeong(calculateAreaPyeong(row.original.size))}
               </SimpleTableText>
             )}
           </>
