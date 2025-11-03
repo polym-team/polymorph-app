@@ -1,4 +1,4 @@
-import logo from '@/assets/logo.png';
+import logo from '@/assets/logo.svg';
 import { ROUTE_PATH, ROUTE_PATH_LABEL } from '@/shared/consts/route';
 
 import Link from 'next/link';
@@ -21,12 +21,10 @@ export function WebNavigation() {
           href={ROUTE_PATH.TRANSACTION}
           className="flex items-center space-x-2 overflow-hidden transition-all duration-200"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={logo.src}
-            alt="집사요"
-            className="h-[96px] w-auto -translate-x-[6px] translate-y-[3px]"
-          />
+          <span className="bg-primary flex h-[40px] w-[40px] items-center justify-center rounded-md p-1.5 pb-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={logo.src} alt="집사요" className="h-full w-auto" />
+          </span>
         </Link>
 
         {/* 네비게이션 */}
