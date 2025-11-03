@@ -96,6 +96,9 @@ importers:
       d3:
         specifier: 7.9.0
         version: 7.9.0
+      fast-xml-parser:
+        specifier: ^4.5.3
+        version: 4.5.3
       firebase-admin:
         specifier: 13.4.0
         version: 13.4.0
@@ -5094,7 +5097,6 @@ packages:
     dependencies:
       strnum: 1.1.2
     dev: false
-    optional: true
 
   /fastq@1.19.1:
     resolution: {integrity: sha512-GwLTyxkCXjXbxqIhTsMI2Nui8huMPtnxg7krajPJAjnEG/iiOS7i+zCtWGZR9G0NBKbXKh6X9m9UIsYX/N6vvQ==}
@@ -8200,7 +8202,6 @@ packages:
     resolution: {integrity: sha512-vrN+B7DBIoTTZjnPNewwhx6cBA/H+IS7rfW68n7XxC1y7uoiGQBxaKzqucGUgavX15dJgiGztLJ8vxuEzwqBdA==}
     requiresBuild: true
     dev: false
-    optional: true
 
   /stubs@3.0.0:
     resolution: {integrity: sha512-PdHt7hHUJKxvTCgbKX9C1V/ftOcjJQgz8BZwNfV5c4B6dcGqlpelTbJ999jBGZ2jYiPAwcX5dP6oBwVlBlUbxw==}
