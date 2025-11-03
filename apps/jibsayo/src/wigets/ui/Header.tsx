@@ -2,7 +2,6 @@
 
 import { useGlobalConfigStore } from '@/shared/stores/globalConfigStore';
 
-import { AppNavigation } from './AppNavigation';
 import { WebNavigation } from './WebNavigation';
 
 export function Header() {
@@ -10,7 +9,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 h-[56px] w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      {isInApp ? <AppNavigation /> : <WebNavigation />}
+      {!isInApp && <WebNavigation />}
     </header>
   );
 }
