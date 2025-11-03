@@ -36,6 +36,14 @@ module.exports = (contentPaths = []) => ({
           foreground: '#FFFFFF',
         },
         secondary: {
+          DEFAULT: 'hsl(210 40% 96%)',
+          foreground: 'hsl(222.2 84% 4.9%)',
+        },
+        danger: {
+          DEFAULT: 'hsl(0 84.2% 60.2%)',
+          foreground: 'hsl(210 40% 98%)',
+        },
+        warning: {
           50: '#FFF8E6',
           100: '#FFF1CC',
           200: '#FFE399',
@@ -46,15 +54,7 @@ module.exports = (contentPaths = []) => ({
           700: '#BF8C00',
           800: '#997000',
           900: '#735300',
-          DEFAULT: '#FFBB00',
-          foreground: '#000000',
-        },
-        danger: {
-          DEFAULT: 'hsl(0 84.2% 60.2%)',
-          foreground: 'hsl(210 40% 98%)',
-        },
-        warning: {
-          DEFAULT: 'hsl(45 93% 63%)',
+          DEFAULT: '#FFD666',
           foreground: 'hsl(222.2 84% 4.9%)',
         },
         muted: {
