@@ -36,7 +36,7 @@ export default function RootLayout({
               <div className="flex min-h-dvh flex-col items-center">
                 <Header />
                 <main className="w-full max-w-[640px] flex-1">
-                  <section className="container mx-auto px-4 pb-10 pt-5">
+                  <section className="container mx-auto p-3 pb-10">
                     {children}
                   </section>
                 </main>

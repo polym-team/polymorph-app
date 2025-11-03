@@ -4,6 +4,7 @@ import { useTransactionPageSearchParams } from '@/entities/transaction';
 import { useState } from 'react';
 
 import { SearchForm } from '../models/types';
+import { getDefaultDate } from '../services/calculator';
 
 interface Return {
   form: SearchForm;
@@ -20,7 +21,7 @@ export const useSearchForm = (): Return => {
           Number(searchParams.tradeDate.slice(0, 4)),
           Number(searchParams.tradeDate.slice(4, 6)) - 1
         )
-      : new Date();
+      : getDefaultDate();
 
     return {
       cityName: getCityNameWithRegionCode(defaultRegionCode),

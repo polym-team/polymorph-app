@@ -30,3 +30,14 @@ export const calculateFavoriteRegionList = (
       name: `${getCityNameWithRegionCode(region.code)} ${region.name}`,
     }));
 };
+
+export const getDefaultDate = (): Date => {
+  const today = new Date();
+  const dayOfMonth = today.getDate();
+
+  if (dayOfMonth < 10) {
+    return new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  } else {
+    return new Date(today.getFullYear(), today.getMonth(), 1);
+  }
+};

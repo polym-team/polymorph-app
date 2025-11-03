@@ -29,9 +29,9 @@ export function FavoriteApartList({
             <Typography variant="h4" className="p-3">
               {getCityNameWithRegionCode(region.code)}{' '}
               {getRegionNameWithRegionCode(region.code)}{' '}
-              <strong className="text-primary">
+              <span className="text-primary font-bold">
                 ({region.apartItems.length})
-              </strong>
+              </span>
             </Typography>
             <hr className="my-0 border-gray-200" />
             <div className="flex flex-wrap gap-2 p-3">

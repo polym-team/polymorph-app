@@ -12,9 +12,9 @@ export function EmptyApartList() {
   };
 
   return (
-    <Card className="flex flex-col items-center justify-center gap-y-3 py-10">
+    <Card className="flex flex-col items-center justify-center gap-y-3 py-8">
       저장된 아파트가 없어요
-      <Button variant="outline" onClick={handleClickTransactionView}>
+      <Button variant="outline" size="sm" onClick={handleClickTransactionView}>
         실거래가 보기
       </Button>
     </Card>
