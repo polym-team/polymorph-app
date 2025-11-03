@@ -34,7 +34,7 @@ export function FilterForm({
       >
         <div
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex min-h-[46px] w-full items-center justify-between rounded-sm px-3 py-2 text-left transition-colors"
+          className="flex min-h-[46px] w-full cursor-pointer items-center justify-between rounded-sm bg-white px-3 py-2 text-left transition-all duration-200 active:brightness-90"
         >
           <Typography>세부 필터</Typography>
           <div className="ml-4 flex min-w-0 flex-1 items-center justify-end gap-2">
@@ -98,7 +98,7 @@ export function FilterForm({
         </div>
 
         {isExpanded && (
-          <div className="animate-in fade-in slide-in-from-top-2 scale-in-95 border-t bg-white shadow-lg duration-200">
+          <div className="animate-in fade-in slide-in-from-top-2 scale-in-95 border-t bg-white shadow-lg duration-200 will-change-transform">
             <div className="flex flex-col gap-2 p-3">
               <SizeRangeSelector
                 minSize={filter.minSize}
