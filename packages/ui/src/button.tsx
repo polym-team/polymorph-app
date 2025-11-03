@@ -18,7 +18,7 @@ const LoadingIcon = () => (
     <div
       className="h-2 w-2 animate-pulse rounded-full bg-current"
       style={{
-        animationDelay: '150ms',
+        animationDelay: '200ms',
         animationDuration: '1000ms',
       }}
     />
@@ -33,7 +33,7 @@ const LoadingIcon = () => (
 );
 
 const buttonVariants = cva(
-  'relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded ring-offset-background transition-transform duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border will-change-transform scale-x-[1] scale-y-[1] active:scale-95',
+  'relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded ring-offset-background transition-transform duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border will-change-transform scale-x-[1] scale-y-[1] active:scale-95',
   {
     variants: {
       variant: {

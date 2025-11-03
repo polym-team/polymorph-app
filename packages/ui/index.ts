@@ -3,7 +3,6 @@ export { Typography } from './src/typography';
 export { Input } from './src/input';
 export { Checkbox } from './src/checkbox';
 export { Label } from './src/label';
-export { LabelCheckbox } from './src/label-checkbox';
 export {
   Select,
   SelectGroup,

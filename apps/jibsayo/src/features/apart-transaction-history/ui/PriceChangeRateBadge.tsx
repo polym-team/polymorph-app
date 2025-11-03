@@ -127,8 +127,8 @@ export function PriceChangeRateBadge({
           'rounded-full px-1.5 py-0.5 text-xs transition-colors',
           previousTradeItem ? 'cursor-pointer' : '',
           priceChangeRate > 0
-            ? 'bg-red-100 text-red-700 hover:bg-red-200'
-            : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+            ? 'bg-red-100 text-red-700'
+            : 'bg-blue-100 text-blue-700'
         )}
         onClick={handleClick}
       >

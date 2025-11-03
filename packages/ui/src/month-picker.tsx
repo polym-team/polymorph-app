@@ -187,7 +187,7 @@ export function MonthPicker({
             type="button"
             variant="outline"
             className={cn(
-              'w-full justify-center pl-12 pr-12 text-center font-normal',
+              'w-full justify-center pl-12 pr-12 text-center font-normal active:scale-100',
               !value && 'text-muted-foreground'
             )}
             disabled={disabled}
@@ -211,7 +211,7 @@ export function MonthPicker({
           size="icon"
           onClick={() => handleMonthNavigation('prev')}
           disabled={disabled}
-          className="hover:bg-accent absolute left-1 top-1/2 z-10 h-full w-7 -translate-y-1/2"
+          className="absolute left-1 top-1/2 z-10 h-full w-7 -translate-y-1/2 active:scale-100"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -223,7 +223,7 @@ export function MonthPicker({
           size="icon"
           onClick={() => handleMonthNavigation('next')}
           disabled={disabled}
-          className="hover:bg-accent absolute right-1 top-1/2 z-10 h-full w-7 -translate-y-1/2"
+          className="absolute right-1 top-1/2 z-10 h-full w-7 -translate-y-1/2 active:scale-100"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>

@@ -29,13 +29,12 @@ export function FilterForm({
     <div className="relative w-full">
       <div
         className={cn(
-          'overflow-hidden rounded border border-gray-200 bg-white transition-all duration-100 ease-out',
-          isExpanded && 'ring-primary ring-2 ring-offset-2'
+          'overflow-hidden rounded border border-gray-200 bg-white transition-all duration-100 ease-out'
         )}
       >
         <div
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex min-h-[46px] w-full items-center justify-between rounded-sm px-3 py-2 text-left transition-colors hover:bg-gray-50"
+          className="flex min-h-[46px] w-full items-center justify-between rounded-sm px-3 py-2 text-left transition-colors"
         >
           <Typography>세부 필터</Typography>
           <div className="ml-4 flex min-w-0 flex-1 items-center justify-end gap-2">
