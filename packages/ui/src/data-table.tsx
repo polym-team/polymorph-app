@@ -406,7 +406,9 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   className={
-                    onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''
+                    onRowClick
+                      ? 'cursor-pointer transition-all duration-200 hover:bg-gray-50 active:brightness-90'
+                      : ''
                   }
                   onClick={() => onRowClick?.(row.original)}
                 >
