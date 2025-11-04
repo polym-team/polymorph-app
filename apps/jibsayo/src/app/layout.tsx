@@ -10,6 +10,9 @@ import { QueryClientProvider } from './components/QueryClientProvider';
 import { WebviewProvider } from './components/WebviewProvider';
 
 export const metadata: Metadata = {
+  icons: {
+    icon: '/assets/favicon.ico',
+  },
   title: '집사요 - 실거래가 기반 부동산 정보 플랫폼',
   description:
     '실시간 실거래가 데이터로 신뢰할 수 있는 부동산 정보를 확인하세요',
