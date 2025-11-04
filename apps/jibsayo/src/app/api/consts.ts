@@ -8,4 +8,7 @@ export const COLLECTIONS = {
 
   // API 호출 제한 컬렉션
   API_RATE_LIMIT: 'api-rate-limit',
+
+  // 신규 실거래 캐시 컬렉션
+  NEW_TRANSACTIONS_CACHE: 'new-transactions-cache',
 } as const;
