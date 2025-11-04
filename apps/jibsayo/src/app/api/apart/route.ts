@@ -3,9 +3,6 @@ import { logger } from '@/app/api/shared/utils/logger';
 import { getCachedApart, saveCachedApart } from './services/cache';
 import { createResponse } from './services/crawl';
 
-// 동적 라우트로 설정 (정적 빌드 시 request.url 사용으로 인한 오류 방지)
-export const dynamic = 'force-dynamic';
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const apartName = searchParams.get('apartName');
