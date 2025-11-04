@@ -19,7 +19,6 @@ export async function GET(request: Request) {
   }
 
   try {
-    // 캐시 확인: Firestore에서 캐시된 데이터 조회
     const cachedData = await getCachedApart(apartName, area);
     if (cachedData) {
       logger.info('캐시 데이터 반환');
