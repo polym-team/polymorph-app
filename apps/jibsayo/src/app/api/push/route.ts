@@ -1,3 +1,4 @@
+import { obfuscateKorean } from '@/app/api/shared/utils/text';
 import {
   AdminFirestoreClient,
   ExpoPushNotificationClient,
@@ -8,7 +9,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { COLLECTIONS } from '../consts';
 import { validateToken } from '../push-token/utils';
-import { obfuscateKorean } from '../utils';
 
 // Force dynamic route
 export const dynamic = 'force-dynamic';

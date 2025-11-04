@@ -7,21 +7,23 @@ import {
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 
-import { fetchApartDetail } from './services';
+import { fetchApartDetail } from './services/api';
 
 interface ApartDetailPageRequest {
-  params: {
+  searchParams: {
     regionCode: string;
     apartName: string;
   };
 }
 
-export default function ApartDetailPage({ params }: ApartDetailPageRequest) {
-  const { apartName, regionCode } = params;
+export default function ApartDetailPage({
+  searchParams,
+}: ApartDetailPageRequest) {
+  const { apartName, regionCode } = searchParams;
   const decodedApartName = decodeURIComponent(apartName);
 
   if (!decodedApartName || !regionCode) {
-    return null;
+    redirect(ROUTE_PATH.TRANSACTION);
   }
 
   return (
@@ -29,8 +31,10 @@ export default function ApartDetailPage({ params }: ApartDetailPageRequest) {
       <Suspense fallback={<ApartDetailPageSkeleton />}>
         {(async () => {
           const data = await fetchApartDetail(regionCode, decodedApartName);
-          console.log('아파트 상세 정보 ', data);
-          if (!data) redirect(ROUTE_PATH.TRANSACTION);
+
+          if (!data) {
+            redirect(ROUTE_PATH.TRANSACTION);
+          }
 
           return <ApartDetailPageWidget data={data} />;
         })()}

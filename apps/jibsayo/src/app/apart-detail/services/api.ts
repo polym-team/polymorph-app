@@ -12,17 +12,11 @@ export async function fetchApartDetail(
     );
 
     if (response.ok) {
-      const jsonData = await response.json();
-      return {
-        regionCode,
-        apartName,
-        ...jsonData,
-      };
+      return await response.json();
     }
 
     return null;
-  } catch (error) {
-    console.error('아파트 데이터 조회 실패:', error);
+  } catch {
     return null;
   }
 }

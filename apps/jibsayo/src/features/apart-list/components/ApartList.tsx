@@ -24,7 +24,9 @@ export function ApartList() {
   }, [favoriteApartList]);
 
   const handleClickApartItem = (regionCode: string, apartItem: ApartItem) => {
-    router.push(`${ROUTE_PATH.APART_DETAIL}/${regionCode}/${apartItem.name}`);
+    router.push(
+      `${ROUTE_PATH.APART_DETAIL}?regionCode=${regionCode}&apartName=${apartItem.name}`
+    );
   };
 
   const handleRemoveApartItem = (regionCode: string, apartItem: ApartItem) => {
