@@ -11,4 +11,7 @@ export const COLLECTIONS = {
 
   // 신규 실거래 캐시 컬렉션
   NEW_TRANSACTIONS_CACHE: 'new-transactions-cache',
+
+  // 아파트 상세 정보 캐시 컬렉션
+  APART_CACHE: 'apart-cache',
 } as const;

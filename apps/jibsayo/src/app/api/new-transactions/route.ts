@@ -1,8 +1,8 @@
-import { crawlNewTransactions } from './services/crawl';
 import {
   getCachedTransactions,
   saveCachedTransactions,
-} from './services/fireStore';
+} from './services/cache';
+import { crawlNewTransactions } from './services/crawl';
 
 // 동적 라우트로 설정 (정적 빌드 시 request.url 사용으로 인한 오류 방지)
 export const dynamic = 'force-dynamic';
@@ -33,7 +33,6 @@ export async function GET(request: Request): Promise<Response> {
 
     return Response.json(result);
   } catch (error) {
-    console.error('크롤링 오류:', error);
     return Response.json(
       {
         message: '서버 오류가 발생했습니다.',

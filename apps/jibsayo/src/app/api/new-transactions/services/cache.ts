@@ -1,11 +1,13 @@
-import { firestoreClient } from '@/app/api/shared/libs/fireStore';
+import { COLLECTIONS } from '@/app/api/consts';
+import { getFirestoreClient } from '@/app/api/shared/libs/fireStore';
+import { logger } from '@/app/api/shared/utils/logger';
 
 import type { CachedTransactionData, CrawlResult } from '../models/types';
 
-// 캐시 유효 시간 (3시간 = 3 * 60 * 60 * 1000ms)
-export const CACHE_EXPIRY_MS = 3 * 60 * 60 * 1000;
+const CACHE_EXPIRY_MS = 3 * 60 * 60 * 1000;
 
-// Firestore 데이터를 CachedTransactionData 타입으로 변환
+const firestoreClient = getFirestoreClient(COLLECTIONS.NEW_TRANSACTIONS_CACHE);
+
 export function mapFirestoreToCachedData(
   doc: any
 ): CachedTransactionData | null {
@@ -22,7 +24,6 @@ export function mapFirestoreToCachedData(
   };
 }
 
-// 캐시 조회 함수
 export async function getCachedTransactions(
   area: string
 ): Promise<CachedTransactionData | null> {
@@ -47,12 +48,11 @@ export async function getCachedTransactions(
     await firestoreClient.deleteDocument(area);
     return null;
   } catch (error) {
-    console.error('캐시 조회 실패:', error);
+    logger.error('캐시 조회 실패:', { error });
     return null;
   }
 }
 
-// 캐시 저장 함수
 export async function saveCachedTransactions(
   area: string,
   data: CrawlResult
@@ -70,7 +70,7 @@ export async function saveCachedTransactions(
     const result = await firestoreClient.createDocumentWithId(area, cacheData);
     return result.success;
   } catch (error) {
-    console.error('캐시 저장 실패:', error);
+    logger.error('캐시 저장 실패:', { error });
     return false;
   }
 }
