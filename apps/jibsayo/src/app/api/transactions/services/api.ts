@@ -82,3 +82,33 @@ export const fetchGovApiData = async (
   logger.info('조회된 아이템 수', { count: itemArray.length });
   return itemArray;
 };
+
+// new-transactions API 호출하여 신규 거래 transactionId Set 반환
+export const fetchNewTransactionIds = async (
+  area: string,
+  origin: string
+): Promise<Set<string>> => {
+  try {
+    const newTransactionsUrl = new URL('/api/new-transactions', origin);
+    newTransactionsUrl.searchParams.set('area', area);
+
+    const response = await fetch(newTransactionsUrl.toString());
+    if (!response.ok) {
+      logger.warn('new-transactions API 호출 실패', {
+        status: response.status,
+        statusText: response.statusText,
+      });
+      return new Set();
+    }
+
+    const data = await response.json();
+    const transactionIds =
+      data.list?.map((item: { transactionId: string }) => item.transactionId) ||
+      [];
+
+    return new Set(transactionIds);
+  } catch (error) {
+    logger.warn('new-transactions API 호출 중 오류 발생', { error });
+    return new Set();
+  }
+};

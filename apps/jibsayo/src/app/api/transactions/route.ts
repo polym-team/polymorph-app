@@ -1,5 +1,5 @@
 import { TransactionItem, TransactionsResponse } from './models/types';
-import { fetchGovApiData } from './services/api';
+import { fetchGovApiData, fetchNewTransactionIds } from './services/api';
 import { convertGovApiItemToTransaction } from './services/converter';
 
 // 동적 라우트로 설정 (정적 빌드 시 request.url 사용으로 인한 오류 방지)
@@ -18,12 +18,16 @@ export async function GET(request: Request): Promise<Response> {
       );
     }
 
-    // 국토부 API 호출
-    const govApiItems = await fetchGovApiData(area, createDt.replace(/-/g, ''));
+    // 국토부 API와 new-transactions API 병렬 호출
+    const baseUrl = new URL(request.url);
+    const [govApiItems, newTransactionIds] = await Promise.all([
+      fetchGovApiData(area, createDt.replace(/-/g, '')),
+      fetchNewTransactionIds(area, baseUrl.origin),
+    ]);
 
-    // 내부 형식으로 변환
+    // 내부 형식으로 변환 (신규 거래 여부 포함)
     const transactions: TransactionItem[] = govApiItems.map(item =>
-      convertGovApiItemToTransaction(item, area)
+      convertGovApiItemToTransaction(item, area, newTransactionIds)
     );
 
     const result: TransactionsResponse = {

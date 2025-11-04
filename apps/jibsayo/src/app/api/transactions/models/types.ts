@@ -1,5 +1,4 @@
 export interface TransactionItem {
-  transactionId: string;
   apartId: string;
   apartName: string;
   buildedYear: number | null;
@@ -8,6 +7,7 @@ export interface TransactionItem {
   size: number;
   floor: number | null;
   tradeAmount: number;
+  isNew: boolean;
 }
 
 export interface TransactionsResponse {
