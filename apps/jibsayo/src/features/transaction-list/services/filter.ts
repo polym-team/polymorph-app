@@ -54,13 +54,12 @@ export const filterTransactionItemWithFavorite = (
 
 export const filterTransactionItemWithNewTransaction = (
   transaction: TransactionItem,
-  newTransactionIdList: string[],
   searchParams: SearchParams
 ) => {
   if (!searchParams.newTransactionOnly) {
     return true;
   }
-  return newTransactionIdList.includes(transaction.apartId);
+  return transaction.isNew;
 };
 
 export const filterFavoriteApartListWithRegionCode = (

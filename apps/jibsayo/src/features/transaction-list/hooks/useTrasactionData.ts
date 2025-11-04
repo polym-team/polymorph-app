@@ -1,6 +1,5 @@
 import { useFavoriteApartList } from '@/entities/apart';
 import {
-  useNewTransactionListQuery,
   useTransactionListQuery,
   useTransactionPageSearchParams,
 } from '@/entities/transaction';
@@ -8,7 +7,6 @@ import {
 import { useMemo } from 'react';
 
 import { TransactionDetailItem } from '../models/types';
-import { calculateNewTransactionIdList } from '../services/calculator';
 import {
   filterFavoriteApartListWithRegionCode,
   filterTransactionItemWithApartName,
@@ -28,17 +26,6 @@ export const useTransactionData = (): Return => {
   const favoriteApartList = useFavoriteApartList();
 
   const { isLoading, data: transactionData } = useTransactionListQuery();
-  const { data: newTransactionData } = useNewTransactionListQuery(
-    searchParams.regionCode
-  );
-
-  const newTransactionIdList = useMemo(
-    () =>
-      newTransactionData?.list
-        ? calculateNewTransactionIdList(newTransactionData.list)
-        : [],
-    [newTransactionData?.list]
-  );
 
   const filteredFavoriteApartList = useMemo(() => {
     return filterFavoriteApartListWithRegionCode(
@@ -61,28 +48,17 @@ export const useTransactionData = (): Return => {
           filteredFavoriteApartList,
           searchParams
         ) &&
-        filterTransactionItemWithNewTransaction(
-          transaction,
-          newTransactionIdList,
-          searchParams
-        )
+        filterTransactionItemWithNewTransaction(transaction, searchParams)
     );
-  }, [
-    transactionData?.list,
-    filteredFavoriteApartList,
-    newTransactionIdList,
-    searchParams,
-  ]);
+  }, [transactionData?.list, filteredFavoriteApartList, searchParams]);
 
   const mappedTransactions = useMemo(() => {
     return mapTramsactionItemWithFavorite(
       searchParams.regionCode,
       filteredTransactions,
-      filteredFavoriteApartList,
-      newTransactionIdList
+      filteredFavoriteApartList
     );
   }, [
-    newTransactionIdList,
     filteredFavoriteApartList,
     filteredTransactions,
     searchParams.regionCode,

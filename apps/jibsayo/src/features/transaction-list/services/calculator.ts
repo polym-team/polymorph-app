@@ -14,9 +14,3 @@ export const calculateTransactionAverageAmount = (
 
   return Math.floor(totalAmount / transactions.length);
 };
-
-export const calculateNewTransactionIdList = (
-  newTransactionList: TransactionItem[]
-): string[] => {
-  return newTransactionList.map(newTransaction => newTransaction.apartId);
-};

@@ -70,7 +70,7 @@ export function TransactionListSimpleTable({
         cell: ({ row }) => (
           <div className="relative">
             <div className="absolute left-0 top-[-16px]">
-              {row.original.isNewTransaction && <NewIcon />}
+              {row.original.isNew && <NewIcon />}
             </div>
             <SimpleTableText>
               {formatDate(row.original.tradeDate)}
