@@ -1,4 +1,4 @@
-import { TransactionsResponse } from '@/app/api/transactions/types';
+import { TransactionsResponse } from '@/app/api/transactions/models/types';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
 import { useTransactionPageSearchParams } from './useTransactionPageSearchParams';

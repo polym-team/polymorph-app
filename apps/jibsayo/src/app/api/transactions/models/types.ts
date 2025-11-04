@@ -1,4 +1,5 @@
 export interface TransactionItem {
+  transactionId: string;
   apartId: string;
   apartName: string;
   buildedYear: number | null;

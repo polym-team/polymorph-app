@@ -1,5 +1,9 @@
-import { obfuscateKorean } from '../utils';
-import { GovApiItem, TransactionItem } from './types';
+import {
+  createApartId,
+  createTransactionId,
+} from '@/app/api/shared/services/transactionService';
+
+import { GovApiItem, TransactionItem } from '../models/types';
 
 // 거래일자 조합 (YYYY-MM-DD) - XML 파서가 숫자로 변환할 수 있으므로 문자열로 변환
 const calculateTradeDate = (item: GovApiItem): string => {
@@ -48,19 +52,6 @@ const calculateAddress = (item: GovApiItem): string => {
   return `${sggNm} ${umdNm} ${jibun}${aptDong ? ' ' + aptDong + '동' : ''}`.trim();
 };
 
-// 고유 ID 생성
-const generateApartId = (
-  area: string,
-  address: string,
-  apartName: string,
-  tradeDate: string,
-  size: number,
-  floor: number | null,
-  tradeAmount: number
-): string => {
-  return `${obfuscateKorean(area)}__${obfuscateKorean(address)}__${obfuscateKorean(apartName)}__${tradeDate}__${size}__${floor}__${tradeAmount}`;
-};
-
 // 국토부 API 응답을 내부 형식으로 변환
 export const convertGovApiItemToTransaction = (
   item: GovApiItem,
@@ -74,17 +65,24 @@ export const convertGovApiItemToTransaction = (
   const address = calculateAddress(item);
   const apartName = String(item.aptNm || '').trim();
 
-  const apartId = generateApartId(
-    area,
+  const transactionId = createTransactionId({
+    regionCode: area,
     address,
     apartName,
     tradeDate,
     size,
     floor,
-    tradeAmount
-  );
+    tradeAmount,
+  });
+
+  const apartId = createApartId({
+    regionCode: area,
+    address,
+    apartName,
+  });
 
   return {
+    transactionId,
     apartId,
     apartName,
     buildedYear,
