@@ -1,5 +1,4 @@
 export interface ApartmentTransaction {
-  transactionId: string;
   apartName: string;
   buildedYear: number | null;
   householdsNumber: number | null;

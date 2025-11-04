@@ -15,3 +15,10 @@ export interface ApartDetailResponse {
   buildingCoverageRatio: number;
   tradeItems: ApartDetailTradeHistoryItem[];
 }
+
+export interface CachedApartData {
+  apartName: string;
+  area: string;
+  data: ApartDetailResponse;
+  crawledAt: Date;
+}

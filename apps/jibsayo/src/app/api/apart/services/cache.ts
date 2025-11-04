@@ -2,18 +2,11 @@ import { COLLECTIONS } from '@/app/api/consts';
 import { getFirestoreClient } from '@/app/api/shared/libs/fireStore';
 import { logger } from '@/app/api/shared/utils/logger';
 
-import type { CrawlResponse } from './crawl';
+import type { ApartDetailResponse, CachedApartData } from '../models/types';
 
 const firestoreClient = getFirestoreClient(COLLECTIONS.APART_CACHE);
 
 export const CACHE_EXPIRY_MS = 3 * 60 * 60 * 1000;
-
-export interface CachedApartData {
-  apartName: string;
-  area: string;
-  data: CrawlResponse;
-  crawledAt: Date;
-}
 
 export function mapFirestoreToCachedData(doc: any): CachedApartData | null {
   if (!doc || !doc.data) return null;
@@ -67,7 +60,7 @@ export async function getCachedApart(
 export async function saveCachedApart(
   apartName: string,
   area: string,
-  data: CrawlResponse
+  data: ApartDetailResponse
 ): Promise<boolean> {
   try {
     const now = new Date();

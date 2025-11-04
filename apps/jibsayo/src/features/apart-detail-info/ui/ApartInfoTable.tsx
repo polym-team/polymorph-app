@@ -1,4 +1,4 @@
-import { ApartDetailResponse } from '@/app/api/apart/types';
+import { ApartDetailResponse } from '@/app/api/apart/models/types';
 import { FavoriteApartToggleButton } from '@/entities/apart';
 import { formatNumberWithCommas } from '@/shared/utils/formatters';
 

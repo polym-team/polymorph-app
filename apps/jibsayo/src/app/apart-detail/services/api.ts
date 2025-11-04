@@ -1,4 +1,4 @@
-import { ApartDetailResponse } from '@/app/api/apart/types';
+import { ApartDetailResponse } from '@/app/api/apart/models/types';
 
 export async function fetchApartDetail(
   regionCode: string,

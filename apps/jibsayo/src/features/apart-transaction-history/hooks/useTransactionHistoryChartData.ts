@@ -1,6 +1,6 @@
 'use client';
 
-import { ApartDetailResponse } from '@/app/api/apart/types';
+import { ApartDetailResponse } from '@/app/api/apart/models/types';
 import { calculateAreaPyeong } from '@/shared/services/transactionService';
 
 import * as d3 from 'd3';

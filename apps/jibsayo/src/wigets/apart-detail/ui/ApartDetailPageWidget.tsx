@@ -1,4 +1,4 @@
-import { ApartDetailResponse } from '@/app/api/apart/types';
+import { ApartDetailResponse } from '@/app/api/apart/models/types';
 import { ApartDetailInfo } from '@/features/apart-detail-info';
 import { ApartTransactionHistory } from '@/features/apart-transaction-history';
 

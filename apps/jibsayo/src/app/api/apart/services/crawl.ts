@@ -2,21 +2,7 @@ import { logger } from '@/app/api/shared/utils/logger';
 
 import cheerio, { CheerioAPI, Element } from 'cheerio';
 
-export interface CrawlResponse {
-  regionCode: string;
-  apartName: string;
-  address: string;
-  housholdsCount: string;
-  parking: string;
-  floorAreaRatio: number;
-  buildingCoverageRatio: number;
-  tradeItems: {
-    tradeDate: string;
-    size: number;
-    floor: number;
-    tradeAmount: number;
-  }[];
-}
+import type { ApartDetailResponse } from '../models/types';
 
 const formatToAmount = (amountText: string): number => {
   let amount: number = 0;
@@ -72,7 +58,7 @@ const calculateApartInfo = ($: CheerioAPI) => {
 
   const getApartInfo = (
     tradeInfoTable: Element | null
-  ): Omit<CrawlResponse, 'tradeItems' | 'regionCode' | 'apartName'> => {
+  ): Omit<ApartDetailResponse, 'tradeItems' | 'regionCode' | 'apartName'> => {
     if (!tradeInfoTable) {
       return {
         address: '',
@@ -147,7 +133,9 @@ const calculateApartInfo = ($: CheerioAPI) => {
   return getApartInfo(getTradeInfoTable());
 };
 
-const calculateTradeItems = ($: CheerioAPI): CrawlResponse['tradeItems'] => {
+const calculateTradeItems = (
+  $: CheerioAPI
+): ApartDetailResponse['tradeItems'] => {
   const getTrs = () => {
     const trs: Element[] = [];
 
@@ -167,7 +155,7 @@ const calculateTradeItems = ($: CheerioAPI): CrawlResponse['tradeItems'] => {
   };
 
   const getTradeItems = (trs: Element[]) => {
-    const tradeItems: CrawlResponse['tradeItems'] = [];
+    const tradeItems: ApartDetailResponse['tradeItems'] = [];
 
     $(trs).each((_, tr) => {
       // td 구조에 상관없이 전체 텍스트를 가져와서 패턴 기반으로 파싱
@@ -337,7 +325,7 @@ const fetchTradeDetail = async (
 export const createResponse = async (
   apartName: string,
   area: string
-): Promise<CrawlResponse> => {
+): Promise<ApartDetailResponse> => {
   logger.info(`크롤링 시작(${apartName})`);
 
   const html = await fetchTradeDetail(apartName, area);

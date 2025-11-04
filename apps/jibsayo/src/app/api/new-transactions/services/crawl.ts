@@ -1,5 +1,3 @@
-import { createTransactionId } from '@/app/api/shared/services/transactionService';
-
 import cheerio from 'cheerio';
 import pLimit from 'p-limit';
 
@@ -236,26 +234,14 @@ const parseThirdCell = (
 };
 
 // 행 데이터 파싱 최적화
-const parseRowData = (row: any, area: string): ApartmentTransaction => {
+const parseRowData = (row: any): ApartmentTransaction => {
   const cells = row.find('td');
 
   const firstCellData = parseFirstCell(cells.eq(0).text());
   const secondCellData = parseSecondCell(cells.eq(1).text());
   const thirdCellData = parseThirdCell(cells.eq(2).text());
 
-  // 모든 거래 정보를 조합하여 고유한 ID 생성
-  const transactionId = createTransactionId({
-    regionCode: area,
-    address: firstCellData.address,
-    apartName: firstCellData.apartName,
-    tradeDate: secondCellData.tradeDate,
-    size: secondCellData.size,
-    floor: secondCellData.floor,
-    tradeAmount: thirdCellData.tradeAmount,
-  });
-
   return {
-    transactionId,
     ...firstCellData,
     ...secondCellData,
     ...thirdCellData,
@@ -263,7 +249,7 @@ const parseRowData = (row: any, area: string): ApartmentTransaction => {
 };
 
 // HTML 파싱 최적화
-const parseHtmlData = (html: string, area: string): ApartmentTransaction[] => {
+const parseHtmlData = (html: string): ApartmentTransaction[] => {
   const $ = cheerio.load(html, {
     decodeEntities: true,
   });
@@ -282,7 +268,7 @@ const parseHtmlData = (html: string, area: string): ApartmentTransaction[] => {
       .slice(1)
       .each((_, row) => {
         try {
-          const transaction = parseRowData($(row), area);
+          const transaction = parseRowData($(row));
           if (transaction.apartName) {
             transactions.push(transaction);
           }
@@ -381,7 +367,7 @@ const fetchPageData = async (
     // 신규 거래는 Daily 엔드포인트 사용
     const url = `https://apt2.me/apt/AptDaily.jsp?area=${area}&pages=${page}`;
     const html = await fetchWithRetry(url);
-    const data = parseHtmlData(html, area);
+    const data = parseHtmlData(html);
 
     return {
       page,

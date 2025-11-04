@@ -1,4 +1,4 @@
-import { ApartDetailResponse } from '@/app/api/apart/types';
+import { ApartDetailResponse } from '@/app/api/apart/models/types';
 import { useNewTransactionListQuery } from '@/entities/transaction';
 
 import { useMemo, useState } from 'react';

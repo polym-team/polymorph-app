@@ -1,6 +1,6 @@
 'use client';
 
-import { ApartDetailResponse } from '@/app/api/apart/types';
+import { ApartDetailResponse } from '@/app/api/apart/models/types';
 import { useFavoriteApartList } from '@/entities/apart';
 import { createApartItemKey } from '@/shared/services/transactionService';
 
