@@ -83,11 +83,20 @@ export const fetchGovApiData = async (
   return itemArray;
 };
 
-// new-transactions API 호출하여 신규 거래 transactionId Set 반환
-export const fetchNewTransactionIds = async (
+// new-transactions API 호출하여 신규 거래 목록 반환
+export const fetchNewTransactions = async (
   area: string,
   origin: string
-): Promise<Set<string>> => {
+): Promise<
+  Array<{
+    address: string;
+    apartName: string;
+    tradeDate: string;
+    floor: number | null;
+    tradeAmount: number;
+    size: number | null;
+  }>
+> => {
   try {
     const newTransactionsUrl = new URL('/api/new-transactions', origin);
     newTransactionsUrl.searchParams.set('area', area);
@@ -98,17 +107,32 @@ export const fetchNewTransactionIds = async (
         status: response.status,
         statusText: response.statusText,
       });
-      return new Set();
+      return [];
     }
 
     const data = await response.json();
-    const transactionIds =
-      data.list?.map((item: { transactionId: string }) => item.transactionId) ||
-      [];
+    const transactions = data.list || [];
 
-    return new Set(transactionIds);
+    // 비교에 필요한 필드만 추출
+    return transactions.map(
+      (item: {
+        address: string;
+        apartName: string;
+        tradeDate: string;
+        floor: number | null;
+        tradeAmount: number;
+        size: number | null;
+      }) => ({
+        address: item.address || '',
+        apartName: item.apartName || '',
+        tradeDate: item.tradeDate || '',
+        floor: item.floor,
+        tradeAmount: item.tradeAmount || 0,
+        size: item.size,
+      })
+    );
   } catch (error) {
     logger.warn('new-transactions API 호출 중 오류 발생', { error });
-    return new Set();
+    return [];
   }
 };

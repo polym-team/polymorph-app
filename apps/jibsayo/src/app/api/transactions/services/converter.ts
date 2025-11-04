@@ -1,7 +1,4 @@
-import {
-  createApartId,
-  createTransactionId,
-} from '@/app/api/shared/services/transactionService';
+import { createApartId } from '@/app/api/shared/services/transactionService';
 
 import { GovApiItem, TransactionItem } from '../models/types';
 
@@ -43,59 +40,62 @@ const calculateBuildedYear = (item: GovApiItem): number | null => {
   return buildYearText ? parseInt(buildYearText, 10) : null;
 };
 
-// 주소 정규화 - new-transactions API와 동일한 형식으로 변환
-// new-transactions API는 "서울특별시 강동구 강일동" 형식 (지번 없음)
-// transactions API는 "서울 강동구 강일동 668" 형식 (지번 포함)
-// 따라서 지번을 제거하고 "서울"을 "서울특별시"로 변경
-const normalizeAddress = (address: string): string => {
-  if (!address) return '';
-
-  // "서울"을 "서울특별시"로 변경
-  let normalized = address.replace(/^서울\s/, '서울특별시 ');
-
-  // 지번 제거 (숫자 또는 숫자-숫자 형식의 지번 제거)
-  // 예: "서울특별시 강동구 강일동 668" -> "서울특별시 강동구 강일동"
-  // 예: "서울특별시 강동구 강일동 19-1" -> "서울특별시 강동구 강일동"
-  normalized = normalized.replace(/\s+\d+(-\d+)?\s*$/, '');
-
-  // 동 뒤에 붙은 숫자 제거 (예: "101동" -> "동"으로 남음)
-  normalized = normalized.replace(/\s+\d+동\s*$/, '');
-
-  return normalized.trim();
-};
-
-// 주소 조합 - 모든 필드를 문자열로 변환
+// 주소 조합 - umdNm만 사용
 const calculateAddress = (item: GovApiItem): string => {
-  const sggNm = String(item.estateAgentSggNm || '').trim();
   const umdNm = String(item.umdNm || '').trim();
-  const jibun = String(item.jibun || '').trim();
-  const aptDong = String(item.aptDong || '').trim();
-
-  // 주소 조합 (지번과 동 정보는 포함하지만, 정규화 시 제거됨)
-  const address =
-    `${sggNm} ${umdNm} ${jibun}${aptDong ? ' ' + aptDong + '동' : ''}`.trim();
-
-  // 주소 정규화 (new-transactions API와 형식 통일: 지번 제거, "서울" -> "서울특별시")
-  return normalizeAddress(address);
+  return umdNm;
 };
 
-// 신규 거래 여부 확인
+// 평수 비교 (소수점 오차 고려)
+const isSizeEqual = (size1: number, size2: number | null): boolean => {
+  if (size2 === null) return size1 === 0;
+  // 소수점 둘째 자리까지 비교 (0.01 제곱미터 오차 허용)
+  return Math.abs(size1 - size2) < 0.01;
+};
+
+// 신규 거래 여부 확인 - 필드 직접 비교
 const isNewTransaction = (
-  transactionId: string,
-  newTransactionIds?: Set<string>
+  address: string,
+  apartName: string,
+  tradeDate: string,
+  floor: number | null,
+  tradeAmount: number,
+  size: number,
+  newTransactions?: Array<{
+    address: string;
+    apartName: string;
+    tradeDate: string;
+    floor: number | null;
+    tradeAmount: number;
+    size: number | null;
+  }>
 ): boolean => {
-  if (!newTransactionIds || newTransactionIds.size === 0) {
+  if (!newTransactions || newTransactions.length === 0) {
     return false;
   }
 
-  return newTransactionIds.has(transactionId);
+  return newTransactions.some(
+    newTransaction =>
+      newTransaction.address.includes(address) &&
+      newTransaction.apartName === apartName &&
+      newTransaction.tradeDate === tradeDate &&
+      newTransaction.floor === floor &&
+      newTransaction.tradeAmount === tradeAmount &&
+      isSizeEqual(size, newTransaction.size)
+  );
 };
 
-// 국토부 API 응답을 내부 형식으로 변환
-export const convertGovApiItemToTransaction = (
+const convertGovApiItemToTransaction = (
   item: GovApiItem,
   area: string,
-  newTransactionIds?: Set<string>
+  newTransactions?: Array<{
+    address: string;
+    apartName: string;
+    tradeDate: string;
+    floor: number | null;
+    tradeAmount: number;
+    size: number | null;
+  }>
 ): TransactionItem => {
   const tradeDate = calculateTradeDate(item);
   const tradeAmount = calculateTradeAmount(item);
@@ -105,23 +105,21 @@ export const convertGovApiItemToTransaction = (
   const address = calculateAddress(item);
   const apartName = String(item.aptNm || '').trim();
 
-  const transactionId = createTransactionId({
-    regionCode: area,
-    address,
-    apartName,
-    tradeDate,
-    size,
-    floor,
-    tradeAmount,
-  });
-
   const apartId = createApartId({
     regionCode: area,
     address,
     apartName,
   });
 
-  const isNew = isNewTransaction(transactionId, newTransactionIds);
+  const isNew = isNewTransaction(
+    address,
+    apartName,
+    tradeDate,
+    floor,
+    tradeAmount,
+    size,
+    newTransactions
+  );
 
   return {
     apartId,
@@ -134,4 +132,21 @@ export const convertGovApiItemToTransaction = (
     tradeAmount,
     isNew,
   };
+};
+
+export const convertGovApiItemToTransactions = (
+  items: GovApiItem[],
+  area: string,
+  newTransactions?: Array<{
+    address: string;
+    apartName: string;
+    tradeDate: string;
+    floor: number | null;
+    tradeAmount: number;
+    size: number | null;
+  }>
+) => {
+  return items.map(item =>
+    convertGovApiItemToTransaction(item, area, newTransactions)
+  );
 };

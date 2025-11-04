@@ -1,6 +1,8 @@
+import { logger } from '@/app/api/shared/utils/logger';
+
 import { TransactionItem, TransactionsResponse } from './models/types';
-import { fetchGovApiData, fetchNewTransactionIds } from './services/api';
-import { convertGovApiItemToTransaction } from './services/converter';
+import { fetchGovApiData, fetchNewTransactions } from './services/api';
+import { convertGovApiItemToTransactions } from './services/converter';
 
 // 동적 라우트로 설정 (정적 빌드 시 request.url 사용으로 인한 오류 방지)
 export const dynamic = 'force-dynamic';
@@ -20,14 +22,16 @@ export async function GET(request: Request): Promise<Response> {
 
     // 국토부 API와 new-transactions API 병렬 호출
     const baseUrl = new URL(request.url);
-    const [govApiItems, newTransactionIds] = await Promise.all([
+    const [govApiItems, newTransactions] = await Promise.all([
       fetchGovApiData(area, createDt.replace(/-/g, '')),
-      fetchNewTransactionIds(area, baseUrl.origin),
+      fetchNewTransactions(area, baseUrl.origin),
     ]);
 
     // 내부 형식으로 변환 (신규 거래 여부 포함)
-    const transactions: TransactionItem[] = govApiItems.map(item =>
-      convertGovApiItemToTransaction(item, area, newTransactionIds)
+    const transactions: TransactionItem[] = convertGovApiItemToTransactions(
+      govApiItems,
+      area,
+      newTransactions
     );
 
     const result: TransactionsResponse = {
@@ -37,7 +41,8 @@ export async function GET(request: Request): Promise<Response> {
 
     return Response.json(result);
   } catch (error) {
-    console.error('국토부 API 조회 오류:', error);
+    logger.error('국토부 API 조회 오류', { error });
+
     return Response.json(
       {
         message: '서버 오류가 발생했습니다.',
