@@ -181,6 +181,30 @@ export function MonthPicker({
 
   return (
     <div className={cn('relative flex items-center', className)}>
+      {/* 이전달 버튼 - 절대 위치 */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        onClick={() => handleMonthNavigation('prev')}
+        disabled={disabled}
+        className="active:bg-accent absolute left-1 top-1/2 z-10 h-[90%] w-8 -translate-y-1/2"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+
+      {/* 다음달 버튼 - 절대 위치 */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        onClick={() => handleMonthNavigation('next')}
+        disabled={disabled}
+        className="active:bg-accent absolute right-1 top-1/2 z-10 h-[90%] w-8 -translate-y-1/2"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+
       <Popover open={open} onOpenChange={setOpen} modal={true}>
         <PopoverTrigger asChild>
           <Button
@@ -203,30 +227,6 @@ export function MonthPicker({
             </div>
           </Button>
         </PopoverTrigger>
-
-        {/* 이전달 버튼 - 절대 위치 */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => handleMonthNavigation('prev')}
-          disabled={disabled}
-          className="absolute left-1 top-1/2 z-10 h-full w-7 -translate-y-1/2 active:scale-100"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-
-        {/* 다음달 버튼 - 절대 위치 */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => handleMonthNavigation('next')}
-          disabled={disabled}
-          className="absolute right-1 top-1/2 z-10 h-full w-7 -translate-y-1/2 active:scale-100"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
 
         <PopoverContent
           className="w-[var(--radix-popover-trigger-width)] p-0"
