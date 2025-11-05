@@ -9,11 +9,11 @@ import { Star } from 'lucide-react';
 import { useMemo } from 'react';
 
 import {
-  Button,
   MonthPicker,
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@package/ui';
@@ -40,8 +40,6 @@ export function SearchForm({
   onRemoveFavoriteRegion,
   onChangeForm,
 }: SearchFormProps) {
-  const savedFavoriteRegion = favoriteRegionList.includes(form.regionCode);
-
   const favoriteRegionItems = useMemo(() => {
     return calculateFavoriteRegionList(favoriteRegionList);
   }, [favoriteRegionList]);
@@ -100,11 +98,11 @@ export function SearchForm({
                       e.stopPropagation(); // 이벤트 버블링 방지
                       onRemoveFavoriteRegion(region.code);
                     }}
-                    className="cursor-pointer"
+                    className="flex h-[20px] w-[20px] items-center justify-center"
                   >
                     <Star
                       className={cn(
-                        'h-4 w-4 translate-y-[-0.5px]',
+                        'h-4 w-4',
                         'fill-yellow-400 text-yellow-400'
                       )}
                     />
@@ -112,33 +110,28 @@ export function SearchForm({
                 </div>
               </SelectItem>
             ))}
+            {favoriteRegionItems.length > 0 && <SelectSeparator />}
             {notFavoriteRegionItems.map(region => (
               <SelectItem key={region.code} value={region.code}>
-                {region.name}
+                <div className="flex items-center justify-between gap-2">
+                  {region.name}
+                  <span
+                    onPointerDown={e => {
+                      e.preventDefault(); // 기본 동작 방지
+                      e.stopPropagation(); // 이벤트 버블링 방지
+                      onAddFavoriteRegion(region.code);
+                    }}
+                    className="flex h-[20px] w-[20px] items-center justify-center"
+                  >
+                    <Star
+                      className={cn('h-4 w-4', 'fill-gray-300 text-gray-300')}
+                    />
+                  </span>
+                </div>
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        {savedFavoriteRegion && (
-          <Button
-            type="button"
-            variant="warning"
-            className="w-16"
-            onClick={() => onRemoveFavoriteRegion(form.regionCode)}
-          >
-            저장됨
-          </Button>
-        )}
-        {!savedFavoriteRegion && (
-          <Button
-            type="button"
-            variant="warning"
-            className="w-16"
-            onClick={() => onAddFavoriteRegion(form.regionCode)}
-          >
-            저장
-          </Button>
-        )}
       </div>
       <MonthPicker
         value={form.tradeDate}
