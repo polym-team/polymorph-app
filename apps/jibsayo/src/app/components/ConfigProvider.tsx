@@ -15,6 +15,9 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     const deviceId = getDeviceId();
     const isInApp = Boolean(deviceId);
 
+    window.alert(`deviceId: ${deviceId}`);
+    window.alert(`isInApp: ${isInApp}`);
+
     initGlobalConfigStore({ isInApp, deviceId });
   };
 
