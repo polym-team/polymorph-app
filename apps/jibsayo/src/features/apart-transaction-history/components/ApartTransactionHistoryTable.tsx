@@ -89,12 +89,13 @@ export function ApartTransactionHistoryTable({
   const { selectedMonth } = useSelectedMonth();
   const [isFilterEnabled, setIsFilterEnabled] = useState(true);
 
+  const filterMonth = isFilterEnabled ? selectedMonth : null;
   const { sorting, mappedTradeItems, changeSorting } =
     useTransactionHistoryTableData({
       apartName,
       regionCode,
       tradeItems,
-      filterMonth: isFilterEnabled ? selectedMonth : null,
+      filterMonth,
     });
 
   const formatSelectedMonth = (month: string) => {
@@ -125,6 +126,7 @@ export function ApartTransactionHistoryTable({
         )}
       </Card>
       <DataTable
+        key={filterMonth ?? 'all'}
         pageSize={20}
         columns={columns}
         data={mappedTradeItems}
