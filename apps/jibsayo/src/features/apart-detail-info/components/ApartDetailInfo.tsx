@@ -1,8 +1,11 @@
 'use client';
 
 import { ApartDetailResponse } from '@/app/api/apart/models/types';
-import { useFavoriteApartList } from '@/entities/apart';
-import { createApartItemKey } from '@/shared/services/transactionService';
+import {
+  useAddFavoriteApartHandler,
+  useFavoriteApartList,
+  useRemoveFavoriteApartHandler,
+} from '@/entities/apart';
 
 import { ApartInfoTable } from '../ui/ApartInfoTable';
 
@@ -12,10 +15,25 @@ interface ApartDetailInfoProps {
 
 export function ApartDetailInfo({ data }: ApartDetailInfoProps) {
   const favoriteApartList = useFavoriteApartList();
+  const addFavoriteApart = useAddFavoriteApartHandler();
+  const removeFavoriteApart = useRemoveFavoriteApartHandler();
   const isFavorite = favoriteApartList.some(
-    favoriteApartItem =>
-      createApartItemKey(data) === createApartItemKey(favoriteApartItem)
+    favoriteApartItem => favoriteApartItem.apartId === data.apartId
   );
 
-  return <ApartInfoTable isFavorite={isFavorite} data={data} />;
+  const toggleFavorite = () => {
+    if (isFavorite) {
+      removeFavoriteApart(data);
+    } else {
+      addFavoriteApart(data);
+    }
+  };
+
+  return (
+    <ApartInfoTable
+      isFavorite={isFavorite}
+      data={data}
+      onToggleFavorite={toggleFavorite}
+    />
+  );
 }

@@ -1,9 +1,6 @@
 import { FavoriteApartItem } from '@/entities/apart/models/types';
 import { RULES, SearchParams, TransactionItem } from '@/entities/transaction';
-import {
-  calculateAreaPyeong,
-  createApartItemKey,
-} from '@/shared/services/transactionService';
+import { calculateAreaPyeong } from '@/shared/services/transactionService';
 
 export const filterTransactionItemWithApartName = (
   transaction: TransactionItem,
@@ -41,15 +38,9 @@ export const filterTransactionItemWithFavorite = (
   if (!searchParams.favoriteOnly) {
     return true;
   }
-  return favoriteApartList.some(favoriteApart => {
-    const currentApartItemKey = createApartItemKey(favoriteApart);
-    const targetApartItemKey = createApartItemKey({
-      regionCode: favoriteApart.regionCode,
-      address: transaction.address,
-      apartName: transaction.apartName,
-    });
-    return currentApartItemKey === targetApartItemKey;
-  });
+  return favoriteApartList.some(
+    favoriteApart => favoriteApart.apartId === transaction.apartId
+  );
 };
 
 export const filterTransactionItemWithNewTransaction = (

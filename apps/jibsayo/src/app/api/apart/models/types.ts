@@ -7,6 +7,7 @@ export interface ApartDetailTradeHistoryItem {
 
 export interface ApartDetailResponse {
   regionCode: string;
+  apartId: string;
   apartName: string;
   address: string;
   housholdsCount: string;

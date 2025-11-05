@@ -1,6 +1,5 @@
 import { FavoriteApartItem } from '@/entities/apart/models/types';
 import { TransactionItem } from '@/entities/transaction';
-import { createApartItemKey } from '@/shared/services/transactionService';
 
 import { TransactionDetailItem } from '../models/types';
 
@@ -10,16 +9,9 @@ export const mapTramsactionItemWithFavorite = (
   favoriteApartList: FavoriteApartItem[]
 ): TransactionDetailItem[] => {
   const calculateIsFavorite = (item: TransactionItem) => {
-    return favoriteApartList.some(favoriteApart => {
-      const currentApartItemKey = createApartItemKey(favoriteApart);
-      const targetApartItemKey = createApartItemKey({
-        regionCode,
-        address: item.address,
-        apartName: item.apartName,
-      });
-
-      return currentApartItemKey === targetApartItemKey;
-    });
+    return favoriteApartList.some(
+      favoriteApart => favoriteApart.apartId === item.apartId
+    );
   };
 
   return transaction.map(item => ({

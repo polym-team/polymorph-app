@@ -1,3 +1,7 @@
+import {
+  createApartId,
+  normalizeAddress,
+} from '@/app/api/shared/services/transactionService';
 import { logger } from '@/app/api/shared/utils/logger';
 
 import cheerio, { CheerioAPI, Element } from 'cheerio';
@@ -25,22 +29,6 @@ const formatToAmount = (amountText: string): number => {
   return amount;
 };
 
-// 주소를 목록과 같은 형태로 정규화하는 함수
-const normalizeAddress = (address: string): string => {
-  if (!address) return '';
-
-  // 괄호 안의 내용 제거 (예: "89(양재대로 1218)" → "")
-  const withoutParentheses = address.replace(/\([^)]*\)/g, '').trim();
-
-  // 숫자와 괄호 제거 (예: "89" → "")
-  const withoutNumbers = withoutParentheses.replace(/\d+/g, '').trim();
-
-  // 연속된 공백을 하나로 변환
-  const normalized = withoutNumbers.replace(/\s+/g, ' ').trim();
-
-  return normalized;
-};
-
 const calculateApartInfo = ($: CheerioAPI) => {
   const getTradeInfoTable = () => {
     let tradeInfoTable: Element | null = null;
@@ -58,7 +46,10 @@ const calculateApartInfo = ($: CheerioAPI) => {
 
   const getApartInfo = (
     tradeInfoTable: Element | null
-  ): Omit<ApartDetailResponse, 'tradeItems' | 'regionCode' | 'apartName'> => {
+  ): Omit<
+    ApartDetailResponse,
+    'tradeItems' | 'regionCode' | 'apartName' | 'apartId'
+  > => {
     if (!tradeInfoTable) {
       return {
         address: '',
@@ -332,10 +323,16 @@ export const createResponse = async (
   const $ = cheerio.load(html);
   const apartInfo = calculateApartInfo($);
   const tradeItems = calculateTradeItems($);
+  const apartId = createApartId({
+    regionCode: area,
+    address: apartInfo.address,
+    apartName,
+  });
 
   const result = {
     ...apartInfo,
     regionCode: area,
+    apartId,
     apartName,
     tradeItems,
   };

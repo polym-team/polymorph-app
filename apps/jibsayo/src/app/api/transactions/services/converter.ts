@@ -1,4 +1,7 @@
-import { createApartId } from '@/app/api/shared/services/transactionService';
+import {
+  createApartId,
+  normalizeAddress,
+} from '@/app/api/shared/services/transactionService';
 
 import { GovApiItem, TransactionItem } from '../models/types';
 
@@ -43,7 +46,7 @@ const calculateBuildedYear = (item: GovApiItem): number | null => {
 // 주소 조합 - umdNm만 사용
 const calculateAddress = (item: GovApiItem): string => {
   const umdNm = String(item.umdNm || '').trim();
-  return umdNm;
+  return normalizeAddress(umdNm);
 };
 
 // 평수 비교 (소수점 오차 고려)

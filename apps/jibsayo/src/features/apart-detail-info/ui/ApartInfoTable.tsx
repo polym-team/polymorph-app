@@ -1,18 +1,25 @@
 import { ApartDetailResponse } from '@/app/api/apart/models/types';
-import { FavoriteApartToggleButton } from '@/entities/apart';
 import { formatNumberWithCommas } from '@/shared/utils/formatters';
+
+import { Star } from 'lucide-react';
 
 import { Card } from '@package/ui';
 import { Typography } from '@package/ui';
+import { cn } from '@package/utils';
 
 import { KakaoMap } from './KakaoMap';
 
 interface ApartInfoTableProps {
   isFavorite: boolean;
   data: ApartDetailResponse;
+  onToggleFavorite: () => void;
 }
 
-export function ApartInfoTable({ isFavorite, data }: ApartInfoTableProps) {
+export function ApartInfoTable({
+  isFavorite,
+  data,
+  onToggleFavorite,
+}: ApartInfoTableProps) {
   const {
     address,
     housholdsCount,
@@ -37,11 +44,19 @@ export function ApartInfoTable({ isFavorite, data }: ApartInfoTableProps) {
         <Typography variant="large" className="text-primary font-semibold">
           {data.apartName}
         </Typography>
-        <FavoriteApartToggleButton
-          size="base"
-          isFavorite={isFavorite}
-          data={data}
-        />
+        <button
+          type="button"
+          onClick={onToggleFavorite}
+          className="-translate-y-[1.5px]"
+        >
+          <Star
+            className={cn(
+              'h-[15px] w-[15px]',
+              isFavorite && 'fill-yellow-400 text-yellow-400',
+              !isFavorite && 'fill-gray-300 text-gray-300'
+            )}
+          />
+        </button>
       </div>
 
       {rows.map((item, index) => (
