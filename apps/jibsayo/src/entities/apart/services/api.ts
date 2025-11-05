@@ -24,6 +24,7 @@ export const getFavoriteApartListFromServer = async (
     }
 
     return result.data.map(item => ({
+      apartId: item.id,
       regionCode: item.regionCode,
       apartName: item.apartName,
       address: item.address,
@@ -34,60 +35,42 @@ export const getFavoriteApartListFromServer = async (
   }
 };
 
-// 즐겨찾기 아파트 추가
-export const addFavoriteApartToServer = async (
+export const addFavoriteApart = async (
   deviceId: string,
   item: FavoriteApartItem
 ): Promise<void> => {
-  try {
-    const response = await fetch('/api/favorite-apart', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        deviceId,
-        regionCode: item.regionCode,
-        address: item.address,
-        apartName: item.apartName,
-      }),
-    });
-
-    const result: ApiResponse<ServerFavoriteApart> = await response.json();
-
-    if (!result.success) {
-      throw new Error(result.error || '즐겨찾기 추가에 실패했습니다.');
-    }
-  } catch (error) {
-    console.error('즐겨찾기 추가 실패:', error);
-    throw error;
-  }
-};
-
-// 즐겨찾기 아파트 삭제
-export const removeFavoriteApartToServer = async (
-  deviceId: string,
-  item: FavoriteApartItem
-): Promise<void> => {
-  try {
-    const params = new URLSearchParams({
+  const response = await fetch('/api/favorite-apart', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
       deviceId,
       regionCode: item.regionCode,
       address: item.address,
       apartName: item.apartName,
-    });
+    }),
+  });
 
-    const response = await fetch(`/api/favorite-apart?${params}`, {
-      method: 'DELETE',
-    });
+  const result: ApiResponse<ServerFavoriteApart> = await response.json();
 
-    const result: ApiResponse<void> = await response.json();
+  if (!result.success) {
+    throw new Error(result.error);
+  }
+};
 
-    if (!result.success) {
-      throw new Error(result.error || '즐겨찾기 삭제에 실패했습니다.');
-    }
-  } catch (error) {
-    console.error('즐겨찾기 삭제 실패:', error);
-    throw error;
+export const removeFavoriteApart = async (
+  deviceId: string,
+  apartId: string
+): Promise<void> => {
+  const params = new URLSearchParams({ deviceId, apartId });
+  const response = await fetch(`/api/favorite-apart?${params}`, {
+    method: 'DELETE',
+  });
+
+  const result: ApiResponse<void> = await response.json();
+
+  if (!result.success) {
+    throw new Error(result.error);
   }
 };

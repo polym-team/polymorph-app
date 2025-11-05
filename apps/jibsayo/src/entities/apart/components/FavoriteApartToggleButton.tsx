@@ -30,9 +30,9 @@ export function FavoriteApartToggleButton({
       e.stopPropagation();
 
       if (isFavorite) {
-        removeFavoriteApart(data);
+        removeFavoriteApart({ ...data, apartId: data.apartName });
       } else {
-        addFavoriteApart(data);
+        addFavoriteApart({ ...data, apartId: data.apartName });
       }
     },
     [isFavorite, data, removeFavoriteApart, addFavoriteApart]

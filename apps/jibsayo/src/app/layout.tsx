@@ -6,8 +6,8 @@ import { Suspense } from 'react';
 import { Toaster } from '@package/ui';
 
 import '../../../../packages/styles/globals.css';
+import { ConfigProvider } from './components/ConfigProvider';
 import { QueryClientProvider } from './components/QueryClientProvider';
-import { WebviewProvider } from './components/WebviewProvider';
 
 export const metadata: Metadata = {
   icons: {
@@ -34,7 +34,7 @@ export default function RootLayout({
     <html lang="ko">
       <body className="bg-gray-50">
         <Suspense fallback={null}>
-          <WebviewProvider>
+          <ConfigProvider>
             <QueryClientProvider>
               <div className="flex min-h-dvh flex-col items-center">
                 <Header />
@@ -46,7 +46,7 @@ export default function RootLayout({
               </div>
               <Toaster />
             </QueryClientProvider>
-          </WebviewProvider>
+          </ConfigProvider>
         </Suspense>
       </body>
     </html>

@@ -1,4 +1,3 @@
-import { FavoriteApartToggleButton } from '@/entities/apart';
 import { calculateAreaPyeong } from '@/shared/services/transactionService';
 import { NewIcon } from '@/shared/ui/NewIcon';
 import {
@@ -8,7 +7,8 @@ import {
   formatPyeong,
 } from '@/shared/utils/formatters';
 
-import { useMemo } from 'react';
+import { Star } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
 import {
   ColumnDef,
@@ -16,6 +16,7 @@ import {
   DataTableColumnHeader,
   SortingState,
 } from '@package/ui';
+import { cn } from '@package/utils';
 
 import { TransactionDetailItem } from '../models/types';
 import { SimpleTableText } from './SimpleTableText';
@@ -25,10 +26,10 @@ interface TransactionListDataProps {
   pageIndex: number;
   sorting: SortingState;
   items: TransactionDetailItem[];
-  regionCode: string;
   onRowClick: (row: TransactionDetailItem) => void;
   onSortingChange: (sorting: SortingState) => void;
   onPageIndexChange: (pageIndex: number) => void;
+  onToggleFavorite: (item: TransactionDetailItem) => void;
 }
 
 export function TransactionListSimpleTable({
@@ -36,10 +37,10 @@ export function TransactionListSimpleTable({
   pageIndex,
   sorting,
   items,
-  regionCode,
   onRowClick,
   onSortingChange,
   onPageIndexChange,
+  onToggleFavorite,
 }: TransactionListDataProps) {
   const columns: ColumnDef<TransactionDetailItem>[] = useMemo(() => {
     return [
@@ -48,16 +49,23 @@ export function TransactionListSimpleTable({
         accessorKey: 'favorite',
         header: () => <></>,
         cell: ({ row }) => (
-          <div className="flex items-center">
-            <FavoriteApartToggleButton
-              size="base"
-              isFavorite={row.original.isFavorite}
-              data={{
-                regionCode,
-                apartName: row.original.apartName,
-                address: row.original.address,
+          <div className="flex items-center justify-center">
+            <button
+              type="button"
+              onClick={e => {
+                e.stopPropagation();
+                e.preventDefault();
+                onToggleFavorite(row.original);
               }}
-            />
+            >
+              <Star
+                className={cn(
+                  'h-[14px] w-[14px]',
+                  row.original.isFavorite && 'fill-yellow-400 text-yellow-400',
+                  !row.original.isFavorite && 'fill-gray-300 text-gray-300'
+                )}
+              />
+            </button>
           </div>
         ),
       },
@@ -111,10 +119,17 @@ export function TransactionListSimpleTable({
         ),
       },
     ];
-  }, [regionCode]);
+  }, [onToggleFavorite]);
+
+  const [renderKey, setRenderKey] = useState(0);
+
+  useEffect(() => {
+    setRenderKey(prev => prev + 1);
+  }, [items]);
 
   return (
     <DataTable
+      key={renderKey}
       loading={isLoading}
       columns={columns}
       pageSize={15}

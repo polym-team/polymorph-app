@@ -31,6 +31,7 @@ export function ApartList() {
 
   const handleRemoveApartItem = (regionCode: string, apartItem: ApartItem) => {
     removeFavoriteApart({
+      apartId: `${regionCode}-${apartItem.name}-${apartItem.address}`,
       regionCode,
       apartName: apartItem.name,
       address: apartItem.address,
