@@ -20,6 +20,6 @@ export const useNewTransactionListQuery = (
     },
     staleTime: 1000 * 60 * 60,
     gcTime: 1000 * 60 * 60,
-    enabled: false, // FIXME: 신규 거래 조회 추가 필요
+    enabled: !!regionCode,
   });
 };

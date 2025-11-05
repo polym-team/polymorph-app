@@ -1,5 +1,6 @@
 import {
   createApartId,
+  createTransactionId,
   normalizeAddress,
 } from '@/app/api/shared/services/transactionService';
 import { logger } from '@/app/api/shared/utils/logger';
@@ -125,7 +126,8 @@ const calculateApartInfo = ($: CheerioAPI) => {
 };
 
 const calculateTradeItems = (
-  $: CheerioAPI
+  $: CheerioAPI,
+  apartInfo: Pick<ApartDetailResponse, 'regionCode' | 'address' | 'apartName'>
 ): ApartDetailResponse['tradeItems'] => {
   const getTrs = () => {
     const trs: Element[] = [];
@@ -215,9 +217,19 @@ const calculateTradeItems = (
       const floorMatch = rowText.match(/(\d+)층/);
       const floor = floorMatch ? Number(floorMatch[1]) : 0;
 
+      const transactionId = createTransactionId({
+        regionCode: apartInfo.regionCode,
+        address: apartInfo.address,
+        apartName: apartInfo.apartName,
+        tradeDate,
+        tradeAmount,
+        size,
+        floor,
+      });
+
       // 필수 항목이 있으면 추가
       if (tradeDate && size && tradeAmount) {
-        tradeItems.push({ tradeDate, size, floor, tradeAmount });
+        tradeItems.push({ transactionId, tradeDate, size, floor, tradeAmount });
       }
     });
 
@@ -322,7 +334,11 @@ export const createResponse = async (
   const html = await fetchTradeDetail(apartName, area);
   const $ = cheerio.load(html);
   const apartInfo = calculateApartInfo($);
-  const tradeItems = calculateTradeItems($);
+  const tradeItems = calculateTradeItems($, {
+    regionCode: area,
+    address: apartInfo.address,
+    apartName,
+  });
   const apartId = createApartId({
     regionCode: area,
     address: apartInfo.address,

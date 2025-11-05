@@ -32,8 +32,8 @@ export const filterTransactionItemWithSize = (
 
 export const filterTransactionItemWithFavorite = (
   transaction: TransactionItem,
-  favoriteApartList: FavoriteApartItem[],
-  searchParams: SearchParams
+  searchParams: SearchParams,
+  favoriteApartList: FavoriteApartItem[]
 ) => {
   if (!searchParams.favoriteOnly) {
     return true;
@@ -45,12 +45,15 @@ export const filterTransactionItemWithFavorite = (
 
 export const filterTransactionItemWithNewTransaction = (
   transaction: TransactionItem,
-  searchParams: SearchParams
+  searchParams: SearchParams,
+  newTransactionList: TransactionItem[]
 ) => {
   if (!searchParams.newTransactionOnly) {
     return true;
   }
-  return transaction.isNew;
+  return newTransactionList.some(
+    newTransaction => newTransaction.transactionId === transaction.transactionId
+  );
 };
 
 export const filterFavoriteApartListWithRegionCode = (

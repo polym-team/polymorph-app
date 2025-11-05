@@ -4,6 +4,7 @@ import {
   useRemoveFavoriteApartHandler,
 } from '@/entities/apart';
 import {
+  useNewTransactionListQuery,
   useTransactionListQuery,
   useTransactionPageSearchParams,
 } from '@/entities/transaction';
@@ -33,6 +34,18 @@ export const useTransactionData = (): Return => {
   const removeFavoriteApart = useRemoveFavoriteApartHandler();
 
   const { isLoading, data: transactionData } = useTransactionListQuery();
+  const { data: newTransactionData } = useNewTransactionListQuery(
+    searchParams.regionCode
+  );
+
+  const originTransactions = useMemo(
+    () => transactionData?.list || [],
+    [transactionData]
+  );
+  const newTransactions = useMemo(
+    () => newTransactionData?.list || [],
+    [newTransactionData]
+  );
 
   const filteredFavoriteApartList = useMemo(() => {
     return filterFavoriteApartListWithRegionCode(
@@ -42,34 +55,35 @@ export const useTransactionData = (): Return => {
   }, [favoriteApartList, searchParams]);
 
   const filteredTransactions = useMemo(() => {
-    if (!transactionData?.list) {
-      return [];
-    }
-
-    return transactionData.list.filter(
+    return originTransactions.filter(
       transaction =>
         filterTransactionItemWithApartName(transaction, searchParams) &&
         filterTransactionItemWithSize(transaction, searchParams) &&
         filterTransactionItemWithFavorite(
           transaction,
-          filteredFavoriteApartList,
-          searchParams
+          searchParams,
+          filteredFavoriteApartList
         ) &&
-        filterTransactionItemWithNewTransaction(transaction, searchParams)
+        filterTransactionItemWithNewTransaction(
+          transaction,
+          searchParams,
+          newTransactions
+        )
     );
-  }, [transactionData?.list, filteredFavoriteApartList, searchParams]);
+  }, [
+    originTransactions,
+    newTransactions,
+    searchParams,
+    filteredFavoriteApartList,
+  ]);
 
   const mappedTransactions = useMemo(() => {
     return mapTramsactionItemWithFavorite(
-      searchParams.regionCode,
       filteredTransactions,
+      newTransactions,
       filteredFavoriteApartList
     );
-  }, [
-    filteredFavoriteApartList,
-    filteredTransactions,
-    searchParams.regionCode,
-  ]);
+  }, [filteredFavoriteApartList, filteredTransactions, newTransactions]);
 
   const toggleFavorite = useCallback(
     (item: TransactionDetailItem) => {

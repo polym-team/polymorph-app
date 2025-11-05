@@ -1,4 +1,5 @@
 export interface ApartDetailTradeHistoryItem {
+  transactionId: string;
   tradeDate: string;
   size: number;
   floor: number;

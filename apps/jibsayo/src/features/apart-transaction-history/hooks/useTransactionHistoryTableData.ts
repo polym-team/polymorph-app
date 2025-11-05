@@ -40,7 +40,6 @@ export const useTransactionHistoryTableData = ({
 
   const mappedTradeItems = useMemo(() => {
     const allItems = mapTradeHistoryItems({
-      apartName,
       tradeItems,
       newTransactionList,
     });
@@ -55,7 +54,7 @@ export const useTransactionHistoryTableData = ({
     }
 
     return allItems;
-  }, [apartName, tradeItems, newTransactionList, filterMonth]);
+  }, [tradeItems, newTransactionList, filterMonth]);
 
   const changeSorting = (newSorting: SortingState) => {
     setSorting(newSorting);

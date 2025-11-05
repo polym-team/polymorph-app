@@ -1,13 +1,13 @@
 export interface TransactionItem {
+  transactionId: string;
   apartId: string;
   apartName: string;
   buildedYear: number | null;
   address: string;
   tradeDate: string;
-  size: number;
+  size: number | null;
   floor: number | null;
   tradeAmount: number;
-  isNew: boolean;
 }
 
 export interface TransactionsResponse {

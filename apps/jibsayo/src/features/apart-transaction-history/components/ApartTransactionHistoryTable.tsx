@@ -8,7 +8,7 @@ import {
   formatPyeong,
 } from '@/shared/utils/formatters';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   Button,
@@ -87,6 +87,7 @@ export function ApartTransactionHistoryTable({
   tradeItems,
 }: ApartTransactionHistoryTableProps) {
   const { selectedMonth } = useSelectedMonth();
+  const [renderKey, setRenderKey] = useState(0);
   const [isFilterEnabled, setIsFilterEnabled] = useState(true);
 
   const filterMonth = isFilterEnabled ? selectedMonth : null;
@@ -102,6 +103,10 @@ export function ApartTransactionHistoryTable({
     const [year, monthNum] = month.split('-');
     return `${year}년 ${parseInt(monthNum)}월`;
   };
+
+  useEffect(() => {
+    setRenderKey(prev => prev + 1);
+  }, [mappedTradeItems]);
 
   return (
     <div className="space-y-2">
@@ -126,7 +131,7 @@ export function ApartTransactionHistoryTable({
         )}
       </Card>
       <DataTable
-        key={filterMonth ?? 'all'}
+        key={renderKey}
         pageSize={20}
         columns={columns}
         data={mappedTradeItems}

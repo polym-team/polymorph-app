@@ -1,15 +1,6 @@
-export interface ApartmentTransaction {
-  apartName: string;
-  buildedYear: number | null;
-  householdsNumber: number | null;
-  address: string;
-  tradeDate: string;
-  size: number | null;
-  floor: number | null;
-  isNewRecord: boolean;
-  tradeAmount: number;
-  maxTradeAmount: number;
-}
+import { TransactionItem } from '@/app/api/transactions/models/types';
+
+export type ApartmentTransaction = TransactionItem;
 
 export interface ParsedPageResult {
   page: number;

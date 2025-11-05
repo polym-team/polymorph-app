@@ -1,5 +1,6 @@
 import {
   createApartId,
+  createTransactionId,
   normalizeAddress,
 } from '@/app/api/shared/services/transactionService';
 
@@ -49,56 +50,9 @@ const calculateAddress = (item: GovApiItem): string => {
   return normalizeAddress(umdNm);
 };
 
-// 평수 비교 (소수점 오차 고려)
-const isSizeEqual = (size1: number, size2: number | null): boolean => {
-  if (size2 === null) return size1 === 0;
-  // 소수점 둘째 자리까지 비교 (0.01 제곱미터 오차 허용)
-  return Math.abs(size1 - size2) < 0.01;
-};
-
-// 신규 거래 여부 확인 - 필드 직접 비교
-const isNewTransaction = (
-  address: string,
-  apartName: string,
-  tradeDate: string,
-  floor: number | null,
-  tradeAmount: number,
-  size: number,
-  newTransactions?: Array<{
-    address: string;
-    apartName: string;
-    tradeDate: string;
-    floor: number | null;
-    tradeAmount: number;
-    size: number | null;
-  }>
-): boolean => {
-  if (!newTransactions || newTransactions.length === 0) {
-    return false;
-  }
-
-  return newTransactions.some(
-    newTransaction =>
-      newTransaction.address.includes(address) &&
-      newTransaction.apartName === apartName &&
-      newTransaction.tradeDate === tradeDate &&
-      newTransaction.floor === floor &&
-      newTransaction.tradeAmount === tradeAmount &&
-      isSizeEqual(size, newTransaction.size)
-  );
-};
-
 const convertGovApiItemToTransaction = (
   item: GovApiItem,
-  area: string,
-  newTransactions?: Array<{
-    address: string;
-    apartName: string;
-    tradeDate: string;
-    floor: number | null;
-    tradeAmount: number;
-    size: number | null;
-  }>
+  area: string
 ): TransactionItem => {
   const tradeDate = calculateTradeDate(item);
   const tradeAmount = calculateTradeAmount(item);
@@ -108,23 +62,24 @@ const convertGovApiItemToTransaction = (
   const address = calculateAddress(item);
   const apartName = String(item.aptNm || '').trim();
 
+  const transactionId = createTransactionId({
+    regionCode: area,
+    address,
+    apartName,
+    size,
+    floor,
+    tradeDate,
+    tradeAmount,
+  });
+
   const apartId = createApartId({
     regionCode: area,
     address,
     apartName,
   });
 
-  const isNew = isNewTransaction(
-    address,
-    apartName,
-    tradeDate,
-    floor,
-    tradeAmount,
-    size,
-    newTransactions
-  );
-
   return {
+    transactionId,
     apartId,
     apartName,
     buildedYear,
@@ -133,23 +88,12 @@ const convertGovApiItemToTransaction = (
     size,
     floor,
     tradeAmount,
-    isNew,
   };
 };
 
 export const convertGovApiItemToTransactions = (
   items: GovApiItem[],
-  area: string,
-  newTransactions?: Array<{
-    address: string;
-    apartName: string;
-    tradeDate: string;
-    floor: number | null;
-    tradeAmount: number;
-    size: number | null;
-  }>
+  area: string
 ) => {
-  return items.map(item =>
-    convertGovApiItemToTransaction(item, area, newTransactions)
-  );
+  return items.map(item => convertGovApiItemToTransaction(item, area));
 };

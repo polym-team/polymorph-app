@@ -50,43 +50,30 @@ const mapWithPriceChangeData = ({
 
 const mapWithIsNewTransaction = ({
   item,
-  apartName,
   newTransactionList,
 }: {
   item: ApartDetailTradeHistoryItem;
-  apartName: string;
   newTransactionList: TransactionItem[];
 }): {
   isNewTransaction: TradeItemViewModel['isNewTransaction'];
 } => {
   const isNewTransaction = newTransactionList.some(
-    newItem =>
-      newItem.apartName === apartName &&
-      newItem.tradeDate === item.tradeDate &&
-      newItem.size === item.size &&
-      newItem.floor === item.floor &&
-      newItem.tradeAmount === item.tradeAmount
+    newItem => newItem.transactionId === item.transactionId
   );
 
   return { isNewTransaction };
 };
 
 export const mapTradeHistoryItems = ({
-  apartName,
   tradeItems,
   newTransactionList,
 }: {
-  apartName: string;
   tradeItems: ApartDetailTradeHistoryItem[];
   newTransactionList: TransactionItem[];
 }): TradeItemViewModel[] => {
   return tradeItems.map(item => ({
     ...item,
     ...mapWithPriceChangeData({ tradeItems, item }),
-    ...mapWithIsNewTransaction({
-      apartName,
-      newTransactionList,
-      item,
-    }),
+    ...mapWithIsNewTransaction({ newTransactionList, item }),
   }));
 };

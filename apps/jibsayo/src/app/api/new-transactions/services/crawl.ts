@@ -1,3 +1,9 @@
+import {
+  createApartId,
+  createTransactionId,
+  normalizeAddress,
+} from '@/app/api/shared/services/transactionService';
+
 import cheerio from 'cheerio';
 import pLimit from 'p-limit';
 
@@ -136,7 +142,7 @@ const parseFirstCell = (
     if (!address) {
       const dongMatch = line.match(REGEXES.dong);
       if (dongMatch) {
-        address = line;
+        address = normalizeAddress(line);
         break;
       }
     }
@@ -234,22 +240,40 @@ const parseThirdCell = (
 };
 
 // 행 데이터 파싱 최적화
-const parseRowData = (row: any): ApartmentTransaction => {
+const parseRowData = (area: string, row: any): ApartmentTransaction => {
   const cells = row.find('td');
 
   const firstCellData = parseFirstCell(cells.eq(0).text());
   const secondCellData = parseSecondCell(cells.eq(1).text());
   const thirdCellData = parseThirdCell(cells.eq(2).text());
 
+  const transactionId = createTransactionId({
+    regionCode: area,
+    address: firstCellData.address,
+    apartName: firstCellData.apartName,
+    size: secondCellData.size,
+    floor: secondCellData.floor,
+    tradeDate: secondCellData.tradeDate,
+    tradeAmount: thirdCellData.tradeAmount,
+  });
+
+  const apartId = createApartId({
+    regionCode: area,
+    address: firstCellData.address,
+    apartName: firstCellData.apartName,
+  });
+
   return {
     ...firstCellData,
     ...secondCellData,
     ...thirdCellData,
+    transactionId,
+    apartId,
   };
 };
 
 // HTML 파싱 최적화
-const parseHtmlData = (html: string): ApartmentTransaction[] => {
+const parseHtmlData = (area: string, html: string): ApartmentTransaction[] => {
   const $ = cheerio.load(html, {
     decodeEntities: true,
   });
@@ -268,7 +292,7 @@ const parseHtmlData = (html: string): ApartmentTransaction[] => {
       .slice(1)
       .each((_, row) => {
         try {
-          const transaction = parseRowData($(row));
+          const transaction = parseRowData(area, $(row));
           if (transaction.apartName) {
             transactions.push(transaction);
           }
@@ -367,7 +391,7 @@ const fetchPageData = async (
     // 신규 거래는 Daily 엔드포인트 사용
     const url = `https://apt2.me/apt/AptDaily.jsp?area=${area}&pages=${page}`;
     const html = await fetchWithRetry(url);
-    const data = parseHtmlData(html);
+    const data = parseHtmlData(area, html);
 
     return {
       page,
