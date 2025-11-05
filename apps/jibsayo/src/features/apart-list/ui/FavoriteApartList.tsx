@@ -1,3 +1,4 @@
+import { FavoriteApartItem } from '@/entities/apart/models/types';
 import {
   getCityNameWithRegionCode,
   getRegionNameWithRegionCode,
@@ -8,12 +9,12 @@ import { X } from 'lucide-react';
 import { Card, Typography } from '@package/ui';
 import { Button } from '@package/ui';
 
-import { ApartItem, RegionItem } from '../models/types';
+import { RegionItem } from '../models/types';
 
 interface FavoriteApartListProps {
   regionItems: RegionItem[];
-  onClickApartItem: (regionCode: string, apartItem: ApartItem) => void;
-  onRemoveApartItem: (regionCode: string, apartItem: ApartItem) => void;
+  onClickApartItem: (regionCode: string, apartItem: FavoriteApartItem) => void;
+  onRemoveApartItem: (regionCode: string, apartItem: FavoriteApartItem) => void;
 }
 
 export function FavoriteApartList({
@@ -37,7 +38,7 @@ export function FavoriteApartList({
             <div className="flex flex-wrap gap-2 p-3">
               {region.apartItems.map(item => (
                 <div
-                  key={`${item.name}-${item.address}`}
+                  key={item.apartId}
                   className="border-input bg-background flex flex-shrink-0 rounded-md border"
                 >
                   <Button
@@ -46,7 +47,9 @@ export function FavoriteApartList({
                     onClick={() => onClickApartItem(region.code, item)}
                     className="whitespace-nowrap rounded-r-none border-0"
                   >
-                    <span className="translate-y-[-0.5px]">{item.name}</span>
+                    <span className="translate-y-[-0.5px]">
+                      {item.apartName}
+                    </span>
                   </Button>
                   <Button
                     variant="ghost"

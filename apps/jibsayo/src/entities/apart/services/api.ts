@@ -7,32 +7,17 @@ interface ApiResponse<T> {
   data?: T;
 }
 
-// 즐겨찾기 아파트 목록 조회
-export const getFavoriteApartListFromServer = async (
+export const getFavoriteApartList = async (
   deviceId: string
 ): Promise<FavoriteApartItem[]> => {
-  try {
-    const response = await fetch(`/api/favorite-apart?deviceId=${deviceId}`);
-    const result: ApiResponse<ServerFavoriteApart[]> = await response.json();
+  const response = await fetch(`/api/favorite-apart?deviceId=${deviceId}`);
+  const result: ApiResponse<FavoriteApartItem[]> = await response.json();
 
-    if (!result.success) {
-      throw new Error(result.error || '즐겨찾기 목록 조회에 실패했습니다.');
-    }
-
-    if (!result.data) {
-      return [];
-    }
-
-    return result.data.map(item => ({
-      apartId: item.id,
-      regionCode: item.regionCode,
-      apartName: item.apartName,
-      address: item.address,
-    }));
-  } catch (error) {
-    console.error('즐겨찾기 목록 조회 실패:', error);
-    throw error;
+  if (!result.success) {
+    throw new Error(result.error);
   }
+
+  return result.data ?? [];
 };
 
 export const addFavoriteApart = async (

@@ -4,23 +4,17 @@ import {
   getRegionNameWithRegionCode,
 } from '@/entities/region';
 
-import { ApartItem, RegionItem } from '../models/types';
-
-const sortItems = <T extends { name: string }>(regionItems: T[]): T[] => {
-  return regionItems.sort((a, b) => {
-    return a.name.localeCompare(b.name, 'ko');
-  });
-};
+import { RegionItem } from '../models/types';
 
 const createApartItems = (
   regionCode: string,
   favoriteApartList: FavoriteApartItem[]
-): ApartItem[] => {
-  const apartItems = favoriteApartList
-    .filter(item => item.regionCode === regionCode)
-    .map(item => ({ name: item.apartName, address: item.address }));
+): FavoriteApartItem[] => {
+  const apartItems = favoriteApartList.filter(
+    item => item.regionCode === regionCode
+  );
 
-  return sortItems(apartItems);
+  return apartItems;
 };
 
 const createRegionItems = (
@@ -39,7 +33,11 @@ const createRegionItems = (
     });
   });
 
-  return sortItems(regionItems);
+  const sortedRegionItems = regionItems.sort((a, b) => {
+    return a.name.localeCompare(b.name, 'ko');
+  });
+
+  return sortedRegionItems;
 };
 
 export const calculateRegionItems = (

@@ -4,12 +4,12 @@ import {
   useFavoriteApartList,
   useRemoveFavoriteApartHandler,
 } from '@/entities/apart';
+import { FavoriteApartItem } from '@/entities/apart/models/types';
 import { ROUTE_PATH } from '@/shared/consts/route';
 
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
-import { ApartItem } from '../models/types';
 import { calculateRegionItems } from '../services/calculator';
 import { EmptyApartList } from '../ui/EmptyApartList';
 import { FavoriteApartList } from '../ui/FavoriteApartList';
@@ -23,17 +23,23 @@ export function ApartList() {
     return calculateRegionItems(favoriteApartList);
   }, [favoriteApartList]);
 
-  const handleClickApartItem = (regionCode: string, apartItem: ApartItem) => {
+  const handleClickApartItem = (
+    regionCode: string,
+    apartItem: FavoriteApartItem
+  ) => {
     router.push(
-      `${ROUTE_PATH.APART_DETAIL}?regionCode=${regionCode}&apartName=${apartItem.name}`
+      `${ROUTE_PATH.APART_DETAIL}?regionCode=${regionCode}&apartName=${apartItem.apartName}`
     );
   };
 
-  const handleRemoveApartItem = (regionCode: string, apartItem: ApartItem) => {
+  const handleRemoveApartItem = (
+    regionCode: string,
+    apartItem: FavoriteApartItem
+  ) => {
     removeFavoriteApart({
-      apartId: `${regionCode}-${apartItem.name}-${apartItem.address}`,
+      apartId: apartItem.apartId,
       regionCode,
-      apartName: apartItem.name,
+      apartName: apartItem.apartName,
       address: apartItem.address,
     });
   };
