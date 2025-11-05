@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { FavoriteApartListResponse } from './types';
-import {
-  firestoreClient,
-  mapFirestoreToFavoriteApart,
-  validateDeviceId,
-} from './utils';
-
-// 동적 라우트로 설정 (정적 빌드 시 request.url 사용으로 인한 오류 방지)
-export const dynamic = 'force-dynamic';
+import { FavoriteApartListResponse } from './models/types';
+import { firestoreClient } from './services/fireStoreService';
+import { mapFirestoreToFavoriteApart } from './services/mapperService';
+import { validateDeviceId } from './services/validatorService';
 
 // GET - 디바이스의 즐겨찾기 아파트 목록 조회
 export async function GET(
@@ -31,7 +26,7 @@ export async function GET(
       where: [{ field: 'deviceId', operator: '==', value: deviceId }],
     });
 
-    const favoriteAparts = documents.map(doc =>
+    const favoriteAparts = documents.map((doc: any) =>
       mapFirestoreToFavoriteApart(doc)
     );
 
@@ -39,8 +34,7 @@ export async function GET(
       { success: true, data: favoriteAparts },
       { status: 200 }
     );
-  } catch (error) {
-    console.error('Error in GET /api/favorite-apart:', error);
+  } catch {
     return NextResponse.json(
       { success: false, error: '서버 오류가 발생했습니다.' },
       { status: 500 }

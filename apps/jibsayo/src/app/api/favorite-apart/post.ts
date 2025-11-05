@@ -1,14 +1,18 @@
-import { createApartItemKey } from '@/shared/services/transactionService';
+import { logger } from '@/app/api/shared/utils/logger';
 
 import { NextRequest, NextResponse } from 'next/server';
 
-import { CreateFavoriteApartRequest, FavoriteApartResponse } from './types';
+import {
+  CreateFavoriteApartRequest,
+  FavoriteApart,
+  FavoriteApartResponse,
+} from './models/types';
+import { firestoreClient } from './services/fireStoreService';
 import {
   findExistingFavoriteApart,
-  firestoreClient,
   mapFavoriteApartToFirestore,
-  validateFavoriteApartData,
-} from './utils';
+  validatePostRequestData,
+} from './services/validatorService';
 
 // POST - 새로운 즐겨찾기 아파트 생성
 export async function POST(
@@ -16,11 +20,12 @@ export async function POST(
 ): Promise<NextResponse<FavoriteApartResponse>> {
   try {
     const body: CreateFavoriteApartRequest = await request.json();
-    const { deviceId, regionCode, address, apartName } = body;
+    const { deviceId, apartId, regionCode, address, apartName } = body;
 
     // 입력 유효성 검사
-    const validation = validateFavoriteApartData({
+    const validation = validatePostRequestData({
       deviceId,
+      apartId,
       regionCode,
       address,
       apartName,
@@ -33,14 +38,8 @@ export async function POST(
       );
     }
 
-    const id = createApartItemKey({
-      regionCode,
-      address,
-      apartName,
-    });
-
     // 이미 존재하는 즐겨찾기인지 확인
-    const existingFavorite = await findExistingFavoriteApart(id, deviceId);
+    const existingFavorite = await findExistingFavoriteApart(apartId, deviceId);
 
     if (existingFavorite) {
       return NextResponse.json(
@@ -51,7 +50,7 @@ export async function POST(
 
     // 새 즐겨찾기 아파트 생성
     const favoriteApartData = mapFavoriteApartToFirestore({
-      id,
+      apartId,
       deviceId,
       regionCode,
       address,
@@ -61,8 +60,8 @@ export async function POST(
     const result = await firestoreClient.createDocument(favoriteApartData);
 
     if (result.success) {
-      const newFavoriteApart = {
-        id,
+      const newFavoriteApart: FavoriteApart = {
+        apartId,
         deviceId,
         regionCode,
         address,
@@ -82,7 +81,7 @@ export async function POST(
       );
     }
   } catch (error) {
-    console.error('Error in POST /api/favorite-apart:', error);
+    logger.error('즐겨찾기 아파트 생성 실패:', { error });
     return NextResponse.json(
       { success: false, error: '서버 오류가 발생했습니다.' },
       { status: 500 }

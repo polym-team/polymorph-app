@@ -1,5 +1,6 @@
 export interface FavoriteApart {
-  id: string;
+  id?: string;
+  apartId: string;
   regionCode: string;
   address: string;
   apartName: string;
@@ -10,6 +11,7 @@ export interface FavoriteApart {
 
 export interface CreateFavoriteApartRequest {
   regionCode: string;
+  apartId: string;
   address: string;
   apartName: string;
   deviceId: string;

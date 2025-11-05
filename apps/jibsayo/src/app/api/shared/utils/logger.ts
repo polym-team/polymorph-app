@@ -11,9 +11,9 @@ const warn = (message: string, data?: Record<string, unknown>) => {
 };
 
 const error = (message: string, data?: Record<string, unknown>) => {
-  console.error(
-    `❌ [ERROR] ${message}\n\n💾data:\n${JSON.stringify(data, null, 2)}`
-  );
+  console.error(`----- ❌ [ERROR] ${message} -----`);
+  console.error(data);
+  console.error(`----- ❌ [ERROR] ${message} -----`);
 };
 
 export const logger = {
