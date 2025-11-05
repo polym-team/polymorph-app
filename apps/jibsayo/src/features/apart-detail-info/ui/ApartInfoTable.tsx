@@ -1,4 +1,8 @@
 import { ApartDetailResponse } from '@/app/api/apart/models/types';
+import {
+  getCityNameWithRegionCode,
+  getRegionNameWithRegionCode,
+} from '@/entities/region';
 import { formatNumberWithCommas } from '@/shared/utils/formatters';
 
 import { Star } from 'lucide-react';
@@ -29,7 +33,10 @@ export function ApartInfoTable({
   } = data;
 
   const rows = [
-    { label: '주소', value: address },
+    {
+      label: '주소',
+      value: `${getCityNameWithRegionCode(data.regionCode)} ${getRegionNameWithRegionCode(data.regionCode)} ${address}`,
+    },
     { label: '세대수(동수)', value: housholdsCount },
     { label: '주차', value: parking },
     {
