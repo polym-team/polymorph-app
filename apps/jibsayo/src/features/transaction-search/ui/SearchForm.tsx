@@ -6,7 +6,7 @@ import {
 } from '@/entities/region';
 
 import { Star } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import {
   MonthPicker,
@@ -40,6 +40,9 @@ export function SearchForm({
   onRemoveFavoriteRegion,
   onChangeForm,
 }: SearchFormProps) {
+  const [regionSelectOpen, setRegionSelectOpen] = useState(false);
+  const preventCloseRef = useRef(false);
+
   const favoriteRegionItems = useMemo(() => {
     return calculateFavoriteRegionList(favoriteRegionList);
   }, [favoriteRegionList]);
@@ -75,12 +78,21 @@ export function SearchForm({
         <Select
           key={form.cityName}
           value={form.regionCode}
-          onValueChange={regionCode =>
+          open={regionSelectOpen}
+          onOpenChange={open => {
+            if (!open && preventCloseRef.current) {
+              preventCloseRef.current = false;
+              return;
+            }
+            setRegionSelectOpen(open);
+          }}
+          onValueChange={regionCode => {
             onChangeForm({
               cityName: getCityNameWithRegionCode(regionCode),
               regionCode,
-            })
-          }
+            });
+            setRegionSelectOpen(false);
+          }}
         >
           <SelectTrigger className="flex-1">
             <SelectValue placeholder="시/군/구 선택">
@@ -92,13 +104,15 @@ export function SearchForm({
               <SelectItem key={region.code} value={region.code}>
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-bold">{region.name}</span>
-                  <span
-                    onPointerDown={e => {
-                      e.preventDefault(); // 기본 동작 방지
-                      e.stopPropagation(); // 이벤트 버블링 방지
+                  <button
+                    type="button"
+                    onMouseDown={e => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      preventCloseRef.current = true;
                       onRemoveFavoriteRegion(region.code);
                     }}
-                    className="flex h-[20px] w-[20px] items-center justify-center"
+                    className="flex h-[20px] w-[20px] cursor-pointer items-center justify-center"
                   >
                     <Star
                       className={cn(
@@ -106,7 +120,7 @@ export function SearchForm({
                         'fill-yellow-400 text-yellow-400'
                       )}
                     />
-                  </span>
+                  </button>
                 </div>
               </SelectItem>
             ))}
@@ -115,18 +129,20 @@ export function SearchForm({
               <SelectItem key={region.code} value={region.code}>
                 <div className="flex items-center justify-between gap-2">
                   {region.name}
-                  <span
-                    onPointerDown={e => {
-                      e.preventDefault(); // 기본 동작 방지
-                      e.stopPropagation(); // 이벤트 버블링 방지
+                  <button
+                    type="button"
+                    onMouseDown={e => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      preventCloseRef.current = true;
                       onAddFavoriteRegion(region.code);
                     }}
-                    className="flex h-[20px] w-[20px] items-center justify-center"
+                    className="flex h-[20px] w-[20px] cursor-pointer items-center justify-center"
                   >
                     <Star
                       className={cn('h-4 w-4', 'fill-gray-300 text-gray-300')}
                     />
-                  </span>
+                  </button>
                 </div>
               </SelectItem>
             ))}

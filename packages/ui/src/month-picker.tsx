@@ -181,7 +181,7 @@ export function MonthPicker({
 
   return (
     <div className={cn('relative flex items-center', className)}>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={setOpen} modal={true}>
         <PopoverTrigger asChild>
           <Button
             type="button"
@@ -232,14 +232,15 @@ export function MonthPicker({
           className="w-[var(--radix-popover-trigger-width)] p-0"
           align="start"
         >
-          <div className="flex h-[385px]">
+          <div className="flex h-[344px]">
             {/* Year Selection - Left Side */}
             <div className="w-full flex-1 border-r">
               <div
                 className="h-full overflow-y-auto p-1"
                 style={{
                   scrollBehavior: 'smooth',
-                  overscrollBehavior: 'contain',
+                  overscrollBehavior: 'auto',
+                  WebkitOverflowScrolling: 'touch',
                 }}
               >
                 {Array.from(
@@ -279,7 +280,8 @@ export function MonthPicker({
                 className="h-full overflow-y-auto p-1"
                 style={{
                   scrollBehavior: 'smooth',
-                  overscrollBehavior: 'contain',
+                  overscrollBehavior: 'auto',
+                  WebkitOverflowScrolling: 'touch',
                 }}
               >
                 {months.map((month, index) => (
