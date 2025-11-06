@@ -7,6 +7,7 @@ import { Toaster } from '@package/ui';
 
 import '../../../../packages/styles/globals.css';
 import { ConfigProvider } from './components/ConfigProvider';
+import { FirebaseInitializer } from './components/FirebaseInitializer';
 import { QueryClientProvider } from './components/QueryClientProvider';
 
 export const metadata: Metadata = {
@@ -36,6 +37,7 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <ConfigProvider>
             <QueryClientProvider>
+              <FirebaseInitializer />
               <div className="flex min-h-dvh flex-col items-center">
                 <Header />
                 <main className="w-full max-w-[640px] flex-1">
