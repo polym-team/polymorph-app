@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-const BASE_FONT_SIZE = '15px';
+const BASE_FONT_SIZE = '14.5px';
 
 module.exports = (contentPaths = []) => ({
   content: [

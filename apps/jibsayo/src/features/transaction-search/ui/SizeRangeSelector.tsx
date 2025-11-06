@@ -307,7 +307,7 @@ export function SizeRangeSelector({
               key={button.label}
               type="button"
               onClick={() => handleQuickSelect(button)}
-              size="xs"
+              size="sm"
               variant={
                 localMin === button.min && localMax === button.max
                   ? 'primary-outline'
@@ -327,7 +327,7 @@ export function SizeRangeSelector({
                 key={button.label}
                 type="button"
                 onClick={() => handleQuickSelect(button)}
-                size="xs"
+                size="sm"
                 variant={
                   localMin === button.min && localMax === button.max
                     ? 'primary-outline'
