@@ -213,11 +213,7 @@ export function KakaoMap({ address, apartName }: KakaoMapProps) {
 
   return (
     <div className="overflow-hidden rounded border">
-      <div
-        ref={mapRef}
-        className="h-[250px] w-full"
-        style={{ minHeight: '250px' }}
-      />
+      <div ref={mapRef} className="aspect-square w-full" />
     </div>
   );
 }
