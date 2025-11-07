@@ -20,7 +20,7 @@ export const useNavigate = (): Return => {
   };
 
   const openNewWebview = (path: string) => {
-    openWebview(path);
+    openWebview(process.env.BASE_URL + path);
   };
 
   const navigate = (path: string) => {
