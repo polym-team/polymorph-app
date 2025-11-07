@@ -6,7 +6,7 @@ export async function fetchApartDetail(
 ): Promise<ApartDetailResponse | null> {
   try {
     const response = await fetch(
-      `${process.env.BASE_URL}/api/apart?apartName=${encodeURIComponent(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/apart?apartName=${encodeURIComponent(
         apartName
       )}&area=${regionCode}`
     );

@@ -15,12 +15,11 @@ export const useNavigate = (): Return => {
   const { isInApp } = useGlobalConfigStore();
 
   const pushNavigate = (path: string) => {
-    console.log('pushNavigate', path);
     router.push(path);
   };
 
   const openNewWebview = (path: string) => {
-    openWebview(process.env.BASE_URL + path);
+    openWebview(process.env.NEXT_PUBLIC_BASE_URL + path);
   };
 
   const navigate = (path: string) => {
