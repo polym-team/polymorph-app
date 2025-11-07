@@ -132,15 +132,15 @@ export const removeDuplicateRegionCodesInFavoriteApartList = (
 export const getAllNewTransactions = async (
   regionCodes: string[]
 ): Promise<NewTransactionItem[]> => {
-  const allTransactions: NewTransactionItem[] = [];
+  // 모든 regionCode를 병렬로 처리하여 실행 시간 단축
+  const results = await Promise.allSettled(
+    regionCodes.map(regionCode => getNewTransactionsByArea(regionCode))
+  );
 
-  for (const regionCode of regionCodes) {
-    const transactions = await getNewTransactionsByArea(regionCode);
-    allTransactions.push(...transactions);
-    await new Promise(resolve => setTimeout(resolve, 500));
-  }
-
-  return allTransactions;
+  // 성공한 결과만 필터링하고 평탄화
+  return results
+    .filter(result => result.status === 'fulfilled')
+    .flatMap(result => result.value);
 };
 
 export const getPushNotifications = async (
