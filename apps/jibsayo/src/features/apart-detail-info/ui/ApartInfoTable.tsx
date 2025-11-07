@@ -54,7 +54,7 @@ export function ApartInfoTable({
         <button
           type="button"
           onClick={onToggleFavorite}
-          className="-translate-y-[1.5px]"
+          className="-translate-y-[1px]"
         >
           <Star
             className={cn(
