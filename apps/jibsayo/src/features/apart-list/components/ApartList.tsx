@@ -6,8 +6,8 @@ import {
 } from '@/entities/apart';
 import { FavoriteApartItem } from '@/entities/apart/models/types';
 import { ROUTE_PATH } from '@/shared/consts/route';
+import { useNavigate } from '@/shared/hooks/useNavigate';
 
-import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
 import { calculateRegionItems } from '../services/calculator';
@@ -15,7 +15,7 @@ import { EmptyApartList } from '../ui/EmptyApartList';
 import { FavoriteApartList } from '../ui/FavoriteApartList';
 
 export function ApartList() {
-  const router = useRouter();
+  const { navigate } = useNavigate();
   const favoriteApartList = useFavoriteApartList();
   const removeFavoriteApart = useRemoveFavoriteApartHandler();
 
@@ -27,7 +27,7 @@ export function ApartList() {
     regionCode: string,
     apartItem: FavoriteApartItem
   ) => {
-    router.push(
+    navigate(
       `${ROUTE_PATH.APART_DETAIL}?regionCode=${regionCode}&apartName=${apartItem.apartName}`
     );
   };

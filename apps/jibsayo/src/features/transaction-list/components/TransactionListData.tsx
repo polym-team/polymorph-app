@@ -1,7 +1,6 @@
 import { useTransactionPageSearchParams } from '@/entities/transaction';
 import { ROUTE_PATH } from '@/shared/consts/route';
-
-import { useRouter } from 'next/navigation';
+import { useNavigate } from '@/shared/hooks/useNavigate';
 
 import { useTransactionData } from '../hooks/useTransactionData';
 import { useTransactionViewSetting } from '../hooks/useTransactionViewSetting';
@@ -9,7 +8,7 @@ import { TransactionDetailItem } from '../models/types';
 import { TransactionListSimpleTable } from '../ui/TransactionListSimpleTable';
 
 export function TransactionListData() {
-  const router = useRouter();
+  const { navigate } = useNavigate();
 
   const { isLoading, transactionData, toggleFavorite } = useTransactionData();
   const { pageIndex, sorting, updateSorting, updatePageIndex } =
@@ -17,7 +16,7 @@ export function TransactionListData() {
   const { searchParams } = useTransactionPageSearchParams();
 
   const handleRowClick = (row: TransactionDetailItem) => {
-    router.push(
+    navigate(
       `${ROUTE_PATH.APART_DETAIL}?regionCode=${searchParams.regionCode}&apartName=${row.apartName}`
     );
   };

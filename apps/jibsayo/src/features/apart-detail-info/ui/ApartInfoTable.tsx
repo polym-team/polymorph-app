@@ -5,25 +5,16 @@ import {
 } from '@/entities/region';
 import { formatNumberWithCommas } from '@/shared/utils/formatters';
 
-import { Star } from 'lucide-react';
-
 import { Card } from '@package/ui';
 import { Typography } from '@package/ui';
-import { cn } from '@package/utils';
 
 import { KakaoMap } from './KakaoMap';
 
 interface ApartInfoTableProps {
-  isFavorite: boolean;
   data: ApartDetailResponse;
-  onToggleFavorite: () => void;
 }
 
-export function ApartInfoTable({
-  isFavorite,
-  data,
-  onToggleFavorite,
-}: ApartInfoTableProps) {
+export function ApartInfoTable({ data }: ApartInfoTableProps) {
   const {
     address,
     housholdsCount,
@@ -46,28 +37,12 @@ export function ApartInfoTable({
   ];
 
   return (
-    <Card className="p-3">
-      <div className="mb-2 flex items-center gap-1 px-1">
-        <Typography variant="large" className="text-primary font-semibold">
-          {data.apartName}
-        </Typography>
-        <button
-          type="button"
-          onClick={onToggleFavorite}
-          className="-translate-y-[1px]"
-        >
-          <Star
-            className={cn(
-              'h-[15px] w-[15px]',
-              isFavorite && 'fill-yellow-400 text-yellow-400',
-              !isFavorite && 'fill-gray-300 text-gray-300'
-            )}
-          />
-        </button>
-      </div>
-
+    <Card className="p-3 pt-0">
       {rows.map((item, index) => (
-        <div key={index} className="flex items-start border-t px-1 last:pb-0">
+        <div
+          key={index}
+          className="flex items-center border-t px-1 first:border-t-0 first:pt-0 last:pb-0"
+        >
           <div className="w-[110px] py-3.5">
             <Typography className="text-sm font-medium text-gray-500">
               {item.label}
@@ -76,7 +51,6 @@ export function ApartInfoTable({
           <div className="flex-1 py-3">{item.value || '-'}</div>
         </div>
       ))}
-
       <KakaoMap address={address} apartName={data.apartName} />
     </Card>
   );

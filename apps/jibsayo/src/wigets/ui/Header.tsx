@@ -2,14 +2,11 @@
 
 import { useGlobalConfigStore } from '@/shared/stores/globalConfigStore';
 
+import { AppNavigation } from './AppNavigation';
 import { WebNavigation } from './WebNavigation';
 
 export function Header() {
   const isInApp = useGlobalConfigStore(state => state.isInApp);
 
-  if (isInApp) {
-    return null;
-  }
-
-  return <WebNavigation />;
+  return isInApp ? <AppNavigation /> : <WebNavigation />;
 }

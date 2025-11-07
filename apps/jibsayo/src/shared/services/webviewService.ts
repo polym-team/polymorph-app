@@ -6,6 +6,8 @@ declare global {
   interface Window {
     jibsayo: {
       deviceId: string;
+      openWebview: (url: string) => void;
+      closeWebview: () => void;
       onClickBottomTab: (type: BottomTabType) => void;
       switchTab?: (tabName: TabName) => void;
     };
@@ -52,4 +54,16 @@ export const switchTab = (tabName: TabName): boolean => {
 
   window.jibsayo.switchTab?.(tabName);
   return true;
+};
+
+export const openWebview = (url: string): void => {
+  if (typeof window === 'undefined' || !window.jibsayo) return;
+
+  window.jibsayo.openWebview(url);
+};
+
+export const closeWebview = (): void => {
+  if (typeof window === 'undefined' || !window.jibsayo) return;
+
+  window.jibsayo.closeWebview();
 };

@@ -1,9 +1,7 @@
 import { ROUTE_PATH } from '@/shared/consts/route';
+import { useNavigate } from '@/shared/hooks/useNavigate';
 
-import {
-  useRouter as useNavigationRouter,
-  useSearchParams as useNavigationSearchParams,
-} from 'next/navigation';
+import { useSearchParams as useNavigationSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 
 import { RULES } from '../consts/rule';
@@ -24,7 +22,7 @@ const parseSearchParam = (value: string | number | boolean) => {
 
 export const useTransactionPageSearchParams = (): Return => {
   const navigationSearchParams = useNavigationSearchParams();
-  const router = useNavigationRouter();
+  const { navigate } = useNavigate();
 
   const regionCode = navigationSearchParams.get('regionCode') ?? '';
   const tradeDate = navigationSearchParams.get('tradeDate') ?? '';
@@ -70,7 +68,7 @@ export const useTransactionPageSearchParams = (): Return => {
     Object.entries(params).forEach(([key, value]) => {
       newSearchParams.set(key, parseSearchParam(value));
     });
-    router.push(`${ROUTE_PATH.TRANSACTION}?${newSearchParams.toString()}`);
+    navigate(`${ROUTE_PATH.TRANSACTION}?${newSearchParams.toString()}`);
   };
 
   return { searchParams, setSearchParams };
