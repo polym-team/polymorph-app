@@ -6,6 +6,8 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { Button } from '@package/ui';
 
+const NAVIGATE_EXCLUDE_PATH = [ROUTE_PATH.PRIVACY];
+
 export function WebNavigation() {
   const router = useRouter();
   const pathname = usePathname();
@@ -13,6 +15,10 @@ export function WebNavigation() {
   const handleClick = (item: 'TRANSACTION' | 'APART') => {
     router.push(ROUTE_PATH[item]);
   };
+
+  if (NAVIGATE_EXCLUDE_PATH.some(path => pathname.startsWith(path))) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-50 h-[56px] w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/80">

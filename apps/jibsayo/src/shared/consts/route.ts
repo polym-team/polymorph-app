@@ -2,6 +2,7 @@ export const ROUTE_PATH = {
   TRANSACTION: '/transaction',
   APART: '/apart',
   APART_DETAIL: '/apart-detail',
+  PRIVACY: '/privacy',
 } as const;
 
 export const ROUTE_PATH_LABEL = {
