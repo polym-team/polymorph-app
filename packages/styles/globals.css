@@ -46,4 +46,13 @@
     -ms-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
+
+  /* 텍스트 선택 방지 */
+  * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
 }
