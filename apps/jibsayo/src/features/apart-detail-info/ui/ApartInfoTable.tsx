@@ -16,6 +16,7 @@ interface ApartInfoTableProps {
 
 export function ApartInfoTable({ data }: ApartInfoTableProps) {
   const {
+    apartName,
     address,
     housholdsCount,
     parking,
@@ -38,6 +39,9 @@ export function ApartInfoTable({ data }: ApartInfoTableProps) {
 
   return (
     <Card className="p-3 pt-0">
+      <div className="px-1 py-3.5">
+        <Typography className="text-lg font-semibold">{apartName}</Typography>
+      </div>
       {rows.map((item, index) => (
         <div
           key={index}
