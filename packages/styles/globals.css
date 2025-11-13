@@ -47,6 +47,18 @@
     text-size-adjust: 100%;
   }
 
+  /* 핀치 줌 방지 */
+  html,
+  body {
+    touch-action: pan-x pan-y;
+    overscroll-behavior: none;
+  }
+
+  /* 모든 요소에서 핀치 줌 차단 */
+  * {
+    touch-action: pan-x pan-y;
+  }
+
   /* 텍스트 선택 방지 */
   * {
     -webkit-user-select: none;
