@@ -17,3 +17,8 @@ export const useFavoriteApartList = (): FavoriteApartItem[] => {
 
   return sortedFavoriteApartList;
 };
+
+export const useFavoriteApartLoading = (): boolean => {
+  const { isLoading } = useFavoriteApartListQuery();
+  return isLoading;
+};

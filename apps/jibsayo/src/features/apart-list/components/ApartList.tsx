@@ -2,6 +2,7 @@
 
 import {
   useFavoriteApartList,
+  useFavoriteApartLoading,
   useRemoveFavoriteApartHandler,
 } from '@/entities/apart';
 import { FavoriteApartItem } from '@/entities/apart/models/types';
@@ -13,10 +14,12 @@ import { useMemo } from 'react';
 import { calculateRegionItems } from '../services/calculator';
 import { EmptyApartList } from '../ui/EmptyApartList';
 import { FavoriteApartList } from '../ui/FavoriteApartList';
+import { FavoriteApartListSkeleton } from '../ui/FavoriteApartListSkeleton';
 
 export function ApartList() {
   const { navigate } = useNavigate();
   const favoriteApartList = useFavoriteApartList();
+  const favoriteApartLoading = useFavoriteApartLoading();
   const removeFavoriteApart = useRemoveFavoriteApartHandler();
 
   const regionItems = useMemo(() => {
@@ -43,6 +46,10 @@ export function ApartList() {
       address: apartItem.address,
     });
   };
+
+  if (favoriteApartLoading) {
+    return <FavoriteApartListSkeleton />;
+  }
 
   if (regionItems.length === 0) {
     return <EmptyApartList />;
