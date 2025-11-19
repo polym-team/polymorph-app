@@ -41,7 +41,7 @@ export function FavoriteApartList({
                   {item.apartName}{' '}
                   <ChevronRight
                     size={18}
-                    className="translate-y-[-1.5px] text-gray-300"
+                    className="translate-y-[-0.5px] text-gray-300"
                   />
                 </span>
                 <button

@@ -1,12 +1,10 @@
 export function ApartTransactionHistorySkeleton() {
   return (
-    <div className="rounded-lg border bg-white p-3 shadow-sm">
+    <div className="bg-white p-3">
       {/* 제목 */}
-      <div className="mb-2">
-        <div className="h-6 w-24 animate-pulse rounded bg-gray-200" />
-      </div>
+      <div className="h-6 w-24 animate-pulse rounded bg-gray-200" />
 
-      <div className="flex flex-col gap-y-5">
+      <div className="mt-2 flex flex-col gap-y-5">
         {/* 필터 섹션 */}
         <div className="flex flex-col gap-3">
           {/* 기간 필터 */}
