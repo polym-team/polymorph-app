@@ -10,7 +10,7 @@ interface SizeRangeSelectorProps {
   onRangeChange: (min: number, max: number) => void;
 }
 
-const HANDLE_RADIUS = 10; // 핸들 반지름 (w-4 + border-2 = 20px / 2)
+const HANDLE_RADIUS = 8; // 핸들 반지름 (w-4 = 16px / 2)
 
 export function SizeRangeSelector({
   minSize,
@@ -256,27 +256,29 @@ export function SizeRangeSelector({
           {/* 슬라이더 트랙 */}
           <div
             ref={sliderRef}
-            className="relative h-2 cursor-pointer rounded-lg bg-gray-200"
+            className="relative cursor-pointer rounded-full bg-gray-200"
+            style={{ height: '24px' }}
             onClick={handleSliderClick}
             onTouchStart={handleSliderClick}
           >
             {/* 활성 범위 */}
             <div
-              className="bg-primary absolute h-2 rounded-lg"
+              className="bg-primary absolute rounded-full"
               style={{
-                left: minPosition,
-                width: maxPosition - minPosition,
+                left: minPosition - HANDLE_RADIUS,
+                width: maxPosition - minPosition + HANDLE_RADIUS * 2,
+                height: '24px',
               }}
             />
           </div>
 
           {/* 최대값 핸들 */}
           <div
-            className={`border-primary absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full border-2 bg-white shadow-md ${
+            className={`absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full bg-white shadow-md ${
               dragging === 'max' ? 'scale-110 cursor-grabbing' : ''
             }`}
             style={{
-              left: maxPosition,
+              left: maxPosition - 3,
               zIndex: shouldMinBeOnTop ? 1 : 2,
             }}
             onMouseDown={e => handleMouseDown(e, 'max')}
@@ -285,11 +287,11 @@ export function SizeRangeSelector({
 
           {/* 최소값 핸들 */}
           <div
-            className={`border-primary absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full border-2 bg-white shadow-md ${
+            className={`absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full bg-white shadow-md ${
               dragging === 'min' ? 'scale-110 cursor-grabbing' : ''
             }`}
             style={{
-              left: minPosition,
+              left: minPosition + 3,
               zIndex: shouldMinBeOnTop ? 2 : 1,
             }}
             onMouseDown={e => handleMouseDown(e, 'min')}

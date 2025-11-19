@@ -57,45 +57,47 @@ export function FilterForm({
           세부 필터
           {hasFilters && <span className="text-primary text-sm">선택됨</span>}
         </Button>
-        <div className="mt-2 flex gap-1 overflow-x-auto">
-          {!(
-            appliedFilter.minSize === 0 && appliedFilter.maxSize === Infinity
-          ) &&
-            (appliedFilter.minSize !== RULES.SEARCH_MIN_SIZE ||
-              appliedFilter.maxSize !== RULES.SEARCH_MAX_SIZE) && (
-              <FilterLabel
-                onRemove={() =>
-                  onRemoveFilter({
-                    minSize: RULES.SEARCH_MIN_SIZE,
-                    maxSize: RULES.SEARCH_MAX_SIZE,
-                  })
-                }
-              >
-                {appliedFilter.maxSize === Infinity
-                  ? `${formatPyeong(appliedFilter.minSize)} 이상`
-                  : `${formatPyeong(appliedFilter.minSize)}~${formatPyeong(appliedFilter.maxSize)}`}
+        {hasFilters && (
+          <div className="mt-2 flex gap-1 overflow-x-auto">
+            {!(
+              appliedFilter.minSize === 0 && appliedFilter.maxSize === Infinity
+            ) &&
+              (appliedFilter.minSize !== RULES.SEARCH_MIN_SIZE ||
+                appliedFilter.maxSize !== RULES.SEARCH_MAX_SIZE) && (
+                <FilterLabel
+                  onRemove={() =>
+                    onRemoveFilter({
+                      minSize: RULES.SEARCH_MIN_SIZE,
+                      maxSize: RULES.SEARCH_MAX_SIZE,
+                    })
+                  }
+                >
+                  {appliedFilter.maxSize === Infinity
+                    ? `${formatPyeong(appliedFilter.minSize)} 이상`
+                    : `${formatPyeong(appliedFilter.minSize)}~${formatPyeong(appliedFilter.maxSize)}`}
+                </FilterLabel>
+              )}
+            {appliedFilter.apartName && (
+              <FilterLabel onRemove={() => onRemoveFilter({ apartName: '' })}>
+                {appliedFilter.apartName}
               </FilterLabel>
             )}
-          {appliedFilter.apartName && (
-            <FilterLabel onRemove={() => onRemoveFilter({ apartName: '' })}>
-              {appliedFilter.apartName}
-            </FilterLabel>
-          )}
-          {appliedFilter.favoriteOnly && (
-            <FilterLabel
-              onRemove={() => onRemoveFilter({ favoriteOnly: false })}
-            >
-              저장된 아파트
-            </FilterLabel>
-          )}
-          {appliedFilter.newTransactionOnly && (
-            <FilterLabel
-              onRemove={() => onRemoveFilter({ newTransactionOnly: false })}
-            >
-              신규 거래
-            </FilterLabel>
-          )}
-        </div>
+            {appliedFilter.favoriteOnly && (
+              <FilterLabel
+                onRemove={() => onRemoveFilter({ favoriteOnly: false })}
+              >
+                저장된 아파트
+              </FilterLabel>
+            )}
+            {appliedFilter.newTransactionOnly && (
+              <FilterLabel
+                onRemove={() => onRemoveFilter({ newTransactionOnly: false })}
+              >
+                신규 거래
+              </FilterLabel>
+            )}
+          </div>
+        )}
       </div>
 
       <BottomSheet
@@ -137,9 +139,7 @@ export function FilterForm({
                 <Button
                   size="sm"
                   rounded
-                  variant={
-                    tempFilter.favoriteOnly ? 'primary-outline' : 'outline'
-                  }
+                  variant={tempFilter.favoriteOnly ? 'primary' : 'outline'}
                   onClick={() =>
                     handleTempFilterChange({
                       favoriteOnly: !tempFilter.favoriteOnly,
@@ -152,9 +152,7 @@ export function FilterForm({
                   size="sm"
                   rounded
                   variant={
-                    tempFilter.newTransactionOnly
-                      ? 'primary-outline'
-                      : 'outline'
+                    tempFilter.newTransactionOnly ? 'primary' : 'outline'
                   }
                   onClick={() =>
                     handleTempFilterChange({
@@ -169,7 +167,7 @@ export function FilterForm({
           </div>
 
           {/* 확인 버튼 */}
-          <div className="mt-6 w-full">
+          <div className="mt-5 w-full">
             <Button
               onClick={handleApplyFilter}
               size="lg"
