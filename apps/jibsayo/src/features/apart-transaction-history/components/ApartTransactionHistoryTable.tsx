@@ -10,13 +10,8 @@ import {
 
 import { useEffect, useState } from 'react';
 
-import {
-  Button,
-  Card,
-  ColumnDef,
-  DataTable,
-  DataTableColumnHeader,
-} from '@package/ui';
+import { ColumnDef, DataTable, DataTableColumnHeader } from '@package/ui';
+import { cn } from '@package/utils';
 
 import { useSelectedMonth } from '../contexts/SelectedMonthContext';
 import { useTransactionHistoryTableData } from '../hooks/useTransactionHistoryTableData';
@@ -110,26 +105,28 @@ export function ApartTransactionHistoryTable({
 
   return (
     <div className="space-y-2">
-      <Card className="flex gap-2 p-2">
-        <Button
-          variant={!isFilterEnabled ? 'primary-outline' : 'outline'}
-          size="sm"
-          className="min-w-0 flex-1"
+      <div className="flex rounded bg-gray-100 p-1">
+        <button
+          className={cn(
+            'w-full rounded py-2 text-sm transition-all duration-200',
+            !isFilterEnabled && 'bg-white'
+          )}
           onClick={() => setIsFilterEnabled(false)}
         >
           전체보기
-        </Button>
+        </button>
         {selectedMonth && (
-          <Button
-            variant={isFilterEnabled ? 'primary-outline' : 'outline'}
-            size="sm"
-            className="min-w-0 flex-1"
+          <button
+            className={cn(
+              'w-full rounded py-2 text-sm transition-all duration-200',
+              isFilterEnabled && 'bg-white'
+            )}
             onClick={() => setIsFilterEnabled(true)}
           >
             {formatSelectedMonth(selectedMonth)} 보기
-          </Button>
+          </button>
         )}
-      </Card>
+      </div>
       <DataTable
         key={renderKey}
         pageSize={20}

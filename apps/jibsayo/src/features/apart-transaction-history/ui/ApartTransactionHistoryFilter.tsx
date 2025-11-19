@@ -1,6 +1,7 @@
 import { formatPyeong } from '@/shared/utils/formatters';
 
-import { Button, Card } from '@package/ui';
+import { Button } from '@package/ui';
+import { cn } from '@package/utils';
 
 import { CHART_COLORS, PERIODS } from '../consts/config';
 import { PeriodValue, SizesValue } from '../models/types';
@@ -21,29 +22,30 @@ export function ApartTransactionHistoryFilter({
   onChangeSizes,
 }: ApartTransactionHistoryFilterProps) {
   return (
-    <Card>
-      <div className="flex gap-1 p-2">
+    <div className="flex flex-col gap-y-2">
+      <div className="flex rounded bg-gray-100 p-1">
         {PERIODS.map(p => (
-          <Button
+          <button
             key={p.value}
-            variant={p.value === selectedPeriod ? 'primary-outline' : 'outline'}
-            size="sm"
-            className="min-w-0 flex-1"
+            className={cn(
+              'w-full rounded py-2 text-sm transition-all duration-200',
+              selectedPeriod === p.value && 'bg-white'
+            )}
             onClick={() => onChangePeriod(p.value)}
           >
             {p.label}
-          </Button>
+          </button>
         ))}
       </div>
-      <hr className="my-0 border-gray-200" />
-      <div className="flex flex-wrap gap-1 p-2">
+      <div className="flex flex-wrap gap-1">
         {allSizes.map((size, index) => {
           const isSelected = selectedSizes.has(size);
           return (
             <Button
               key={size}
-              size="sm"
-              variant={isSelected ? 'primary-outline' : 'outline'}
+              size="xs"
+              rounded
+              variant={isSelected ? 'primary-outline' : 'default'}
               onClick={() =>
                 onChangeSizes(
                   isSelected
@@ -63,6 +65,6 @@ export function ApartTransactionHistoryFilter({
           );
         })}
       </div>
-    </Card>
+    </div>
   );
 }

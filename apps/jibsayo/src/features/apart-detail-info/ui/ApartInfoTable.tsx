@@ -5,9 +5,6 @@ import {
 } from '@/entities/region';
 import { formatNumberWithCommas } from '@/shared/utils/formatters';
 
-import { Card } from '@package/ui';
-import { Typography } from '@package/ui';
-
 import { KakaoMap } from './KakaoMap';
 
 interface ApartInfoTableProps {
@@ -24,38 +21,37 @@ export function ApartInfoTable({ data }: ApartInfoTableProps) {
     buildingCoverageRatio,
   } = data;
 
-  const rows = [
-    {
-      label: '주소',
-      value: `${getCityNameWithRegionCode(data.regionCode)} ${getRegionNameWithRegionCode(data.regionCode)} ${address}`,
-    },
-    { label: '세대수(동수)', value: housholdsCount },
-    { label: '주차', value: parking },
-    {
-      label: '용적률 / 건폐율',
-      value: `${formatNumberWithCommas(floorAreaRatio)}% / ${formatNumberWithCommas(buildingCoverageRatio)}%`,
-    },
-  ];
-
   return (
-    <Card className="p-3 pt-0">
-      <div className="px-1 py-3.5">
-        <Typography className="text-lg font-semibold">{apartName}</Typography>
+    <div className="flex flex-col gap-y-4 bg-white p-3">
+      <div className="flex flex-col">
+        <span className="text-lg font-semibold">{apartName}</span>
+        <span className="text-sm text-gray-400">
+          {getCityNameWithRegionCode(data.regionCode)}{' '}
+          {getRegionNameWithRegionCode(data.regionCode)} {address}
+        </span>
       </div>
-      {rows.map((item, index) => (
-        <div
-          key={index}
-          className="flex items-center border-t px-1 first:border-t-0 first:pt-0 last:pb-0"
-        >
-          <div className="w-[110px] py-3.5">
-            <Typography className="text-sm font-medium text-gray-500">
-              {item.label}
-            </Typography>
-          </div>
-          <div className="flex-1 py-3">{item.value || '-'}</div>
+      <div className="flex flex-col gap-y-2">
+        <div className="bg-primary/5 flex items-center justify-between gap-x-2 rounded p-3">
+          <span className="whitespace-nowrap text-sm text-gray-500">
+            세대수
+          </span>
+          <span className="text-primary text-sm">{housholdsCount}</span>
         </div>
-      ))}
+        <div className="bg-primary/5 flex items-center justify-between gap-x-2 rounded p-3">
+          <span className="whitespace-nowrap text-sm text-gray-500">주차</span>
+          <span className="text-primary text-sm">{parking}</span>
+        </div>
+        <div className="bg-primary/5 flex items-center justify-between gap-x-2 rounded p-3">
+          <span className="whitespace-nowrap text-sm text-gray-500">
+            용적률 / 건폐율
+          </span>
+          <span className="text-primary text-sm">
+            {formatNumberWithCommas(floorAreaRatio)}% /{' '}
+            {formatNumberWithCommas(buildingCoverageRatio)}%
+          </span>
+        </div>
+      </div>
       <KakaoMap address={address} apartName={data.apartName} />
-    </Card>
+    </div>
   );
 }

@@ -43,7 +43,7 @@ const buttonVariants = cva(
         danger: 'border-transparent bg-danger text-danger-foreground',
         warning: 'border-transparent bg-warning text-warning-foreground',
         outline: 'border-input bg-background',
-        secondary: 'border-transparent bg-secondary text-secondary-foreground',
+        secondary: 'border-transparent bg- text-secondary-foreground',
         ghost: 'border-transparent',
         link: 'border-transparent text-primary underline-offset-4',
       },

@@ -38,8 +38,8 @@ module.exports = (contentPaths = []) => ({
           foreground: '#FFFFFF',
         },
         secondary: {
-          DEFAULT: 'hsl(210 40% 96%)',
-          foreground: 'hsl(222.2 84% 4.9%)',
+          DEFAULT: 'hsl(220 13% 20%)',
+          foreground: 'hsl(0 0% 98%)',
         },
         danger: {
           DEFAULT: 'hsl(0 84.2% 60.2%)',
