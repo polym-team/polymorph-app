@@ -58,7 +58,7 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
           onClick={handleOpenBottomSheet}
           className="w-full justify-between"
         >
-          세부 필터
+          <span className="text-sm">세부 필터</span>
           {hasFilters && <span className="text-primary text-sm">선택됨</span>}
         </Button>
         {hasFilters && (
