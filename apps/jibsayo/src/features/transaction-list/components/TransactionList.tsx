@@ -39,6 +39,8 @@ export function TransactionList() {
       </div>
       <TransactionCardList
         items={transactionData}
+        totalItems={transactionTotalCount}
+        pageIndex={pageIndex}
         onFavoriteToggle={toggleFavorite}
         onPageIndexChange={updatePageIndex}
         onRowClick={navigateToApartDetail}
