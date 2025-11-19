@@ -81,7 +81,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       {/* Bottom Sheet */}
       <div
         ref={contentRef}
-        className="relative w-full max-w-lg bg-white shadow-2xl"
+        className="relative w-full bg-white shadow-2xl"
         style={{
           borderTopLeftRadius: '20px',
           borderTopRightRadius: '20px',

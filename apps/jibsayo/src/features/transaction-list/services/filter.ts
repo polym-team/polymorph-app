@@ -2,6 +2,37 @@ import { FavoriteApartItem } from '@/entities/apart/models/types';
 import { RULES, SearchParams, TransactionItem } from '@/entities/transaction';
 import { calculateAreaPyeong } from '@/shared/services/transactionService';
 
+import { TRANSACTION_LIST_PAGE_SIZE } from '../consts/rules';
+import { Sorting } from '../models/types';
+
+export const sortTransactionList = (
+  transactionList: TransactionItem[],
+  sorting: Sorting
+): TransactionItem[] => {
+  return [...transactionList].sort((a, b) => {
+    if (sorting.id === 'tradeDate') {
+      return sorting.desc
+        ? new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime()
+        : new Date(a.tradeDate).getTime() - new Date(b.tradeDate).getTime();
+    } else if (sorting.id === 'tradeAmount') {
+      return sorting.desc
+        ? b.tradeAmount - a.tradeAmount
+        : a.tradeAmount - b.tradeAmount;
+    }
+    return 0;
+  });
+};
+
+export const sliceTransactionList = (
+  transactionList: TransactionItem[],
+  pageIndex: number
+): TransactionItem[] => {
+  return transactionList.slice(
+    pageIndex * TRANSACTION_LIST_PAGE_SIZE,
+    (pageIndex + 1) * TRANSACTION_LIST_PAGE_SIZE
+  );
+};
+
 export const filterTransactionItemWithApartName = (
   transaction: TransactionItem,
   searchParams: SearchParams

@@ -28,7 +28,10 @@ export function TransactionSearch() {
   });
 
   return (
-    <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
+    <form
+      className="flex flex-col gap-2 bg-white px-3 pb-3"
+      onSubmit={handleSubmit}
+    >
       <SearchForm
         form={form}
         favoriteRegionList={favoriteRegionList}

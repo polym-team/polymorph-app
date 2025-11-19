@@ -11,7 +11,7 @@ export default async function TransactionPage() {
   return (
     <QueryParamProvider>
       <PageLayout title={ROUTE_PATH_LABEL.TRANSACTION}>
-        <div className="flex flex-col gap-y-5">
+        <div className="flex flex-col">
           <Suspense fallback={null}>
             <TransactionSearch />
           </Suspense>

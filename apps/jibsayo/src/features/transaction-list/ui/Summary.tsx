@@ -33,25 +33,23 @@ export function Summary({
   }
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col">
       <div>
         <strong>
           {cityName} {regionName}
         </strong>
       </div>
-      <div className="text-right">
-        <p className="text-sm text-gray-600">
-          총 거래건수{' '}
-          <strong className="text-primary">
+      <div>
+        <span className="text-sm text-gray-500">
+          총{' '}
+          <span className="text-primary">
             {formatQuantity(transactionTotalCount)}
-          </strong>
-        </p>
-        <p className="text-sm text-gray-600">
-          평당 거래가격{' '}
-          <strong className="text-primary">
+          </span>{' '}
+          · 평당{' '}
+          <span className="text-primary">
             {formatKoreanAmountText(transactionAverageAmount)}
-          </strong>
-        </p>
+          </span>
+        </span>
       </div>
     </div>
   );

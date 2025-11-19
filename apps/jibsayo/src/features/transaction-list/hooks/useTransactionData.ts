@@ -1,47 +1,49 @@
+import { useFavoriteApartList } from '@/entities/apart';
 import {
-  useAddFavoriteApartHandler,
-  useFavoriteApartList,
-  useRemoveFavoriteApartHandler,
-} from '@/entities/apart';
-import {
+  TransactionItem,
   useNewTransactionListQuery,
-  useTransactionListQuery,
   useTransactionPageSearchParams,
 } from '@/entities/transaction';
 
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 
-import { TransactionDetailItem } from '../models/types';
+import { Sorting, TransactionDetailItem } from '../models/types';
+import { calculateTransactionAverageAmount } from '../services/calculator';
 import {
   filterFavoriteApartListWithRegionCode,
   filterTransactionItemWithApartName,
   filterTransactionItemWithFavorite,
   filterTransactionItemWithNewTransaction,
   filterTransactionItemWithSize,
+  sliceTransactionList,
+  sortTransactionList,
 } from '../services/filter';
 import { mapTramsactionItemWithFavorite } from '../services/mapper';
 
-interface Return {
-  isLoading: boolean;
-  transactionData: TransactionDetailItem[];
-  toggleFavorite: (item: TransactionDetailItem) => void;
+interface Params {
+  transactionListData: TransactionItem[];
+  pageIndex: number;
+  sorting: Sorting;
 }
 
-export const useTransactionData = (): Return => {
+interface Return {
+  transactionData: TransactionDetailItem[];
+  transactionTotalCount: number;
+  transactionAverageAmount: number;
+}
+
+export const useTransactionData = ({
+  transactionListData,
+  pageIndex,
+  sorting,
+}: Params): Return => {
   const { searchParams } = useTransactionPageSearchParams();
   const favoriteApartList = useFavoriteApartList();
-  const addFavoriteApart = useAddFavoriteApartHandler();
-  const removeFavoriteApart = useRemoveFavoriteApartHandler();
 
-  const { isLoading, data: transactionData } = useTransactionListQuery();
   const { data: newTransactionData } = useNewTransactionListQuery(
     searchParams.regionCode
   );
 
-  const originTransactions = useMemo(
-    () => transactionData?.list || [],
-    [transactionData]
-  );
   const newTransactions = useMemo(
     () => newTransactionData?.list || [],
     [newTransactionData]
@@ -55,7 +57,7 @@ export const useTransactionData = (): Return => {
   }, [favoriteApartList, searchParams]);
 
   const filteredTransactions = useMemo(() => {
-    return originTransactions.filter(
+    return transactionListData.filter(
       transaction =>
         filterTransactionItemWithApartName(transaction, searchParams) &&
         filterTransactionItemWithSize(transaction, searchParams) &&
@@ -71,41 +73,35 @@ export const useTransactionData = (): Return => {
         )
     );
   }, [
-    originTransactions,
+    transactionListData,
     newTransactions,
     searchParams,
     filteredFavoriteApartList,
   ]);
 
+  const sortedTransactions = useMemo(() => {
+    return sortTransactionList(filteredTransactions, sorting);
+  }, [filteredTransactions, sorting]);
+
+  const slicedTransactions = useMemo(() => {
+    return sliceTransactionList(sortedTransactions, pageIndex);
+  }, [sortedTransactions, pageIndex]);
+
   const mappedTransactions = useMemo(() => {
     return mapTramsactionItemWithFavorite(
-      filteredTransactions,
+      slicedTransactions,
       newTransactions,
       filteredFavoriteApartList
     );
-  }, [filteredFavoriteApartList, filteredTransactions, newTransactions]);
+  }, [filteredFavoriteApartList, slicedTransactions, newTransactions]);
 
-  const toggleFavorite = useCallback(
-    (item: TransactionDetailItem) => {
-      const params = {
-        apartId: item.apartId,
-        apartName: item.apartName,
-        address: item.address,
-        regionCode: searchParams.regionCode,
-      };
-
-      if (item.isFavorite) {
-        removeFavoriteApart(params);
-      } else {
-        addFavoriteApart(params);
-      }
-    },
-    [searchParams.regionCode, addFavoriteApart, removeFavoriteApart]
-  );
+  const transactionTotalCount = filteredTransactions.length;
+  const transactionAverageAmount =
+    calculateTransactionAverageAmount(filteredTransactions);
 
   return {
-    isLoading,
     transactionData: mappedTransactions,
-    toggleFavorite,
+    transactionTotalCount,
+    transactionAverageAmount,
   };
 };
