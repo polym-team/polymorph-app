@@ -4,12 +4,12 @@ import * as React from 'react';
 import { cn } from '@package/utils';
 
 const inputVariants = cva(
-  'border-input bg-background ring-offset-background file:text-foreground placeholder:text-muted-foreground flex w-full rounded-sm border file:border-0 file:bg-transparent file:font-medium outline-none ring-0 ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-100 ease-out active:shadow-md active:shadow-gray-500/50',
+  'bg-gray-100 ring-offset-background file:text-foreground placeholder:text-muted-foreground flex w-full rounded file:border-0 file:bg-transparent file:font-medium outline-none ring-0 ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 active:brightness-90',
   {
     variants: {
       size: {
-        default: 'h-[46px] px-3 py-[12.5px]',
-        sm: 'h-[36px] px-3 py-[9.5px] active:shadow-sm active:shadow-gray-500/45',
+        default: 'h-[48px] px-4 ',
+        sm: 'h-[40px] px-3 ',
       },
     },
     defaultVariants: {
@@ -23,29 +23,11 @@ export interface InputProps
     VariantProps<typeof inputVariants> {}
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, size, style, ...props }, ref) => {
-    // size variant에 따른 fontSize 설정
-    const targetFontSize = size === 'sm' ? 14 : 16;
-
-    // iOS Safari 확대 방지를 위해 16px 고정 + scale로 크기 조정
-    const fontScale = targetFontSize / 16;
-
-    const inputStyle: React.CSSProperties = {
-      fontSize: '16px',
-      ...(fontScale !== 1 && {
-        transform: `scale(${fontScale})`,
-        transformOrigin: 'left center',
-        width: `${100 / fontScale}%`,
-        height: `${100 / fontScale}%`,
-      }),
-      ...style,
-    };
-
+  ({ className, type, size, ...props }, ref) => {
     return (
       <input
         type={type}
         className={cn(inputVariants({ size, className }))}
-        style={inputStyle}
         ref={ref}
         {...props}
       />

@@ -50,7 +50,8 @@ const buttonVariants = cva(
       size: {
         default: 'h-[48px] px-4',
         sm: 'h-[40px] px-4 text-sm',
-        lg: 'h-[56px] px-6',
+        xs: 'h-[32px] px-3 text-xs',
+        lg: 'h-[52px] px-5',
       },
     },
     defaultVariants: {
@@ -65,6 +66,7 @@ export interface ButtonProps
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   isLoading?: boolean;
+  rounded?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -76,6 +78,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       size,
       asChild = false,
       isLoading = false,
+      rounded = false,
       children,
       ...props
     },
@@ -85,7 +88,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Comp
         type={type}
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(
+          buttonVariants({ variant, size }),
+          rounded && 'rounded-full',
+          className
+        )}
         ref={ref}
         {...props}
       >

@@ -47,3 +47,4 @@ export {
   HoverCardTrigger,
   HoverCardContent,
 } from './src/hover-card';
+export { BottomSheet } from './src/bottom-sheet';

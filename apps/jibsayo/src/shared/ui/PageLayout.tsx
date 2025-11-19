@@ -7,7 +7,7 @@ export function PageLayout({
 }) {
   return (
     <section>
-      <h1 className="p-3 text-lg font-bold">{title}</h1>
+      <h1 className="p-3 text-lg font-semibold">{title}</h1>
       <div className="px-3 pb-10">{children}</div>
     </section>
   );

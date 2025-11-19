@@ -225,20 +225,20 @@ export function SizeRangeSelector({
     (localMax === 50 || localMax === Infinity);
 
   const quickSelectButtons = [
+    { label: '전체', min: 0, max: Infinity },
+    { label: '국민평수', min: 33, max: 35 },
     { label: '10평대', min: 10, max: 19 },
     { label: '20평대', min: 20, max: 29 },
     { label: '30평대', min: 30, max: 39 },
     { label: '40평대', min: 40, max: 49 },
     { label: '50평 이상', min: 50, max: Infinity },
-    { label: '전체', min: 0, max: Infinity },
-    { label: '국민평수', min: 33, max: 35 },
   ];
 
   return (
-    <div className="flex w-full flex-col gap-3 rounded border p-3">
+    <div className="flex w-full flex-col gap-3">
       {/* 헤더: 평수 제목과 현재 선택된 범위 */}
       <div className="flex items-center justify-between">
-        <Typography variant="small" className="text-sm font-medium">
+        <Typography variant="small" className="text-sm font-semibold">
           평수
         </Typography>
         <Typography variant="small" className="text-sm text-gray-600">
@@ -251,7 +251,7 @@ export function SizeRangeSelector({
       </div>
 
       {/* 1행: Range Selector */}
-      <div className="flex w-full items-center justify-center">
+      <div className="flex w-full items-center justify-center rounded-full">
         <div className="relative w-full">
           {/* 슬라이더 트랙 */}
           <div
@@ -298,48 +298,27 @@ export function SizeRangeSelector({
         </div>
       </div>
 
-      {/* 2행: 빠른 선택 버튼들 */}
-      <div className="flex w-full flex-col gap-1">
-        {/* 첫 번째 줄: 0~4 인덱스 */}
-        <div className="grid w-full grid-cols-5 gap-1">
-          {quickSelectButtons.slice(0, 5).map(button => (
+      {/* 2행: 빠른 선택 버튼들 - 가로 스크롤 */}
+      <div className="overflow-x-auto overflow-y-hidden">
+        <div className="flex w-max gap-1">
+          {quickSelectButtons.map(button => (
             <Button
               key={button.label}
               type="button"
               onClick={() => handleQuickSelect(button)}
               size="sm"
+              rounded
               variant={
                 localMin === button.min && localMax === button.max
-                  ? 'primary-outline'
+                  ? 'primary'
                   : 'outline'
               }
+              className="whitespace-nowrap"
             >
               {button.label}
             </Button>
           ))}
         </div>
-
-        {/* 두 번째 줄: 나머지 버튼들 */}
-        {quickSelectButtons.length > 5 && (
-          <div className="flex w-full gap-1">
-            {quickSelectButtons.slice(5).map(button => (
-              <Button
-                key={button.label}
-                type="button"
-                onClick={() => handleQuickSelect(button)}
-                size="sm"
-                variant={
-                  localMin === button.min && localMax === button.max
-                    ? 'primary-outline'
-                    : 'outline'
-                }
-                className="flex-1"
-              >
-                {button.label}
-              </Button>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
