@@ -42,7 +42,7 @@ export function ApartTransactionHistoryFilter({
           return (
             <Button
               key={size}
-              size="xs"
+              size="sm"
               variant={isSelected ? 'primary-outline' : 'outline'}
               onClick={() =>
                 onChangeSizes(

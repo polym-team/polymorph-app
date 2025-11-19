@@ -43,7 +43,7 @@ export function FavoriteApartList({
                 >
                   <Button
                     variant="ghost"
-                    size="xs"
+                    size="sm"
                     onClick={() => onClickApartItem(region.code, item)}
                     className="whitespace-nowrap rounded-r-none border-0"
                   >
@@ -53,7 +53,7 @@ export function FavoriteApartList({
                   </Button>
                   <Button
                     variant="ghost"
-                    size="xs"
+                    size="sm"
                     onClick={() => onRemoveApartItem(region.code, item)}
                     className="-ml-3 rounded-l-none border-0 px-2.5"
                   >

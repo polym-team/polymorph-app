@@ -14,7 +14,7 @@ export function FilterLabel({ children, onRemove }: FilterLabelProps) {
   };
 
   return (
-    <Button size="xs" variant="primary-outline" className="pr-2">
+    <Button size="sm" variant="primary-outline" className="pr-2">
       {children}
       <span className="bg-transparent" onClick={handleClick}>
         <XIcon className="h-4 w-4" />

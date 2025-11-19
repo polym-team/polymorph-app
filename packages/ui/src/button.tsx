@@ -48,11 +48,9 @@ const buttonVariants = cva(
         link: 'border-transparent text-primary underline-offset-4',
       },
       size: {
-        default: 'h-[46px] px-4',
-        xs: 'h-[30px] rounded px-3  text-sm',
-        sm: 'h-[36px] rounded px-4  text-sm',
-        lg: 'rounded px-8 py-3.5 text-base',
-        icon: 'p-3 text-sm',
+        default: 'h-[48px] px-4',
+        sm: 'h-[40px] px-4 text-sm',
+        lg: 'h-[56px] px-6',
       },
     },
     defaultVariants: {

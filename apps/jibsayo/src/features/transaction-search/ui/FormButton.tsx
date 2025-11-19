@@ -9,12 +9,7 @@ interface FormButtonProps {
 
 export function FormButton({ isLoading, isChanged }: FormButtonProps) {
   return (
-    <Button
-      isLoading={isLoading}
-      type="submit"
-      variant="primary"
-      className="font-extrabold"
-    >
+    <Button isLoading={isLoading} type="submit" variant="primary" size="lg">
       {isChanged && (
         <span className="inline-flex animate-[pulse_1s_ease-in-out_infinite] items-center gap-2">
           <RotateCw className="h-5 w-5 stroke-[3.5]" />

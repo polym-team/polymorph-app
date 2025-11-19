@@ -185,7 +185,6 @@ export function MonthPicker({
       <Button
         type="button"
         variant="ghost"
-        size="icon"
         onClick={() => handleMonthNavigation('prev')}
         disabled={disabled}
         className="active:bg-accent absolute left-1 top-1/2 z-10 h-[90%] w-8 -translate-y-1/2"
@@ -197,7 +196,6 @@ export function MonthPicker({
       <Button
         type="button"
         variant="ghost"
-        size="icon"
         onClick={() => handleMonthNavigation('next')}
         disabled={disabled}
         className="active:bg-accent absolute right-1 top-1/2 z-10 h-[90%] w-8 -translate-y-1/2"
@@ -209,9 +207,9 @@ export function MonthPicker({
         <PopoverTrigger asChild>
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             className={cn(
-              'w-full justify-center pl-12 pr-12 text-center font-normal active:scale-100',
+              'w-full justify-center bg-gray-100 pl-12 pr-12 text-center text-sm font-normal active:scale-100',
               !value && 'text-muted-foreground'
             )}
             disabled={disabled}
@@ -229,7 +227,7 @@ export function MonthPicker({
         </PopoverTrigger>
 
         <PopoverContent
-          className="w-[var(--radix-popover-trigger-width)] p-0"
+          className="border-input w-[var(--radix-popover-trigger-width)] border p-0"
           align="start"
         >
           <div className="flex h-[344px]">
@@ -261,7 +259,7 @@ export function MonthPicker({
                           }
                         }}
                         className={cn(
-                          'active:bg-accent w-full rounded-md px-3 py-2 text-center transition-colors active:brightness-90',
+                          'active:bg-accent w-full rounded-md px-3 py-2 text-center text-sm transition-colors active:brightness-90',
                           value?.getFullYear() === year &&
                             'bg-accent text-accent-foreground'
                         )}
@@ -291,7 +289,7 @@ export function MonthPicker({
                     data-month={index}
                     onClick={() => handleMonthSelect(index)}
                     className={cn(
-                      'active:bg-accent w-full rounded-md px-3 py-2 text-center transition-colors active:brightness-90',
+                      'active:bg-accent w-full rounded-md px-3 py-2 text-center text-sm transition-colors active:brightness-90',
                       value &&
                         value.getFullYear() === currentYear &&
                         value.getMonth() === index &&

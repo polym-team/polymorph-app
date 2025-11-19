@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-const BASE_FONT_SIZE = '14.5px';
+const BASE_FONT_SIZE = '16px';
 
 module.exports = (contentPaths = []) => ({
   content: [
@@ -77,10 +77,10 @@ module.exports = (contentPaths = []) => ({
         },
       },
       borderRadius: {
-        DEFAULT: '0.5rem', // 이 줄을 추가하면 rounded 클래스가 0.5rem이 됩니다
-        lg: '0.75rem',
-        md: 'calc(0.75rem - 2px)',
-        sm: 'calc(0.75rem - 4px)',
+        DEFAULT: '0.75rem',
+        lg: '1rem',
+        md: '0.75rem',
+        sm: '0.5rem',
       },
       keyframes: {
         'accordion-down': {
