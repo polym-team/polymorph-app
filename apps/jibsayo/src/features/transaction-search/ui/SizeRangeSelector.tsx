@@ -257,7 +257,7 @@ export function SizeRangeSelector({
           <div
             ref={sliderRef}
             className="relative cursor-pointer rounded-full bg-gray-200"
-            style={{ height: '24px' }}
+            style={{ height: '28px' }}
             onClick={handleSliderClick}
             onTouchStart={handleSliderClick}
           >
@@ -267,18 +267,18 @@ export function SizeRangeSelector({
               style={{
                 left: minPosition - HANDLE_RADIUS,
                 width: maxPosition - minPosition + HANDLE_RADIUS * 2,
-                height: '24px',
+                height: '28px',
               }}
             />
           </div>
 
           {/* 최대값 핸들 */}
           <div
-            className={`absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full bg-white shadow-md ${
+            className={`absolute top-1/2 h-[20px] w-[20px] -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full bg-white shadow-md ${
               dragging === 'max' ? 'scale-110 cursor-grabbing' : ''
             }`}
             style={{
-              left: maxPosition - 3,
+              left: maxPosition - 8,
               zIndex: shouldMinBeOnTop ? 1 : 2,
             }}
             onMouseDown={e => handleMouseDown(e, 'max')}
@@ -287,11 +287,11 @@ export function SizeRangeSelector({
 
           {/* 최소값 핸들 */}
           <div
-            className={`absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full bg-white shadow-md ${
+            className={`absolute top-1/2 h-[20px] w-[20px] -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full bg-white shadow-md ${
               dragging === 'min' ? 'scale-110 cursor-grabbing' : ''
             }`}
             style={{
-              left: minPosition + 3,
+              left: minPosition + 8,
               zIndex: shouldMinBeOnTop ? 2 : 1,
             }}
             onMouseDown={e => handleMouseDown(e, 'min')}
