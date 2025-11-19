@@ -75,12 +75,14 @@ export function TransactionCardList({
           </CardList.Item>
         ))}
       </CardList>
-      <Pagination
-        pageIndex={pageIndex}
-        totalItems={totalItems}
-        pageSize={TRANSACTION_LIST_PAGE_SIZE}
-        onPageIndexChange={onPageIndexChange}
-      />
+      {totalItems > TRANSACTION_LIST_PAGE_SIZE && (
+        <Pagination
+          pageIndex={pageIndex}
+          totalItems={totalItems}
+          pageSize={TRANSACTION_LIST_PAGE_SIZE}
+          onPageIndexChange={onPageIndexChange}
+        />
+      )}
     </div>
   );
 }

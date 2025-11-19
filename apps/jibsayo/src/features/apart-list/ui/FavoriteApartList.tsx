@@ -4,10 +4,7 @@ import {
   getRegionNameWithRegionCode,
 } from '@/entities/region';
 
-import { X } from 'lucide-react';
-
-import { Card, Typography } from '@package/ui';
-import { Button } from '@package/ui';
+import { ChevronRight, X } from 'lucide-react';
 
 import { RegionItem } from '../models/types';
 
@@ -23,46 +20,43 @@ export function FavoriteApartList({
   onRemoveApartItem,
 }: FavoriteApartListProps) {
   return (
-    <div className="flex w-full flex-col gap-y-5">
+    <div className="flex w-full flex-col gap-y-3 pb-10">
       {regionItems.map(region => (
         <div key={region.code}>
-          <Card className="flex flex-col">
-            <Typography variant="h4" className="p-3">
+          <div className="p-3">
+            <span className="text-sm text-gray-500">
               {getCityNameWithRegionCode(region.code)}{' '}
               {getRegionNameWithRegionCode(region.code)}{' '}
-              <span className="text-primary font-bold">
-                ({region.apartItems.length})
-              </span>
-            </Typography>
-            <hr className="my-0 border-gray-200" />
-            <div className="flex flex-wrap gap-2 p-3">
-              {region.apartItems.map(item => (
-                <div
-                  key={item.apartId}
-                  className="border-input bg-background flex flex-shrink-0 rounded-md border"
+              <span className="text-primary">{region.apartItems.length}</span>
+            </span>
+          </div>
+          <div className="flex flex-col">
+            {region.apartItems.map(item => (
+              <div
+                key={item.apartId}
+                className="flex items-center justify-between border-b border-gray-100 bg-white p-3 last:border-b-0 active:bg-gray-100"
+                onClick={() => onClickApartItem(region.code, item)}
+              >
+                <span className="flex items-center gap-x-1">
+                  {item.apartName}{' '}
+                  <ChevronRight
+                    size={18}
+                    className="translate-y-[-1.5px] text-gray-300"
+                  />
+                </span>
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onRemoveApartItem(region.code, item);
+                  }}
+                  className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 active:bg-gray-300"
                 >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onClickApartItem(region.code, item)}
-                    className="whitespace-nowrap rounded-r-none border-0"
-                  >
-                    <span className="translate-y-[-0.5px]">
-                      {item.apartName}
-                    </span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onRemoveApartItem(region.code, item)}
-                    className="-ml-3 rounded-l-none border-0 px-2.5"
-                  >
-                    <X className="h-3 w-3 translate-y-[-0.5px]" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </Card>
+                  <X size={16} className="text-gray-400" />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       ))}
     </div>

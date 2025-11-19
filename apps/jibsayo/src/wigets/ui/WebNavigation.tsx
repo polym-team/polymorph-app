@@ -21,9 +21,9 @@ export function WebNavigation() {
   }
 
   return (
-    <header className="sticky top-0 z-50 h-[56px] w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      <div className="container mx-auto max-w-[640px] px-4">
-        <div className="flex h-16 items-center justify-between">
+    <header className="sticky top-0 z-50 w-full bg-white/80 p-3 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <div className="container mx-auto max-w-[640px]">
+        <div className="flex items-center justify-between">
           <Link
             href={ROUTE_PATH.TRANSACTION}
             className="flex items-center space-x-2 overflow-hidden transition-all duration-200"
@@ -39,7 +39,7 @@ export function WebNavigation() {
             {['TRANSACTION' as const, 'APART' as const].map(item => (
               <Button
                 key={item}
-                size="sm"
+                size="xs"
                 variant={
                   pathname.startsWith(ROUTE_PATH[item]) ? 'default' : 'ghost'
                 }

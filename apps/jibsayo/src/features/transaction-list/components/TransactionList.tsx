@@ -27,6 +27,22 @@ export function TransactionList() {
   const { cityName, regionName } = useTransactionSummary();
   const { toggleFavorite, navigateToApartDetail } = useTransactionEvent();
 
+  if (!isLoading && data === undefined) {
+    return (
+      <div className="py-10 text-center text-sm text-gray-500">
+        원하는 정보를 선택한 후 검색해주세요
+      </div>
+    );
+  }
+
+  if (!isLoading && transactionTotalCount === 0) {
+    return (
+      <div className="py-10 text-center text-sm text-gray-500">
+        조건에 맞는 데이터가 없어요
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-y-2 p-3 pb-10">
       <div className="flex items-center justify-between">

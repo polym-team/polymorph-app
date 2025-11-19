@@ -103,7 +103,7 @@ export function SearchForm({
             {favoriteRegionItems.map(region => (
               <SelectItem key={region.code} value={region.code}>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold">{region.name}</span>
+                  <span className="font-semibold">{region.name}</span>
                   <button
                     type="button"
                     onMouseDown={e => {
