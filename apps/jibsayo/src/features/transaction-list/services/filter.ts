@@ -12,12 +12,12 @@ export const sortTransactionList = (
   return [...transactionList].sort((a, b) => {
     if (sorting.id === 'tradeDate') {
       return sorting.desc
-        ? new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime()
-        : new Date(a.tradeDate).getTime() - new Date(b.tradeDate).getTime();
+        ? new Date(a.tradeDate).getTime() - new Date(b.tradeDate).getTime()
+        : new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime();
     } else if (sorting.id === 'tradeAmount') {
       return sorting.desc
-        ? b.tradeAmount - a.tradeAmount
-        : a.tradeAmount - b.tradeAmount;
+        ? a.tradeAmount - b.tradeAmount
+        : b.tradeAmount - a.tradeAmount;
     }
     return 0;
   });
