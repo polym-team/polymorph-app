@@ -14,4 +14,7 @@ export const COLLECTIONS = {
 
   // 아파트 상세 정보 캐시 컬렉션
   APART_CACHE: 'apart-cache',
+
+  // 매일 거래 스냅샷 저장 (날짜별 지역별 거래 ID)
+  LEGACY_TRANSACTIONS: 'legacy-transactions',
 } as const;
