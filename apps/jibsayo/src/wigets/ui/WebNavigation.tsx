@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { Button } from '@package/ui';
 
-const NAVIGATE_EXCLUDE_PATH = [ROUTE_PATH.PRIVACY];
+const NAVIGATE_EXCLUDE_PATH = [ROUTE_PATH.PRIVACY, ROUTE_PATH.POLICY];
 
 export function WebNavigation() {
   const router = useRouter();

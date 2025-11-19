@@ -3,6 +3,7 @@ export const ROUTE_PATH = {
   APART: '/apart',
   APART_DETAIL: '/apart-detail',
   PRIVACY: '/privacy',
+  POLICY: '/policy',
 } as const;
 
 export const ROUTE_PATH_LABEL = {
