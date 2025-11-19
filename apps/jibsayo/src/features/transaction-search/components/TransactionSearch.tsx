@@ -18,12 +18,12 @@ export function TransactionSearch() {
   const { isLoading } = useTransactionListQuery();
 
   const { form, changeForm } = useSearchForm();
-  const { filter, appliedFilter, changeFilter, removeFilter } = useFilterForm();
+  const { appliedFilter, applyFilter } = useFilterForm();
   const { favoriteRegionList, addFavoriteRegion, removeFavoriteRegion } =
     useFavoriteRegion();
-  const { isChanged, handleSubmit } = useSearchFormAction({
+  const { handleSubmit } = useSearchFormAction({
     form,
-    filter,
+    appliedFilter,
     setSearchParams,
   });
 
@@ -36,13 +36,8 @@ export function TransactionSearch() {
         onRemoveFavoriteRegion={removeFavoriteRegion}
         onChangeForm={changeForm}
       />
-      <FilterForm
-        filter={filter}
-        appliedFilter={appliedFilter}
-        onChangeFilter={changeFilter}
-        onRemoveFilter={removeFilter}
-      />
-      <FormButton isLoading={isLoading} isChanged={isChanged} />
+      <FilterForm appliedFilter={appliedFilter} onApplyFilter={applyFilter} />
+      <FormButton isLoading={isLoading} />
     </form>
   );
 }

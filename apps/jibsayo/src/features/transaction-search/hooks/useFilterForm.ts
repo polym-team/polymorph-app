@@ -1,28 +1,14 @@
 import { useTransactionPageSearchParams } from '@/entities/transaction';
 
-import { useState } from 'react';
-
 import { FilterForm } from '../models/types';
 
 interface Return {
-  filter: FilterForm;
   appliedFilter: FilterForm;
-  changeFilter: (value: Partial<FilterForm>) => void;
-  removeFilter: (value: Partial<FilterForm>) => void;
+  applyFilter: (value: Partial<FilterForm>) => void;
 }
 
 export const useFilterForm = (): Return => {
   const { searchParams, setSearchParams } = useTransactionPageSearchParams();
-
-  const [filter, setFilter] = useState<FilterForm>(() => {
-    return {
-      apartName: searchParams.apartName,
-      minSize: searchParams.minSize,
-      maxSize: searchParams.maxSize,
-      favoriteOnly: searchParams.favoriteOnly,
-      newTransactionOnly: searchParams.newTransactionOnly,
-    };
-  });
 
   const appliedFilter: FilterForm = {
     apartName: searchParams.apartName,
@@ -32,15 +18,9 @@ export const useFilterForm = (): Return => {
     newTransactionOnly: searchParams.newTransactionOnly,
   };
 
-  const changeFilter = (nextFilter: Partial<FilterForm>) => {
-    const changedFilter = { ...filter, ...nextFilter };
-    setFilter(changedFilter);
-  };
-
-  const removeFilter = (nextFilter: Partial<FilterForm>) => {
-    setFilter({ ...filter, ...nextFilter });
+  const applyFilter = (nextFilter: Partial<FilterForm>) => {
     setSearchParams({ ...searchParams, ...nextFilter });
   };
 
-  return { filter, appliedFilter, changeFilter, removeFilter };
+  return { appliedFilter, applyFilter };
 };

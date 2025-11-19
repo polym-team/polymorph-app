@@ -10,28 +10,32 @@ import { FilterLabel } from './FilterLabel';
 import { SizeRangeSelector } from './SizeRangeSelector';
 
 interface FilterFormProps {
-  filter: FilterFormType;
   appliedFilter: FilterFormType;
-  onChangeFilter: (filter: Partial<FilterFormType>) => void;
-  onRemoveFilter: (filter: Partial<FilterFormType>) => void;
+  onApplyFilter: (filter: Partial<FilterFormType>) => void;
 }
 
-export function FilterForm({
-  filter,
-  appliedFilter,
-  onChangeFilter,
-  onRemoveFilter,
-}: FilterFormProps) {
+export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [tempFilter, setTempFilter] = useState<FilterFormType>(filter);
+  const [tempFilter, setTempFilter] = useState<FilterFormType>(appliedFilter);
 
   const handleOpenBottomSheet = () => {
-    setTempFilter(filter);
+    setTempFilter(appliedFilter);
     setIsOpen(true);
   };
 
   const handleApplyFilter = () => {
-    onChangeFilter(tempFilter);
+    onApplyFilter(tempFilter);
+    setIsOpen(false);
+  };
+
+  const handleClearFilter = () => {
+    onApplyFilter({
+      minSize: RULES.SEARCH_MIN_SIZE,
+      maxSize: RULES.SEARCH_MAX_SIZE,
+      apartName: '',
+      favoriteOnly: false,
+      newTransactionOnly: false,
+    });
     setIsOpen(false);
   };
 
@@ -66,7 +70,7 @@ export function FilterForm({
                 appliedFilter.maxSize !== RULES.SEARCH_MAX_SIZE) && (
                 <FilterLabel
                   onRemove={() =>
-                    onRemoveFilter({
+                    onApplyFilter({
                       minSize: RULES.SEARCH_MIN_SIZE,
                       maxSize: RULES.SEARCH_MAX_SIZE,
                     })
@@ -78,20 +82,20 @@ export function FilterForm({
                 </FilterLabel>
               )}
             {appliedFilter.apartName && (
-              <FilterLabel onRemove={() => onRemoveFilter({ apartName: '' })}>
+              <FilterLabel onRemove={() => onApplyFilter({ apartName: '' })}>
                 {appliedFilter.apartName}
               </FilterLabel>
             )}
             {appliedFilter.favoriteOnly && (
               <FilterLabel
-                onRemove={() => onRemoveFilter({ favoriteOnly: false })}
+                onRemove={() => onApplyFilter({ favoriteOnly: false })}
               >
                 저장된 아파트
               </FilterLabel>
             )}
             {appliedFilter.newTransactionOnly && (
               <FilterLabel
-                onRemove={() => onRemoveFilter({ newTransactionOnly: false })}
+                onRemove={() => onApplyFilter({ newTransactionOnly: false })}
               >
                 신규 거래
               </FilterLabel>
@@ -167,7 +171,15 @@ export function FilterForm({
           </div>
 
           {/* 확인 버튼 */}
-          <div className="mt-5 w-full">
+          <div className="mt-5 flex w-full gap-2">
+            <Button
+              onClick={handleClearFilter}
+              size="lg"
+              variant="outline"
+              className="w-full"
+            >
+              초기화
+            </Button>
             <Button
               onClick={handleApplyFilter}
               size="lg"

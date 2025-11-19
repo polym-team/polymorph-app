@@ -37,7 +37,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'border-transparent bg-default text-default-foreground',
+        default: 'border-transparent bg-gray-100 text-default-foreground',
         primary: 'border-transparent bg-primary text-primary-foreground',
         'primary-outline': 'border-primary bg-primary/10',
         danger: 'border-transparent bg-danger text-danger-foreground',

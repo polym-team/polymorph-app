@@ -2,7 +2,6 @@ import { Button } from '@package/ui';
 
 interface FormButtonProps {
   isLoading: boolean;
-  isChanged: boolean;
 }
 
 export function FormButton({ isLoading }: FormButtonProps) {
