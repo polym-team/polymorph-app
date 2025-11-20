@@ -37,33 +37,36 @@ export function ApartTransactionHistoryFilter({
           </button>
         ))}
       </div>
-      <div className="flex flex-wrap gap-1">
-        {allSizes.map((size, index) => {
-          const isSelected = selectedSizes.has(size);
-          return (
-            <Button
-              key={size}
-              size="xs"
-              rounded
-              variant={isSelected ? 'primary-outline' : 'default'}
-              onClick={() =>
-                onChangeSizes(
-                  isSelected
-                    ? new Set(Array.from(selectedSizes).filter(s => s !== size))
-                    : new Set(Array.from(selectedSizes).concat(size))
-                )
-              }
-            >
-              <span
-                className="block h-2 w-2 rounded-sm"
-                style={{
-                  backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
-                }}
-              />
-              {formatPyeong(size)}
-            </Button>
-          );
-        })}
+      <div className="relative">
+        <div className="scrollbar-hide flex overflow-x-auto overflow-y-hidden gap-1">
+          {allSizes.map((size, index) => {
+            const isSelected = selectedSizes.has(size);
+            return (
+              <Button
+                key={size}
+                size="xs"
+                rounded
+                variant={isSelected ? 'primary-outline' : 'default'}
+                onClick={() =>
+                  onChangeSizes(
+                    isSelected
+                      ? new Set(Array.from(selectedSizes).filter(s => s !== size))
+                      : new Set(Array.from(selectedSizes).concat(size))
+                  )
+                }
+              >
+                <span
+                  className="block h-2 w-2 rounded-sm"
+                  style={{
+                    backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
+                  }}
+                />
+                {formatPyeong(size)}
+              </Button>
+            );
+          })}
+        </div>
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-white to-transparent" />
       </div>
     </div>
   );

@@ -229,7 +229,7 @@ export function MonthPicker({
             {/* Year Selection - Left Side */}
             <div className="w-full flex-1 border-r">
               <div
-                className="h-full overflow-y-auto p-1"
+                className="scrollbar-hide h-full overflow-y-auto p-1"
                 style={{
                   scrollBehavior: 'smooth',
                   overscrollBehavior: 'auto',
@@ -270,7 +270,7 @@ export function MonthPicker({
             {/* Month Selection - Right Side */}
             <div className="w-full flex-1">
               <div
-                className="h-full overflow-y-auto p-1"
+                className="scrollbar-hide h-full overflow-y-auto p-1"
                 style={{
                   scrollBehavior: 'smooth',
                   overscrollBehavior: 'auto',

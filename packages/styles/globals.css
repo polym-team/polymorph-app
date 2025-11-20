@@ -4,6 +4,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  /* 스크롤바 숨기기 */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @layer base {
   /* Pretendard 폰트 적용 */
   html {

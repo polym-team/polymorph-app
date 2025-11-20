@@ -263,7 +263,7 @@ export function SizeRangeSelector({
           >
             {/* 활성 범위 */}
             <div
-              className="bg-primary absolute rounded-full"
+              className="bg-primary absolute rounded-full shadow-md"
               style={{
                 left: minPosition - HANDLE_RADIUS,
                 width: maxPosition - minPosition + HANDLE_RADIUS * 2,
@@ -278,7 +278,7 @@ export function SizeRangeSelector({
               dragging === 'max' ? 'scale-110 cursor-grabbing' : ''
             }`}
             style={{
-              left: maxPosition - 8,
+              left: maxPosition - 6,
               zIndex: shouldMinBeOnTop ? 1 : 2,
             }}
             onMouseDown={e => handleMouseDown(e, 'max')}
@@ -291,7 +291,7 @@ export function SizeRangeSelector({
               dragging === 'min' ? 'scale-110 cursor-grabbing' : ''
             }`}
             style={{
-              left: minPosition + 8,
+              left: minPosition + 6,
               zIndex: shouldMinBeOnTop ? 2 : 1,
             }}
             onMouseDown={e => handleMouseDown(e, 'min')}
@@ -301,26 +301,29 @@ export function SizeRangeSelector({
       </div>
 
       {/* 2행: 빠른 선택 버튼들 - 가로 스크롤 */}
-      <div className="overflow-x-auto overflow-y-hidden">
-        <div className="flex w-max gap-1">
-          {quickSelectButtons.map(button => (
-            <Button
-              key={button.label}
-              type="button"
-              onClick={() => handleQuickSelect(button)}
-              size="sm"
-              rounded
-              variant={
-                localMin === button.min && localMax === button.max
-                  ? 'primary'
-                  : 'outline'
-              }
-              className="whitespace-nowrap"
-            >
-              {button.label}
-            </Button>
-          ))}
+      <div className="relative">
+        <div className="scrollbar-hide overflow-x-auto overflow-y-hidden">
+          <div className="flex w-max gap-1">
+            {quickSelectButtons.map(button => (
+              <Button
+                key={button.label}
+                type="button"
+                onClick={() => handleQuickSelect(button)}
+                size="sm"
+                rounded
+                variant={
+                  localMin === button.min && localMax === button.max
+                    ? 'primary'
+                    : 'outline'
+                }
+                className="whitespace-nowrap"
+              >
+                {button.label}
+              </Button>
+            ))}
+          </div>
         </div>
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-white to-transparent" />
       </div>
     </div>
   );
