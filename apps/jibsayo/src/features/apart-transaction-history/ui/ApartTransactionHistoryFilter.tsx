@@ -38,7 +38,7 @@ export function ApartTransactionHistoryFilter({
         ))}
       </div>
       <div className="relative">
-        <div className="scrollbar-hide flex overflow-x-auto overflow-y-hidden gap-1">
+        <div className="scrollbar-hide flex gap-1 overflow-x-auto overflow-y-hidden pr-8">
           {allSizes.map((size, index) => {
             const isSelected = selectedSizes.has(size);
             return (
@@ -50,7 +50,9 @@ export function ApartTransactionHistoryFilter({
                 onClick={() =>
                   onChangeSizes(
                     isSelected
-                      ? new Set(Array.from(selectedSizes).filter(s => s !== size))
+                      ? new Set(
+                          Array.from(selectedSizes).filter(s => s !== size)
+                        )
                       : new Set(Array.from(selectedSizes).concat(size))
                   )
                 }

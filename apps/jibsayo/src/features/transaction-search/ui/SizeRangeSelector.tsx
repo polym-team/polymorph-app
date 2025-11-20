@@ -302,7 +302,7 @@ export function SizeRangeSelector({
 
       {/* 2행: 빠른 선택 버튼들 - 가로 스크롤 */}
       <div className="relative">
-        <div className="scrollbar-hide overflow-x-auto overflow-y-hidden">
+        <div className="scrollbar-hide overflow-x-auto overflow-y-hidden pr-8">
           <div className="flex w-max gap-1">
             {quickSelectButtons.map(button => (
               <Button
