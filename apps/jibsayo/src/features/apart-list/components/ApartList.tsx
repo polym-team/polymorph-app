@@ -8,6 +8,7 @@ import {
 import { FavoriteApartItem } from '@/entities/apart/models/types';
 import { ROUTE_PATH } from '@/shared/consts/route';
 import { useNavigate } from '@/shared/hooks/useNavigate';
+import { BoxContainer } from '@/shared/ui/BoxContainer';
 
 import { useMemo } from 'react';
 
@@ -56,10 +57,12 @@ export function ApartList() {
   }
 
   return (
-    <FavoriteApartList
-      regionItems={regionItems}
-      onClickApartItem={handleClickApartItem}
-      onRemoveApartItem={handleRemoveApartItem}
-    />
+    <BoxContainer>
+      <FavoriteApartList
+        regionItems={regionItems}
+        onClickApartItem={handleClickApartItem}
+        onRemoveApartItem={handleRemoveApartItem}
+      />
+    </BoxContainer>
   );
 }

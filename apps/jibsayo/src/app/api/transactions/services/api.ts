@@ -37,7 +37,7 @@ export const fetchGovApiData = async (
   const response = await fetch(url.toString(), {
     headers: {
       'User-Agent': 'Node.js/jibsayo-real-estate-api',
-      'Accept': 'text/xml,application/xml',
+      Accept: 'text/xml,application/xml',
       'Accept-Language': 'ko-KR,ko;q=0.9',
     },
   });

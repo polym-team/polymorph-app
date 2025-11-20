@@ -1,12 +1,11 @@
 import logo from '@/assets/logo.png';
 import { ROUTE_PATH, ROUTE_PATH_LABEL } from '@/shared/consts/route';
+import { BoxContainer } from '@/shared/ui/BoxContainer';
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { Button } from '@package/ui';
-
-const NAVIGATE_EXCLUDE_PATH = [ROUTE_PATH.PRIVACY, ROUTE_PATH.POLICY];
 
 export function WebNavigation() {
   const router = useRouter();
@@ -16,13 +15,9 @@ export function WebNavigation() {
     router.push(ROUTE_PATH[item]);
   };
 
-  if (NAVIGATE_EXCLUDE_PATH.some(path => pathname.startsWith(path))) {
-    return null;
-  }
-
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/80 p-3 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      <div className="container mx-auto max-w-[640px]">
+    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <BoxContainer>
         <div className="flex items-center justify-between">
           <Link
             href={ROUTE_PATH.TRANSACTION}
@@ -50,7 +45,7 @@ export function WebNavigation() {
             ))}
           </nav>
         </div>
-      </div>
+      </BoxContainer>
     </header>
   );
 }

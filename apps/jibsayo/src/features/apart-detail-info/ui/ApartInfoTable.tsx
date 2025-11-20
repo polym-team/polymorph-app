@@ -22,7 +22,7 @@ export function ApartInfoTable({ data }: ApartInfoTableProps) {
   } = data;
 
   return (
-    <div className="flex flex-col gap-y-4 bg-white p-3">
+    <div className="flex flex-col gap-y-4">
       <div className="flex flex-col">
         <span className="text-lg font-semibold">{apartName}</span>
         <span className="text-sm text-gray-400">

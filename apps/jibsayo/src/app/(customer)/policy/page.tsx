@@ -1,4 +1,6 @@
-import { Card } from '@package/ui';
+import { ROUTE_PATH_LABEL } from '@/shared/consts/route';
+import { BoxContainer } from '@/shared/ui/BoxContainer';
+import { PageLayout } from '@/wigets/ui/PageLayout';
 
 const POLICY_LIST = [
   {
@@ -15,7 +17,7 @@ const POLICY_LIST = [
           공공데이터포털을 통해 제공되는 국토교통부의 공식 데이터를 활용합니다.
         </p>
         <p className="mb-2 font-semibold">데이터 출처:</p>
-        <ul className="list-disc list-inside mb-2 space-y-1">
+        <ul className="mb-2 list-inside list-disc space-y-1">
           <li>
             공공데이터포털:{' '}
             <a
@@ -41,9 +43,9 @@ const POLICY_LIST = [
         </ul>
         <p className="mb-2 font-semibold">중요 면책 조항:</p>
         <p>
-          본 서비스는 정부 기관이 아닌 민간 기관에서 제공하는 서비스입니다.
-          본 서비스는 대한민국 정부 또는 국토교통부와 제휴 관계가 없으며,
-          정부 기관을 대표하지 않습니다. 본 서비스에서 제공하는 데이터는
+          본 서비스는 정부 기관이 아닌 민간 기관에서 제공하는 서비스입니다. 본
+          서비스는 대한민국 정부 또는 국토교통부와 제휴 관계가 없으며, 정부
+          기관을 대표하지 않습니다. 본 서비스에서 제공하는 데이터는
           공공데이터포털을 통해 제공되는 공식 데이터를 기반으로 하지만, 데이터의
           정확성이나 완전성에 대해 정부 기관은 어떠한 책임도 지지 않으며, 본
           서비스 제공자도 데이터의 정확성에 대해 보장하지 않습니다.
@@ -80,15 +82,20 @@ const POLICY_LIST = [
 
 export default function PolicyPage() {
   return (
-    <Card className="p-4">
-      <ul className="flex flex-col space-y-4">
-        {POLICY_LIST.map(item => (
-          <li key={item.title}>
-            <h3 className="font-bold mb-2">{item.title}</h3>
-            <div className="text-sm leading-relaxed">{item.description}</div>
-          </li>
-        ))}
-      </ul>
-    </Card>
+    <PageLayout showBackButton>
+      <BoxContainer>
+        <div className="mb-5">
+          <h1 className="text-lg font-semibold">{ROUTE_PATH_LABEL.POLICY}</h1>
+        </div>
+        <ul className="flex flex-col space-y-4">
+          {POLICY_LIST.map(item => (
+            <li key={item.title}>
+              <h3 className="mb-2 font-bold">{item.title}</h3>
+              <div className="text-sm leading-relaxed">{item.description}</div>
+            </li>
+          ))}
+        </ul>
+      </BoxContainer>
+    </PageLayout>
   );
 }

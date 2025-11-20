@@ -105,6 +105,7 @@ const sendPushNotification = async (
     const pushData = {
       action: 'gotoUrl',
       screen: 'modal',
+      tabName: 'saved',
       url: `https://jibsayo.vercel.app/${ROUTE_PATH.APART_DETAIL}?regionCode=${regionCode}&apartName=${apartName}`,
     };
 

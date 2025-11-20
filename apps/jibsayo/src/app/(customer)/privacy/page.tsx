@@ -1,4 +1,6 @@
-import { Card } from '@package/ui';
+import { ROUTE_PATH_LABEL } from '@/shared/consts/route';
+import { BoxContainer } from '@/shared/ui/BoxContainer';
+import { PageLayout } from '@/wigets/ui/PageLayout';
 
 const PRIVACY_LIST = [
   {
@@ -39,15 +41,22 @@ const PRIVACY_LIST = [
 
 export default function PrivacyPage() {
   return (
-    <Card className="p-4">
-      <ul className="flex flex-col space-y-4">
-        {PRIVACY_LIST.map(item => (
-          <li key={item.title}>
-            <h3 className="font-bold">{item.title}</h3>
-            <p>{item.description}</p>
-          </li>
-        ))}
-      </ul>
-    </Card>
+    <PageLayout showBackButton>
+      <BoxContainer>
+        <div className="mb-5">
+          <h1 className="text-lg font-semibold">{ROUTE_PATH_LABEL.PRIVACY}</h1>
+        </div>
+        <ul className="flex flex-col space-y-3">
+          {PRIVACY_LIST.map(item => (
+            <li key={item.title} className="flex flex-col gap-y-2">
+              <h3 className="font-semibold">{item.title}</h3>
+              <p className="text-sm leading-6 text-gray-400">
+                {item.description}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </BoxContainer>
+    </PageLayout>
   );
 }

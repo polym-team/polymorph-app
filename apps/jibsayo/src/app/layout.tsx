@@ -1,5 +1,3 @@
-import { Header } from '@/wigets/ui/Header';
-
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 
@@ -28,18 +26,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="bg-gray-50">
+      <body>
         <Suspense fallback={null}>
           <ConfigProvider>
             <QueryClientProvider>
               <FirebaseInitializer />
-              <div className="flex min-h-dvh flex-col items-center">
-                <Header />
-                <main className="w-full max-w-[768px] flex-1">
-                  <div className="container mx-auto">{children}</div>
-                </main>
-              </div>
               <Toaster />
+              {children}
             </QueryClientProvider>
           </ConfigProvider>
         </Suspense>

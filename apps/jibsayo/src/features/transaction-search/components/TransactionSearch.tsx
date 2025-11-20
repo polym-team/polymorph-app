@@ -4,6 +4,7 @@ import {
   useTransactionListQuery,
   useTransactionPageSearchParams,
 } from '@/entities/transaction';
+import { BoxContainer } from '@/shared/ui/BoxContainer';
 
 import { useFavoriteRegion } from '../hooks/useFavoriteRegion';
 import { useFilterForm } from '../hooks/useFilterForm';
@@ -28,16 +29,18 @@ export function TransactionSearch() {
   });
 
   return (
-    <form className="flex flex-col gap-2 bg-white p-3" onSubmit={handleSubmit}>
-      <SearchForm
-        form={form}
-        favoriteRegionList={favoriteRegionList}
-        onAddFavoriteRegion={addFavoriteRegion}
-        onRemoveFavoriteRegion={removeFavoriteRegion}
-        onChangeForm={changeForm}
-      />
-      <FilterForm appliedFilter={appliedFilter} onApplyFilter={applyFilter} />
-      <FormButton isLoading={isLoading} />
-    </form>
+    <BoxContainer bgColor="white">
+      <form className="flex flex-col gap-y-2" onSubmit={handleSubmit}>
+        <SearchForm
+          form={form}
+          favoriteRegionList={favoriteRegionList}
+          onAddFavoriteRegion={addFavoriteRegion}
+          onRemoveFavoriteRegion={removeFavoriteRegion}
+          onChangeForm={changeForm}
+        />
+        <FilterForm appliedFilter={appliedFilter} onApplyFilter={applyFilter} />
+        <FormButton isLoading={isLoading} />
+      </form>
+    </BoxContainer>
   );
 }

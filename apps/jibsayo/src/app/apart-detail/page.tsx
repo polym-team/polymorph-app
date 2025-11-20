@@ -3,6 +3,7 @@ import {
   ApartDetailPageSkeleton,
   ApartDetailPageWidget,
 } from '@/wigets/apart-detail';
+import { PageLayout } from '@/wigets/ui/PageLayout';
 
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
@@ -27,7 +28,7 @@ export default function ApartDetailPage({
   }
 
   return (
-    <div className="flex flex-col gap-y-5">
+    <PageLayout showBackButton bgColor="gray">
       <Suspense fallback={<ApartDetailPageSkeleton />}>
         {(async () => {
           const data = await fetchApartDetail(regionCode, decodedApartName);
@@ -39,6 +40,6 @@ export default function ApartDetailPage({
           return <ApartDetailPageWidget data={data} />;
         })()}
       </Suspense>
-    </div>
+    </PageLayout>
   );
 }

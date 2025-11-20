@@ -23,7 +23,7 @@ export function FavoriteApartList({
     <div className="flex w-full flex-col gap-y-3 pb-10">
       {regionItems.map(region => (
         <div key={region.code}>
-          <div className="p-3">
+          <div className="py-3">
             <span className="text-sm text-gray-500">
               {getCityNameWithRegionCode(region.code)}{' '}
               {getRegionNameWithRegionCode(region.code)}{' '}

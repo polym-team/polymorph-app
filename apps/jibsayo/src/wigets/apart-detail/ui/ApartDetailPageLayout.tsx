@@ -5,5 +5,5 @@ interface ApartDetailPageLayoutProps {
 export function ApartDetailPageLayout({
   children,
 }: ApartDetailPageLayoutProps) {
-  return <>{children}</>;
+  return <div className="flex w-full flex-col gap-y-5">{children}</div>;
 }

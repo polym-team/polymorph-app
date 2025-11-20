@@ -1,6 +1,7 @@
 'use client';
 
 import { useTransactionListQuery } from '@/entities/transaction';
+import { BoxContainer } from '@/shared/ui/BoxContainer';
 
 import { useTransactionData } from '../hooks/useTransactionData';
 import { useTransactionEvent } from '../hooks/useTransactionEvent';
@@ -44,32 +45,37 @@ export function TransactionList() {
   }
 
   return (
-    <div className="flex flex-col gap-y-2 p-3 pb-10">
-      <div className="flex items-center justify-between">
+    <BoxContainer>
+      <div className="flex flex-col gap-y-2 pb-10">
+        <div className="flex items-center justify-between">
+          {isLoading ? (
+            <SummarySkeleton />
+          ) : (
+            <Summary
+              cityName={cityName}
+              regionName={regionName}
+              transactionTotalCount={transactionTotalCount}
+              transactionAverageAmount={transactionAverageAmount}
+            />
+          )}
+          <TransactionSorting
+            sorting={sorting}
+            onSortingChange={updateSorting}
+          />
+        </div>
         {isLoading ? (
-          <SummarySkeleton />
+          <TransactionCardListSkeleton />
         ) : (
-          <Summary
-            cityName={cityName}
-            regionName={regionName}
-            transactionTotalCount={transactionTotalCount}
-            transactionAverageAmount={transactionAverageAmount}
+          <TransactionCardList
+            items={transactionData}
+            totalItems={transactionTotalCount}
+            pageIndex={pageIndex}
+            onFavoriteToggle={toggleFavorite}
+            onPageIndexChange={updatePageIndex}
+            onRowClick={navigateToApartDetail}
           />
         )}
-        <TransactionSorting sorting={sorting} onSortingChange={updateSorting} />
       </div>
-      {isLoading ? (
-        <TransactionCardListSkeleton />
-      ) : (
-        <TransactionCardList
-          items={transactionData}
-          totalItems={transactionTotalCount}
-          pageIndex={pageIndex}
-          onFavoriteToggle={toggleFavorite}
-          onPageIndexChange={updatePageIndex}
-          onRowClick={navigateToApartDetail}
-        />
-      )}
-    </div>
+    </BoxContainer>
   );
 }
