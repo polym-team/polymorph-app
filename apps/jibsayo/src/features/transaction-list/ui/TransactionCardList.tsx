@@ -1,8 +1,11 @@
+import { calculateAreaPyeong } from '@/shared/services/transactionService';
 import { CardList } from '@/shared/ui/CardList';
 import { Pagination } from '@/shared/ui/Pagination';
 import {
   formatDate,
+  formatFloor,
   formatKoreanAmountSimpleText,
+  formatPyeong,
 } from '@/shared/utils/formatters';
 
 import { Star } from 'lucide-react';
@@ -61,7 +64,10 @@ export function TransactionCardList({
                     />
                   </button>
                 </div>
-                <span className="text-sm text-gray-500">6층 · 34평</span>
+                <span className="text-sm text-gray-500">
+                  {item.floor ? formatFloor(item.floor) : ''} ·{' '}
+                  {formatPyeong(calculateAreaPyeong(item.size))}
+                </span>
               </div>
               <div className="flex flex-col items-end gap-y-0.5">
                 <strong className="text-primary whitespace-nowrap font-bold">

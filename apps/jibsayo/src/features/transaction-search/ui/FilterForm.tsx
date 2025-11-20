@@ -43,13 +43,19 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
     setTempFilter(prev => ({ ...prev, ...updates }));
   };
 
-  const hasFilters =
+  const hasSizeFilter =
     !(appliedFilter.minSize === 0 && appliedFilter.maxSize === Infinity) &&
     (appliedFilter.minSize !== RULES.SEARCH_MIN_SIZE ||
-      appliedFilter.maxSize !== RULES.SEARCH_MAX_SIZE ||
-      appliedFilter.apartName ||
-      appliedFilter.favoriteOnly ||
-      appliedFilter.newTransactionOnly);
+      appliedFilter.maxSize !== RULES.SEARCH_MAX_SIZE);
+  const hasApartNameFilter = appliedFilter.apartName;
+  const hasFavoriteOnlyFilter = appliedFilter.favoriteOnly;
+  const hasNewTransactionOnlyFilter = appliedFilter.newTransactionOnly;
+
+  const hasFilters =
+    hasSizeFilter ||
+    hasApartNameFilter ||
+    hasFavoriteOnlyFilter ||
+    hasNewTransactionOnlyFilter;
 
   return (
     <div className="relative w-full">
@@ -63,37 +69,33 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
         </Button>
         {hasFilters && (
           <div className="mt-2 flex gap-1 overflow-x-auto">
-            {!(
-              appliedFilter.minSize === 0 && appliedFilter.maxSize === Infinity
-            ) &&
-              (appliedFilter.minSize !== RULES.SEARCH_MIN_SIZE ||
-                appliedFilter.maxSize !== RULES.SEARCH_MAX_SIZE) && (
-                <FilterLabel
-                  onRemove={() =>
-                    onApplyFilter({
-                      minSize: RULES.SEARCH_MIN_SIZE,
-                      maxSize: RULES.SEARCH_MAX_SIZE,
-                    })
-                  }
-                >
-                  {appliedFilter.maxSize === Infinity
-                    ? `${formatPyeong(appliedFilter.minSize)} 이상`
-                    : `${formatPyeong(appliedFilter.minSize)}~${formatPyeong(appliedFilter.maxSize)}`}
-                </FilterLabel>
-              )}
-            {appliedFilter.apartName && (
+            {hasSizeFilter && (
+              <FilterLabel
+                onRemove={() =>
+                  onApplyFilter({
+                    minSize: RULES.SEARCH_MIN_SIZE,
+                    maxSize: RULES.SEARCH_MAX_SIZE,
+                  })
+                }
+              >
+                {appliedFilter.maxSize === Infinity
+                  ? `${formatPyeong(appliedFilter.minSize)} 이상`
+                  : `${formatPyeong(appliedFilter.minSize)}~${formatPyeong(appliedFilter.maxSize)}`}
+              </FilterLabel>
+            )}
+            {hasApartNameFilter && (
               <FilterLabel onRemove={() => onApplyFilter({ apartName: '' })}>
                 {appliedFilter.apartName}
               </FilterLabel>
             )}
-            {appliedFilter.favoriteOnly && (
+            {hasFavoriteOnlyFilter && (
               <FilterLabel
                 onRemove={() => onApplyFilter({ favoriteOnly: false })}
               >
                 저장된 아파트
               </FilterLabel>
             )}
-            {appliedFilter.newTransactionOnly && (
+            {hasNewTransactionOnlyFilter && (
               <FilterLabel
                 onRemove={() => onApplyFilter({ newTransactionOnly: false })}
               >
