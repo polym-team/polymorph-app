@@ -43,14 +43,14 @@ export default function PrivacyPage() {
   return (
     <PageLayout showBackButton>
       <BoxContainer>
-        <div className="mb-5">
-          <h1 className="text-lg font-semibold">{ROUTE_PATH_LABEL.PRIVACY}</h1>
+        <div className="mb-6">
+          <h1 className="text-xl">{ROUTE_PATH_LABEL.PRIVACY}</h1>
         </div>
-        <ul className="flex flex-col space-y-3">
+        <ul className="flex flex-col space-y-4">
           {PRIVACY_LIST.map(item => (
             <li key={item.title} className="flex flex-col gap-y-2">
-              <h3 className="font-semibold">{item.title}</h3>
-              <p className="text-sm leading-6 text-gray-400">
+              <h3>{item.title}</h3>
+              <p className="text-sm leading-6 text-gray-500">
                 {item.description}
               </p>
             </li>
