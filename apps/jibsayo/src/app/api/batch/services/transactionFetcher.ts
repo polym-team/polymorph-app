@@ -2,6 +2,8 @@
  * 거래 데이터 조회 및 날짜 관련 서비스
  */
 import { logger } from '@/app/api/shared/utils/logger';
+import { fetchGovApiData } from '@/app/api/transactions/services/api';
+import { convertGovApiItemToTransactions } from '@/app/api/transactions/services/converter';
 
 /**
  * 현재 월 (YYYYMM)
@@ -35,47 +37,27 @@ export async function fetchTransactionsFromApi(
   dealYearMonth: string
 ): Promise<string[]> {
   try {
-    logger.info('Fetching transactions from API', {
+    logger.info('[fetchTransactionsFromApi] 거래 조회 시작', {
       regionCode,
       dealYearMonth,
     });
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/transactions?area=${regionCode}&createDt=${dealYearMonth}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const govApiItems = await fetchGovApiData(regionCode, dealYearMonth);
+    const transactions = convertGovApiItemToTransactions(govApiItems, regionCode);
 
-    if (!response.ok) {
-      logger.warn('Failed to fetch transactions from API', {
-        regionCode,
-        dealYearMonth,
-        status: response.status,
-      });
-      return [];
-    }
-
-    const data = await response.json();
-    const transactions = data.list || [];
-
-    // transactionId만 추출
     const transactionIds = transactions
       .map((tx: any) => tx.transactionId || tx.id)
       .filter(Boolean);
 
-    logger.info('Successfully fetched transactions', {
+    logger.info('[fetchTransactionsFromApi] 거래 조회 완료', {
+      count: transactionIds.length,
       regionCode,
       dealYearMonth,
-      count: transactionIds.length,
     });
 
     return transactionIds;
   } catch (error) {
-    logger.error('Error fetching transactions from API', {
+    logger.error('[fetchTransactionsFromApi] 거래 조회 오류', {
       regionCode,
       dealYearMonth,
       error: error instanceof Error ? error.message : String(error),
