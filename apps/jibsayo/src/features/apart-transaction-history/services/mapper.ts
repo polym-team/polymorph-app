@@ -1,5 +1,4 @@
 import { ApartDetailTradeHistoryItem } from '@/app/api/apart/models/types';
-import { TransactionItem } from '@/entities/transaction';
 import { calculateAreaPyeong } from '@/shared/services/transactionService';
 
 import { TradeItemViewModel } from '../models/types';
@@ -50,30 +49,28 @@ const mapWithPriceChangeData = ({
 
 const mapWithIsNewTransaction = ({
   item,
-  newTransactionList,
+  newTransactionIds,
 }: {
   item: ApartDetailTradeHistoryItem;
-  newTransactionList: TransactionItem[];
+  newTransactionIds: string[];
 }): {
   isNewTransaction: TradeItemViewModel['isNewTransaction'];
 } => {
-  const isNewTransaction = newTransactionList.some(
-    newItem => newItem.transactionId === item.transactionId
-  );
+  const isNewTransaction = newTransactionIds.includes(item.transactionId);
 
   return { isNewTransaction };
 };
 
 export const mapTradeHistoryItems = ({
   tradeItems,
-  newTransactionList,
+  newTransactionIds,
 }: {
   tradeItems: ApartDetailTradeHistoryItem[];
-  newTransactionList: TransactionItem[];
+  newTransactionIds: string[];
 }): TradeItemViewModel[] => {
   return tradeItems.map(item => ({
     ...item,
     ...mapWithPriceChangeData({ tradeItems, item }),
-    ...mapWithIsNewTransaction({ newTransactionList, item }),
+    ...mapWithIsNewTransaction({ newTransactionIds, item }),
   }));
 };

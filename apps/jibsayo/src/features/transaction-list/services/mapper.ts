@@ -5,7 +5,7 @@ import { TransactionDetailItem } from '../models/types';
 
 export const mapTramsactionItemWithFavorite = (
   transaction: TransactionItem[],
-  newTransaction: TransactionItem[],
+  newTransactionIds: string[],
   favoriteApartList: FavoriteApartItem[]
 ): TransactionDetailItem[] => {
   const calculateIsFavorite = (item: TransactionItem) => {
@@ -15,9 +15,7 @@ export const mapTramsactionItemWithFavorite = (
   };
 
   const calculateIsNew = (item: TransactionItem) => {
-    return newTransaction.some(
-      newTransaction => newTransaction.transactionId === item.transactionId
-    );
+    return newTransactionIds.includes(item.transactionId);
   };
 
   return transaction.map(item => ({

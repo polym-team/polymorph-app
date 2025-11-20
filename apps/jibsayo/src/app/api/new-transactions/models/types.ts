@@ -1,22 +1,18 @@
-import { TransactionItem } from '@/app/api/transactions/models/types';
+export interface TransactionArchive {
+  /** 지역코드 (5자리) */
+  regionCode: string;
 
-export type ApartmentTransaction = TransactionItem;
+  /** 날짜 (YYYY-MM-DD) */
+  date: string;
 
-export interface ParsedPageResult {
-  page: number;
-  data: ApartmentTransaction[];
-  hasData: boolean;
+  /** 모든 거래 ID 배열 (중복 가능) */
+  transactionIds: string[];
+
+  /** 스냅샷 저장 시각 */
+  savedAt: Date;
 }
 
-export interface CrawlResult {
+export interface NewTransactionsResponse {
   count: number;
-  list: ApartmentTransaction[];
-  totalPages: number;
-  processingTime: number;
-}
-
-export interface CachedTransactionData {
-  area: string;
-  data: CrawlResult;
-  crawledAt: Date;
+  transactionIds: string[];
 }

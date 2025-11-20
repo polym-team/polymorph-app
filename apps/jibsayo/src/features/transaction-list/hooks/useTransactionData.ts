@@ -44,8 +44,8 @@ export const useTransactionData = ({
     searchParams.regionCode
   );
 
-  const newTransactions = useMemo(
-    () => newTransactionData?.list || [],
+  const newTransactionIds = useMemo(
+    () => newTransactionData?.transactionIds || [],
     [newTransactionData]
   );
 
@@ -69,12 +69,12 @@ export const useTransactionData = ({
         filterTransactionItemWithNewTransaction(
           transaction,
           searchParams,
-          newTransactions
+          newTransactionIds
         )
     );
   }, [
     transactionListData,
-    newTransactions,
+    newTransactionIds,
     searchParams,
     filteredFavoriteApartList,
   ]);
@@ -90,10 +90,10 @@ export const useTransactionData = ({
   const mappedTransactions = useMemo(() => {
     return mapTramsactionItemWithFavorite(
       slicedTransactions,
-      newTransactions,
+      newTransactionIds,
       filteredFavoriteApartList
     );
-  }, [filteredFavoriteApartList, slicedTransactions, newTransactions]);
+  }, [filteredFavoriteApartList, slicedTransactions, newTransactionIds]);
 
   const transactionTotalCount = filteredTransactions.length;
   const transactionAverageAmount =

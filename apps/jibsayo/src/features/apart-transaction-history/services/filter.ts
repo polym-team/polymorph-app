@@ -1,5 +1,4 @@
 import { ApartDetailTradeHistoryItem } from '@/app/api/apart/models/types';
-import { TransactionItem } from '@/entities/transaction';
 import { calculateAreaPyeong } from '@/shared/services/transactionService';
 
 import { subMonths } from 'date-fns';
@@ -26,11 +25,4 @@ export const filterTradeItems = (
 
     return passWithPeriod && passWithSelectedSizes;
   });
-};
-
-export const filterNewTransactionList = (
-  newTransactionList: TransactionItem[],
-  apartName: string
-): TransactionItem[] => {
-  return newTransactionList.filter(item => item.apartName === apartName);
 };

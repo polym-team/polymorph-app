@@ -19,7 +19,7 @@ export const useFilterForm = (): Return => {
   };
 
   const applyFilter = (nextFilter: Partial<FilterForm>) => {
-    setSearchParams({ ...searchParams, ...nextFilter });
+    setSearchParams({ ...searchParams, ...nextFilter, pageIndex: 0 });
   };
 
   return { appliedFilter, applyFilter };

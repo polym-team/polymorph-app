@@ -77,7 +77,6 @@ const columns: ColumnDef<TradeItemViewModel>[] = [
 ];
 
 export function ApartTransactionHistoryTable({
-  apartName,
   regionCode,
   tradeItems,
 }: ApartTransactionHistoryTableProps) {
@@ -88,7 +87,6 @@ export function ApartTransactionHistoryTable({
   const filterMonth = isFilterEnabled ? selectedMonth : null;
   const { sorting, mappedTradeItems, changeSorting } =
     useTransactionHistoryTableData({
-      apartName,
       regionCode,
       tradeItems,
       filterMonth,

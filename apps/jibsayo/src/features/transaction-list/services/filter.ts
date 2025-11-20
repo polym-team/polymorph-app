@@ -77,14 +77,12 @@ export const filterTransactionItemWithFavorite = (
 export const filterTransactionItemWithNewTransaction = (
   transaction: TransactionItem,
   searchParams: SearchParams,
-  newTransactionList: TransactionItem[]
+  newTransactionIds: string[]
 ) => {
   if (!searchParams.newTransactionOnly) {
     return true;
   }
-  return newTransactionList.some(
-    newTransaction => newTransaction.transactionId === transaction.transactionId
-  );
+  return newTransactionIds.includes(transaction.transactionId);
 };
 
 export const filterFavoriteApartListWithRegionCode = (

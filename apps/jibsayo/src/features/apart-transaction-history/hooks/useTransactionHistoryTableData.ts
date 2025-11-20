@@ -6,11 +6,9 @@ import { useMemo, useState } from 'react';
 import { SortingState } from '@package/ui';
 
 import { TradeItemViewModel } from '../models/types';
-import { filterNewTransactionList } from '../services/filter';
 import { mapTradeHistoryItems } from '../services/mapper';
 
 interface Params {
-  apartName: string;
   regionCode: string;
   tradeItems: ApartDetailResponse['tradeItems'];
   filterMonth?: string | null;
@@ -23,7 +21,6 @@ interface Return {
 }
 
 export const useTransactionHistoryTableData = ({
-  apartName,
   regionCode,
   tradeItems,
   filterMonth,
@@ -34,14 +31,15 @@ export const useTransactionHistoryTableData = ({
     { id: 'tradeDate', desc: true },
   ]);
 
-  const newTransactionList = useMemo(() => {
-    return filterNewTransactionList(newTransactionData?.list || [], apartName);
-  }, [newTransactionData?.list, apartName]);
+  const newTransactionIds = useMemo(
+    () => newTransactionData?.transactionIds || [],
+    [newTransactionData]
+  );
 
   const mappedTradeItems = useMemo(() => {
     const allItems = mapTradeHistoryItems({
       tradeItems,
-      newTransactionList,
+      newTransactionIds,
     });
 
     // 필터 월이 있으면 해당 월의 데이터만 필터링
@@ -54,7 +52,7 @@ export const useTransactionHistoryTableData = ({
     }
 
     return allItems;
-  }, [tradeItems, newTransactionList, filterMonth]);
+  }, [tradeItems, newTransactionIds, filterMonth]);
 
   const changeSorting = (newSorting: SortingState) => {
     setSorting(newSorting);

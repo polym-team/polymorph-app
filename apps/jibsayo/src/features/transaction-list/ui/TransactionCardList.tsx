@@ -1,5 +1,6 @@
 import { calculateAreaPyeong } from '@/shared/services/transactionService';
 import { CardList } from '@/shared/ui/CardList';
+import { NewIcon } from '@/shared/ui/NewIcon';
 import { Pagination } from '@/shared/ui/Pagination';
 import {
   formatDate,
@@ -42,7 +43,13 @@ export function TransactionCardList({
           >
             <div className="flex items-center justify-between gap-2">
               <div className="flex flex-col gap-y-0.5">
-                <div className="flex flex-wrap items-center gap-1">
+                <div className="relative flex flex-wrap items-center gap-1">
+                  {item.isNew && (
+                    <span className="absolute -top-5 left-0">
+                      <NewIcon />
+                    </span>
+                  )}
+
                   <span className="inline-block text-sm font-semibold leading-5">
                     {item.apartName}
                   </span>
