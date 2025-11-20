@@ -104,7 +104,7 @@ const sendPushNotification = async (
     const pushBody = `${apartName} 아파트에 ${transactionCount}건의 신규 거래가 있습니다.`;
     const pushData = {
       action: 'gotoUrl',
-      screen: 'home',
+      screen: 'modal',
       url: `https://jibsayo.vercel.app/${ROUTE_PATH.APART_DETAIL}?regionCode=${regionCode}&apartName=${apartName}`,
     };
 
