@@ -57,15 +57,26 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
     hasFavoriteOnlyFilter ||
     hasNewTransactionOnlyFilter;
 
+  const selectedCount = [
+    hasSizeFilter,
+    hasApartNameFilter,
+    hasFavoriteOnlyFilter,
+    hasNewTransactionOnlyFilter,
+  ].filter(Boolean).length;
+
   return (
     <div className="relative w-full">
       <div>
         <Button
           onClick={handleOpenBottomSheet}
-          className="w-full justify-between"
+          className="w-full justify-between active:scale-100"
         >
           <span className="text-sm">세부 필터</span>
-          {hasFilters && <span className="text-primary text-sm">선택됨</span>}
+          {selectedCount > 0 && (
+            <span className="text-primary text-sm">
+              {selectedCount}개 선택됨
+            </span>
+          )}
         </Button>
         {hasFilters && (
           <div className="mt-2 flex gap-1 overflow-x-auto">
@@ -106,14 +117,10 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
         )}
       </div>
 
-      <BottomSheet
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        title="세부 필터"
-      >
-        <div className="flex flex-col gap-4 p-4">
-          {/* 필터 선택 폼 */}
-          <div className="flex flex-col gap-6">
+      <BottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)}>
+        <BottomSheet.Header>세부 필터</BottomSheet.Header>
+        <BottomSheet.Body>
+          <div className="flex flex-col gap-6 pb-5">
             <div>
               <SizeRangeSelector
                 minSize={tempFilter.minSize}
@@ -171,14 +178,14 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
               </div>
             </div>
           </div>
-
-          {/* 확인 버튼 */}
-          <div className="mt-5 flex w-full gap-2">
+        </BottomSheet.Body>
+        <BottomSheet.Footer>
+          <div className="flex gap-x-2">
             <Button
               onClick={handleClearFilter}
               size="lg"
               variant="outline"
-              className="w-full"
+              className="flex-1"
             >
               초기화
             </Button>
@@ -186,12 +193,12 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
               onClick={handleApplyFilter}
               size="lg"
               variant="primary"
-              className="w-full"
+              className="flex-1"
             >
               필터 적용
             </Button>
           </div>
-        </div>
+        </BottomSheet.Footer>
       </BottomSheet>
     </div>
   );

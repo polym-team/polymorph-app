@@ -16,7 +16,7 @@ export function FilterLabel({ children, onRemove }: FilterLabelProps) {
   return (
     <Button
       size="xs"
-      variant="primary-outline"
+      variant="primary-light"
       rounded
       className="pr-2"
       onClick={handleClick}
