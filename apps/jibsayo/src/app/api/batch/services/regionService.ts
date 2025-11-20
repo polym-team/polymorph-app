@@ -10,7 +10,7 @@ import { logger } from '@/app/api/shared/utils/logger';
 export function getRegionCodes(): string[] {
   try {
     // eslint-disable-next-line global-require
-    const regionData = require('@/entities/region/models/codes-test.json');
+    const regionData = require('@/entities/region/models/codes.json');
     const codes: string[] = [];
 
     (
