@@ -46,7 +46,7 @@ export function ApartTransactionHistoryFilter({
                 key={size}
                 size="xs"
                 rounded
-                variant={isSelected ? 'primary-outline' : 'default'}
+                variant={isSelected ? 'primary-light' : 'default'}
                 onClick={() =>
                   onChangeSizes(
                     isSelected

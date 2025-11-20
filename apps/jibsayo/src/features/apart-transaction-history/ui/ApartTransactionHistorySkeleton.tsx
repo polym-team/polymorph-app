@@ -1,6 +1,8 @@
+import { BoxContainer } from '@/shared/ui/BoxContainer';
+
 export function ApartTransactionHistorySkeleton() {
   return (
-    <div className="bg-white p-3">
+    <BoxContainer bgColor="white">
       {/* 제목 */}
       <div className="h-6 w-24 animate-pulse rounded bg-gray-200" />
 
@@ -63,6 +65,6 @@ export function ApartTransactionHistorySkeleton() {
           ))}
         </div>
       </div>
-    </div>
+    </BoxContainer>
   );
 }

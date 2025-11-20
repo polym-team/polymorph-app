@@ -8,13 +8,7 @@ import { useModal } from '@/shared/hooks/useModal';
 import { Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import {
-  BottomSheet,
-  Button,
-  Select,
-  SelectTrigger,
-  SelectValue,
-} from '@package/ui';
+import { BottomSheet, Select, SelectTrigger, SelectValue } from '@package/ui';
 import { cn } from '@package/utils';
 
 interface RegionSelectProps {
@@ -53,11 +47,7 @@ export function RegionSelect({
   };
 
   const handleSelectRegionCode = (regionCode: string) => {
-    setLocalSelectedRegionCode(regionCode);
-  };
-
-  const handleSelect = () => {
-    onSelect(localSelectedRegionCode);
+    onSelect(regionCode);
     closeModal();
   };
 
@@ -75,14 +65,16 @@ export function RegionSelect({
       <BottomSheet isOpen={isOpen} onClose={closeModal}>
         <BottomSheet.Header>지역 선택</BottomSheet.Header>
         <BottomSheet.Body>
-          <div className="relative flex gap-x-2 pb-5">
+          <div className="relative flex gap-x-2 pb-10">
             <ul className="flex w-1/3 flex-col">
               {cityNameList.map(cityName => (
                 <li key={cityName}>
                   <button
                     className={cn(
-                      'w-full rounded p-3 text-left text-sm transition-colors duration-200 active:bg-gray-100',
-                      localSelectedCityName === cityName ? 'bg-gray-100' : ''
+                      'active:bg-accent active:text-accent-foreground w-full rounded p-3 text-left text-sm transition-colors duration-200',
+                      localSelectedCityName === cityName
+                        ? 'bg-accent text-accent-foreground'
+                        : ''
                     )}
                     onClick={() => handleSelectCityName(cityName)}
                   >
@@ -96,9 +88,9 @@ export function RegionSelect({
                 <li key={region.code}>
                   <button
                     className={cn(
-                      'flex w-full items-center gap-x-2 rounded p-3 text-left text-sm transition-colors duration-200 active:bg-gray-100',
+                      'active:bg-accent active:text-accent-foreground flex w-full items-center gap-x-2 rounded p-3 text-left text-sm transition-colors duration-200',
                       localSelectedRegionCode === region.code
-                        ? 'bg-gray-100'
+                        ? 'bg-accent text-accent-foreground'
                         : ''
                     )}
                     onClick={() => handleSelectRegionCode(region.code)}
@@ -128,14 +120,9 @@ export function RegionSelect({
                 </li>
               ))}
             </ul>
-            <div className="pointer-events-none absolute bottom-0 left-0 h-12 w-full bg-gradient-to-t from-white to-transparent" />
+            <div className="pointer-events-none absolute bottom-0 left-0 h-20 w-full bg-gradient-to-t from-white to-transparent" />
           </div>
         </BottomSheet.Body>
-        <BottomSheet.Footer>
-          <Button className="w-full" variant="primary" onClick={handleSelect}>
-            적용
-          </Button>
-        </BottomSheet.Footer>
       </BottomSheet>
     </div>
   );

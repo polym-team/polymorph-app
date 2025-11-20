@@ -7,8 +7,8 @@ import * as React from 'react';
 
 import { cn } from '@package/utils';
 
+import { BottomSheet } from './bottom-sheet';
 import { Button } from './button';
-import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
 interface MonthPickerProps {
   value?: Date;
@@ -25,7 +25,7 @@ export function MonthPicker({
   disabled = false,
   className,
 }: MonthPickerProps) {
-  const [open, setOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(false);
   const [currentYear, setCurrentYear] = React.useState(() => {
     return value?.getFullYear() || new Date().getFullYear();
   });
@@ -53,7 +53,7 @@ export function MonthPicker({
   const handleMonthSelect = (monthIndex: number) => {
     const newDate = new Date(currentYear, monthIndex, 1);
     onChange?.(newDate);
-    setOpen(false);
+    setIsOpen(false);
   };
 
   // 이전달/다음달 네비게이션
@@ -91,59 +91,6 @@ export function MonthPicker({
     }
   };
 
-  // 키보드 네비게이션 핸들러
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (!value) return;
-
-    const currentMonth = value.getMonth();
-    const currentYear = value.getFullYear();
-
-    switch (event.key) {
-      case 'ArrowLeft':
-        event.preventDefault();
-        handleMonthNavigation('prev');
-        break;
-
-      case 'ArrowRight':
-        event.preventDefault();
-        handleMonthNavigation('next');
-        break;
-
-      case 'ArrowUp':
-        event.preventDefault();
-        // 3개월 이전 (같은 열의 위쪽)
-        const upMonth = currentMonth - 3;
-        if (upMonth >= 0) {
-          onChange?.(new Date(currentYear, upMonth, 1));
-        } else {
-          onChange?.(new Date(currentYear - 1, upMonth + 12, 1));
-        }
-        break;
-
-      case 'ArrowDown':
-        event.preventDefault();
-        // 3개월 이후 (같은 열의 아래쪽)
-        const downMonth = currentMonth + 3;
-        if (downMonth <= 11) {
-          onChange?.(new Date(currentYear, downMonth, 1));
-        } else {
-          onChange?.(new Date(currentYear + 1, downMonth - 12, 1));
-        }
-        break;
-
-      case 'Enter':
-      case ' ':
-        event.preventDefault();
-        setOpen(!open);
-        break;
-
-      case 'Escape':
-        event.preventDefault();
-        setOpen(false);
-        break;
-    }
-  };
-
   // value가 변경되면 currentYear도 업데이트
   React.useEffect(() => {
     if (value) {
@@ -153,7 +100,7 @@ export function MonthPicker({
 
   // 팝오버가 열릴 때 현재 선택된 년도와 월에 스크롤
   React.useEffect(() => {
-    if (open && value) {
+    if (isOpen && value) {
       // DOM이 완전히 렌더링된 후에 스크롤 실행
       setTimeout(() => {
         // 년도 스크롤
@@ -173,7 +120,7 @@ export function MonthPicker({
         }
       }, 0);
     }
-  }, [open, value]);
+  }, [isOpen, value]);
 
   return (
     <div className={cn('relative flex items-center', className)}>
@@ -199,106 +146,76 @@ export function MonthPicker({
         <ChevronRight className="h-4 w-4" />
       </Button>
 
-      <Popover open={open} onOpenChange={setOpen} modal={true}>
-        <PopoverTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            className={cn(
-              'w-full justify-center bg-gray-100 pl-12 pr-12 text-center text-sm font-normal active:scale-100',
-              !value && 'text-muted-foreground'
-            )}
-            disabled={disabled}
-            onKeyDown={handleKeyDown}
-          >
-            <div className="flex items-center justify-center">
-              {value ? (
-                format(value, 'yyyy년 MM월', { locale: ko })
-              ) : (
-                <span>{placeholder}</span>
-              )}
-            </div>
-          </Button>
-        </PopoverTrigger>
+      <Button
+        type="button"
+        variant="ghost"
+        className={cn(
+          'w-full justify-center bg-gray-100 pl-12 pr-12 text-center text-sm font-normal active:scale-100',
+          !value && 'text-muted-foreground'
+        )}
+        disabled={disabled}
+        onClick={() => setIsOpen(true)}
+      >
+        <div className="flex items-center justify-center">
+          {value ? (
+            format(value, 'yyyy년 MM월', { locale: ko })
+          ) : (
+            <span>{placeholder}</span>
+          )}
+        </div>
+      </Button>
 
-        <PopoverContent
-          className="border-input w-[var(--radix-popover-trigger-width)] border p-0"
-          align="start"
-        >
-          <div className="flex h-[344px]">
-            {/* Year Selection - Left Side */}
-            <div className="w-full flex-1 border-r">
-              <div
-                className="scrollbar-hide h-full overflow-y-auto p-1"
-                style={{
-                  scrollBehavior: 'smooth',
-                  overscrollBehavior: 'auto',
-                  WebkitOverflowScrolling: 'touch',
-                }}
-              >
-                {Array.from(
-                  { length: new Date().getFullYear() - 2000 + 1 },
-                  (_, i) => {
-                    const year = 2000 + i;
-                    return (
+      <BottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)}>
+        <BottomSheet.Header>월 선택</BottomSheet.Header>
+        <BottomSheet.Body>
+          <div className="relative flex gap-x-2 pb-10">
+            <ul className="scrollbar-hide flex max-h-[50vh] w-1/2 flex-col overflow-y-auto overflow-x-hidden">
+              {Array.from(
+                { length: new Date().getFullYear() - 2000 + 1 },
+                (_, i) => {
+                  const year = 2000 + i;
+                  return (
+                    <li key={year}>
                       <button
-                        key={year}
                         type="button"
                         data-year={year}
-                        onClick={() => {
-                          setCurrentYear(year);
-                          // 년도 변경 시 현재 선택된 월을 유지하면서 새로운 날짜 생성
-                          if (value) {
-                            const newDate = new Date(year, value.getMonth(), 1);
-                            onChange?.(newDate);
-                          }
-                        }}
+                        onClick={() => setCurrentYear(year)}
                         className={cn(
-                          'active:bg-accent w-full rounded-md px-3 py-2 text-center text-sm transition-colors active:brightness-90',
-                          value?.getFullYear() === year &&
+                          'active:bg-accent active:text-accent-foreground w-full rounded p-3 text-left text-sm transition-colors duration-200',
+                          currentYear === year &&
                             'bg-accent text-accent-foreground'
                         )}
                       >
                         {year}년
                       </button>
-                    );
-                  }
-                )}
-              </div>
-            </div>
-
-            {/* Month Selection - Right Side */}
-            <div className="w-full flex-1">
-              <div
-                className="scrollbar-hide h-full overflow-y-auto p-1"
-                style={{
-                  scrollBehavior: 'smooth',
-                  overscrollBehavior: 'auto',
-                  WebkitOverflowScrolling: 'touch',
-                }}
-              >
-                {months.map((month, index) => (
+                    </li>
+                  );
+                }
+              )}
+            </ul>
+            <ul className="scrollbar-hide flex max-h-[50vh] w-1/2 flex-col overflow-y-auto overflow-x-hidden">
+              {months.map((month, index) => (
+                <li key={index}>
                   <button
-                    key={month}
                     type="button"
-                    data-month={index}
+                    data-month={month}
                     onClick={() => handleMonthSelect(index)}
                     className={cn(
-                      'active:bg-accent w-full rounded-md px-3 py-2 text-center text-sm transition-colors active:brightness-90',
+                      'active:bg-accent active:text-accent-foreground w-full rounded p-3 text-left text-sm transition-colors duration-200',
                       value &&
-                        value.getFullYear() === currentYear &&
                         value.getMonth() === index &&
                         'bg-accent text-accent-foreground'
                     )}
                   >
                     {month}
                   </button>
-                ))}
-              </div>
-            </div>
+                </li>
+              ))}
+            </ul>
+            <div className="pointer-events-none absolute bottom-0 left-0 h-20 w-full bg-gradient-to-t from-white to-transparent" />
           </div>
-        </PopoverContent>
-      </Popover>
+        </BottomSheet.Body>
+      </BottomSheet>
     </div>
   );
 }

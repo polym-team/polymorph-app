@@ -149,7 +149,7 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
               <Typography className="mb-2 text-sm font-semibold">
                 추가 필터
               </Typography>
-              <div className="flex gap-2">
+              <div className="flex gap-1">
                 <Button
                   size="sm"
                   rounded
@@ -184,7 +184,6 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
           <div className="flex gap-x-2">
             <Button
               onClick={handleClearFilter}
-              size="lg"
               variant="outline"
               className="flex-1"
             >
@@ -192,7 +191,6 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
             </Button>
             <Button
               onClick={handleApplyFilter}
-              size="lg"
               variant="primary"
               className="flex-1"
             >

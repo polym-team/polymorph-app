@@ -3,7 +3,7 @@ import { BoxContainer } from '@/shared/ui/BoxContainer';
 export function ApartInfoTableSkeleton() {
   return (
     <BoxContainer bgColor="white">
-      <div className="flex flex-col gap-y-4 bg-white p-3">
+      <div className="flex flex-col gap-y-4 bg-white">
         {/* 제목과 주소 */}
         <div className="flex flex-col gap-y-1">
           <div className="h-7 w-40 animate-pulse rounded bg-gray-200" />
@@ -21,7 +21,7 @@ export function ApartInfoTableSkeleton() {
         </div>
 
         {/* 지도 스켈레톤 */}
-        <div className="h-64 w-full animate-pulse rounded bg-gray-200" />
+        <div className="aspect-square w-full animate-pulse rounded bg-gray-200" />
       </div>
     </BoxContainer>
   );

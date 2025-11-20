@@ -40,7 +40,6 @@ const buttonVariants = cva(
         default: 'border-transparent bg-gray-100 text-default-foreground',
         primary: 'border-transparent bg-primary text-primary-foreground',
         'primary-light': 'border-transparent bg-primary/10 text-primary',
-        'primary-outline': 'border-primary bg-primary/10',
         danger: 'border-transparent bg-danger text-danger-foreground',
         warning: 'border-transparent bg-warning text-warning-foreground',
         outline: 'border-input bg-background',
