@@ -1,4 +1,5 @@
 import { RULES } from '@/entities/transaction';
+import { useModal } from '@/shared/hooks/useModal';
 import { formatPyeong } from '@/shared/utils/formatters';
 
 import { useState } from 'react';
@@ -15,17 +16,17 @@ interface FilterFormProps {
 }
 
 export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, openModal, closeModal } = useModal();
   const [tempFilter, setTempFilter] = useState<FilterFormType>(appliedFilter);
 
   const handleOpenBottomSheet = () => {
     setTempFilter(appliedFilter);
-    setIsOpen(true);
+    openModal();
   };
 
   const handleApplyFilter = () => {
     onApplyFilter(tempFilter);
-    setIsOpen(false);
+    closeModal();
   };
 
   const handleClearFilter = () => {
@@ -36,7 +37,7 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
       favoriteOnly: false,
       newTransactionOnly: false,
     });
-    setIsOpen(false);
+    closeModal();
   };
 
   const handleTempFilterChange = (updates: Partial<FilterFormType>) => {
@@ -117,7 +118,7 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
         )}
       </div>
 
-      <BottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)}>
+      <BottomSheet isOpen={isOpen} onClose={closeModal}>
         <BottomSheet.Header>세부 필터</BottomSheet.Header>
         <BottomSheet.Body>
           <div className="flex flex-col gap-6 pb-5">

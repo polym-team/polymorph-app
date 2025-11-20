@@ -3,7 +3,6 @@ import { getCityNameWithRegionCode } from '@/entities/region';
 import { MonthPicker } from '@package/ui';
 
 import { SearchForm as SearchFormType } from '../models/types';
-import '../services/calculator';
 import { FavoriteRegionList } from './FavoriteRegionList';
 import { RegionSelect } from './RegionSelect';
 

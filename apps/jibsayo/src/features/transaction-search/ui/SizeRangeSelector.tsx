@@ -1,4 +1,5 @@
 import { RULES } from '@/entities/transaction';
+import { HorizontalScrollContainer } from '@/shared/ui/HorizontalScrollContainer';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -301,30 +302,27 @@ export function SizeRangeSelector({
       </div>
 
       {/* 2행: 빠른 선택 버튼들 - 가로 스크롤 */}
-      <div className="relative">
-        <div className="scrollbar-hide overflow-x-auto overflow-y-hidden pr-8">
-          <div className="flex w-max gap-1">
-            {quickSelectButtons.map(button => (
-              <Button
-                key={button.label}
-                type="button"
-                onClick={() => handleQuickSelect(button)}
-                size="sm"
-                rounded
-                variant={
-                  localMin === button.min && localMax === button.max
-                    ? 'primary'
-                    : 'outline'
-                }
-                className="whitespace-nowrap"
-              >
-                {button.label}
-              </Button>
-            ))}
-          </div>
+      <HorizontalScrollContainer>
+        <div className="flex w-max gap-1">
+          {quickSelectButtons.map(button => (
+            <Button
+              key={button.label}
+              type="button"
+              onClick={() => handleQuickSelect(button)}
+              size="sm"
+              rounded
+              variant={
+                localMin === button.min && localMax === button.max
+                  ? 'primary'
+                  : 'outline'
+              }
+              className="whitespace-nowrap"
+            >
+              {button.label}
+            </Button>
+          ))}
         </div>
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-white to-transparent" />
-      </div>
+      </HorizontalScrollContainer>
     </div>
   );
 }
