@@ -24,7 +24,8 @@ export async function saveTransactionArchive(
   transactionIds: string[]
 ): Promise<void> {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const kstDate = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+    const today = kstDate.toISOString().split('T')[0];
     const docId = `${today.replace(/-/g, '')}_${regionCode}`;
 
     logger.info('Saving transaction archive', {

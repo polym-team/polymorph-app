@@ -60,8 +60,8 @@ export async function GET(request: NextRequest) {
   logger.info('크롤링할 지역 코드', { uniqueRegionCodes });
 
   // 4. 각 regionCode별로 신규 거래 데이터 가져오기
-  const now = new Date();
-  const today = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+  const kstNow = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+  const today = `${kstNow.getUTCFullYear()}${String(kstNow.getUTCMonth() + 1).padStart(2, '0')}${String(kstNow.getUTCDate()).padStart(2, '0')}`;
   const allTransactions = await getAllNewTransactions(uniqueRegionCodes, today);
   if (allTransactions.length === 0) {
     logger.info('신규 거래 데이터가 없습니다.');
