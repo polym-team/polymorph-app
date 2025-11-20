@@ -241,7 +241,7 @@ export function SizeRangeSelector({
         <Typography variant="small" className="text-sm font-semibold">
           평수
         </Typography>
-        <Typography variant="small" className="text-sm text-gray-600">
+        <Typography variant="small" className="text-primary text-sm">
           {localMin === 0 && localMax === 50
             ? '전체 평수'
             : localMax === Infinity
