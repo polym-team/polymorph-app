@@ -15,6 +15,7 @@ import {
 } from './services/validatorService';
 
 export async function GET(request: NextRequest) {
+  const startedAt = new Date();
   const userAgent = request.headers.get('user-agent') || '';
 
   // 0. User-Agent 검증
@@ -40,10 +41,15 @@ export async function GET(request: NextRequest) {
   const favoriteAparts = await getFavoriteApartList();
   if (favoriteAparts.length === 0) {
     logger.info('즐겨찾기된 아파트가 없습니다.');
+    const completedAt = new Date();
+    const durationMs = completedAt.getTime() - startedAt.getTime();
     return NextResponse.json({
       success: true,
       message: '즐겨찾기된 아파트가 없습니다.',
       pushNotifications: [],
+      startedAt: startedAt.toISOString(),
+      completedAt: completedAt.toISOString(),
+      durationMs,
     });
   }
   logger.info(`즐겨찾기 아파트 발견`, { favoriteAparts });
@@ -59,10 +65,15 @@ export async function GET(request: NextRequest) {
   const allTransactions = await getAllNewTransactions(uniqueRegionCodes, today);
   if (allTransactions.length === 0) {
     logger.info('신규 거래 데이터가 없습니다.');
+    const completedAt = new Date();
+    const durationMs = completedAt.getTime() - startedAt.getTime();
     return NextResponse.json({
       success: true,
       message: '신규 거래 데이터가 없습니다.',
       pushNotifications: [],
+      startedAt: startedAt.toISOString(),
+      completedAt: completedAt.toISOString(),
+      durationMs,
     });
   }
   logger.info('총 신규 거래 데이터', { allTransactions });
@@ -74,10 +85,15 @@ export async function GET(request: NextRequest) {
   );
   if (pushNotifications.length === 0) {
     logger.info('푸시 알림 데이터가 없습니다.');
+    const completedAt = new Date();
+    const durationMs = completedAt.getTime() - startedAt.getTime();
     return NextResponse.json({
       success: true,
       message: '푸시 알림 데이터가 없습니다.',
       pushNotifications: [],
+      startedAt: startedAt.toISOString(),
+      completedAt: completedAt.toISOString(),
+      durationMs,
     });
   }
   logger.info('푸시 알림 데이터', { pushNotifications });
@@ -86,9 +102,18 @@ export async function GET(request: NextRequest) {
   const pushResults = await sendPushNotifications(pushNotifications);
   logger.info('푸시 알림 전송 결과', { pushResults });
 
-  return NextResponse.json({
+  // 7. 응답 반환
+  const completedAt = new Date();
+  const durationMs = completedAt.getTime() - startedAt.getTime();
+  const result = {
     success: true,
-    message: '푸시 알림 전송이 완료되었습니다.',
-    pushResults,
-  });
+    successCount: pushResults.successCount,
+    failureCount: pushResults.failureCount,
+    startedAt: startedAt.toISOString(),
+    completedAt: completedAt.toISOString(),
+    durationMs,
+  };
+  logger.info('푸시 API 응답', { result });
+
+  return NextResponse.json(result);
 }

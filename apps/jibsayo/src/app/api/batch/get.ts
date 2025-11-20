@@ -35,7 +35,7 @@ export async function GET() {
     });
 
     let successCount = 0;
-    let failedCount = 0;
+    let failureCount = 0;
     let totalArchived = 0;
 
     // 각 지역별 처리 (두 달 데이터를 한 번에 저장)
@@ -69,7 +69,7 @@ export async function GET() {
           totalCount: allTransactionIds.length,
         });
       } catch (error) {
-        failedCount++;
+        failureCount++;
         logger.error('Failed to process region', {
           regionCode,
           error: error instanceof Error ? error.message : String(error),
@@ -79,23 +79,18 @@ export async function GET() {
 
     const completedAt = new Date();
     const duration = completedAt.getTime() - startedAt.getTime();
-
-    logger.info('Batch job completed', {
-      successCount,
-      failedCount,
-      totalArchived,
-      durationMs: duration,
-    });
-
-    return NextResponse.json({
+    const response = {
       success: true,
       successCount,
-      failedCount,
+      failureCount,
       totalArchived,
       startedAt: startedAt.toISOString(),
       completedAt: completedAt.toISOString(),
       durationMs: duration,
-    });
+    };
+
+    logger.info('Batch job completed', response);
+    return NextResponse.json(response);
   } catch (error) {
     const completedAt = new Date();
 
