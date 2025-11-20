@@ -2,11 +2,7 @@
 
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import {
-  Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import * as React from 'react';
 
 import { cn } from '@package/utils';
@@ -216,7 +212,6 @@ export function MonthPicker({
             onKeyDown={handleKeyDown}
           >
             <div className="flex items-center justify-center">
-              <CalendarIcon className="mr-2 h-4 w-4" />
               {value ? (
                 format(value, 'yyyy년 MM월', { locale: ko })
               ) : (
