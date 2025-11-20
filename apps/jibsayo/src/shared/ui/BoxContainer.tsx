@@ -3,11 +3,16 @@
 import { cn } from '@package/utils';
 
 interface BoxContainerProps {
+  className?: string;
   bgColor?: 'white';
   children: React.ReactNode;
 }
 
-export function BoxContainer({ bgColor, children }: BoxContainerProps) {
+export function BoxContainer({
+  className,
+  bgColor,
+  children,
+}: BoxContainerProps) {
   return (
     <div
       className={cn(
@@ -15,7 +20,9 @@ export function BoxContainer({ bgColor, children }: BoxContainerProps) {
         bgColor === 'white' && 'bg-white'
       )}
     >
-      <div className="w-full max-w-screen-md p-3">{children}</div>
+      <div className={cn('w-full max-w-screen-md p-3', className)}>
+        {children}
+      </div>
     </div>
   );
 }

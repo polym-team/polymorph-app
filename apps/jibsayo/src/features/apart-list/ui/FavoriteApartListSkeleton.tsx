@@ -2,7 +2,7 @@ import { BoxContainer } from '@/shared/ui/BoxContainer';
 
 export function FavoriteApartListSkeleton() {
   return (
-    <BoxContainer>
+    <BoxContainer className="p-0">
       <div className="flex w-full flex-col gap-y-3 pb-10">
         {[1, 2, 3].map(index => (
           <div key={index}>
