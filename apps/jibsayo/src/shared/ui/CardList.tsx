@@ -1,14 +1,16 @@
 import { ReactNode } from 'react';
 
 import { Card } from '@package/ui';
+import { cn } from '@package/utils';
 
 interface CardItemProps {
   children: ReactNode;
+  className?: string;
   onClick?: () => void;
 }
-function CardItem({ children, onClick }: CardItemProps) {
+function CardItem({ children, className, onClick }: CardItemProps) {
   return (
-    <Card className="p-3.5" onClick={onClick}>
+    <Card className={cn('p-3.5', className)} onClick={onClick}>
       {children}
     </Card>
   );

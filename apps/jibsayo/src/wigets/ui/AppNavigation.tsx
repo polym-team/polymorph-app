@@ -24,7 +24,7 @@ export function AppNavigation({ title, showBackButton }: AppNavigationProps) {
           {showBackButton && (
             <button
               onClick={handleBackButtonClick}
-              className="flex h-8 w-8 -translate-x-2.5 items-center justify-center rounded-full transition-all active:scale-95 active:bg-gray-100"
+              className="active:bg-accent active:text-accent-foreground flex h-8 w-8 -translate-x-2.5 items-center justify-center rounded-full transition-all transition-colors duration-200"
               aria-label="뒤로가기"
             >
               <ChevronLeft className="h-6 w-6 text-gray-700" />

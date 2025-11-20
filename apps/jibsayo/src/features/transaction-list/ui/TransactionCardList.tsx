@@ -39,6 +39,7 @@ export function TransactionCardList({
         {items.map((item, index) => (
           <CardList.Item
             key={`${item.transactionId}__${index}`}
+            className="active:bg-accent active:text-accent-foreground transition-colors duration-200"
             onClick={() => onRowClick(item)}
           >
             <div className="flex items-center justify-between gap-2">
