@@ -12,11 +12,8 @@ export function ApartInfoTableSkeleton() {
         {[1, 2, 3].map(index => (
           <div
             key={index}
-            className="bg-primary/5 flex items-center justify-between gap-x-2 rounded p-3"
-          >
-            <div className="h-5 w-20 animate-pulse rounded bg-gray-200" />
-            <div className="h-5 w-16 animate-pulse rounded bg-gray-200" />
-          </div>
+            className="flex h-10 animate-pulse items-center justify-between gap-x-2 rounded bg-gray-200"
+          />
         ))}
       </div>
 

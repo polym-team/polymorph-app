@@ -37,7 +37,7 @@ export function FavoriteApartList({
                 className="flex items-center justify-between border-b border-gray-100 bg-white p-3 last:border-b-0 active:bg-gray-100"
                 onClick={() => onClickApartItem(region.code, item)}
               >
-                <span className="flex items-center gap-x-1">
+                <span className="leading-1 flex items-center gap-x-1">
                   {item.apartName}{' '}
                   <ChevronRight
                     size={18}
