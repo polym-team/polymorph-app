@@ -4,7 +4,10 @@ import { ExpoPushNotificationClient } from '@polymorph/firebase';
 
 import { FavoriteApart } from '../../favorite-apart/models/types';
 import { mapFirestoreToFavoriteApart } from '../../favorite-apart/services/mapperService';
-import { createApartId, parseTransactionId } from '../../shared/services/transactionService';
+import {
+  createApartId,
+  parseTransactionId,
+} from '../../shared/services/transactionService';
 import { NewTransactionItem, PushNotificationItem } from '../models/types';
 import {
   favoriteApartFirestoreClient,
