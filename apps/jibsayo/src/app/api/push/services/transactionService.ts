@@ -4,7 +4,7 @@ import { ExpoPushNotificationClient } from '@polymorph/firebase';
 
 import { FavoriteApart } from '../../favorite-apart/models/types';
 import { mapFirestoreToFavoriteApart } from '../../favorite-apart/services/mapperService';
-import { createApartId } from '../../shared/services/transactionService';
+import { createApartId, parseTransactionId } from '../../shared/services/transactionService';
 import { NewTransactionItem, PushNotificationItem } from '../models/types';
 import {
   favoriteApartFirestoreClient,
@@ -14,18 +14,45 @@ import {
 const expoPushClient = new ExpoPushNotificationClient();
 
 const getNewTransactionsByArea = async (
-  area: string
+  area: string,
+  date: string
 ): Promise<NewTransactionItem[]> => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/new-transactions?area=${area}`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/new-transactions?area=${area}&date=${date}`,
       { headers: { 'User-Agent': 'Internal-API-Call' } }
     );
     const data = await response.json();
-    logger.info(`${area} 지역의 신규 거래 데이터`, { data });
-    return data.list || [];
+    logger.info(`${area} 지역의 신규 거래 데이터`, {
+      area,
+      date,
+      count: data.count,
+    });
+
+    // transactionIds를 NewTransactionItem[]으로 변환
+    const transactionIds: string[] = data.transactionIds || [];
+    const transactions: NewTransactionItem[] = transactionIds
+      .map(id => {
+        const parsed = parseTransactionId(id);
+        if (!parsed) return null;
+
+        return {
+          transactionId: id,
+          apartId: parsed.apartId,
+          apartName: parsed.apartName,
+          buildedYear: null, // transactionId에는 buildedYear 정보가 없음
+          address: parsed.address,
+          tradeDate: parsed.tradeDate,
+          size: parsed.size ?? null,
+          floor: parsed.floor,
+          tradeAmount: parsed.tradeAmount,
+        } as NewTransactionItem;
+      })
+      .filter((tx): tx is NewTransactionItem => tx !== null);
+
+    return transactions;
   } catch (error) {
-    logger.error('신규 거래 데이터 조회 실패', { area, error });
+    logger.error('신규 거래 데이터 조회 실패', { area, date, error });
     return [];
   }
 };
@@ -130,11 +157,12 @@ export const removeDuplicateRegionCodesInFavoriteApartList = (
 };
 
 export const getAllNewTransactions = async (
-  regionCodes: string[]
+  regionCodes: string[],
+  date: string
 ): Promise<NewTransactionItem[]> => {
   // 모든 regionCode를 병렬로 처리하여 실행 시간 단축
   const results = await Promise.allSettled(
-    regionCodes.map(regionCode => getNewTransactionsByArea(regionCode))
+    regionCodes.map(regionCode => getNewTransactionsByArea(regionCode, date))
   );
 
   // 성공한 결과만 필터링하고 평탄화

@@ -54,7 +54,8 @@ export async function GET(request: NextRequest) {
   logger.info('크롤링할 지역 코드', { uniqueRegionCodes });
 
   // 4. 각 regionCode별로 신규 거래 데이터 가져오기
-  const allTransactions = await getAllNewTransactions(uniqueRegionCodes);
+  const today = new Date().toISOString().split('T')[0];
+  const allTransactions = await getAllNewTransactions(uniqueRegionCodes, today);
   if (allTransactions.length === 0) {
     logger.info('신규 거래 데이터가 없습니다.');
     return NextResponse.json({
