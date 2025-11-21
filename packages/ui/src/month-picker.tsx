@@ -176,7 +176,7 @@ export function MonthPicker({
       <BottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)}>
         <BottomSheet.Header>월 선택</BottomSheet.Header>
         <BottomSheet.Body>
-          <div className="relative flex gap-x-2 pb-10">
+          <div className="relative flex gap-x-2 pb-16">
             <ul className="scrollbar-hide flex max-h-[50vh] w-1/2 flex-col overflow-y-auto overflow-x-hidden">
               {Array.from(
                 { length: new Date().getFullYear() - START_YEAR + 1 },

@@ -65,7 +65,7 @@ export function RegionSelect({
       <BottomSheet isOpen={isOpen} onClose={closeModal}>
         <BottomSheet.Header>지역 선택</BottomSheet.Header>
         <BottomSheet.Body>
-          <div className="relative flex gap-x-2 pb-10">
+          <div className="relative flex gap-x-2 pb-16">
             <ul className="flex w-1/3 flex-col">
               {cityNameList.map(cityName => (
                 <li key={cityName}>
