@@ -65,7 +65,7 @@ export function RegionSelect({
       <BottomSheet isOpen={isOpen} onClose={closeModal}>
         <BottomSheet.Header>지역 선택</BottomSheet.Header>
         <BottomSheet.Body>
-          <div className="relative flex gap-x-2 pb-16">
+          <div className="relative flex gap-x-2">
             <ul className="flex w-1/3 flex-col">
               {cityNameList.map(cityName => (
                 <li key={cityName}>
@@ -83,7 +83,7 @@ export function RegionSelect({
                 </li>
               ))}
             </ul>
-            <ul className="scrollbar-hide max-h-[50vh] w-2/3 overflow-y-auto">
+            <ul className="scrollbar-hide max-h-[50vh] w-2/3 overflow-y-auto pb-16">
               {regionList.map(region => (
                 <li key={region.code}>
                   <button
