@@ -1,8 +1,9 @@
 import { COLLECTIONS } from '@/app/api/consts';
 import { getFirestoreClient } from '@/app/api/shared/libs/fireStore';
-import { getPreviousDate } from './utils/date';
+
 import { NewTransactionsResponse, TransactionArchive } from './models/types';
 import { extractNewTransactionIds } from './services/transactionService';
+import { getPreviousDate } from './utils/date';
 
 export async function GET(request: Request): Promise<Response> {
   try {
