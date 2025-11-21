@@ -71,9 +71,9 @@ export function RegionSelect({
                 <li key={cityName}>
                   <button
                     className={cn(
-                      'active:bg-accent active:text-accent-foreground w-full rounded p-3 text-left text-sm transition-colors duration-200',
+                      'active:bg-accent w-full rounded p-3 text-left text-sm transition-colors duration-300',
                       localSelectedCityName === cityName
-                        ? 'bg-accent text-accent-foreground'
+                        ? 'bg-accent text-primary'
                         : ''
                     )}
                     onClick={() => handleSelectCityName(cityName)}
@@ -88,9 +88,9 @@ export function RegionSelect({
                 <li key={region.code}>
                   <button
                     className={cn(
-                      'active:bg-accent active:text-accent-foreground flex w-full items-center gap-x-2 rounded p-3 text-left text-sm transition-colors duration-200',
+                      'active:bg-accent flex w-full items-center gap-x-2 rounded p-3 text-left text-sm transition-colors duration-300',
                       localSelectedRegionCode === region.code
-                        ? 'bg-accent text-accent-foreground'
+                        ? 'bg-accent text-primary'
                         : ''
                     )}
                     onClick={() => handleSelectRegionCode(region.code)}

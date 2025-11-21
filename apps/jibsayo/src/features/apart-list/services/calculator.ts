@@ -40,6 +40,12 @@ const createRegionItems = (
   return sortedRegionItems;
 };
 
+export const calculateFavoriteApartIds = (
+  favoriteApartList: FavoriteApartItem[]
+): string[] => {
+  return favoriteApartList.map(item => item.apartId);
+};
+
 export const calculateRegionItems = (
   favoriteApartList: FavoriteApartItem[]
 ): RegionItem[] => {

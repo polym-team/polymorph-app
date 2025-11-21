@@ -1,3 +1,5 @@
+'use client';
+
 import { FavoriteApartItem } from '@/entities/apart/models/types';
 import {
   getCityNameWithRegionCode,
@@ -5,19 +7,23 @@ import {
 } from '@/entities/region';
 import { BoxContainer } from '@/shared/ui/BoxContainer';
 
-import { ChevronRight, X } from 'lucide-react';
+import { ChevronRight, Star } from 'lucide-react';
 
 import { RegionItem } from '../models/types';
 
 interface FavoriteApartListProps {
   regionItems: RegionItem[];
+  favoriteApartIds: string[];
   onClickApartItem: (regionCode: string, apartItem: FavoriteApartItem) => void;
+  onAddApartItem: (regionCode: string, apartItem: FavoriteApartItem) => void;
   onRemoveApartItem: (regionCode: string, apartItem: FavoriteApartItem) => void;
 }
 
 export function FavoriteApartList({
   regionItems,
+  favoriteApartIds,
   onClickApartItem,
+  onAddApartItem,
   onRemoveApartItem,
 }: FavoriteApartListProps) {
   return (
@@ -33,31 +39,47 @@ export function FavoriteApartList({
               </span>
             </div>
             <div className="flex flex-col">
-              {region.apartItems.map(item => (
-                <div
-                  key={item.apartId}
-                  className="flex items-center justify-between border-b border-gray-100 bg-white p-3 last:border-b-0 active:bg-gray-100"
-                  onClick={() => onClickApartItem(region.code, item)}
-                >
-                  <span className="leading-1 flex items-center gap-x-1">
-                    {item.apartName}{' '}
-                    <ChevronRight
-                      size={18}
-                      className="translate-y-[-0.5px] text-gray-300"
-                    />
-                  </span>
-                  <button
-                    onClick={e => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      onRemoveApartItem(region.code, item);
-                    }}
-                    className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 active:bg-gray-300"
+              {region.apartItems.map(item => {
+                const isFavorited = favoriteApartIds.includes(item.apartId);
+
+                return (
+                  <div
+                    key={item.apartId}
+                    className="flex items-center justify-between border-b border-gray-100 bg-white p-3 last:border-b-0 active:bg-gray-100"
+                    onClick={() => onClickApartItem(region.code, item)}
                   >
-                    <X size={16} className="text-gray-400" />
-                  </button>
-                </div>
-              ))}
+                    <span className="leading-1 flex items-center gap-x-1">
+                      {item.apartName}{' '}
+                      <ChevronRight
+                        size={18}
+                        className="translate-y-[-0.5px] text-gray-300"
+                      />
+                    </span>
+                    <button
+                      onClick={e => {
+                        e.stopPropagation();
+                        e.preventDefault();
+
+                        if (isFavorited) {
+                          onRemoveApartItem(region.code, item);
+                        } else {
+                          onAddApartItem(region.code, item);
+                        }
+                      }}
+                      className="flex h-7 w-7 items-center justify-center rounded-full active:bg-gray-200"
+                    >
+                      <Star
+                        size={16}
+                        className={
+                          isFavorited
+                            ? 'fill-yellow-400 text-yellow-400'
+                            : 'fill-gray-300 text-gray-300'
+                        }
+                      />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         ))}

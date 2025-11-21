@@ -18,6 +18,8 @@ interface MonthPickerProps {
   className?: string;
 }
 
+const START_YEAR = 2006;
+
 export function MonthPicker({
   value,
   onChange,
@@ -49,6 +51,12 @@ export function MonthPicker({
     '11월',
     '12월',
   ];
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setCurrentYear(value?.getFullYear() || new Date().getFullYear());
+    }
+  }, [isOpen, value]);
 
   const handleMonthSelect = (monthIndex: number) => {
     const newDate = new Date(currentYear, monthIndex, 1);
@@ -171,9 +179,9 @@ export function MonthPicker({
           <div className="relative flex gap-x-2 pb-10">
             <ul className="scrollbar-hide flex max-h-[50vh] w-1/2 flex-col overflow-y-auto overflow-x-hidden">
               {Array.from(
-                { length: new Date().getFullYear() - 2000 + 1 },
+                { length: new Date().getFullYear() - START_YEAR + 1 },
                 (_, i) => {
-                  const year = 2000 + i;
+                  const year = START_YEAR + i;
                   return (
                     <li key={year}>
                       <button
@@ -181,9 +189,8 @@ export function MonthPicker({
                         data-year={year}
                         onClick={() => setCurrentYear(year)}
                         className={cn(
-                          'active:bg-accent active:text-accent-foreground w-full rounded p-3 text-left text-sm transition-colors duration-200',
-                          currentYear === year &&
-                            'bg-accent text-accent-foreground'
+                          'active:bg-accent w-full rounded p-3 text-left text-sm transition-colors duration-300',
+                          currentYear === year && 'bg-accent text-primary'
                         )}
                       >
                         {year}년
@@ -201,10 +208,10 @@ export function MonthPicker({
                     data-month={month}
                     onClick={() => handleMonthSelect(index)}
                     className={cn(
-                      'active:bg-accent active:text-accent-foreground w-full rounded p-3 text-left text-sm transition-colors duration-200',
+                      'active:bg-accent w-full rounded p-3 text-left text-sm transition-colors duration-300',
                       value &&
                         value.getMonth() === index &&
-                        'bg-accent text-accent-foreground'
+                        'bg-accent text-primary'
                     )}
                   >
                     {month}
