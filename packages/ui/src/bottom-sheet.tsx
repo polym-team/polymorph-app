@@ -35,7 +35,7 @@ interface BodyProps {
 
 function Body({ children }: BodyProps) {
   return (
-    <div className="scrollbar-hide max-h-[60vh] overflow-y-auto p-4">
+    <div className="scrollbar-hide max-h-[75vh] overflow-y-auto p-4">
       {children}
     </div>
   );
