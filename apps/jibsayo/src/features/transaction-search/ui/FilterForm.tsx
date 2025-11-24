@@ -107,7 +107,7 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
       <BottomSheet isOpen={isOpen} onClose={closeModal}>
         <BottomSheet.Header>세부 필터</BottomSheet.Header>
         <BottomSheet.Body>
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-y-6">
             {selectedTempFilterCount > 0 && (
               <div>
                 <span className="mb-2 block text-sm text-gray-500">

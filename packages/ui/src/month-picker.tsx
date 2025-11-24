@@ -177,7 +177,7 @@ export function MonthPicker({
         <BottomSheet.Header>월 선택</BottomSheet.Header>
         <BottomSheet.Body>
           <div className="relative flex gap-x-2">
-            <ul className="scrollbar-hide flex max-h-[50vh] w-1/2 flex-col overflow-y-auto overflow-x-hidden pb-16">
+            <ul className="scrollbar-hide flex max-h-[50vh] w-1/2 flex-col overflow-y-auto overflow-x-hidden pb-28">
               {Array.from(
                 { length: new Date().getFullYear() - START_YEAR + 1 },
                 (_, i) => {
@@ -200,7 +200,7 @@ export function MonthPicker({
                 }
               )}
             </ul>
-            <ul className="scrollbar-hide flex max-h-[50vh] w-1/2 flex-col overflow-y-auto overflow-x-hidden pb-16">
+            <ul className="scrollbar-hide flex max-h-[50vh] w-1/2 flex-col overflow-y-auto overflow-x-hidden pb-28">
               {months.map((month, index) => (
                 <li key={index}>
                   <button
@@ -219,7 +219,7 @@ export function MonthPicker({
                 </li>
               ))}
             </ul>
-            <div className="pointer-events-none absolute bottom-0 left-0 h-20 w-full bg-gradient-to-t from-white to-transparent" />
+            <div className="pointer-events-none absolute bottom-0 left-0 h-36 w-full bg-gradient-to-t from-white to-transparent" />
           </div>
         </BottomSheet.Body>
       </BottomSheet>

@@ -72,7 +72,7 @@ export function RegionSelect({
       <BottomSheet isOpen={isOpen} onClose={closeModal}>
         <BottomSheet.Header>지역 선택</BottomSheet.Header>
         <BottomSheet.Body>
-          <div className="flex flex-col gap-y-5">
+          <div className="flex flex-col gap-y-6">
             {favoriteRegionList.length > 0 && (
               <div className="flex flex-col gap-y-2">
                 <span className="text-sm text-gray-500">저장된 지역</span>
@@ -123,7 +123,7 @@ export function RegionSelect({
                     </li>
                   ))}
                 </ul>
-                <ul className="scrollbar-hide max-h-[50vh] w-2/3 overflow-y-auto pb-16">
+                <ul className="scrollbar-hide max-h-[50vh] w-2/3 overflow-y-auto pb-28">
                   {regionList.map(region => (
                     <li key={region.code}>
                       <button
@@ -160,7 +160,7 @@ export function RegionSelect({
                     </li>
                   ))}
                 </ul>
-                <div className="pointer-events-none absolute bottom-0 left-0 h-20 w-full bg-gradient-to-t from-white to-transparent" />
+                <div className="pointer-events-none absolute bottom-0 left-0 h-36 w-full bg-gradient-to-t from-white to-transparent" />
               </div>
             </div>
           </div>
