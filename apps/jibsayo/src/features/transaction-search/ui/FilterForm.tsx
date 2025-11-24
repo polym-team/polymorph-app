@@ -2,9 +2,9 @@ import { RULES } from '@/entities/transaction';
 import { useModal } from '@/shared/hooks/useModal';
 import { formatPyeong } from '@/shared/utils/formatters';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
-import { BottomSheet, Button, Input, Typography } from '@package/ui';
+import { BottomSheet, Button, Input } from '@package/ui';
 
 import { FilterForm as FilterFormType } from '../models/types';
 import { FilterLabel } from './FilterLabel';
@@ -15,9 +15,55 @@ interface FilterFormProps {
   onApplyFilter: (filter: Partial<FilterFormType>) => void;
 }
 
+const selectedFilters = (
+  filter: FilterFormType
+): {
+  size: boolean;
+  apartName: boolean;
+  favoriteOnly: boolean;
+  newTransactionOnly: boolean;
+} => {
+  const size =
+    !(filter.minSize === 0 && filter.maxSize === Infinity) &&
+    (filter.minSize !== RULES.SEARCH_MIN_SIZE ||
+      filter.maxSize !== RULES.SEARCH_MAX_SIZE);
+  const apartName = !!filter.apartName;
+  const favoriteOnly = filter.favoriteOnly;
+  const newTransactionOnly = filter.newTransactionOnly;
+
+  return { size, apartName, favoriteOnly, newTransactionOnly };
+};
+
+const calculateSelectedFilterCount = (filter: FilterFormType): number => {
+  const {
+    size: hasSizeFilter,
+    apartName: hasApartNameFilter,
+    favoriteOnly: hasFavoriteOnlyFilter,
+    newTransactionOnly: hasNewTransactionOnlyFilter,
+  } = selectedFilters(filter);
+
+  return [
+    hasSizeFilter,
+    hasApartNameFilter,
+    hasFavoriteOnlyFilter,
+    hasNewTransactionOnlyFilter,
+  ].filter(Boolean).length;
+};
+
 export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
   const { isOpen, openModal, closeModal } = useModal();
   const [tempFilter, setTempFilter] = useState<FilterFormType>(appliedFilter);
+
+  const apartNameInputRef = useRef<HTMLInputElement>(null);
+  const selectedTempFilterCount = calculateSelectedFilterCount(tempFilter);
+  const selectedAppliedFilterCount =
+    calculateSelectedFilterCount(appliedFilter);
+  const {
+    size: hasSizeTempFilter,
+    apartName: hasApartNameTempFilter,
+    favoriteOnly: hasFavoriteOnlyTempFilter,
+    newTransactionOnly: hasNewTransactionOnlyTempFilter,
+  } = selectedFilters(tempFilter);
 
   const handleOpenBottomSheet = () => {
     setTempFilter(appliedFilter);
@@ -44,84 +90,79 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
     setTempFilter(prev => ({ ...prev, ...updates }));
   };
 
-  const hasSizeFilter =
-    !(appliedFilter.minSize === 0 && appliedFilter.maxSize === Infinity) &&
-    (appliedFilter.minSize !== RULES.SEARCH_MIN_SIZE ||
-      appliedFilter.maxSize !== RULES.SEARCH_MAX_SIZE);
-  const hasApartNameFilter = appliedFilter.apartName;
-  const hasFavoriteOnlyFilter = appliedFilter.favoriteOnly;
-  const hasNewTransactionOnlyFilter = appliedFilter.newTransactionOnly;
-
-  const hasFilters =
-    hasSizeFilter ||
-    hasApartNameFilter ||
-    hasFavoriteOnlyFilter ||
-    hasNewTransactionOnlyFilter;
-
-  const selectedCount = [
-    hasSizeFilter,
-    hasApartNameFilter,
-    hasFavoriteOnlyFilter,
-    hasNewTransactionOnlyFilter,
-  ].filter(Boolean).length;
-
   return (
     <div className="relative w-full">
-      <div>
-        <Button
-          onClick={handleOpenBottomSheet}
-          className="w-full justify-between active:scale-100"
-        >
-          <span className="text-sm">세부 필터</span>
-          {selectedCount > 0 && (
-            <span className="text-primary text-sm">
-              {selectedCount}개 선택됨
-            </span>
-          )}
-        </Button>
-        {hasFilters && (
-          <div className="mt-2 flex gap-1 overflow-x-auto">
-            {hasSizeFilter && (
-              <FilterLabel
-                onRemove={() =>
-                  onApplyFilter({
-                    minSize: RULES.SEARCH_MIN_SIZE,
-                    maxSize: RULES.SEARCH_MAX_SIZE,
-                  })
-                }
-              >
-                {appliedFilter.maxSize === Infinity
-                  ? `${formatPyeong(appliedFilter.minSize)} 이상`
-                  : `${formatPyeong(appliedFilter.minSize)}~${formatPyeong(appliedFilter.maxSize)}`}
-              </FilterLabel>
-            )}
-            {hasApartNameFilter && (
-              <FilterLabel onRemove={() => onApplyFilter({ apartName: '' })}>
-                {appliedFilter.apartName}
-              </FilterLabel>
-            )}
-            {hasFavoriteOnlyFilter && (
-              <FilterLabel
-                onRemove={() => onApplyFilter({ favoriteOnly: false })}
-              >
-                저장된 아파트
-              </FilterLabel>
-            )}
-            {hasNewTransactionOnlyFilter && (
-              <FilterLabel
-                onRemove={() => onApplyFilter({ newTransactionOnly: false })}
-              >
-                신규 거래
-              </FilterLabel>
-            )}
-          </div>
+      <Button
+        onClick={handleOpenBottomSheet}
+        className="w-full justify-between active:scale-100"
+      >
+        <span className="text-sm">세부 필터</span>
+        {selectedAppliedFilterCount > 0 && (
+          <span className="text-primary text-sm">
+            {selectedAppliedFilterCount}개 선택됨
+          </span>
         )}
-      </div>
+      </Button>
 
       <BottomSheet isOpen={isOpen} onClose={closeModal}>
         <BottomSheet.Header>세부 필터</BottomSheet.Header>
         <BottomSheet.Body>
-          <div className="flex flex-col gap-6 pb-5">
+          <div className="flex flex-col gap-6">
+            {selectedTempFilterCount > 0 && (
+              <div>
+                <span className="mb-2 block text-sm text-gray-500">
+                  선택된 필터
+                </span>
+                <div className="mt-2 flex gap-1 overflow-x-auto">
+                  {hasSizeTempFilter && (
+                    <FilterLabel
+                      onRemove={() =>
+                        handleTempFilterChange({
+                          minSize: RULES.SEARCH_MIN_SIZE,
+                          maxSize: RULES.SEARCH_MAX_SIZE,
+                        })
+                      }
+                    >
+                      {tempFilter.maxSize === Infinity
+                        ? `${formatPyeong(tempFilter.minSize)} 이상`
+                        : `${formatPyeong(tempFilter.minSize)}~${formatPyeong(tempFilter.maxSize)}`}
+                    </FilterLabel>
+                  )}
+                  {hasApartNameTempFilter && (
+                    <FilterLabel
+                      onRemove={() => {
+                        handleTempFilterChange({ apartName: '' });
+
+                        if (apartNameInputRef.current) {
+                          apartNameInputRef.current.value = '';
+                        }
+                      }}
+                    >
+                      {tempFilter.apartName}
+                    </FilterLabel>
+                  )}
+                  {hasFavoriteOnlyTempFilter && (
+                    <FilterLabel
+                      onRemove={() =>
+                        handleTempFilterChange({ favoriteOnly: false })
+                      }
+                    >
+                      저장된 아파트
+                    </FilterLabel>
+                  )}
+                  {hasNewTransactionOnlyTempFilter && (
+                    <FilterLabel
+                      onRemove={() =>
+                        handleTempFilterChange({ newTransactionOnly: false })
+                      }
+                    >
+                      신규 거래
+                    </FilterLabel>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div>
               <SizeRangeSelector
                 minSize={tempFilter.minSize}
@@ -133,22 +174,19 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
             </div>
 
             <div>
-              <Typography className="mb-2 text-sm font-semibold">
-                아파트명
-              </Typography>
+              <span className="mb-2 block text-sm text-gray-500">아파트명</span>
               <Input
+                ref={apartNameInputRef}
                 placeholder="아파트명을 입력해주세요"
-                value={tempFilter.apartName}
-                onChange={e =>
+                defaultValue={tempFilter.apartName}
+                onBlur={e =>
                   handleTempFilterChange({ apartName: e.target.value })
                 }
               />
             </div>
 
             <div>
-              <Typography className="mb-2 text-sm font-semibold">
-                추가 필터
-              </Typography>
+              <span className="mb-2 block text-sm text-gray-500">아파트명</span>
               <div className="flex gap-1">
                 <Button
                   size="sm"

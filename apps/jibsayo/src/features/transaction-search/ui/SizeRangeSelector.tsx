@@ -3,7 +3,7 @@ import { HorizontalScrollContainer } from '@/shared/ui/HorizontalScrollContainer
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Button, Typography } from '@package/ui';
+import { Button } from '@package/ui';
 
 interface SizeRangeSelectorProps {
   minSize: number;
@@ -236,19 +236,17 @@ export function SizeRangeSelector({
   ];
 
   return (
-    <div className="flex w-full flex-col gap-3">
+    <div className="flex w-full flex-col gap-5">
       {/* 헤더: 평수 제목과 현재 선택된 범위 */}
       <div className="flex items-center justify-between">
-        <Typography variant="small" className="text-sm font-semibold">
-          평수
-        </Typography>
-        <Typography variant="small" className="text-primary text-sm">
+        <span className="block text-sm text-gray-500">평수</span>
+        <span className="text-primary text-sm">
           {localMin === 0 && localMax === 50
             ? '전체 평수'
             : localMax === Infinity
               ? `${localMin}평 이상`
               : `${localMin}~${localMax}평`}
-        </Typography>
+        </span>
       </div>
 
       {/* 1행: Range Selector */}
@@ -258,7 +256,7 @@ export function SizeRangeSelector({
           <div
             ref={sliderRef}
             className="relative cursor-pointer rounded-full bg-gray-200"
-            style={{ height: '28px' }}
+            style={{ height: '8px' }}
             onClick={handleSliderClick}
             onTouchStart={handleSliderClick}
           >
@@ -268,18 +266,18 @@ export function SizeRangeSelector({
               style={{
                 left: minPosition - HANDLE_RADIUS,
                 width: maxPosition - minPosition + HANDLE_RADIUS * 2,
-                height: '28px',
+                height: '8px',
               }}
             />
           </div>
 
           {/* 최대값 핸들 */}
           <div
-            className={`absolute top-1/2 h-[20px] w-[20px] -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full bg-white shadow-md ${
+            className={`border-primary absolute top-1/2 h-[24px] w-[24px] -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full border-[3px] bg-white shadow-md ${
               dragging === 'max' ? 'scale-110 cursor-grabbing' : ''
             }`}
             style={{
-              left: maxPosition - 6,
+              left: maxPosition,
               zIndex: shouldMinBeOnTop ? 1 : 2,
             }}
             onMouseDown={e => handleMouseDown(e, 'max')}
@@ -288,11 +286,11 @@ export function SizeRangeSelector({
 
           {/* 최소값 핸들 */}
           <div
-            className={`absolute top-1/2 h-[20px] w-[20px] -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full bg-white shadow-md ${
+            className={`border-primary absolute top-1/2 h-[24px] w-[24px] -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full border-[3px] bg-white shadow-md ${
               dragging === 'min' ? 'scale-110 cursor-grabbing' : ''
             }`}
             style={{
-              left: minPosition + 6,
+              left: minPosition,
               zIndex: shouldMinBeOnTop ? 2 : 1,
             }}
             onMouseDown={e => handleMouseDown(e, 'min')}

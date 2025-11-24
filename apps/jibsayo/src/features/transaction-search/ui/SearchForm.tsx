@@ -3,7 +3,6 @@ import { getCityNameWithRegionCode } from '@/entities/region';
 import { MonthPicker } from '@package/ui';
 
 import { SearchForm as SearchFormType } from '../models/types';
-import { FavoriteRegionList } from './FavoriteRegionList';
 import { RegionSelect } from './RegionSelect';
 
 interface SearchFormProps {
@@ -36,11 +35,6 @@ export function SearchForm({
         selectedRegionCode={form.regionCode}
         onAddFavoriteRegion={onAddFavoriteRegion}
         onRemoveFavoriteRegion={onRemoveFavoriteRegion}
-        onSelect={handleSelecRegionCode}
-      />
-      <FavoriteRegionList
-        favoriteRegionList={favoriteRegionList}
-        onRemove={onRemoveFavoriteRegion}
         onSelect={handleSelecRegionCode}
       />
       <MonthPicker

@@ -46,7 +46,7 @@ interface FooterProps {
 }
 
 function Footer({ children }: FooterProps) {
-  return <div className="border-gray-200/50 p-3">{children}</div>;
+  return <div className="border-t border-gray-200/50 p-4">{children}</div>;
 }
 
 interface BottomSheetProps {
