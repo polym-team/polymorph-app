@@ -111,7 +111,10 @@ export function FilterForm({ appliedFilter, onApplyFilter }: FilterFormProps) {
             {selectedTempFilterCount > 0 && (
               <div>
                 <span className="mb-2 block text-sm text-gray-500">
-                  선택된 필터
+                  선택된 필터{' '}
+                  <span className="text-primary">
+                    {selectedTempFilterCount}
+                  </span>
                 </span>
                 <div className="mt-2 flex gap-1 overflow-x-auto">
                   {hasSizeTempFilter && (
