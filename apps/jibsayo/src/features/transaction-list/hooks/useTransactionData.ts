@@ -1,4 +1,4 @@
-import { useFavoriteApartList } from '@/entities/apart';
+import { useFavoriteApartListQuery } from '@/entities/apart';
 import {
   TransactionItem,
   useNewTransactionListQuery,
@@ -38,7 +38,7 @@ export const useTransactionData = ({
   sorting,
 }: Params): Return => {
   const { searchParams } = useTransactionPageSearchParams();
-  const favoriteApartList = useFavoriteApartList();
+  const { data: favoriteApartList = [] } = useFavoriteApartListQuery();
 
   const { data: newTransactionData } = useNewTransactionListQuery(
     searchParams.regionCode

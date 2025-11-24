@@ -2,16 +2,14 @@
 
 import {
   useAddFavoriteApartHandler,
-  useFavoriteApartList,
-  useFavoriteApartLoading,
+  useFavoriteApartListQuery,
   useRemoveFavoriteApartHandler,
 } from '@/entities/apart';
 import { FavoriteApartItem } from '@/entities/apart/models/types';
 import { ROUTE_PATH } from '@/shared/consts/route';
-import { useOnceEffect } from '@/shared/hooks';
 import { useNavigate } from '@/shared/hooks/useNavigate';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   calculateFavoriteApartIds,
@@ -23,18 +21,24 @@ import { FavoriteApartListSkeleton } from '../ui/FavoriteApartListSkeleton';
 
 export function ApartList() {
   const { navigate } = useNavigate();
-  const favoriteApartList = useFavoriteApartList();
-  const favoriteApartLoading = useFavoriteApartLoading();
+  const { data: favoriteApartList = [], isLoading: favoriteApartLoading } =
+    useFavoriteApartListQuery();
   const addFavoriteApart = useAddFavoriteApartHandler();
   const removeFavoriteApart = useRemoveFavoriteApartHandler();
+  const isChangingFavoriteApartList = useRef(false);
 
   const [localFavoriteApartList, setLocalFavoriteApartList] = useState<
     FavoriteApartItem[]
   >([]);
 
-  useOnceEffect(favoriteApartList.length > 0, () => {
+  useEffect(() => {
+    if (isChangingFavoriteApartList.current) {
+      isChangingFavoriteApartList.current = true;
+      return;
+    }
+
     setLocalFavoriteApartList(favoriteApartList);
-  });
+  }, [favoriteApartList]);
 
   const favoriteApartIds = useMemo(() => {
     return calculateFavoriteApartIds(favoriteApartList);
@@ -57,6 +61,7 @@ export function ApartList() {
     regionCode: string,
     apartItem: FavoriteApartItem
   ) => {
+    isChangingFavoriteApartList.current = true;
     addFavoriteApart({ ...apartItem, regionCode });
   };
 
@@ -64,6 +69,7 @@ export function ApartList() {
     regionCode: string,
     apartItem: FavoriteApartItem
   ) => {
+    isChangingFavoriteApartList.current = true;
     removeFavoriteApart({ ...apartItem, regionCode });
   };
 

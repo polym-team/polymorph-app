@@ -1,4 +1,3 @@
-export { useFavoriteApartList } from './hooks/useFavoriteApartList';
-export { useFavoriteApartLoading } from './hooks/useFavoriteApartList';
+export { useFavoriteApartListQuery } from './hooks/useFavoriteApartListQuery';
 export { useAddFavoriteApartHandler } from './hooks/useAddFavoriteApartHandler';
 export { useRemoveFavoriteApartHandler } from './hooks/useRemoveFavoriteApartHandler';
