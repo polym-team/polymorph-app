@@ -30,7 +30,7 @@ const calculatePriceChange = ({
         new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime()
     )[0]; // 최신순 정렬 // 가장 최근의 이전 거래
 
-  let priceChangeRate = 1; // 기본값
+  let priceChangeRate = 0; // 기본값 (이전 거래가 없으면 0)
 
   if (prevTradeItem) {
     // 등락율 계산: ((현재가격 - 이전가격) / 이전가격) * 100

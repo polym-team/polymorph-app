@@ -1,1 +1,1 @@
-export const TRANSACTION_LIST_PAGE_SIZE = 20;
+export const TRANSACTION_LIST_PAGE_SIZE = 15;
