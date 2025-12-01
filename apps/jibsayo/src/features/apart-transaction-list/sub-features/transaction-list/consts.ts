@@ -1,0 +1,1 @@
+export const TRANSACTION_LIST_PAGE_SIZE = 20;

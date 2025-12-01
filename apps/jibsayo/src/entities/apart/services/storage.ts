@@ -1,7 +1,7 @@
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
 import { getItem, setItem } from '@/shared/lib/localStorage';
 
-import { FavoriteApartItem } from '../models/types';
+import { FavoriteApartItem } from '../types/FavoriteApartItem';
 
 export const getFavoriteApartList = (): FavoriteApartItem[] => {
   return getItem<FavoriteApartItem[]>(STORAGE_KEY.FAVORITE_APART_LIST) ?? [];

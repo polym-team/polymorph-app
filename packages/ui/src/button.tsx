@@ -33,25 +33,26 @@ const LoadingIcon = () => (
 );
 
 const buttonVariants = cva(
-  'relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded ring-offset-background transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border will-change-transform scale-x-[1] scale-y-[1] active:scale-95 active:brightness-90',
+  'relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded ring-offset-background transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border will-change-transform scale-x-[1] scale-y-[1] active:scale-95 active:brightness-90 lg:hover:brightness-90 lg:active:scale-100',
   {
     variants: {
       variant: {
         default: 'border-transparent bg-gray-100 text-default-foreground',
         primary: 'border-transparent bg-primary text-primary-foreground',
-        'primary-light': 'border-transparent bg-primary/10 text-primary',
+        'primary-light':
+          'border-transparent bg-primary/10 text-primary lg:hover:bg-primary/20',
         danger: 'border-transparent bg-danger text-danger-foreground',
         warning: 'border-transparent bg-warning text-warning-foreground',
         outline: 'border-input bg-background',
         secondary: 'border-transparent bg- text-secondary-foreground',
-        ghost: 'border-transparent',
+        ghost: 'border-transparent lg:hover:bg-gray-50',
         link: 'border-transparent text-primary underline-offset-4',
       },
       size: {
-        default: 'h-[48px] px-4',
-        sm: 'h-[40px] px-4 text-sm',
-        xs: 'h-[32px] px-3 text-xs',
-        lg: 'h-[52px] px-5',
+        default: 'h-[48px] px-4 lg:h-[42px]',
+        sm: 'h-[38px] px-3 text-sm lg:h-[34px]',
+        xs: 'h-[30px] px-3 text-xs lg:h-[30px]',
+        lg: 'h-[54px] px-5',
       },
     },
     defaultVariants: {

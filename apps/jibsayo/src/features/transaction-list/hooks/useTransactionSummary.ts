@@ -1,19 +1,20 @@
-import {
-  getCityNameWithRegionCode,
-  getRegionNameWithRegionCode,
-} from '@/entities/region';
-import { useTransactionPageSearchParams } from '@/entities/transaction';
+import { TransactionItem } from '@/entities/transaction';
 
-interface Return {
-  cityName: string;
-  regionName: string;
-}
+import { calculateTransactionAverageAmount } from '../services/service';
+import { SummaryState } from '../types';
 
-export const useTransactionSummary = (): Return => {
-  const { searchParams } = useTransactionPageSearchParams();
+type Params = {
+  filteredTransactions: TransactionItem[];
+};
 
-  const cityName = getCityNameWithRegionCode(searchParams.regionCode);
-  const regionName = getRegionNameWithRegionCode(searchParams.regionCode);
+type Return = SummaryState;
 
-  return { cityName, regionName };
+export const useTransactionSummary = ({
+  filteredTransactions,
+}: Params): Return => {
+  const transactionTotalCount = filteredTransactions.length;
+  const transactionAverageAmount =
+    calculateTransactionAverageAmount(filteredTransactions);
+
+  return { transactionTotalCount, transactionAverageAmount };
 };

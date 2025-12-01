@@ -2,81 +2,81 @@ import { useFavoriteApartListQuery } from '@/entities/apart';
 import {
   TransactionItem,
   useNewTransactionListQuery,
+  useTransactionListQuery,
   useTransactionPageSearchParams,
 } from '@/entities/transaction';
 
 import { useMemo } from 'react';
 
-import { Sorting, TransactionDetailItem } from '../models/types';
-import { calculateTransactionAverageAmount } from '../services/calculator';
 import {
-  filterFavoriteApartListWithRegionCode,
+  convertToFavoriteApartIdSet,
+  convertToNewTransactionIdSet,
+  convertToTransactionListViewModel,
   filterTransactionItemWithApartName,
   filterTransactionItemWithFavorite,
   filterTransactionItemWithNewTransaction,
   filterTransactionItemWithSize,
   sliceTransactionList,
   sortTransactionList,
-} from '../services/filter';
-import { mapTramsactionItemWithFavorite } from '../services/mapper';
+} from '../services/converter';
+import { calculateTransactionAverageAmount } from '../services/service';
+import { Sorting, TransactionItemViewModel } from '../types';
 
 interface Params {
-  transactionListData: TransactionItem[];
   pageIndex: number;
   sorting: Sorting;
 }
 
 interface Return {
-  transactionData: TransactionDetailItem[];
   transactionTotalCount: number;
   transactionAverageAmount: number;
+  filteredTransactions: TransactionItem[];
+  convertedTransactions: TransactionItemViewModel[];
 }
 
-export const useTransactionData = ({
-  transactionListData,
-  pageIndex,
-  sorting,
-}: Params): Return => {
+export const useTransactionData = ({ pageIndex, sorting }: Params): Return => {
   const { searchParams } = useTransactionPageSearchParams();
-  const { data: favoriteApartList = [] } = useFavoriteApartListQuery();
 
+  const { data: transactionListData } = useTransactionListQuery();
+  const { data: favoriteApartListData } = useFavoriteApartListQuery();
   const { data: newTransactionData } = useNewTransactionListQuery(
     searchParams.regionCode
   );
 
-  const newTransactionIds = useMemo(
-    () => newTransactionData?.transactionIds || [],
+  const newTransactionIdSet = useMemo(
+    () =>
+      convertToNewTransactionIdSet(newTransactionData?.transactionIds ?? []),
     [newTransactionData]
   );
-
-  const filteredFavoriteApartList = useMemo(() => {
-    return filterFavoriteApartListWithRegionCode(
-      searchParams,
-      favoriteApartList
-    );
-  }, [favoriteApartList, searchParams]);
+  const favoriteApartIdSet = useMemo(
+    () =>
+      convertToFavoriteApartIdSet(searchParams, favoriteApartListData ?? []),
+    [favoriteApartListData, searchParams]
+  );
 
   const filteredTransactions = useMemo(() => {
-    return transactionListData.filter(
+    if (!transactionListData) return [];
+
+    return transactionListData.list.filter(
       transaction =>
         filterTransactionItemWithApartName(transaction, searchParams) &&
         filterTransactionItemWithSize(transaction, searchParams) &&
         filterTransactionItemWithFavorite(
           transaction,
           searchParams,
-          filteredFavoriteApartList
+          favoriteApartIdSet
         ) &&
         filterTransactionItemWithNewTransaction(
           transaction,
           searchParams,
-          newTransactionIds
+          newTransactionIdSet
         )
     );
   }, [
     transactionListData,
-    newTransactionIds,
+    newTransactionIdSet,
     searchParams,
-    filteredFavoriteApartList,
+    favoriteApartIdSet,
   ]);
 
   const sortedTransactions = useMemo(() => {
@@ -87,21 +87,22 @@ export const useTransactionData = ({
     return sliceTransactionList(sortedTransactions, pageIndex);
   }, [sortedTransactions, pageIndex]);
 
-  const mappedTransactions = useMemo(() => {
-    return mapTramsactionItemWithFavorite(
+  const convertedTransactions = useMemo(() => {
+    return convertToTransactionListViewModel(
       slicedTransactions,
-      newTransactionIds,
-      filteredFavoriteApartList
+      newTransactionIdSet,
+      favoriteApartIdSet
     );
-  }, [filteredFavoriteApartList, slicedTransactions, newTransactionIds]);
+  }, [favoriteApartIdSet, slicedTransactions, newTransactionIdSet]);
 
   const transactionTotalCount = filteredTransactions.length;
   const transactionAverageAmount =
     calculateTransactionAverageAmount(filteredTransactions);
 
   return {
-    transactionData: mappedTransactions,
     transactionTotalCount,
     transactionAverageAmount,
+    filteredTransactions,
+    convertedTransactions,
   };
 };

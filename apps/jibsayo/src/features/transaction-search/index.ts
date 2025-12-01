@@ -1,1 +1,1 @@
-export { TransactionSearch } from './components/TransactionSearch';
+export { TransactionSearch } from './TransactionSearch';

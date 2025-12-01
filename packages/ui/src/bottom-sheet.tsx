@@ -51,6 +51,7 @@ function Footer({ children }: FooterProps) {
 
 interface BottomSheetProps {
   isOpen: boolean;
+  size?: 'xs' | 'sm' | 'lg';
   onClose: () => void;
   children: React.ReactNode;
 }
@@ -59,14 +60,27 @@ export const BottomSheet: React.FC<BottomSheetProps> & {
   Header: React.FC<HeaderProps>;
   Body: React.FC<BodyProps>;
   Footer: React.FC<FooterProps>;
-} = ({ isOpen, onClose, children }) => {
+} = ({ isOpen, size, onClose, children }) => {
   const [isClient, setIsClient] = React.useState(false);
   const [isAnimating, setIsAnimating] = React.useState(false);
   const [isShown, setIsShown] = React.useState(false);
+  const [isLarge, setIsLarge] = React.useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     setIsClient(true);
+  }, []);
+
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    setIsLarge(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsLarge(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
   React.useEffect(() => {
@@ -104,7 +118,8 @@ export const BottomSheet: React.FC<BottomSheetProps> & {
     <BottomSheetContext.Provider value={{ onClose }}>
       <div
         className={cn(
-          'fixed inset-0 z-50 flex items-end justify-center',
+          'fixed inset-0 z-50 flex justify-center',
+          isLarge ? 'items-center' : 'items-end',
           isShown ? 'opacity-100' : 'opacity-0'
         )}
         style={{
@@ -124,13 +139,27 @@ export const BottomSheet: React.FC<BottomSheetProps> & {
         {/* Bottom Sheet */}
         <div
           ref={contentRef}
-          className="relative w-full max-w-screen-md bg-white shadow-2xl"
+          className={cn(
+            'relative w-full bg-white shadow-2xl',
+            isLarge && 'rounded',
+            !size && 'max-w-screen-md',
+            size === 'lg' && 'max-w-screen-md lg:max-w-screen-lg',
+            size === 'sm' && 'max-w-screen-md lg:max-w-screen-sm',
+            size === 'xs' && 'lg:max-w-screen-xs max-w-screen-md'
+          )}
           style={{
-            borderTopLeftRadius: '20px',
-            borderTopRightRadius: '20px',
-            transform: isShown ? 'translateY(0px)' : 'translateY(100%)',
-            transition: 'transform 150ms cubic-bezier(0.4, 0.0, 0.2, 1)',
-            willChange: 'transform',
+            borderTopLeftRadius: !isLarge ? '20px' : undefined,
+            borderTopRightRadius: !isLarge ? '20px' : undefined,
+            transform: isLarge
+              ? 'none'
+              : isShown
+                ? 'translateY(0px)'
+                : 'translateY(100%)',
+            opacity: isLarge ? (isShown ? 1 : 0) : 1,
+            transition: isLarge
+              ? 'opacity 150ms cubic-bezier(0.4, 0.0, 0.2, 1)'
+              : 'transform 150ms cubic-bezier(0.4, 0.0, 0.2, 1)',
+            willChange: isLarge ? 'opacity' : 'transform',
           }}
           onClick={e => e.stopPropagation()}
         >

@@ -1,7 +1,7 @@
 import { useRouter } from 'next/navigation';
 
 import { ROUTE_PATH } from '../consts/route';
-import { openWebview } from '../services/webviewService';
+import { openWebview } from '../services/webview';
 import { useGlobalConfigStore } from '../stores/globalConfigStore';
 
 interface Return {

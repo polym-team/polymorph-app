@@ -1,16 +1,16 @@
 import { useTransactionPageSearchParams } from '@/entities/transaction';
 
-import { FilterForm } from '../models/types';
+import { FilterForm } from '../types';
 
 interface Return {
-  appliedFilter: FilterForm;
-  applyFilter: (value: Partial<FilterForm>) => void;
+  filterForm: FilterForm;
+  updateFilterForm: (value: Partial<FilterForm>) => void;
 }
 
 export const useFilterForm = (): Return => {
   const { searchParams, setSearchParams } = useTransactionPageSearchParams();
 
-  const appliedFilter: FilterForm = {
+  const filterForm: FilterForm = {
     apartName: searchParams.apartName,
     minSize: searchParams.minSize,
     maxSize: searchParams.maxSize,
@@ -18,9 +18,9 @@ export const useFilterForm = (): Return => {
     newTransactionOnly: searchParams.newTransactionOnly,
   };
 
-  const applyFilter = (nextFilter: Partial<FilterForm>) => {
+  const updateFilterForm = (nextFilter: Partial<FilterForm>) => {
     setSearchParams({ ...searchParams, ...nextFilter, pageIndex: 0 });
   };
 
-  return { appliedFilter, applyFilter };
+  return { filterForm, updateFilterForm };
 };

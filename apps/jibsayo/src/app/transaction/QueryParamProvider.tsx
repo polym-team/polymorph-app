@@ -5,7 +5,7 @@ import {
   useTransactionPageSearchParams,
 } from '@/entities/transaction';
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
-import { useOnceEffect } from '@/shared/hooks';
+import { useOnceEffect } from '@/shared/hooks/useOnceEffect';
 import { getItem, setItem } from '@/shared/lib/sessionStorage';
 
 import { useEffect, useState } from 'react';

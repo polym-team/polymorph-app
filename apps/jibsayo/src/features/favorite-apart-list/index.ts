@@ -1,0 +1,1 @@
+export { FavoriteApartList } from './FavoriteApartList';

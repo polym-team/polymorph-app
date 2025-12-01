@@ -1,14 +1,11 @@
 import { ROUTE_PATH } from '@/shared/consts/route';
-import {
-  ApartDetailPageSkeleton,
-  ApartDetailPageWidget,
-} from '@/wigets/apart-detail';
-import { PageLayout } from '@/wigets/ui/PageLayout';
+import { PageLayout } from '@/wigets/ui/page-layout/PageLayout';
 
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 
-import { fetchApartDetail } from './services/api';
+import ApartDetailContent from './ApartDetailContent';
+import ApartDetailSkeleton from './ApartDetailSkeleton';
 
 interface ApartDetailPageRequest {
   searchParams: {
@@ -29,16 +26,11 @@ export default function ApartDetailPage({
 
   return (
     <PageLayout showBackButton bgColor="gray">
-      <Suspense fallback={<ApartDetailPageSkeleton />}>
-        {(async () => {
-          const data = await fetchApartDetail(regionCode, decodedApartName);
-
-          if (!data) {
-            redirect(ROUTE_PATH.TRANSACTION);
-          }
-
-          return <ApartDetailPageWidget data={data} />;
-        })()}
+      <Suspense fallback={<ApartDetailSkeleton />}>
+        <ApartDetailContent
+          regionCode={regionCode}
+          decodedApartName={decodedApartName}
+        />
       </Suspense>
     </PageLayout>
   );

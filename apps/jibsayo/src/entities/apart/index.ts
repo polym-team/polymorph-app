@@ -1,3 +1,5 @@
+export { type FavoriteApartItem } from './types/FavoriteApartItem';
+
 export { useFavoriteApartListQuery } from './hooks/useFavoriteApartListQuery';
-export { useAddFavoriteApartHandler } from './hooks/useAddFavoriteApartHandler';
-export { useRemoveFavoriteApartHandler } from './hooks/useRemoveFavoriteApartHandler';
+export { useAddFavoriteApartMutation } from './hooks/useAddFavoriteApartMutation';
+export { useRemoveFavoriteApartMutation } from './hooks/useRemoveFavoriteApartMutation';

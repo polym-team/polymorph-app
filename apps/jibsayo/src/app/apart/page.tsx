@@ -1,10 +1,13 @@
-import { ApartList } from '@/features/apart-list';
-import { PageLayout } from '@/wigets/ui/PageLayout';
+import { FavoriteApartList } from '@/features/favorite-apart-list';
+import { PageLayout } from '@/wigets/ui/page-layout/PageLayout';
+
+import { WebviewInitializer } from './WebviewInitializer';
 
 export default function ApartPage() {
   return (
     <PageLayout bgColor="gray">
-      <ApartList />
+      <WebviewInitializer />
+      <FavoriteApartList />
     </PageLayout>
   );
 }

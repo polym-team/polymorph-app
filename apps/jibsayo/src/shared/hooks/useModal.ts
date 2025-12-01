@@ -1,21 +1,21 @@
 import { useState } from 'react';
 
 interface Return {
-  isOpen: boolean;
+  isOpened: boolean;
   openModal: () => void;
   closeModal: () => void;
 }
 
 export const useModal = (): Return => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpened, setIsOpened] = useState(false);
 
   const openModal = () => {
-    setIsOpen(true);
+    setIsOpened(true);
   };
 
   const closeModal = () => {
-    setIsOpen(false);
+    setIsOpened(false);
   };
 
-  return { isOpen, openModal, closeModal };
+  return { isOpened, openModal, closeModal };
 };

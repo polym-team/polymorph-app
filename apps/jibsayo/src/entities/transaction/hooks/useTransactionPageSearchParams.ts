@@ -4,8 +4,8 @@ import { useNavigate } from '@/shared/hooks/useNavigate';
 import { useSearchParams as useNavigationSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 
-import { RULES } from '../consts/rule';
-import { type SearchParams } from '../models/types';
+import { SEARCH_PARAM_CONFIGS } from '../consts/rule';
+import { type SearchParams } from '../types/SearchParams';
 
 interface Return {
   searchParams: SearchParams;
@@ -32,7 +32,7 @@ export const useTransactionPageSearchParams = (): Return => {
   const apartName = navigationSearchParams.get('apartName') ?? '';
   const minSize = navigationSearchParams.get('minSize')
     ? Number(navigationSearchParams.get('minSize'))
-    : RULES.SEARCH_MIN_SIZE;
+    : SEARCH_PARAM_CONFIGS.SEARCH_MIN_SIZE;
   const maxSize = navigationSearchParams.get('maxSize')
     ? Number(navigationSearchParams.get('maxSize'))
     : Infinity;

@@ -1,19 +1,19 @@
 import { TransactionList } from '@/features/transaction-list';
 import { TransactionSearch } from '@/features/transaction-search';
-import { PageLayout } from '@/wigets/ui/PageLayout';
+import { PageLayout } from '@/wigets/ui/page-layout/PageLayout';
 
 import { Suspense } from 'react';
 
 import { QueryParamProvider } from './QueryParamProvider';
+import { WebviewInitializer } from './WebviewInitializer';
 
 export default async function TransactionPage() {
   return (
     <QueryParamProvider>
       <PageLayout bgColor="gray">
+        <WebviewInitializer />
         <Suspense fallback={null}>
           <TransactionSearch />
-        </Suspense>
-        <Suspense fallback={null}>
           <TransactionList />
         </Suspense>
       </PageLayout>

@@ -1,1 +1,1 @@
-export { TransactionList } from './components/TransactionList';
+export { TransactionList } from './TransactionList';

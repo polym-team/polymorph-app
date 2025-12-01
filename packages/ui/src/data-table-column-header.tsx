@@ -18,15 +18,19 @@ export function DataTableColumnHeader({
   className,
 }: DataTableColumnHeaderProps) {
   if (!column.getCanSort()) {
-    return <div className={cn(className)}>{title}</div>;
+    return (
+      <div className={cn(className)}>
+        <span className="text-sm">{title}</span>
+      </div>
+    );
   }
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
       <Button
-        variant="ghost"
         size="sm"
-        className="data-[state=open]:bg-accent -ml-3 h-8"
+        variant="ghost"
+        className="px-0 lg:hover:bg-transparent lg:hover:font-bold"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
       >
         <span>{title}</span>

@@ -15,14 +15,7 @@ export {
   SelectScrollUpButton,
   SelectScrollDownButton,
 } from './src/select';
-export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from './src/card';
+export { Card } from './src/card';
 export { Badge } from './src/badge';
 export { Calendar } from './src/calendar';
 export { Popover, PopoverTrigger, PopoverContent } from './src/popover';

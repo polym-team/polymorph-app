@@ -1,6 +1,6 @@
 import { ROUTE_PATH_LABEL } from '@/shared/consts/route';
-import { BoxContainer } from '@/shared/ui/BoxContainer';
-import { PageLayout } from '@/wigets/ui/PageLayout';
+import { PageContainer } from '@/shared/ui/PageContainer';
+import { PageLayout } from '@/wigets/ui/page-layout/PageLayout';
 
 const POLICY_LIST = [
   {
@@ -83,7 +83,7 @@ const POLICY_LIST = [
 export default function PolicyPage() {
   return (
     <PageLayout showBackButton>
-      <BoxContainer>
+      <PageContainer>
         <div className="mb-6">
           <h1 className="text-xl">{ROUTE_PATH_LABEL.POLICY}</h1>
         </div>
@@ -97,7 +97,7 @@ export default function PolicyPage() {
             </li>
           ))}
         </ul>
-      </BoxContainer>
+      </PageContainer>
     </PageLayout>
   );
 }

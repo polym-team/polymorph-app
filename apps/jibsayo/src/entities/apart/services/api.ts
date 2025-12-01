@@ -1,4 +1,5 @@
-import { FavoriteApartItem, ServerFavoriteApart } from '../models/types';
+import { FavoriteApartItem } from '../types/FavoriteApartItem';
+import { FavoriteApartResponseInServer } from '../types/Server';
 
 // API 응답 타입들
 interface ApiResponse<T> {
@@ -38,7 +39,8 @@ export const addFavoriteApart = async (
     }),
   });
 
-  const result: ApiResponse<ServerFavoriteApart> = await response.json();
+  const result: ApiResponse<FavoriteApartResponseInServer> =
+    await response.json();
 
   if (!result.success) {
     throw new Error(result.error);

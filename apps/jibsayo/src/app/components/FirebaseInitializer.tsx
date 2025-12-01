@@ -1,6 +1,6 @@
 'use client';
 
-import { useOnceEffect } from '@/shared/hooks';
+import { useOnceEffect } from '@/shared/hooks/useOnceEffect';
 import { jibsayoFirebaseClient } from '@/shared/lib/firebase';
 
 export function FirebaseInitializer() {

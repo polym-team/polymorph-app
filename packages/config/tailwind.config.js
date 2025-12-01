@@ -1,5 +1,4 @@
 /** @type {import('tailwindcss').Config} */
-const BASE_FONT_SIZE = '16px';
 
 module.exports = (contentPaths = []) => ({
   content: [
@@ -11,7 +10,10 @@ module.exports = (contentPaths = []) => ({
   theme: {
     extend: {
       fontSize: {
-        base: BASE_FONT_SIZE,
+        base: '1rem',
+      },
+      maxWidth: {
+        'screen-xs': '480px',
       },
       colors: {
         border: 'hsl(214.3 31.8% 91.4%)',
@@ -102,8 +104,12 @@ module.exports = (contentPaths = []) => ({
     require('tailwindcss-animate'),
     function ({ addBase }) {
       addBase({
-        html: { fontSize: BASE_FONT_SIZE },
-        body: { fontSize: BASE_FONT_SIZE },
+        html: { fontSize: '16px' },
+        body: { fontSize: '16px' },
+        '@media (min-width: 1024px)': {
+          html: { fontSize: '14px' },
+          body: { fontSize: '14px' },
+        },
       });
     },
   ],

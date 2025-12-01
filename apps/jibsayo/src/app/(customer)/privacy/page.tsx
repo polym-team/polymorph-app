@@ -1,6 +1,6 @@
 import { ROUTE_PATH_LABEL } from '@/shared/consts/route';
-import { BoxContainer } from '@/shared/ui/BoxContainer';
-import { PageLayout } from '@/wigets/ui/PageLayout';
+import { PageContainer } from '@/shared/ui/PageContainer';
+import { PageLayout } from '@/wigets/ui/page-layout/PageLayout';
 
 const PRIVACY_LIST = [
   {
@@ -42,7 +42,7 @@ const PRIVACY_LIST = [
 export default function PrivacyPage() {
   return (
     <PageLayout showBackButton>
-      <BoxContainer>
+      <PageContainer>
         <div className="mb-6">
           <h1 className="text-xl">{ROUTE_PATH_LABEL.PRIVACY}</h1>
         </div>
@@ -56,7 +56,7 @@ export default function PrivacyPage() {
             </li>
           ))}
         </ul>
-      </BoxContainer>
+      </PageContainer>
     </PageLayout>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
-import { useOnceEffect } from '@/shared/hooks';
-import { getDeviceId } from '@/shared/services/webviewService';
+import { useOnceEffect } from '@/shared/hooks/useOnceEffect';
+import { getDeviceId } from '@/shared/services/webview';
 import { useGlobalConfigStore } from '@/shared/stores/globalConfigStore';
 
 import { useState } from 'react';

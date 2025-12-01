@@ -1,41 +1,34 @@
-import { firstRegionCode, getCityNameWithRegionCode } from '@/entities/region';
+import { getCityNameWithRegionCode } from '@/entities/region';
 import { useTransactionPageSearchParams } from '@/entities/transaction';
 
 import { useState } from 'react';
 
-import { SearchForm } from '../models/types';
-import { getDefaultDate } from '../services/calculator';
+import { getDefaultDate, getDefaultRegionCode } from '../services';
+import { SearchForm } from '../types';
 
 interface Return {
-  form: SearchForm;
-  changeForm: (value: Partial<SearchForm>) => void;
+  searchForm: SearchForm;
+  updateSearchForm: (value: Partial<SearchForm>) => void;
 }
 
 export const useSearchForm = (): Return => {
   const { searchParams } = useTransactionPageSearchParams();
 
-  const [form, setForm] = useState<SearchForm>(() => {
-    const defaultRegionCode = searchParams.regionCode || firstRegionCode;
-    const defaultTradeDate = searchParams.tradeDate
-      ? new Date(
-          Number(searchParams.tradeDate.slice(0, 4)),
-          Number(searchParams.tradeDate.slice(4, 6)) - 1
-        )
-      : getDefaultDate();
+  const [searchForm, setSearchForm] = useState<SearchForm>(() => {
+    const defaultRegionCode = getDefaultRegionCode(searchParams);
+    const defaultTradeDate = getDefaultDate(searchParams);
+    const defaultCityName = getCityNameWithRegionCode(defaultRegionCode);
 
     return {
-      cityName: getCityNameWithRegionCode(defaultRegionCode),
+      cityName: defaultCityName,
       regionCode: defaultRegionCode,
       tradeDate: defaultTradeDate,
     };
   });
 
-  const changeForm = (value: Partial<SearchForm>) => {
-    setForm({ ...form, ...value });
+  const updateSearchForm = (value: Partial<SearchForm>) => {
+    setSearchForm({ ...searchForm, ...value });
   };
 
-  return {
-    form,
-    changeForm,
-  };
+  return { searchForm, updateSearchForm };
 };

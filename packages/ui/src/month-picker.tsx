@@ -158,7 +158,7 @@ export function MonthPicker({
         type="button"
         variant="ghost"
         className={cn(
-          'w-full justify-center bg-gray-100 pl-12 pr-12 text-center text-sm font-normal active:scale-100',
+          'w-full justify-center bg-gray-100 pl-12 pr-12 text-center text-sm font-normal active:scale-100 lg:text-base',
           !value && 'text-muted-foreground'
         )}
         disabled={disabled}
@@ -173,7 +173,7 @@ export function MonthPicker({
         </div>
       </Button>
 
-      <BottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)}>
+      <BottomSheet isOpen={isOpen} size="xs" onClose={() => setIsOpen(false)}>
         <BottomSheet.Header>월 선택</BottomSheet.Header>
         <BottomSheet.Body>
           <div className="relative flex gap-x-2">
@@ -189,7 +189,7 @@ export function MonthPicker({
                         data-year={year}
                         onClick={() => setCurrentYear(year)}
                         className={cn(
-                          'active:bg-accent w-full rounded p-3 text-left text-sm transition-colors duration-300',
+                          'active:bg-accent lg:hover:bg-accent w-full rounded p-3 text-left text-sm transition-colors duration-300 lg:text-base',
                           currentYear === year && 'bg-accent text-primary'
                         )}
                       >
@@ -208,7 +208,7 @@ export function MonthPicker({
                     data-month={month}
                     onClick={() => handleMonthSelect(index)}
                     className={cn(
-                      'active:bg-accent w-full rounded p-3 text-left text-sm transition-colors duration-300',
+                      'active:bg-accent lg:hover:bg-accent w-full rounded p-3 text-left text-sm transition-colors duration-300 lg:text-base',
                       value &&
                         value.getMonth() === index &&
                         'bg-accent text-primary'

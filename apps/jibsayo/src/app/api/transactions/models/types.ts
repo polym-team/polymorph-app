@@ -5,7 +5,7 @@ export interface TransactionItem {
   buildedYear: number | null;
   address: string;
   tradeDate: string;
-  size: number | null;
+  size: number;
   floor: number | null;
   tradeAmount: number;
 }

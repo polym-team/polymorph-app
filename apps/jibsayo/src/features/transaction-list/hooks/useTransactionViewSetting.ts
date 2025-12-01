@@ -1,29 +1,28 @@
 import { useTransactionPageSearchParams } from '@/entities/transaction';
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
-import { useOnceEffect } from '@/shared/hooks';
+import { useOnceEffect } from '@/shared/hooks/useOnceEffect';
 import { getItem, setItem } from '@/shared/lib/localStorage';
 
 import { useState } from 'react';
 
-import { Sorting } from '../models/types';
+import { PageIndexState, SortingState } from '../types';
 
 interface Return {
-  sorting: Sorting;
-  pageIndex: number;
-  updateSorting: (newSorting: Sorting) => void;
-  updatePageIndex: (newPageIndex: number) => void;
+  sorting: SortingState;
+  pageIndex: PageIndexState;
 }
 
-const DEFAULT_SORTING: Sorting = { id: 'tradeDate', desc: true };
+const DEFAULT_SORTING: SortingState['state'] = { id: 'tradeDate', desc: true };
 
 export const useTransactionViewSetting = (): Return => {
   const { searchParams, setSearchParams } = useTransactionPageSearchParams();
 
-  const [sorting, setSorting] = useState<Sorting>(DEFAULT_SORTING);
+  const [sorting, setSorting] =
+    useState<SortingState['state']>(DEFAULT_SORTING);
 
   const pageIndex = Number(searchParams.pageIndex) ?? 0;
 
-  const updateSorting = (newSorting: Sorting) => {
+  const updateSorting = (newSorting: SortingState['state']) => {
     setSorting(newSorting);
     setItem(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS, {
       sorting: newSorting,
@@ -35,7 +34,7 @@ export const useTransactionViewSetting = (): Return => {
   };
 
   useOnceEffect(true, () => {
-    const savedSettings = getItem<{ sorting: Sorting }>(
+    const savedSettings = getItem<{ sorting: SortingState['state'] }>(
       STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS
     );
 
@@ -43,9 +42,7 @@ export const useTransactionViewSetting = (): Return => {
   });
 
   return {
-    sorting,
-    pageIndex,
-    updateSorting,
-    updatePageIndex,
+    sorting: { state: sorting, update: updateSorting },
+    pageIndex: { state: pageIndex, update: updatePageIndex },
   };
 };
