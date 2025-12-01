@@ -30,11 +30,12 @@ export function WebNavigation() {
           </Link>
 
           {/* 네비게이션 */}
-          <nav className="flex items-center">
+          <nav className="flex items-center lg:gap-x-1">
             {['TRANSACTION' as const, 'APART' as const].map(item => (
               <Button
                 key={item}
                 size="sm"
+                className="lg:text-base"
                 variant={
                   pathname.startsWith(ROUTE_PATH[item])
                     ? 'primary-light'
