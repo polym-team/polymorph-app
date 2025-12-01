@@ -28,9 +28,9 @@ export function PageContainer({
       >
         <div
           className={cn(
-            'p-1',
+            'lg:p-1',
             bgColor === 'white' &&
-              'lg rounded border border-gray-100 bg-white p-5'
+              'lg:rounded lg:border lg:border-gray-100 lg:bg-white lg:p-5'
           )}
         >
           {children}
