@@ -16,8 +16,8 @@ export function PageContainer({
   return (
     <section
       className={cn(
-        'flex w-full justify-center',
-        bgColor === 'white' && 'bg-white lg:shadow-sm'
+        'flex w-full justify-center lg:bg-transparent',
+        bgColor === 'white' && 'bg-white'
       )}
     >
       <div
@@ -26,7 +26,15 @@ export function PageContainer({
           className
         )}
       >
-        {children}
+        <div
+          className={cn(
+            'p-1',
+            bgColor === 'white' &&
+              'lg rounded border border-gray-100 bg-white p-5'
+          )}
+        >
+          {children}
+        </div>
       </div>
     </section>
   );

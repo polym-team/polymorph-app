@@ -122,10 +122,10 @@ export function RegionSelect({ form, onFormChange }: RegionSelectProps) {
                         onClick={() => selectRegionCode(item.code)}
                       >
                         {item.name}
-                        <span>
+                        <span className="lg:translate-y-[-1px]">
                           <Star
                             className={cn(
-                              'h-4 w-4',
+                              'h-4 w-4 lg:h-5 lg:w-5',
                               item.isFavorite
                                 ? 'fill-yellow-400 text-yellow-400'
                                 : 'fill-gray-300 text-gray-300'

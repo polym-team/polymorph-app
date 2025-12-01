@@ -28,7 +28,7 @@ export function TransactionList() {
   }
 
   return (
-    <PageContainer className="pb-10 pt-5">
+    <PageContainer className="pb-10 pt-5 lg:pt-2">
       <div className="flex flex-col gap-y-2">
         <TransactionListHeader
           isLoading={transactionStatus === 'LOADING'}

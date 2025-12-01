@@ -22,15 +22,17 @@ export function TransactionFilter({
   onChangeSizes,
 }: TransactionFilterProps) {
   return (
-    <div className="flex flex-col gap-y-2 lg:rounded lg:bg-gray-100 lg:p-3">
+    <div className="flex flex-col gap-y-3 lg:rounded lg:bg-gray-100 lg:p-3">
       <div className="flex gap-x-1 rounded bg-gray-100 p-1.5 lg:justify-start lg:bg-transparent lg:p-0">
         {PERIODS.map(p => (
           <button
             key={p.value}
             className={cn(
-              'w-full rounded-sm py-2 text-sm transition-all duration-200 active:bg-gray-200 lg:w-auto lg:px-5 lg:py-3 lg:text-base',
+              'w-full rounded border py-2 text-sm transition-all duration-200 active:bg-gray-200 lg:w-auto lg:px-5 lg:py-3 lg:text-base',
+              selectedPeriod !== p.value &&
+                'border-gray-100 lg:hover:bg-gray-200',
               selectedPeriod === p.value &&
-                'text-primary bg-white active:bg-white'
+                'text-primary border-gray-200 bg-white active:bg-white'
             )}
             onClick={() => onChangePeriod(p.value)}
           >

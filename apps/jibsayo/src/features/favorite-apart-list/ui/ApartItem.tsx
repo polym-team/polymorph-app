@@ -12,7 +12,7 @@ export function ApartItem({ item, onToggle, onClick }: ApartItemProps) {
   return (
     <div
       key={item.apartId}
-      className="flex items-center justify-between border-b border-gray-100 bg-white p-3 transition-colors duration-200 last:border-b-0 active:bg-gray-100 lg:cursor-pointer lg:hover:bg-gray-100"
+      className="flex items-center justify-between border-b border-gray-100 bg-white p-3 transition-colors duration-200 last:border-b-0 active:bg-gray-100 lg:cursor-pointer lg:px-4 lg:hover:bg-gray-100"
       onClick={() => onClick()}
     >
       <span className="leading-1 flex items-center gap-x-1">
