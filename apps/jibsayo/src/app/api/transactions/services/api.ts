@@ -35,6 +35,7 @@ export const fetchGovApiData = async (
   url.searchParams.set('numOfRows', numOfRows.toString());
 
   const response = await fetch(url.toString(), {
+    cache: 'no-store',
     headers: {
       'User-Agent': 'Node.js/jibsayo-real-estate-api',
       Accept: 'text/xml,application/xml',
@@ -107,7 +108,9 @@ export const fetchNewTransactions = async (
     const newTransactionsUrl = new URL('/api/new-transactions', origin);
     newTransactionsUrl.searchParams.set('area', area);
 
-    const response = await fetch(newTransactionsUrl.toString());
+    const response = await fetch(newTransactionsUrl.toString(), {
+      cache: 'no-store',
+    });
     if (!response.ok) {
       logger.warn('new-transactions API 호출 실패', {
         status: response.status,

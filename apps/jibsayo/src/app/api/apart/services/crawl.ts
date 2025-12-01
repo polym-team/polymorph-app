@@ -248,6 +248,7 @@ const fetchTradeDetail = async (
     try {
       // 먼저 메인 페이지에 접근해서 세션 확보
       const mainResponse = await fetch('https://apt2.me/', {
+        cache: 'no-store',
         headers: {
           'User-Agent':
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -275,6 +276,7 @@ const fetchTradeDetail = async (
         userAgents[Math.floor(Math.random() * userAgents.length)];
 
       const response = await fetch(url, {
+        cache: 'no-store',
         headers: {
           'User-Agent': randomUA,
           Accept:

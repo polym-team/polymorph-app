@@ -23,7 +23,10 @@ const getNewTransactionsByArea = async (
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/new-transactions?area=${area}&date=${date}`,
-      { headers: { 'User-Agent': 'Internal-API-Call' } }
+      {
+        cache: 'no-store',
+        headers: { 'User-Agent': 'Internal-API-Call' },
+      }
     );
     const data = await response.json();
     logger.info(`${area} 지역의 신규 거래 데이터`, {
