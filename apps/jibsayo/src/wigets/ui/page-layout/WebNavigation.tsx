@@ -35,7 +35,7 @@ export function WebNavigation() {
               <Button
                 key={item}
                 size="sm"
-                className="lg:text-base"
+                className="lg:px-4 lg:py-5 lg:text-base"
                 variant={
                   pathname.startsWith(ROUTE_PATH[item])
                     ? 'primary-light'
