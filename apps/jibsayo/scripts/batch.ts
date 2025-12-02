@@ -162,6 +162,16 @@ async function main(): Promise<void> {
   const startTime = Date.now();
   console.log('🚀 Batch job started at', new Date().toISOString());
 
+  // 환경변수 확인
+  console.log('📋 Checking environment variables...');
+  console.log('- FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? '✅' : '❌');
+  console.log('- FIREBASE_PRIVATE_KEY_ID:', process.env.FIREBASE_PRIVATE_KEY_ID ? '✅' : '❌');
+  console.log('- FIREBASE_PRIVATE_KEY:', process.env.FIREBASE_PRIVATE_KEY ? '✅' : '❌');
+  console.log('- FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL ? '✅' : '❌');
+  console.log('- FIREBASE_CLIENT_ID:', process.env.FIREBASE_CLIENT_ID ? '✅' : '❌');
+  console.log('- FIREBASE_CLIENT_CERT_URL:', process.env.FIREBASE_CLIENT_CERT_URL ? '✅' : '❌');
+  console.log('- NEXT_PUBLIC_GO_DATA_API_KEY:', process.env.NEXT_PUBLIC_GO_DATA_API_KEY ? '✅' : '❌');
+
   // Firebase 초기화
   const serviceAccount = {
     type: 'service_account',
@@ -178,8 +188,17 @@ async function main(): Promise<void> {
   };
 
   if (!serviceAccount.project_id || !serviceAccount.private_key || !serviceAccount.client_email) {
+    console.error('❌ Missing required Firebase environment variables');
     throw new Error('Required Firebase environment variables are not set');
   }
+
+  if (!process.env.NEXT_PUBLIC_GO_DATA_API_KEY) {
+    console.error('❌ Missing NEXT_PUBLIC_GO_DATA_API_KEY');
+    throw new Error('NEXT_PUBLIC_GO_DATA_API_KEY environment variable is not set');
+  }
+
+  console.log('✅ All environment variables are set');
+  console.log('');
 
   const firestoreClient = new AdminFirestoreClient({
     serviceAccount,
