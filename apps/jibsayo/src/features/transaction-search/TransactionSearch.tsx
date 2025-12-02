@@ -20,7 +20,7 @@ export function TransactionSearch() {
   } = useTransactionSearch();
 
   return (
-    <PageContainer className="pb-5 lg:pb-2 lg:pt-5" bgColor="white">
+    <PageContainer className="pb-6" bgColor="white">
       <form
         className="flex flex-col gap-2 lg:flex-row"
         onSubmit={e => {

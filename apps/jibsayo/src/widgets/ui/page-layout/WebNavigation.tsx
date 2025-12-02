@@ -16,7 +16,7 @@ export function WebNavigation() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <PageContainer>
         <div className="flex items-center justify-between">
           <Link

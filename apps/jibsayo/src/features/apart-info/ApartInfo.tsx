@@ -14,7 +14,7 @@ interface ApartInfoProps {
 
 export function ApartInfo({ data }: ApartInfoProps) {
   return (
-    <PageContainer className="pb-10 lg:pb-1 lg:pt-5" bgColor="white">
+    <PageContainer className="pb-6" bgColor="white">
       <div className="flex flex-col gap-y-5">
         {data && (
           <>

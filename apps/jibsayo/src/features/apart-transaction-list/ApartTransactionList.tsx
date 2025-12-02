@@ -25,7 +25,7 @@ export function ApartTransactionList({ data }: ApartTransactionHistoryProps) {
 
   return (
     <SelectedMonthProvider>
-      <PageContainer bgColor="white" className="pb-10 pt-6 lg:pt-1">
+      <PageContainer bgColor="white" className="pb-10 pt-6">
         <span className="font-semibold lg:text-lg">거래 내역</span>
         <div className="mt-2 flex flex-col gap-y-5">
           <TransactionFilter
