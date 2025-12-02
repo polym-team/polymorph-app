@@ -1,6 +1,6 @@
 import { TransactionList } from '@/features/transaction-list';
 import { TransactionSearch } from '@/features/transaction-search';
-import { PageLayout } from '@/wigets/ui/page-layout/PageLayout';
+import { PageLayout } from '@/widgets/ui/page-layout/PageLayout';
 
 import { Suspense } from 'react';
 

@@ -1,6 +1,6 @@
 import { ROUTE_PATH_LABEL } from '@/shared/consts/route';
 import { PageContainer } from '@/shared/ui/PageContainer';
-import { PageLayout } from '@/wigets/ui/page-layout/PageLayout';
+import { PageLayout } from '@/widgets/ui/page-layout/PageLayout';
 
 const PRIVACY_LIST = [
   {

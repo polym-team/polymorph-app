@@ -1,5 +1,5 @@
 import { FavoriteApartList } from '@/features/favorite-apart-list';
-import { PageLayout } from '@/wigets/ui/page-layout/PageLayout';
+import { PageLayout } from '@/widgets/ui/page-layout/PageLayout';
 
 import { WebviewInitializer } from './WebviewInitializer';
 

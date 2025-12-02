@@ -1,5 +1,5 @@
 import { ROUTE_PATH } from '@/shared/consts/route';
-import { PageLayout } from '@/wigets/ui/page-layout/PageLayout';
+import { PageLayout } from '@/widgets/ui/page-layout/PageLayout';
 
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
