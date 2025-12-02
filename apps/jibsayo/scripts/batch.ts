@@ -90,7 +90,10 @@ async function processRegion(
     );
 
     // Firestore에 저장 (재시도 포함)
-    const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
+    // KST 기준 날짜 (UTC+9)
+    const now = new Date();
+    const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    const today = kstDate.toISOString().split('T')[0].replace(/-/g, '');
     const docId = `${today}_${regionCode}`;
 
     const MAX_RETRIES = 3;
