@@ -89,23 +89,41 @@ async function processRegion(
       new Set([...idsMonth1, ...idsMonth2])
     );
 
-    // Firestore에 저장
+    // Firestore에 저장 (재시도 포함)
     const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
     const docId = `${today}_${regionCode}`;
 
-    await firestoreClient.createDocumentWithId(docId, {
-      regionCode,
-      transactionIds: allTransactionIds,
-      createdAt: new Date().toISOString(),
-      months: months,
-    });
+    const MAX_RETRIES = 3;
+    let lastError: Error | null = null;
 
-    console.log(`[${regionCode}] ✅ Saved ${allTransactionIds.length} transactions`);
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const result = await firestoreClient.createDocumentWithId(docId, {
+          regionCode,
+          transactionIds: allTransactionIds,
+          createdAt: new Date().toISOString(),
+          months: months,
+        });
 
-    return {
-      success: true,
-      count: allTransactionIds.length,
-    };
+        if (!result.success) {
+          throw result.error || new Error('Unknown error');
+        }
+
+        console.log(`[${regionCode}] ✅ Saved ${allTransactionIds.length} transactions`);
+        return {
+          success: true,
+          count: allTransactionIds.length,
+        };
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        if (attempt < MAX_RETRIES) {
+          console.log(`[${regionCode}] ⚠️  Retry ${attempt}/${MAX_RETRIES}...`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+      }
+    }
+
+    throw lastError;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(`[${regionCode}] ❌ Error:`, errorMessage);
