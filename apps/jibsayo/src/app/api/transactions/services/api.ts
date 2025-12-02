@@ -1,7 +1,7 @@
 import { XMLParser } from 'fast-xml-parser';
 
 import { logger } from '../../shared/utils/logger';
-import { GovApiItem, GovApiResponse } from '../models/types';
+import { GovApiItem, GovApiResponse } from '../types';
 
 // XML 파서 설정
 const xmlParser = new XMLParser({

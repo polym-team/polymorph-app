@@ -2,13 +2,13 @@ import { logger } from '@/app/api/shared/utils/logger';
 import { ROUTE_PATH } from '@/shared/consts/route';
 import { ExpoPushNotificationClient } from '@polymorph/firebase';
 
-import { FavoriteApart } from '../../favorite-apart/models/types';
+import { FavoriteApart } from '../../favorite-apart/types';
 import { mapFirestoreToFavoriteApart } from '../../favorite-apart/services/mapperService';
 import {
   createApartId,
   parseTransactionId,
 } from '../../shared/services/transactionService';
-import { NewTransactionItem, PushNotificationItem } from '../models/types';
+import { NewTransactionItem, PushNotificationItem } from '../types';
 import {
   favoriteApartFirestoreClient,
   pushTokenFirestoreClient,

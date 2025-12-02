@@ -6,7 +6,7 @@ import {
   CreateFavoriteApartRequest,
   FavoriteApart,
   FavoriteApartResponse,
-} from './models/types';
+} from './types';
 import { firestoreClient } from './services/fireStoreService';
 import {
   findExistingFavoriteApart,

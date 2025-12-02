@@ -1,3 +1,3 @@
-import { ApartDetailTradeHistoryItem } from '@/app/api/apart/models/types';
+import { ApartDetailTradeHistoryItem } from '@/app/api/apart/types';
 
 export type ApartTransactionItem = ApartDetailTradeHistoryItem;

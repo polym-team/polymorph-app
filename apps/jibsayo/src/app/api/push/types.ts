@@ -1,4 +1,4 @@
-import { TransactionItem } from '../../transactions/models/types';
+import { TransactionItem } from '../transactions/types';
 
 export type NewTransactionItem = TransactionItem;
 

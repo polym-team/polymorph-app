@@ -1,6 +1,6 @@
 import { logger } from '@/app/api/shared/utils/logger';
 
-import { TransactionItem, TransactionsResponse } from './models/types';
+import { TransactionItem, TransactionsResponse } from './types';
 import { fetchGovApiData } from './services/api';
 import { convertGovApiItemToTransactions } from './services/converter';
 

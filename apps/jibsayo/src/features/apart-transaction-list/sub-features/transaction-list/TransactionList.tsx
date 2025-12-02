@@ -1,4 +1,4 @@
-import { ApartDetailTradeHistoryItem } from '@/app/api/apart/models/types';
+import { ApartDetailTradeHistoryItem } from '@/app/api/apart/types';
 import { calculateAreaPyeong } from '@/entities/transaction';
 import { NewTransactionIcon } from '@/shared/ui/NewTransactionIcon';
 import {

@@ -1,3 +1,3 @@
-import { TransactionsResponse } from '@/app/api/transactions/models/types';
+import { TransactionsResponse } from '@/app/api/transactions/types';
 
 export type TransactionItem = TransactionsResponse['list'][number];

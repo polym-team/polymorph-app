@@ -2,7 +2,7 @@ import { COLLECTIONS } from '@/app/api/consts';
 import { getFirestoreClient } from '@/app/api/shared/libs/fireStore';
 import { logger } from '@/app/api/shared/utils/logger';
 
-import type { ApartDetailResponse, CachedApartData } from '../models/types';
+import type { ApartDetailResponse, CachedApartData } from '../types';
 
 const firestoreClient = getFirestoreClient(COLLECTIONS.APART_CACHE);
 

@@ -2,7 +2,7 @@ import { logger } from '@/app/api/shared/utils/logger';
 
 import { NextRequest, NextResponse } from 'next/server';
 
-import { DeleteFavoriteApartResponse } from './models/types';
+import { DeleteFavoriteApartResponse } from './types';
 import { firestoreClient } from './services/fireStoreService';
 import {
   findExistingFavoriteApart,

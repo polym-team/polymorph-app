@@ -4,7 +4,7 @@ import {
   normalizeAddress,
 } from '@/app/api/shared/services/transactionService';
 
-import { GovApiItem, TransactionItem } from '../models/types';
+import { GovApiItem, TransactionItem } from '../types';
 
 // 거래일자 조합 (YYYY-MM-DD) - XML 파서가 숫자로 변환할 수 있으므로 문자열로 변환
 const calculateTradeDate = (item: GovApiItem): string => {

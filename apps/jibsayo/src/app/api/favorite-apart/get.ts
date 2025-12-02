@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { FavoriteApartListResponse } from './models/types';
+import { FavoriteApartListResponse } from './types';
 import { firestoreClient } from './services/fireStoreService';
 import { mapFirestoreToFavoriteApart } from './services/mapperService';
 import { validateDeviceId } from './services/validatorService';

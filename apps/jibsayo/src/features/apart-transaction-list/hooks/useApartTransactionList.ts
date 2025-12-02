@@ -1,4 +1,4 @@
-import { ApartDetailResponse } from '@/app/api/apart/models/types';
+import { ApartDetailResponse } from '@/app/api/apart/types';
 
 import { calculateAllSizes, filterTradeItems } from '../services';
 import { PeriodValue } from '../types';

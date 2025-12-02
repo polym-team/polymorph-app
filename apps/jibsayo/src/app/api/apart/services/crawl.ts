@@ -7,7 +7,7 @@ import { logger } from '@/app/api/shared/utils/logger';
 
 import cheerio, { CheerioAPI, Element } from 'cheerio';
 
-import type { ApartDetailResponse } from '../models/types';
+import type { ApartDetailResponse } from '../types';
 
 const formatToAmount = (amountText: string): number => {
   let amount: number = 0;

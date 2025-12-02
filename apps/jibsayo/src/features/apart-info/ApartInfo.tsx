@@ -1,6 +1,6 @@
 'use client';
 
-import { ApartDetailResponse } from '@/app/api/apart/models/types';
+import { ApartDetailResponse } from '@/app/api/apart/types';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
 import { DetailInfo } from './ui/DetailInfo';

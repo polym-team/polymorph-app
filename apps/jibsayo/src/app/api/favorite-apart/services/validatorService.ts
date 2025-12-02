@@ -1,4 +1,4 @@
-import { FavoriteApart } from '../models/types';
+import { FavoriteApart } from '../types';
 import { firestoreClient } from './fireStoreService';
 import { mapFirestoreToFavoriteApart } from './mapperService';
 

@@ -1,4 +1,4 @@
-import { FavoriteApart } from '../models/types';
+import { FavoriteApart } from '../types';
 
 // Firestore 데이터를 FavoriteApart 타입으로 변환
 export function mapFirestoreToFavoriteApart(doc: any): FavoriteApart {

@@ -1,4 +1,4 @@
-import { ApartDetailResponse } from '@/app/api/apart/models/types';
+import { ApartDetailResponse } from '@/app/api/apart/types';
 import {
   getCachedApart,
   saveCachedApart,
