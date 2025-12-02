@@ -45,17 +45,6 @@ function getLastMonth(): string {
 }
 
 /**
- * 2달 전 (YYYYMM)
- */
-function getTwoMonthsAgo(): string {
-  const now = new Date();
-  now.setMonth(now.getMonth() - 2);
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  return `${year}${month}`;
-}
-
-/**
  * 특정 월의 거래 데이터 조회
  */
 async function fetchTransactionsForMonth(
@@ -79,7 +68,7 @@ async function fetchTransactionsForMonth(
 }
 
 /**
- * 한 지역의 세 달 데이터 처리
+ * 한 지역의 두 달 데이터 처리
  */
 async function processRegion(
   firestoreClient: AdminFirestoreClient,
@@ -89,16 +78,15 @@ async function processRegion(
   try {
     console.log(`\n[${regionCode}] Starting...`);
 
-    // 세 달 데이터 병렬 조회
-    const [idsMonth1, idsMonth2, idsMonth3] = await Promise.all([
+    // 두 달 데이터 병렬 조회
+    const [idsMonth1, idsMonth2] = await Promise.all([
       fetchTransactionsForMonth(regionCode, months[0]),
       fetchTransactionsForMonth(regionCode, months[1]),
-      fetchTransactionsForMonth(regionCode, months[2]),
     ]);
 
     // 데이터 병합 및 중복 제거
     const allTransactionIds = Array.from(
-      new Set([...idsMonth1, ...idsMonth2, ...idsMonth3])
+      new Set([...idsMonth1, ...idsMonth2])
     );
 
     // Firestore에 저장
@@ -162,16 +150,6 @@ async function main(): Promise<void> {
   const startTime = Date.now();
   console.log('🚀 Batch job started at', new Date().toISOString());
 
-  // 환경변수 확인
-  console.log('📋 Checking environment variables...');
-  console.log('- FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? '✅' : '❌');
-  console.log('- FIREBASE_PRIVATE_KEY_ID:', process.env.FIREBASE_PRIVATE_KEY_ID ? '✅' : '❌');
-  console.log('- FIREBASE_PRIVATE_KEY:', process.env.FIREBASE_PRIVATE_KEY ? '✅' : '❌');
-  console.log('- FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL ? '✅' : '❌');
-  console.log('- FIREBASE_CLIENT_ID:', process.env.FIREBASE_CLIENT_ID ? '✅' : '❌');
-  console.log('- FIREBASE_CLIENT_CERT_URL:', process.env.FIREBASE_CLIENT_CERT_URL ? '✅' : '❌');
-  console.log('- NEXT_PUBLIC_GO_DATA_API_KEY:', process.env.NEXT_PUBLIC_GO_DATA_API_KEY ? '✅' : '❌');
-
   // Firebase 초기화
   const serviceAccount = {
     type: 'service_account',
@@ -188,25 +166,20 @@ async function main(): Promise<void> {
   };
 
   if (!serviceAccount.project_id || !serviceAccount.private_key || !serviceAccount.client_email) {
-    console.error('❌ Missing required Firebase environment variables');
     throw new Error('Required Firebase environment variables are not set');
   }
 
   if (!process.env.NEXT_PUBLIC_GO_DATA_API_KEY) {
-    console.error('❌ Missing NEXT_PUBLIC_GO_DATA_API_KEY');
     throw new Error('NEXT_PUBLIC_GO_DATA_API_KEY environment variable is not set');
   }
-
-  console.log('✅ All environment variables are set');
-  console.log('');
 
   const firestoreClient = new AdminFirestoreClient({
     serviceAccount,
     collectionName: 'legacy-transactions',
   });
 
-  // 처리할 월 정보
-  const months = [getCurrentMonth(), getLastMonth(), getTwoMonthsAgo()];
+  // 처리할 월 정보 (현재월, 지난달)
+  const months = [getCurrentMonth(), getLastMonth()];
   console.log('📅 Target months:', months);
   console.log('🏢 Total regions:', regionCodes.length);
 
