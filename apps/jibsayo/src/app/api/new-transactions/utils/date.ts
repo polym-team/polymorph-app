@@ -22,3 +22,13 @@ export function getPreviousDate(dateStr: string): string {
 
   return `${newYear}${newMonth}${newDay}`;
 }
+
+/**
+ * KST 기준 오늘 날짜를 YYYYMMDD 형식으로 반환
+ * @returns YYYYMMDD 형식의 날짜 (예: '20251203')
+ */
+export function getTodayKST(): string {
+  const now = new Date();
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kstDate.toISOString().split('T')[0].replace(/-/g, '');
+}

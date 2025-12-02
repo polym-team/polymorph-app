@@ -5,26 +5,13 @@ interface NewTransactionListResponse {
   transactionIds: string[];
 }
 
-const getTodayDate = (): string => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-
-  return `${year}${month}${day}`;
-};
-
 export const useNewTransactionListQuery = (
   regionCode: string
 ): UseQueryResult<NewTransactionListResponse, unknown> => {
-  const date = getTodayDate();
-
   return useQuery<NewTransactionListResponse>({
-    queryKey: ['new-transactions', regionCode, date],
+    queryKey: ['new-transactions', regionCode],
     queryFn: async () => {
-      const response = await fetch(
-        `/api/new-transactions?area=${regionCode}&date=${date}`
-      );
+      const response = await fetch(`/api/new-transactions?area=${regionCode}`);
 
       return response.json();
     },

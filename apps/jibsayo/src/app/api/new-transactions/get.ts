@@ -3,17 +3,16 @@ import { getFirestoreClient } from '@/app/api/shared/libs/fireStore';
 
 import { NewTransactionsResponse, TransactionArchive } from './models/types';
 import { extractNewTransactionIds } from './services/transactionService';
-import { getPreviousDate } from './utils/date';
+import { getPreviousDate, getTodayKST } from './utils/date';
 
 export async function GET(request: Request): Promise<Response> {
   try {
     const { searchParams } = new URL(request.url);
     const area = searchParams.get('area');
-    const date = searchParams.get('date');
 
-    if (!area || !date) {
+    if (!area) {
       return Response.json(
-        { message: '필수 파라미터가 누락되었습니다.' },
+        { message: '필수 파라미터(area)가 누락되었습니다.' },
         { status: 400 }
       );
     }
@@ -21,27 +20,43 @@ export async function GET(request: Request): Promise<Response> {
     // Firestore 클라이언트 초기화
     const archiveClient = getFirestoreClient(COLLECTIONS.LEGACY_TRANSACTIONS);
 
-    // 문서 ID 생성
-    const currentDocId = `${date}_${area}`;
-    const previousDate = getPreviousDate(date);
-    const previousDocId = `${previousDate}_${area}`;
+    // KST 기준 오늘 날짜 계산
+    const today = getTodayKST();
+    const yesterday = getPreviousDate(today);
 
-    // 요청 날짜와 이전 날짜의 문서 조회
-    const [currentDoc, previousDoc] = await Promise.all([
-      archiveClient.getDocument<TransactionArchive>(currentDocId),
-      archiveClient.getDocument<TransactionArchive>(previousDocId),
-    ]);
+    // 1. 오늘 날짜 문서 확인
+    let currentDate = today;
+    let currentDocId = `${today}_${area}`;
+    let currentDoc = await archiveClient.getDocument<TransactionArchive>(
+      currentDocId
+    );
 
-    // 요청 날짜의 문서가 없으면 빈 배열 반환
+    // 2. 오늘 문서가 없으면 어제 날짜로 시도
     if (!currentDoc?.exists) {
-      const response: NewTransactionsResponse = {
-        count: 0,
-        transactionIds: [],
-      };
-      return Response.json(response);
+      currentDate = yesterday;
+      currentDocId = `${yesterday}_${area}`;
+      currentDoc = await archiveClient.getDocument<TransactionArchive>(
+        currentDocId
+      );
+
+      // 3. 어제 문서도 없으면 신규 거래 없음
+      if (!currentDoc?.exists) {
+        const response: NewTransactionsResponse = {
+          count: 0,
+          transactionIds: [],
+        };
+        return Response.json(response);
+      }
     }
 
-    // 이전 날짜의 문서가 없으면 빈 배열 반환
+    // 4. 이전 날짜 문서 조회 (currentDate의 하루 전)
+    const previousDate = getPreviousDate(currentDate);
+    const previousDocId = `${previousDate}_${area}`;
+    const previousDoc = await archiveClient.getDocument<TransactionArchive>(
+      previousDocId
+    );
+
+    // 5. 이전 날짜 문서가 없으면 빈 배열 반환
     if (!previousDoc?.exists) {
       const response: NewTransactionsResponse = {
         count: 0,
@@ -50,7 +65,7 @@ export async function GET(request: Request): Promise<Response> {
       return Response.json(response);
     }
 
-    // 신규 거래 ID 추출 (증가분 계산)
+    // 6. 신규 거래 ID 추출 (증가분 계산)
     const newTransactionIds = extractNewTransactionIds(
       currentDoc.data.transactionIds,
       previousDoc.data.transactionIds
