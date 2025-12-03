@@ -5,7 +5,7 @@ import { useSearchParams as useNavigationSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 
 import { SEARCH_PARAM_CONFIGS } from '../consts/rule';
-import { type SearchParams } from '../types/SearchParams';
+import { type SearchParams } from '../types';
 
 interface Return {
   searchParams: SearchParams;

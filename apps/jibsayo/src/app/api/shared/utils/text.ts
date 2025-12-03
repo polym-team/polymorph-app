@@ -19,9 +19,7 @@ export const obfuscateKorean = (text: string): string => {
 export const deobfuscateKorean = (encoded: string): string => {
   try {
     // URL-safe Base64를 표준 Base64로 변환
-    let base64 = encoded
-      .replace(/-/g, '+')
-      .replace(/_/g, '/');
+    let base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
 
     // 패딩 복원 (Base64는 4의 배수여야 함)
     const padLength = (4 - (base64.length % 4)) % 4;

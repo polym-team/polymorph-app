@@ -2,7 +2,7 @@ import {
   createApartId,
   createTransactionId,
   normalizeAddress,
-} from '@/app/api/shared/services/transactionService';
+} from '@/app/api/shared/services/transaction/service';
 import { logger } from '@/app/api/shared/utils/logger';
 
 import cheerio, { CheerioAPI, Element } from 'cheerio';

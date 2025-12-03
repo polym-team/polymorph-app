@@ -1,10 +1,10 @@
-import { TransactionsResponse } from '@/app/api/transactions/types';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
+import { TransactionListResponse } from '../types';
 import { useTransactionPageSearchParams } from './useTransactionPageSearchParams';
 
 export const useTransactionListQuery = (): UseQueryResult<
-  TransactionsResponse,
+  TransactionListResponse,
   unknown
 > => {
   const { searchParams } = useTransactionPageSearchParams();

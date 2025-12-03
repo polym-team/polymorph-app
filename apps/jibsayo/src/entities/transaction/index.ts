@@ -1,5 +1,4 @@
-export { type TransactionItem } from './types/TransactionItem';
-export { type SearchParams } from './types/SearchParams';
+export { type SearchParams, type TransactionItem } from './types';
 
 export { SEARCH_PARAM_CONFIGS } from './consts/rule';
 

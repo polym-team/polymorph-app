@@ -1,4 +1,4 @@
-import { obfuscateKorean, deobfuscateKorean } from '../utils/text';
+import { deobfuscateKorean, obfuscateKorean } from '../../utils/text';
 
 export const normalizeAddress = (address: string): string => {
   if (!address) return '';
@@ -13,7 +13,9 @@ export const normalizeAddress = (address: string): string => {
  * transactionId에서 필요한 정보를 추출합니다
  * transactionId 형식: ${regionCode}__${obfuscateKorean(address)}__${obfuscateKorean(apartName)}__${size}__${floor}__${tradeDate}__${tradeAmount}
  */
-export const parseTransactionId = (transactionId: string): {
+export const parseTransactionId = (
+  transactionId: string
+): {
   regionCode: string;
   address: string;
   apartName: string;
@@ -86,4 +88,12 @@ export const createApartId = (params: {
   const safeApartName = params.apartName || '';
 
   return `${safeRegionCode}__${obfuscateKorean(safeAddress)}__${obfuscateKorean(safeApartName)}`;
+};
+
+export const createApartToken = (params: {
+  regionCode: string;
+  apartName: string;
+  jibun: 'number';
+}): string => {
+  return `${params.regionCode}__${obfuscateKorean(params.apartName)}__${params.jibun}`;
 };

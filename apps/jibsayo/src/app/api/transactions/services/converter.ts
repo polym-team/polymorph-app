@@ -1,8 +1,9 @@
 import {
   createApartId,
+  createApartToken,
   createTransactionId,
   normalizeAddress,
-} from '@/app/api/shared/services/transactionService';
+} from '@/app/api/shared/services/transaction/service';
 
 import { GovApiItem, TransactionItem } from '../types';
 
@@ -78,8 +79,15 @@ const convertGovApiItemToTransaction = (
     apartName,
   });
 
+  const apartToken = createApartToken({
+    regionCode: area,
+    apartName,
+    jibun: 'number',
+  });
+
   return {
     transactionId,
+    apartToken,
     apartId,
     apartName,
     buildedYear,
