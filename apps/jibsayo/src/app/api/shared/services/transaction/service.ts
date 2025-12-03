@@ -97,3 +97,26 @@ export const createApartToken = (params: {
 }): string => {
   return `${params.regionCode}__${obfuscateKorean(params.apartName)}__${params.jibun}`;
 };
+
+export const parseApartToken = (
+  token: string
+): {
+  regionCode: string;
+  apartName: string;
+  jibun: string;
+} | null => {
+  try {
+    const parts = token.split('__');
+    if (parts.length !== 3) {
+      return null;
+    }
+
+    const regionCode = parts[0];
+    const apartName = deobfuscateKorean(parts[1]);
+    const jibun = parts[2];
+
+    return { regionCode, apartName, jibun };
+  } catch {
+    return null;
+  }
+};

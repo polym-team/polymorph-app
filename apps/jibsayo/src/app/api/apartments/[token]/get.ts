@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 
-import { getApartByApartId } from './service';
+import { getApartByApartToken } from './service';
 
 export async function GET(
   _: NextRequest,
@@ -13,7 +13,7 @@ export async function GET(
   }
 
   try {
-    const apart = await getApartByApartId(token);
+    const apart = await getApartByApartToken(token);
 
     if (!apart) {
       return Response.json(

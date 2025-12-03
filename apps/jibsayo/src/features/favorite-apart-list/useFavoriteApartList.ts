@@ -42,7 +42,7 @@ export const useFavoriteApartList = (): Return => {
   }, [data]);
 
   const favoriteApartIdsSet = useMemo(() => {
-    return new Set(data.map(item => item.apartId));
+    return new Set(data.map(item => item.apartToken));
   }, [data]);
 
   const regionItems = useMemo(() => {
@@ -68,9 +68,7 @@ export const useFavoriteApartList = (): Return => {
   };
 
   const clickApartItem = (apartItem: FavoriteApartItemViewModel) => {
-    navigate(
-      `${ROUTE_PATH.APART_DETAIL}?regionCode=${apartItem.regionCode}&apartName=${apartItem.apartName}`
-    );
+    navigate(`${ROUTE_PATH.APART}/${apartItem.apartToken}`);
   };
 
   return {

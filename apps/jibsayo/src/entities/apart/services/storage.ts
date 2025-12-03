@@ -20,6 +20,8 @@ export const removeFavoriteApart = (apartId: string): void => {
 
   setItem(
     STORAGE_KEY.FAVORITE_APART_LIST,
-    currentFavoriteApartList.filter(savedItem => savedItem.apartId !== apartId)
+    currentFavoriteApartList.filter(
+      savedItem => savedItem.apartToken !== apartId
+    )
   );
 };

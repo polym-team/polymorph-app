@@ -8,7 +8,7 @@ interface Return {
   navigate: (path: string) => void;
 }
 
-const OPEN_NEW_WEBVIEW_PATH = [ROUTE_PATH.APART_DETAIL];
+const OPEN_NEW_WEBVIEW_PATH = [ROUTE_PATH.APART];
 
 export const useNavigate = (): Return => {
   const router = useRouter();

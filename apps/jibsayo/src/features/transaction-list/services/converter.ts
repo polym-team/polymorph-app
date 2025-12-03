@@ -101,7 +101,7 @@ export const convertToFavoriteApartIdSet = (
     item => item.regionCode === searchParams.regionCode
   );
 
-  return new Set(filteredFavoriteApartList.map(item => item.apartId));
+  return new Set(filteredFavoriteApartList.map(item => item.apartToken));
 };
 
 export const convertToTransactionListViewModel = (

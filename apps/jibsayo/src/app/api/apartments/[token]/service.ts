@@ -45,22 +45,22 @@ const convertToResponse = (doc: any): ApartByIdResponse => {
   };
 };
 
-export const getApartByApartId = async (
-  apartId: string
+export const getApartByApartToken = async (
+  apartToken: string
 ): Promise<ApartByIdResponse | null> => {
   try {
     const firestoreClient = getFirestoreClient(COLLECTIONS.APARTMENTS);
-    const document = await firestoreClient.getDocument(apartId);
+    const document = await firestoreClient.getDocument(apartToken);
 
     if (!document) {
-      logger.warn('아파트 정보를 찾을 수 없음', { apartId });
+      logger.warn('아파트 정보를 찾을 수 없음', { apartToken });
       return null;
     }
 
     return convertToResponse(document);
   } catch (error) {
     logger.error('아파트 정보 조회 실패', {
-      apartId,
+      apartToken,
       error: error instanceof Error ? error.message : '알 수 없는 오류',
     });
     throw error;

@@ -22,7 +22,7 @@ export const useTransactionHandler = (): Return => {
 
   const toggleFavorite = (item: TransactionItemViewModel) => {
     const params = {
-      apartId: item.apartId,
+      apartToken: item.apartToken,
       apartName: item.apartName,
       address: item.address,
       regionCode: searchParams.regionCode,
@@ -36,9 +36,7 @@ export const useTransactionHandler = (): Return => {
   };
 
   const navigateToApartDetail = (item: TransactionItemViewModel) => {
-    navigate(
-      `${ROUTE_PATH.APART_DETAIL}?regionCode=${searchParams.regionCode}&apartName=${item.apartName}`
-    );
+    navigate(`${ROUTE_PATH.APART}/${item.apartToken}`);
   };
 
   return { toggleFavorite, navigateToApartDetail };

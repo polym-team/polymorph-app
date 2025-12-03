@@ -32,7 +32,7 @@ export const addFavoriteApart = async (
     },
     body: JSON.stringify({
       deviceId,
-      apartId: item.apartId,
+      apartId: item.apartToken,
       regionCode: item.regionCode,
       address: item.address,
       apartName: item.apartName,

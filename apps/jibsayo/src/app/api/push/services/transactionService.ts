@@ -109,7 +109,7 @@ const sendPushNotification = async (
       action: 'gotoUrl',
       screen: 'modal',
       tabName: 'saved',
-      url: `https://jibsayo.vercel.app/${ROUTE_PATH.APART_DETAIL}?regionCode=${regionCode}&apartName=${apartName}`,
+      url: `https://jibsayo.vercel.app/${ROUTE_PATH.APART}?regionCode=${regionCode}&apartName=${apartName}`,
     };
 
     // Firestore에서 토큰 조회 (문서 ID로 직접 조회)

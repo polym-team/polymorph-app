@@ -1,7 +1,7 @@
 export const ROUTE_PATH = {
   TRANSACTION: '/transaction',
+  FAVORITE_APART: '/apart',
   APART: '/apart',
-  APART_DETAIL: '/apart-detail',
   PRIVACY: '/privacy',
   POLICY: '/policy',
 } as const;

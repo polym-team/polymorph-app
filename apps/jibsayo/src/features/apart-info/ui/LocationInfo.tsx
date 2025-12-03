@@ -9,11 +9,11 @@ declare global {
 }
 
 interface LocationInfoProps {
-  address: string;
+  dong: string;
   apartName: string;
 }
 
-export function LocationInfo({ address, apartName }: LocationInfoProps) {
+export function LocationInfo({ dong, apartName }: LocationInfoProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -136,7 +136,7 @@ export function LocationInfo({ address, apartName }: LocationInfoProps) {
                 line-height: 1.4;
                 word-break: keep-all;
               ">
-                ${address}
+                ${dong}
               </div>
             </div>
             
@@ -180,7 +180,7 @@ export function LocationInfo({ address, apartName }: LocationInfoProps) {
     };
 
     // 1차 시도: 키워드 검색 (가장 정확)
-    const keywordSearch = `${address} ${apartName}`;
+    const keywordSearch = `${dong} ${apartName}`;
     places.keywordSearch(keywordSearch, (result: any, status: any) => {
       if (status === window.kakao.maps.services.Status.OK) {
         const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
@@ -196,7 +196,7 @@ export function LocationInfo({ address, apartName }: LocationInfoProps) {
             displayMarker(coords);
           } else {
             // 3차 시도: 주소만으로 검색
-            geocoder.addressSearch(address, (result3: any, status3: any) => {
+            geocoder.addressSearch(dong, (result3: any, status3: any) => {
               if (status3 === window.kakao.maps.services.Status.OK) {
                 const coords = new window.kakao.maps.LatLng(
                   result3[0].y,
@@ -209,7 +209,7 @@ export function LocationInfo({ address, apartName }: LocationInfoProps) {
         });
       }
     });
-  }, [isLoaded, address, apartName]);
+  }, [isLoaded, dong, apartName]);
 
   return (
     <div className="overflow-hidden rounded border">

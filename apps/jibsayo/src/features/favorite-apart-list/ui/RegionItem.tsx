@@ -29,7 +29,7 @@ export function RegionItem({
       <div className="flex flex-col lg:overflow-hidden lg:rounded lg:border lg:border-gray-100">
         {item.apartItems.map(item => (
           <ApartItem
-            key={item.apartId}
+            key={item.apartToken}
             item={item}
             onToggle={() => onToggleFavorite(item)}
             onClick={() => onClickApart(item)}

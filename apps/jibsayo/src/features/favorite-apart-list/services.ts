@@ -20,7 +20,7 @@ export const convertToRegionItems = (
       .filter(item => item.regionCode === regionCode)
       .map(item => ({
         ...item,
-        isFavorite: favoriteApartIdsSet.has(item.apartId),
+        isFavorite: favoriteApartIdsSet.has(item.apartToken),
       }));
 
     regionItems.push({

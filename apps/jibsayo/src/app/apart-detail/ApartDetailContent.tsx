@@ -1,4 +1,4 @@
-import { ApartInfo } from '@/features/apart-info';
+// import { ApartInfo } from '@/features/apart-info';
 import { ApartTransactionList } from '@/features/apart-transaction-list';
 import { ROUTE_PATH } from '@/shared/consts/route';
 
@@ -24,7 +24,7 @@ export default async function ApartDetailContent({
 
   return (
     <Layout>
-      <ApartInfo data={data} />
+      {/* <ApartInfo data={data} /> */}
       <ApartTransactionList data={data} />
     </Layout>
   );

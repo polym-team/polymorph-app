@@ -18,9 +18,9 @@ export const useRemoveFavoriteApartMutation = () => {
 
       try {
         if (isInApp) {
-          await removeFavoriteApartToServer(deviceId, item.apartId);
+          await removeFavoriteApartToServer(deviceId, item.apartToken);
         } else {
-          removeFavoriteApartToStorage(item.apartId);
+          removeFavoriteApartToStorage(item.apartToken);
         }
 
         toast.success(`${item.apartName} 아파트가 관심목록에서 삭제됐어요`);
