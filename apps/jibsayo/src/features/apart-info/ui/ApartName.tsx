@@ -7,10 +7,21 @@ import { PageContainer } from '@/shared/ui/PageContainer';
 import { ApartInfoType } from '../type';
 
 interface ApartNameProps {
-  data: ApartInfoType;
+  data?: ApartInfoType;
 }
 
 export function ApartName({ data }: ApartNameProps) {
+  if (!data) {
+    return (
+      <PageContainer bgColor="white" className="py-4">
+        <div className="flex flex-col gap-y-1">
+          <div className="h-7 w-48 animate-pulse rounded bg-gray-200 lg:h-8" />
+          <div className="h-5 w-32 animate-pulse rounded bg-gray-200 lg:h-6" />
+        </div>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer bgColor="white" className="py-4">
       <div className="flex flex-col gap-y-1">

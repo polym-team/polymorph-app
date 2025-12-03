@@ -4,6 +4,8 @@ import { PageContainer } from '@/shared/ui/PageContainer';
 
 import { useEffect, useRef, useState } from 'react';
 
+import { ApartInfoType } from '../type';
+
 declare global {
   interface Window {
     kakao: any;
@@ -11,11 +13,10 @@ declare global {
 }
 
 interface LocationInfoProps {
-  dong: string;
-  apartName: string;
+  data?: ApartInfoType;
 }
 
-export function LocationInfo({ dong, apartName }: LocationInfoProps) {
+export function LocationInfo({ data }: LocationInfoProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -43,7 +44,7 @@ export function LocationInfo({ dong, apartName }: LocationInfoProps) {
   }, []);
 
   useEffect(() => {
-    if (!isLoaded || !mapRef.current) return;
+    if (!isLoaded || !mapRef.current || !data?.dong || !data?.apartName) return;
 
     const container = mapRef.current;
     const options = {
@@ -78,7 +79,7 @@ export function LocationInfo({ dong, apartName }: LocationInfoProps) {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           ">
             <div style="display: flex; align-items: center; justify-content: center;">
-              <span>${apartName}</span>
+              <span>${data.apartName}</span>
             </div>
             <div style="
               position: absolute;
@@ -130,7 +131,7 @@ export function LocationInfo({ dong, apartName }: LocationInfoProps) {
                 margin-bottom: 4px;
                 line-height: 1.3;
               ">
-                ${apartName}
+                ${data.apartName}
               </div>
               <div style="
                 font-size: 13px;
@@ -138,7 +139,7 @@ export function LocationInfo({ dong, apartName }: LocationInfoProps) {
                 line-height: 1.4;
                 word-break: keep-all;
               ">
-                ${dong}
+                ${data.dong}
               </div>
             </div>
             
@@ -182,7 +183,7 @@ export function LocationInfo({ dong, apartName }: LocationInfoProps) {
     };
 
     // 1차 시도: 키워드 검색 (가장 정확)
-    const keywordSearch = `${dong} ${apartName}`;
+    const keywordSearch = `${data.dong} ${data.apartName}`;
     places.keywordSearch(keywordSearch, (result: any, status: any) => {
       if (status === window.kakao.maps.services.Status.OK) {
         const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
@@ -198,7 +199,7 @@ export function LocationInfo({ dong, apartName }: LocationInfoProps) {
             displayMarker(coords);
           } else {
             // 3차 시도: 주소만으로 검색
-            geocoder.addressSearch(dong, (result3: any, status3: any) => {
+            geocoder.addressSearch(data.dong, (result3: any, status3: any) => {
               if (status3 === window.kakao.maps.services.Status.OK) {
                 const coords = new window.kakao.maps.LatLng(
                   result3[0].y,
@@ -211,7 +212,17 @@ export function LocationInfo({ dong, apartName }: LocationInfoProps) {
         });
       }
     });
-  }, [isLoaded, dong, apartName]);
+  }, [isLoaded, data]);
+
+  if (!data) {
+    return (
+      <PageContainer className="p-0 lg:px-4 lg:pb-6 lg:pt-4" bgColor="white">
+        <div className="overflow-hidden lg:rounded">
+          <div className="aspect-[4/3] max-h-[450px] w-full animate-pulse bg-gray-200" />
+        </div>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer className="p-0 lg:px-4 lg:pb-6 lg:pt-4" bgColor="white">

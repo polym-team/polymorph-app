@@ -13,16 +13,10 @@ interface ApartInfoProps {
 export function ApartInfo({ data }: ApartInfoProps) {
   return (
     <div className="flex flex-col gap-y-5 lg:gap-y-0">
-      {data && (
-        <>
-          <ApartName data={data} />
-          <ApartDetailInfo data={data} />
-          <AmenitiesInfo data={data} />
-          <LocationInfo apartName={data.apartName} dong={data.dong} />
-        </>
-      )}
-
-      {!data && <></>}
+      <ApartName data={data} />
+      <ApartDetailInfo data={data} />
+      <AmenitiesInfo data={data} />
+      <LocationInfo data={data} />
     </div>
   );
 }

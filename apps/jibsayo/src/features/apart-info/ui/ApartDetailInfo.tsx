@@ -5,10 +5,28 @@ import { Container } from './Container';
 import { DetailItem } from './DetailItem';
 
 interface ApartDetailInfoProps {
-  data: ApartInfoType;
+  data?: ApartInfoType;
 }
 
 export function ApartDetailInfo({ data }: ApartDetailInfoProps) {
+  if (!data) {
+    return (
+      <Container title="단지 정보" isLoading>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[1, 2, 3, 4].map(item => (
+            <div
+              key={item}
+              className="flex flex-col gap-y-2 rounded bg-gray-100 px-4 py-3"
+            >
+              <div className="h-5 w-16 animate-pulse rounded bg-gray-200" />
+              <div className="h-6 w-24 animate-pulse rounded bg-gray-200" />
+            </div>
+          ))}
+        </div>
+      </Container>
+    );
+  }
+
   return (
     <Container title="단지 정보">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
