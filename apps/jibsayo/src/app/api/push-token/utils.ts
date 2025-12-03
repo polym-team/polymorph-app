@@ -1,6 +1,6 @@
 import { AdminFirestoreClient } from '@polymorph/firebase';
 
-import { COLLECTIONS } from '../consts';
+import { COLLECTIONS } from '../shared/consts/firestoreCollection';
 import { PushToken } from './types';
 
 // Firestore Admin 클라이언트 초기화 (서버 사이드용)

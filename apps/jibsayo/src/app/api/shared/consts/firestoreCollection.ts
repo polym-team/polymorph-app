@@ -1,5 +1,8 @@
 // Firestore 컬렉션명 상수
 export const COLLECTIONS = {
+  // 아파트 정보 컬렉션
+  APARTMENTS: 'apartments',
+
   // 즐겨찾기 아파트 컬렉션
   FAVORITE_APART: 'favorite-apart',
 

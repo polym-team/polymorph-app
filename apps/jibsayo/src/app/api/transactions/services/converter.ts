@@ -82,7 +82,7 @@ const convertGovApiItemToTransaction = (
   const apartToken = createApartToken({
     regionCode: area,
     apartName,
-    jibun: 'number',
+    jibun: item.jibun ?? '',
   });
 
   return {

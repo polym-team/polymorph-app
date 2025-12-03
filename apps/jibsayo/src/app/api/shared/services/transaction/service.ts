@@ -93,7 +93,7 @@ export const createApartId = (params: {
 export const createApartToken = (params: {
   regionCode: string;
   apartName: string;
-  jibun: 'number';
+  jibun: string;
 }): string => {
   return `${params.regionCode}__${obfuscateKorean(params.apartName)}__${params.jibun}`;
 };

@@ -1,8 +1,8 @@
-import { COLLECTIONS } from '@/app/api/consts';
+import { COLLECTIONS } from '@/app/api/shared/consts/firestoreCollection';
 import { getFirestoreClient } from '@/app/api/shared/libs/fireStore';
 
-import { NewTransactionsResponse, TransactionArchive } from './types';
 import { extractNewTransactionIds } from './services';
+import { NewTransactionsResponse, TransactionArchive } from './types';
 import { getPreviousDate, getTodayKST } from './utils/date';
 
 export async function GET(request: Request): Promise<Response> {
@@ -27,17 +27,15 @@ export async function GET(request: Request): Promise<Response> {
     // 1. 오늘 날짜 문서 확인
     let currentDate = today;
     let currentDocId = `${today}_${area}`;
-    let currentDoc = await archiveClient.getDocument<TransactionArchive>(
-      currentDocId
-    );
+    let currentDoc =
+      await archiveClient.getDocument<TransactionArchive>(currentDocId);
 
     // 2. 오늘 문서가 없으면 어제 날짜로 시도
     if (!currentDoc?.exists) {
       currentDate = yesterday;
       currentDocId = `${yesterday}_${area}`;
-      currentDoc = await archiveClient.getDocument<TransactionArchive>(
-        currentDocId
-      );
+      currentDoc =
+        await archiveClient.getDocument<TransactionArchive>(currentDocId);
 
       // 3. 어제 문서도 없으면 신규 거래 없음
       if (!currentDoc?.exists) {
@@ -52,9 +50,8 @@ export async function GET(request: Request): Promise<Response> {
     // 4. 이전 날짜 문서 조회 (currentDate의 하루 전)
     const previousDate = getPreviousDate(currentDate);
     const previousDocId = `${previousDate}_${area}`;
-    const previousDoc = await archiveClient.getDocument<TransactionArchive>(
-      previousDocId
-    );
+    const previousDoc =
+      await archiveClient.getDocument<TransactionArchive>(previousDocId);
 
     // 5. 이전 날짜 문서가 없으면 빈 배열 반환
     if (!previousDoc?.exists) {
