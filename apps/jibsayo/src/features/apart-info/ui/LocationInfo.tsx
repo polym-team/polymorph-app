@@ -1,5 +1,7 @@
 'use client';
 
+import { PageContainer } from '@/shared/ui/PageContainer';
+
 import { useEffect, useRef, useState } from 'react';
 
 declare global {
@@ -212,8 +214,10 @@ export function LocationInfo({ dong, apartName }: LocationInfoProps) {
   }, [isLoaded, dong, apartName]);
 
   return (
-    <div className="overflow-hidden rounded border">
-      <div ref={mapRef} className="aspect-[4/3] w-full lg:h-[450px]" />
-    </div>
+    <PageContainer className="p-0 lg:px-4 lg:pb-6 lg:pt-4" bgColor="white">
+      <div className="overflow-hidden lg:rounded">
+        <div ref={mapRef} className="aspect-[4/3] max-h-[450px] w-full" />
+      </div>
+    </PageContainer>
   );
 }
