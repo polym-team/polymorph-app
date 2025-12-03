@@ -16,7 +16,6 @@ import { TransactionItemViewModel } from './types';
 import { useTransactionList } from './useTransactionList';
 
 interface TransactionListProps {
-  apartName: string;
   regionCode: string;
   transactionItems: ApartTransactionItem[];
 }

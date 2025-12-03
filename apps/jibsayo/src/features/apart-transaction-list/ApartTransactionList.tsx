@@ -8,6 +8,7 @@ import { SelectedMonthProvider } from './SelectedMonthContext';
 import { TransactionChart } from './sub-features/transaction-chart/TransactionChart';
 import { TransactionList } from './sub-features/transaction-list/TransactionList';
 import { TransactionFilter } from './TransactionFilter';
+import { TransactionListSkeleton } from './TransactionListSkeleton';
 
 interface ApartTransactionListProps {
   apartToken: string;
@@ -19,6 +20,7 @@ export function ApartTransactionList({
   data,
 }: ApartTransactionListProps) {
   const {
+    isLoading,
     allSizes,
     selectedPeriod,
     selectedSizes,
@@ -26,6 +28,10 @@ export function ApartTransactionList({
     changePeriod,
     changeSizes,
   } = useApartTransactionList({ apartToken });
+
+  if (isLoading) {
+    return <TransactionListSkeleton />;
+  }
 
   if (filteredTransactionItems.length === 0) {
     return null;
@@ -48,7 +54,6 @@ export function ApartTransactionList({
             transactionItems={filteredTransactionItems}
           />
           <TransactionList
-            apartName={data.apartName}
             regionCode={data.regionCode}
             transactionItems={filteredTransactionItems}
           />

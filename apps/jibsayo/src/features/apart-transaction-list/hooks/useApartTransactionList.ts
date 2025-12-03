@@ -10,6 +10,7 @@ interface Params {
 }
 
 interface Return {
+  isLoading: boolean;
   allSizes: number[];
   selectedPeriod: PeriodValue;
   selectedSizes: Set<number>;
@@ -19,7 +20,7 @@ interface Return {
 }
 
 export const useApartTransactionList = ({ apartToken }: Params): Return => {
-  const { data } = useApartTransactionListQuery({ apartToken });
+  const { isLoading, data } = useApartTransactionListQuery({ apartToken });
   const transactionItems = data?.items ?? [];
 
   const { selectedPeriod, selectedSizes, changePeriod, changeSizes } =
@@ -32,6 +33,7 @@ export const useApartTransactionList = ({ apartToken }: Params): Return => {
   });
 
   return {
+    isLoading,
     allSizes,
     selectedPeriod,
     selectedSizes,
