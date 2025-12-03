@@ -1,33 +1,20 @@
-import { ApartDetailResponse } from '@/app/api/apart/types';
-import {
-  getCachedApart,
-  saveCachedApart,
-} from '@/app/api/apart/services/cache';
-import { createResponse } from '@/app/api/apart/services/crawl';
-import { logger } from '@/app/api/shared/utils/logger';
+import { getApartByApartToken } from '@/app/api/apartments/[token]/service';
+import { ApartByIdResponse } from '@/app/api/apartments/[token]/types';
+import { parseApartToken } from '@/app/api/shared/services/transaction/service';
 
-export async function fetchApartDetail(
-  regionCode: string,
-  apartName: string
-): Promise<ApartDetailResponse | null> {
+export async function fetchApartInfo(
+  token: string
+): Promise<ApartByIdResponse | null> {
   try {
-    const cachedData = await getCachedApart(apartName, regionCode);
-
-    if (cachedData) {
-      return cachedData.data;
+    const parsedToken = parseApartToken(token);
+    if (!parsedToken) {
+      return null;
     }
 
-    const result = await createResponse(apartName, regionCode);
-    await saveCachedApart(apartName, regionCode, result);
+    const data = await getApartByApartToken(token);
 
-    return result;
-  } catch (error) {
-    logger.error('[fetchApartDetail] 아파트 상세 정보 조회 실패', {
-      regionCode,
-      apartName,
-      error: error instanceof Error ? error.message : String(error),
-    });
-
+    return data;
+  } catch {
     return null;
   }
 }

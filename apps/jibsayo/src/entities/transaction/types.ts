@@ -1,7 +1,6 @@
 export interface TransactionItem {
   transactionId: string;
   apartToken: string;
-  apartId: string;
   apartName: string;
   buildedYear: number | null;
   address: string;

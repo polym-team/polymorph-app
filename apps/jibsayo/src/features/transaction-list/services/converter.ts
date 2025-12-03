@@ -68,12 +68,12 @@ export const filterTransactionItemWithSize = (
 export const filterTransactionItemWithFavorite = (
   transaction: TransactionItem,
   searchParams: SearchParams,
-  favoriteApartIdSet: Set<string>
+  favoriteApartTokenSet: Set<string>
 ): boolean => {
   if (!searchParams.favoriteOnly) {
     return true;
   }
-  return favoriteApartIdSet.has(transaction.apartId);
+  return favoriteApartTokenSet.has(transaction.apartToken);
 };
 
 export const filterTransactionItemWithNewTransaction = (
@@ -93,7 +93,7 @@ export const convertToNewTransactionIdSet = (
   return new Set(transactionIdList);
 };
 
-export const convertToFavoriteApartIdSet = (
+export const convertToFavoriteApartTokenSet = (
   searchParams: SearchParams,
   favoriteApartList: FavoriteApartItem[]
 ): Set<string> => {
@@ -107,11 +107,11 @@ export const convertToFavoriteApartIdSet = (
 export const convertToTransactionListViewModel = (
   transaction: TransactionItem[],
   newTransactionIdSet: Set<string>,
-  favoriteApartIdSet: Set<string>
+  favoriteApartTokenSet: Set<string>
 ): TransactionItemViewModel[] => {
   return transaction.map(item => ({
     ...item,
     isNew: newTransactionIdSet.has(item.transactionId),
-    isFavorite: favoriteApartIdSet.has(item.apartId),
+    isFavorite: favoriteApartTokenSet.has(item.apartToken),
   }));
 };

@@ -2,7 +2,7 @@ import { ApartInfo } from '@/features/apart-info';
 
 import { Layout } from './Layout';
 
-export default async function ApartDetailSkeleton() {
+export async function ApartLoading() {
   return (
     <Layout>
       <ApartInfo data={undefined} />

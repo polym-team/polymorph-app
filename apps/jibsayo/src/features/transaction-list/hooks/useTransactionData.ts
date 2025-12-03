@@ -9,7 +9,7 @@ import {
 import { useMemo } from 'react';
 
 import {
-  convertToFavoriteApartIdSet,
+  convertToFavoriteApartTokenSet,
   convertToNewTransactionIdSet,
   convertToTransactionListViewModel,
   filterTransactionItemWithApartName,
@@ -48,9 +48,9 @@ export const useTransactionData = ({ pageIndex, sorting }: Params): Return => {
       convertToNewTransactionIdSet(newTransactionData?.transactionIds ?? []),
     [newTransactionData]
   );
-  const favoriteApartIdSet = useMemo(
+  const favoriteApartTokenSet = useMemo(
     () =>
-      convertToFavoriteApartIdSet(searchParams, favoriteApartListData ?? []),
+      convertToFavoriteApartTokenSet(searchParams, favoriteApartListData ?? []),
     [favoriteApartListData, searchParams]
   );
 
@@ -64,7 +64,7 @@ export const useTransactionData = ({ pageIndex, sorting }: Params): Return => {
         filterTransactionItemWithFavorite(
           transaction,
           searchParams,
-          favoriteApartIdSet
+          favoriteApartTokenSet
         ) &&
         filterTransactionItemWithNewTransaction(
           transaction,
@@ -76,7 +76,7 @@ export const useTransactionData = ({ pageIndex, sorting }: Params): Return => {
     transactionListData,
     newTransactionIdSet,
     searchParams,
-    favoriteApartIdSet,
+    favoriteApartTokenSet,
   ]);
 
   const sortedTransactions = useMemo(() => {
@@ -91,9 +91,9 @@ export const useTransactionData = ({ pageIndex, sorting }: Params): Return => {
     return convertToTransactionListViewModel(
       slicedTransactions,
       newTransactionIdSet,
-      favoriteApartIdSet
+      favoriteApartTokenSet
     );
-  }, [favoriteApartIdSet, slicedTransactions, newTransactionIdSet]);
+  }, [favoriteApartTokenSet, slicedTransactions, newTransactionIdSet]);
 
   const transactionTotalCount = filteredTransactions.length;
   const transactionAverageAmount =
