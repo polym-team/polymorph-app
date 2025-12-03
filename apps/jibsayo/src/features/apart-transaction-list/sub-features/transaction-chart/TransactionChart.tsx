@@ -6,14 +6,14 @@ import { useTransactionChart } from './ hooks/useTransactionChart';
 
 interface Props {
   allSizes: number[];
-  tradeItems: ApartTransactionItem[];
+  transactionItems: ApartTransactionItem[];
 }
 
 const CHART_HEIGHT = 300;
 
-export function TransactionChart({ tradeItems, allSizes }: Props) {
+export function TransactionChart({ transactionItems, allSizes }: Props) {
   const { svgRef, isLoading } = useTransactionChart({
-    tradeItems,
+    transactionItems,
     allSizes,
   });
 

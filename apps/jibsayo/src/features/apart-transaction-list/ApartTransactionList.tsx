@@ -1,27 +1,35 @@
 'use client';
 
-import { ApartDetailResponse } from '@/app/api/apart/types';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
+import { ApartInfoType } from '../apart-info/type';
 import { useApartTransactionList } from './hooks/useApartTransactionList';
 import { SelectedMonthProvider } from './SelectedMonthContext';
 import { TransactionChart } from './sub-features/transaction-chart/TransactionChart';
 import { TransactionList } from './sub-features/transaction-list/TransactionList';
 import { TransactionFilter } from './TransactionFilter';
 
-interface ApartTransactionHistoryProps {
-  data: ApartDetailResponse;
+interface ApartTransactionListProps {
+  apartToken: string;
+  data: ApartInfoType;
 }
 
-export function ApartTransactionList({ data }: ApartTransactionHistoryProps) {
+export function ApartTransactionList({
+  apartToken,
+  data,
+}: ApartTransactionListProps) {
   const {
     allSizes,
     selectedPeriod,
     selectedSizes,
-    filteredTradeItems,
+    filteredTransactionItems,
     changePeriod,
     changeSizes,
-  } = useApartTransactionList({ data });
+  } = useApartTransactionList({ apartToken });
+
+  if (filteredTransactionItems.length === 0) {
+    return null;
+  }
 
   return (
     <SelectedMonthProvider>
@@ -37,12 +45,12 @@ export function ApartTransactionList({ data }: ApartTransactionHistoryProps) {
           />
           <TransactionChart
             allSizes={allSizes}
-            tradeItems={filteredTradeItems}
+            transactionItems={filteredTransactionItems}
           />
           <TransactionList
             apartName={data.apartName}
             regionCode={data.regionCode}
-            tradeItems={filteredTradeItems}
+            transactionItems={filteredTransactionItems}
           />
         </div>
       </PageContainer>

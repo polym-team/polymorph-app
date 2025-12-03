@@ -1,4 +1,5 @@
-import { ApartDetailTradeHistoryItem } from '@/app/api/apart/types';
+import { ApartTransactionItem } from '@/entities/apart-transaction';
+import { useOnceEffect } from '@/shared/hooks/useOnceEffect';
 
 import { useState } from 'react';
 
@@ -13,12 +14,14 @@ interface Return {
 }
 
 export const useTransactionFilter = (
-  tradeItems: ApartDetailTradeHistoryItem[]
+  transactionItems: ApartTransactionItem[]
 ): Return => {
   const [selectedPeriod, setPeriod] = useState<PeriodValue>('60');
-  const [selectedSizes, setSelectedSizes] = useState<Set<number>>(
-    new Set(calculateAllSizes(tradeItems))
-  );
+  const [selectedSizes, setSelectedSizes] = useState<Set<number>>(new Set());
+
+  useOnceEffect(transactionItems.length > 0, () => {
+    setSelectedSizes(new Set(calculateAllSizes(transactionItems)));
+  });
 
   const changePeriod = (value: PeriodValue) => {
     setPeriod(value);

@@ -6,22 +6,22 @@ import { subMonths } from 'date-fns';
 import { PeriodValue, SizesValue } from './types';
 
 export const calculateAllSizes = (
-  tradeItems: ApartTransactionItem[]
+  transactionItems: ApartTransactionItem[]
 ): number[] => {
   const allSizes = Array.from(
-    new Set(tradeItems.map(item => calculateAreaPyeong(item.size)))
+    new Set(transactionItems.map(item => calculateAreaPyeong(item.size)))
   );
   return allSizes.sort((a, b) => a - b);
 };
 
-export const filterTradeItems = (
-  tradeItems: ApartTransactionItem[],
+export const filterTransactionItems = (
+  transactionItems: ApartTransactionItem[],
   filters: { selectedPeriod: PeriodValue; selectedSizes: SizesValue }
 ): ApartTransactionItem[] => {
   const { selectedPeriod, selectedSizes } = filters;
   const now = new Date();
 
-  return tradeItems.filter(item => {
+  return transactionItems.filter(item => {
     const tradeDate = new Date(item.tradeDate);
 
     const passWithPeriod =

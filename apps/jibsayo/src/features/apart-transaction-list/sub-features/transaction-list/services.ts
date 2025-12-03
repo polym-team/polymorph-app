@@ -1,4 +1,3 @@
-import { ApartDetailTradeHistoryItem } from '@/app/api/apart/types';
 import { ApartTransactionItem } from '@/entities/apart-transaction';
 import { calculateAreaPyeong } from '@/entities/transaction';
 
@@ -6,20 +5,20 @@ import { TRANSACTION_LIST_PAGE_SIZE } from './consts';
 import { Sorting, TransactionItemViewModel } from './types';
 
 const calculatePriceChange = ({
-  tradeItems,
+  transactionItems,
   item,
 }: {
-  tradeItems: ApartTransactionItem[];
+  transactionItems: ApartTransactionItem[];
   item: ApartTransactionItem;
 }): {
   priceChangeRate: TransactionItemViewModel['priceChangeRate'];
-  prevTradeItem?: TransactionItemViewModel['prevTradeItem'];
+  prevTransactionItem?: TransactionItemViewModel['prevTransactionItem'];
 } => {
   const currentPyeong = calculateAreaPyeong(item.size);
   const currentDate = new Date(item.tradeDate);
 
   // 같은 평수의 직전 거래 찾기 (시간상 가장 가까운 이전 거래)
-  const prevTradeItem = tradeItems
+  const prevTransactionItem = transactionItems
     .filter(prevItem => {
       const prevPyeong = calculateAreaPyeong(prevItem.size);
       const prevDate = new Date(prevItem.tradeDate);
@@ -32,11 +31,11 @@ const calculatePriceChange = ({
 
   let priceChangeRate = 0; // 기본값 (이전 거래가 없으면 0)
 
-  if (prevTradeItem) {
+  if (prevTransactionItem) {
     // 등락율 계산: ((현재가격 - 이전가격) / 이전가격) * 100
     const changeRate =
-      ((item.tradeAmount - prevTradeItem.tradeAmount) /
-        prevTradeItem.tradeAmount) *
+      ((item.tradeAmount - prevTransactionItem.tradeAmount) /
+        prevTransactionItem.tradeAmount) *
       100;
     // 소수점 2자리까지만 버림 처리
     priceChangeRate = Math.floor(changeRate * 100) / 100;
@@ -45,7 +44,7 @@ const calculatePriceChange = ({
   return {
     ...item,
     priceChangeRate,
-    prevTradeItem,
+    prevTransactionItem,
   };
 };
 
@@ -53,7 +52,7 @@ const calculateNewTransaction = ({
   item,
   newTransactionIdsSet,
 }: {
-  item: ApartDetailTradeHistoryItem;
+  item: ApartTransactionItem;
   newTransactionIdsSet: Set<string>;
 }): {
   isNewTransaction: TransactionItemViewModel['isNewTransaction'];
@@ -64,15 +63,15 @@ const calculateNewTransaction = ({
 };
 
 export const sortTransactionItems = ({
-  tradeItems,
+  transactionItems,
   sorting,
 }: {
-  tradeItems: ApartTransactionItem[];
+  transactionItems: ApartTransactionItem[];
   sorting: Sorting;
 }) => {
   const sortedItem = sorting[0];
 
-  return [...tradeItems].sort((a, b) => {
+  return [...transactionItems].sort((a, b) => {
     const aValue = a[sortedItem.id];
     const bValue = b[sortedItem.id];
 
@@ -87,28 +86,28 @@ export const sortTransactionItems = ({
 };
 
 export const sliceTransactionItems = ({
-  tradeItems,
+  transactionItems,
   pageIndex,
 }: {
-  tradeItems: ApartTransactionItem[];
+  transactionItems: ApartTransactionItem[];
   pageIndex: number;
 }): ApartTransactionItem[] => {
-  return tradeItems.slice(
+  return transactionItems.slice(
     pageIndex * TRANSACTION_LIST_PAGE_SIZE,
     (pageIndex + 1) * TRANSACTION_LIST_PAGE_SIZE
   );
 };
 
 export const convertToTransactionItem = ({
-  tradeItems,
+  transactionItems,
   newTransactionIdsSet,
 }: {
-  tradeItems: ApartTransactionItem[];
+  transactionItems: ApartTransactionItem[];
   newTransactionIdsSet: Set<string>;
 }): TransactionItemViewModel[] => {
-  return tradeItems.map(item => ({
+  return transactionItems.map(item => ({
     ...item,
-    ...calculatePriceChange({ tradeItems, item }),
+    ...calculatePriceChange({ transactionItems, item }),
     ...calculateNewTransaction({
       newTransactionIdsSet,
       item,
@@ -117,11 +116,11 @@ export const convertToTransactionItem = ({
 };
 
 export const calculateTargetPageIndex = ({
-  tradeItems,
+  transactionItems,
   selectedMonth,
   sorting,
 }: {
-  tradeItems: ApartTransactionItem[];
+  transactionItems: ApartTransactionItem[];
   selectedMonth: string | null;
   sorting: Sorting;
 }): number => {
@@ -130,7 +129,7 @@ export const calculateTargetPageIndex = ({
   }
 
   // 정렬된 거래 목록에서 선택된 월의 첫 번째 거래 찾기
-  const sortedItems = sortTransactionItems({ tradeItems, sorting });
+  const sortedItems = sortTransactionItems({ transactionItems, sorting });
   const targetIndex = sortedItems.findIndex(item =>
     item.tradeDate.startsWith(selectedMonth)
   );

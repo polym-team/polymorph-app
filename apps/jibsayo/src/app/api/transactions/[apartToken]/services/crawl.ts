@@ -1,5 +1,4 @@
 import {
-  createApartId,
   createTransactionId,
   normalizeAddress,
 } from '@/app/api/shared/services/transaction/service';
@@ -7,7 +6,7 @@ import { logger } from '@/app/api/shared/utils/logger';
 
 import cheerio, { CheerioAPI, Element } from 'cheerio';
 
-import type { ApartDetailResponse } from '../types';
+import type { TransactionsByTokenResponse } from '../types';
 
 const formatToAmount = (amountText: string): number => {
   let amount: number = 0;
@@ -30,7 +29,7 @@ const formatToAmount = (amountText: string): number => {
   return amount;
 };
 
-const calculateApartInfo = ($: CheerioAPI) => {
+const calculateAddress = ($: CheerioAPI) => {
   const getTradeInfoTable = () => {
     let tradeInfoTable: Element | null = null;
 
@@ -45,26 +44,15 @@ const calculateApartInfo = ($: CheerioAPI) => {
     return tradeInfoTable;
   };
 
-  const getApartInfo = (
-    tradeInfoTable: Element | null
-  ): Omit<
-    ApartDetailResponse,
-    'tradeItems' | 'regionCode' | 'apartName' | 'apartId'
-  > => {
+  const getAddress = (tradeInfoTable: Element | null): string => {
     if (!tradeInfoTable) {
-      return {
-        address: '',
-        housholdsCount: '',
-        parking: '',
-        floorAreaRatio: 0,
-        buildingCoverageRatio: 0,
-      };
+      return '';
     }
 
     // td 구조에 의존하지 않고 전체 텍스트에서 패턴 기반으로 추출
     const fullText = $(tradeInfoTable).text();
 
-    // 1. 주소 추출: "서울특별시", "경기도" 등으로 시작하는 주소
+    //  주소 추출: "서울특별시", "경기도" 등으로 시작하는 주소
     let rawAddress = '';
     const addressMatch = fullText.match(
       /(서울특별시|경기도|인천광역시|부산광역시|대구광역시|광주광역시|대전광역시|울산광역시|세종특별자치시|제주특별자치도|강원도|충청북도|충청남도|전라북도|전라남도|경상북도|경상남도)\s+[^\n]+/
@@ -74,61 +62,18 @@ const calculateApartInfo = ($: CheerioAPI) => {
     }
     const address = normalizeAddress(rawAddress);
 
-    // 2. 세대수 추출: "세대수(동수) : 400세대(10동)" 형태
-    let housholdsCount = '';
-    const housholdsMatch = fullText.match(/세대수\(동수\)\s*[:：]\s*([^\n]+)/);
-    if (housholdsMatch) {
-      housholdsCount = housholdsMatch[1].trim();
-    }
+    logger.info('파싱된 주소 정보', { address });
 
-    // 3. 주차 정보 추출: "주차 : 840대(세대당 2.1대)" 형태
-    let parking = '';
-    const parkingMatch = fullText.match(/주차\s*[:：]\s*([^\n]+)/);
-    if (parkingMatch) {
-      parking = parkingMatch[1].trim();
-    }
-
-    // 4. 용적률 추출: "용적률 : 199.0%" 형태
-    let floorAreaRatio = 0;
-    const floorAreaMatch = fullText.match(/용적률\s*[:：]\s*(\d+\.?\d*)%/);
-    if (floorAreaMatch) {
-      floorAreaRatio = Number(floorAreaMatch[1]);
-    }
-
-    // 5. 건폐율 추출: "건폐율:24.0%" 또는 "건폐율 : 24.0%" 형태
-    let buildingCoverageRatio = 0;
-    const buildingCoverageMatch = fullText.match(
-      /건폐율\s*[:：]\s*(\d+\.?\d*)%/
-    );
-    if (buildingCoverageMatch) {
-      buildingCoverageRatio = Number(buildingCoverageMatch[1]);
-    }
-
-    logger.info('파싱된 아파트 정보', {
-      rawAddress,
-      address,
-      housholdsCount,
-      parking,
-      floorAreaRatio,
-      buildingCoverageRatio,
-    });
-
-    return {
-      address,
-      housholdsCount,
-      parking,
-      floorAreaRatio,
-      buildingCoverageRatio,
-    };
+    return address;
   };
 
-  return getApartInfo(getTradeInfoTable());
+  return getAddress(getTradeInfoTable());
 };
 
-const calculateTradeItems = (
+const calculateTransactionItems = (
   $: CheerioAPI,
-  apartInfo: Pick<ApartDetailResponse, 'regionCode' | 'address' | 'apartName'>
-): ApartDetailResponse['tradeItems'] => {
+  params: { apartName: string; regionCode: string; address: string }
+): TransactionsByTokenResponse['items'] => {
   const getTrs = () => {
     const trs: Element[] = [];
 
@@ -147,8 +92,8 @@ const calculateTradeItems = (
     return trs;
   };
 
-  const getTradeItems = (trs: Element[]) => {
-    const tradeItems: ApartDetailResponse['tradeItems'] = [];
+  const getTransactionItems = (trs: Element[]) => {
+    const transactionItems: TransactionsByTokenResponse['items'] = [];
 
     $(trs).each((_, tr) => {
       // td 구조에 상관없이 전체 텍스트를 가져와서 패턴 기반으로 파싱
@@ -218,9 +163,9 @@ const calculateTradeItems = (
       const floor = floorMatch ? Number(floorMatch[1]) : 0;
 
       const transactionId = createTransactionId({
-        regionCode: apartInfo.regionCode,
-        address: apartInfo.address,
-        apartName: apartInfo.apartName,
+        regionCode: params.regionCode,
+        address: params.address,
+        apartName: params.apartName,
         tradeDate,
         tradeAmount,
         size,
@@ -229,14 +174,20 @@ const calculateTradeItems = (
 
       // 필수 항목이 있으면 추가
       if (tradeDate && size && tradeAmount) {
-        tradeItems.push({ transactionId, tradeDate, size, floor, tradeAmount });
+        transactionItems.push({
+          transactionId,
+          tradeDate,
+          size,
+          floor,
+          tradeAmount,
+        });
       }
     });
 
-    return tradeItems;
+    return transactionItems;
   };
 
-  return getTradeItems(getTrs());
+  return getTransactionItems(getTrs());
 };
 
 const fetchTradeDetail = async (
@@ -329,33 +280,20 @@ const fetchTradeDetail = async (
 
 export const createResponse = async (
   apartName: string,
-  area: string
-): Promise<ApartDetailResponse> => {
+  regionCode: string
+): Promise<TransactionsByTokenResponse> => {
   logger.info(`크롤링 시작(${apartName})`);
 
-  const html = await fetchTradeDetail(apartName, area);
+  const html = await fetchTradeDetail(apartName, regionCode);
   const $ = cheerio.load(html);
-  const apartInfo = calculateApartInfo($);
-  const tradeItems = calculateTradeItems($, {
-    regionCode: area,
-    address: apartInfo.address,
-    apartName,
-  });
-  const apartId = createApartId({
-    regionCode: area,
-    address: apartInfo.address,
+  const address = calculateAddress($);
+  const items = calculateTransactionItems($, {
+    regionCode,
+    address,
     apartName,
   });
 
-  const result = {
-    ...apartInfo,
-    regionCode: area,
-    apartId,
-    apartName,
-    tradeItems,
-  };
+  logger.info('크롤링 완료', { result: JSON.stringify(items, null, 2) });
 
-  logger.info('크롤링 완료', { result: JSON.stringify(result, null, 2) });
-
-  return result;
+  return { items };
 };

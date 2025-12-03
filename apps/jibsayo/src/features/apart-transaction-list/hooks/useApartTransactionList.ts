@@ -1,28 +1,32 @@
-import { ApartDetailResponse } from '@/app/api/apart/types';
+import { ApartTransactionItem } from '@/entities/apart-transaction';
+import { useApartTransactionListQuery } from '@/entities/apart-transaction/useApartTransactionListQuery';
 
-import { calculateAllSizes, filterTradeItems } from '../services';
+import { calculateAllSizes, filterTransactionItems } from '../services';
 import { PeriodValue } from '../types';
 import { useTransactionFilter } from './useTransactionFilter';
 
 interface Params {
-  data: ApartDetailResponse;
+  apartToken: string;
 }
 
 interface Return {
   allSizes: number[];
   selectedPeriod: PeriodValue;
   selectedSizes: Set<number>;
-  filteredTradeItems: ApartDetailResponse['tradeItems'];
+  filteredTransactionItems: ApartTransactionItem[];
   changePeriod: (value: PeriodValue) => void;
   changeSizes: (value: Set<number>) => void;
 }
 
-export const useApartTransactionList = ({ data }: Params): Return => {
-  const { selectedPeriod, selectedSizes, changePeriod, changeSizes } =
-    useTransactionFilter(data.tradeItems);
+export const useApartTransactionList = ({ apartToken }: Params): Return => {
+  const { data } = useApartTransactionListQuery({ apartToken });
+  const transactionItems = data?.items ?? [];
 
-  const allSizes = calculateAllSizes(data.tradeItems);
-  const filteredTradeItems = filterTradeItems(data.tradeItems, {
+  const { selectedPeriod, selectedSizes, changePeriod, changeSizes } =
+    useTransactionFilter(transactionItems);
+
+  const allSizes = calculateAllSizes(transactionItems);
+  const filteredTransactionItems = filterTransactionItems(transactionItems, {
     selectedPeriod,
     selectedSizes,
   });
@@ -31,7 +35,7 @@ export const useApartTransactionList = ({ data }: Params): Return => {
     allSizes,
     selectedPeriod,
     selectedSizes,
-    filteredTradeItems,
+    filteredTransactionItems,
     changePeriod,
     changeSizes,
   };

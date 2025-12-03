@@ -6,7 +6,7 @@ import { useTransactionChartView } from './useTransactionChartView';
 
 interface Props {
   allSizes: number[];
-  tradeItems: ApartTransactionItem[];
+  transactionItems: ApartTransactionItem[];
 }
 
 interface Return {
@@ -16,10 +16,10 @@ interface Return {
 
 export const useTransactionChart = ({
   allSizes,
-  tradeItems,
+  transactionItems,
 }: Props): Return => {
   const { chartData, legendData } = useTransactionChartData({
-    tradeItems,
+    transactionItems,
     allSizes,
   });
 

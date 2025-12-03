@@ -1,4 +1,4 @@
-import { ApartDetailTradeHistoryItem } from '@/app/api/apart/types';
+import { ApartTransactionItem } from '@/entities/apart-transaction';
 import { calculateAreaPyeong } from '@/entities/transaction';
 import { NewTransactionIcon } from '@/shared/ui/NewTransactionIcon';
 import {
@@ -18,7 +18,7 @@ import { useTransactionList } from './useTransactionList';
 interface TransactionListProps {
   apartName: string;
   regionCode: string;
-  tradeItems: ApartDetailTradeHistoryItem[];
+  transactionItems: ApartTransactionItem[];
 }
 
 const columns: ColumnDef<TransactionItemViewModel>[] = [
@@ -65,7 +65,7 @@ const columns: ColumnDef<TransactionItemViewModel>[] = [
           <span className="translate-x-[1px]">
             <PriceChangeRateBadge
               priceChangeRate={row.original.priceChangeRate}
-              previousTradeItem={row.original.prevTradeItem}
+              previousTradeItem={row.original.prevTransactionItem}
             />
           </span>
         )}
@@ -79,18 +79,18 @@ const columns: ColumnDef<TransactionItemViewModel>[] = [
 
 export function TransactionList({
   regionCode,
-  tradeItems,
+  transactionItems,
 }: TransactionListProps) {
   const {
     sorting,
     pageIndex,
     totalCount,
-    transactionItems,
+    items,
     changeSorting,
     changePageIndex,
   } = useTransactionList({
     regionCode,
-    tradeItems,
+    transactionItems,
   });
 
   return (
@@ -98,7 +98,7 @@ export function TransactionList({
       <DataTable
         pageSize={TRANSACTION_LIST_PAGE_SIZE}
         columns={columns}
-        data={transactionItems}
+        data={items}
         sorting={sorting}
         pageIndex={pageIndex}
         totalItems={totalCount}

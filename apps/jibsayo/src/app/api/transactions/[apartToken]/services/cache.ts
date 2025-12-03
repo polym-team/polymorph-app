@@ -2,13 +2,18 @@ import { COLLECTIONS } from '@/app/api/shared/consts/firestoreCollection';
 import { getFirestoreClient } from '@/app/api/shared/libs/fireStore';
 import { logger } from '@/app/api/shared/utils/logger';
 
-import type { ApartDetailResponse, CachedApartData } from '../types';
+import type {
+  CachedTransactionsByTokenData,
+  TransactionsByTokenResponse,
+} from '../types';
 
 const firestoreClient = getFirestoreClient(COLLECTIONS.APART_CACHE);
 
 export const CACHE_EXPIRY_MS = 3 * 60 * 60 * 1000;
 
-export function mapFirestoreToCachedData(doc: any): CachedApartData | null {
+export function mapFirestoreToCachedData(
+  doc: any
+): CachedTransactionsByTokenData | null {
   if (!doc || !doc.data) return null;
 
   const crawledAt = doc.data.crawledAt?.toDate();
@@ -27,10 +32,10 @@ function getCacheKey(apartName: string, area: string): string {
   return `${apartName}:${area}`;
 }
 
-export async function getCachedApart(
+export async function getCachedTransactions(
   apartName: string,
   area: string
-): Promise<CachedApartData | null> {
+): Promise<CachedTransactionsByTokenData | null> {
   try {
     const cacheKey = getCacheKey(apartName, area);
     const document = await firestoreClient.getDocument(cacheKey);
@@ -57,10 +62,10 @@ export async function getCachedApart(
 }
 
 // 캐시 저장 함수
-export async function saveCachedApart(
+export async function saveCachedTransaction(
   apartName: string,
   area: string,
-  data: ApartDetailResponse
+  data: TransactionsByTokenResponse
 ): Promise<boolean> {
   try {
     const now = new Date();

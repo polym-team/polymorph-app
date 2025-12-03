@@ -16,21 +16,21 @@ import { Sorting, TransactionItemViewModel } from './types';
 
 interface Params {
   regionCode: string;
-  tradeItems: ApartTransactionItem[];
+  transactionItems: ApartTransactionItem[];
 }
 
 interface Return {
   sorting: Sorting;
   pageIndex: number;
   totalCount: number;
-  transactionItems: TransactionItemViewModel[];
+  items: TransactionItemViewModel[];
   changeSorting: (newSorting: SortingState) => void;
   changePageIndex: (newPageIndex: number) => void;
 }
 
 export const useTransactionList = ({
   regionCode,
-  tradeItems,
+  transactionItems,
 }: Params): Return => {
   const { data: newTransactionListData } =
     useNewTransactionListQuery(regionCode);
@@ -43,35 +43,35 @@ export const useTransactionList = ({
 
   useEffect(() => {
     const targetPageIndex = calculateTargetPageIndex({
-      tradeItems,
+      transactionItems,
       selectedMonth,
       sorting,
     });
     setPageIndex(targetPageIndex);
-  }, [selectedMonth, tradeItems, sorting]);
+  }, [selectedMonth, transactionItems, sorting]);
 
-  const totalCount = tradeItems.length;
+  const totalCount = transactionItems.length;
   const newTransactionIdsSet = useMemo(
-    () => new Set(newTransactionListData?.transactionIds.map(id => id) || []),
+    () => new Set(newTransactionListData?.transactionIds?.map(id => id) ?? []),
     [newTransactionListData]
   );
 
-  const transactionItems = useMemo(() => {
+  const items = useMemo(() => {
     const sortedTransactionItems = sortTransactionItems({
-      tradeItems,
+      transactionItems,
       sorting,
     });
     const slicedTransactionItems = sliceTransactionItems({
-      tradeItems: sortedTransactionItems,
+      transactionItems: sortedTransactionItems,
       pageIndex,
     });
     const convertedTransactionItems = convertToTransactionItem({
-      tradeItems: slicedTransactionItems,
+      transactionItems: slicedTransactionItems,
       newTransactionIdsSet,
     });
 
     return convertedTransactionItems;
-  }, [tradeItems, sorting, pageIndex, newTransactionIdsSet]);
+  }, [transactionItems, sorting, pageIndex, newTransactionIdsSet]);
 
   const changeSorting = (newSorting: SortingState) => {
     setSorting(newSorting as Sorting);
@@ -86,7 +86,7 @@ export const useTransactionList = ({
     sorting,
     pageIndex,
     totalCount,
-    transactionItems,
+    items,
     changeSorting,
     changePageIndex,
   };

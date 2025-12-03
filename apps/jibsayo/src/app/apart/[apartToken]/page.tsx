@@ -6,16 +6,16 @@ import { ApartContent } from './ApartContent';
 import { ApartLoading } from './ApartLoading';
 
 interface ApartDetailPageRequest {
-  params: { token: string };
+  params: { apartToken: string };
 }
 
 export default function ApartDetailPage({ params }: ApartDetailPageRequest) {
-  const { token } = params;
+  const { apartToken } = params;
 
   return (
     <PageLayout showBackButton bgColor="gray">
       <Suspense fallback={<ApartLoading />}>
-        <ApartContent token={token} />
+        <ApartContent apartToken={apartToken} />
       </Suspense>
     </PageLayout>
   );

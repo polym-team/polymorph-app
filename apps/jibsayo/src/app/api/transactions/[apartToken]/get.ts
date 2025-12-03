@@ -1,0 +1,52 @@
+import { logger } from '@/app/api/shared/utils/logger';
+
+import { NextRequest } from 'next/server';
+
+import { parseApartToken } from '../../shared/services/transaction/service';
+import { getCachedTransactions, saveCachedTransaction } from './services/cache';
+import { createResponse } from './services/crawl';
+
+export async function GET(
+  _: NextRequest,
+  { params }: { params: { apartToken: string } }
+): Promise<Response> {
+  if (!params || !params.apartToken) {
+    return Response.json(
+      { message: '필수 파라미터(apartName, area)가 누락되었습니다.' },
+      { status: 400 }
+    );
+  }
+
+  const parsedApartToken = parseApartToken(params.apartToken);
+  if (!parsedApartToken) {
+    return Response.json(
+      { message: '필수 파라미터(apartName, area)가 누락되었습니다.' },
+      { status: 400 }
+    );
+  }
+
+  const { regionCode, apartName } = parsedApartToken;
+
+  try {
+    const cachedData = await getCachedTransactions(apartName, regionCode);
+    if (cachedData) {
+      logger.info('캐시 데이터 반환');
+      return Response.json(cachedData.data);
+    }
+
+    const result = await createResponse(apartName, regionCode);
+    logger.info('크롤링 완료');
+
+    await saveCachedTransaction(apartName, regionCode, result);
+
+    return Response.json(result);
+  } catch (error) {
+    return Response.json(
+      {
+        message: '서버 오류가 발생했습니다.',
+        error: error instanceof Error ? error.message : '알 수 없는 오류',
+      },
+      { status: 500 }
+    );
+  }
+}
