@@ -1,6 +1,7 @@
 import { ApartTransactionItem } from '@/entities/apart-transaction';
 
 import { TransactionListTable } from './ui/TransactionListTable';
+import { TrasactionYearSelect } from './ui/TransactionYearSelect';
 import { useTransactionList } from './useTransactionList';
 
 interface TransactionListProps {
@@ -17,15 +18,18 @@ export function TransactionList({
     pageIndex,
     totalCount,
     items,
+    years,
     changeSorting,
     changePageIndex,
+    changeYear,
   } = useTransactionList({
     regionCode,
     transactionItems,
   });
 
   return (
-    <div className="space-y-2">
+    <div className="flex flex-col gap-y-3">
+      <TrasactionYearSelect years={years} onYearChange={changeYear} />
       <TransactionListTable
         items={items}
         totalCount={totalCount}

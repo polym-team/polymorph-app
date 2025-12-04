@@ -115,26 +115,41 @@ export const convertToTransactionItem = ({
   }));
 };
 
-export const calculateTargetPageIndex = ({
+export const extractTransactionYears = ({
   transactionItems,
-  selectedMonth,
+}: {
+  transactionItems: ApartTransactionItem[];
+}): number[] => {
+  const yearsSet = new Set<number>();
+
+  transactionItems.forEach(item => {
+    const year = parseInt(item.tradeDate.substring(0, 4), 10);
+    yearsSet.add(year);
+  });
+
+  return Array.from(yearsSet).sort((a, b) => b - a);
+};
+
+export const calculateYearPageIndex = ({
+  transactionItems,
+  year,
   sorting,
 }: {
   transactionItems: ApartTransactionItem[];
-  selectedMonth: string | null;
+  year: number;
   sorting: Sorting;
 }): number => {
-  if (!selectedMonth) {
-    return 0;
+  const sortedItems = sortTransactionItems({ transactionItems, sorting });
+  const yearPrefix = year.toString();
+
+  let targetIndex = -1;
+  for (let i = sortedItems.length - 1; i >= 0; i--) {
+    if (sortedItems[i].tradeDate.startsWith(yearPrefix)) {
+      targetIndex = i;
+      break;
+    }
   }
 
-  // 정렬된 거래 목록에서 선택된 월의 첫 번째 거래 찾기
-  const sortedItems = sortTransactionItems({ transactionItems, sorting });
-  const targetIndex = sortedItems.findIndex(item =>
-    item.tradeDate.startsWith(selectedMonth)
-  );
-
-  // 못 찾으면 0, 찾으면 해당 인덱스를 페이지 크기로 나눈 값
   if (targetIndex === -1) {
     return 0;
   }

@@ -1,7 +1,7 @@
+import { HorizontalScrollContainer } from '@/shared/ui/HorizontalScrollContainer';
 import { formatPyeongText } from '@/shared/utils/formatter';
 
-import { Button } from '@package/ui';
-import { cn } from '@package/utils';
+import { Button, Card } from '@package/ui';
 
 import { CHART_COLORS, PERIODS } from './consts';
 import { PeriodValue, SizesValue } from './types';
@@ -22,27 +22,26 @@ export function TransactionFilter({
   onChangeSizes,
 }: TransactionFilterProps) {
   return (
-    <div className="flex flex-col gap-y-3 lg:rounded lg:bg-gray-100 lg:p-3">
-      <div className="flex gap-x-1 rounded bg-gray-100 p-1.5 lg:justify-start lg:bg-transparent lg:p-0">
-        {PERIODS.map(p => (
-          <button
-            key={p.value}
-            className={cn(
-              'w-full rounded border py-2 text-sm transition-all duration-200 active:bg-gray-200 lg:w-auto lg:px-5 lg:py-3 lg:text-base',
-              selectedPeriod !== p.value &&
-                'border-gray-100 lg:hover:bg-gray-200',
-              selectedPeriod === p.value &&
-                'text-primary border-gray-200 bg-white active:bg-white'
-            )}
-            onClick={() => onChangePeriod(p.value)}
-          >
-            {p.label}
-          </button>
-        ))}
+    <Card className="flex flex-col">
+      <div className="<spa flex flex-col gap-y-2 p-3 lg:p-4">
+        {/* <span className="m-1 text-sm text-gray-500">기간 선택</span> */}
+        <HorizontalScrollContainer className="gap-x-1">
+          {PERIODS.map(p => (
+            <Button
+              key={p.value}
+              // size="sm"
+              variant={selectedPeriod === p.value ? 'primary-light' : 'ghost'}
+              onClick={() => onChangePeriod(p.value)}
+            >
+              {p.label}
+            </Button>
+          ))}
+        </HorizontalScrollContainer>
       </div>
-      <hr className="hidden lg:block" />
-      <div className="relative">
-        <div className="scrollbar-hide flex gap-1 overflow-x-auto overflow-y-hidden pr-8">
+      <hr className="border-gray-100" />
+      <div className="flex flex-col gap-y-2 p-3 lg:p-4">
+        {/* <span className="m-1 text-sm text-gray-500">평형 선택</span> */}
+        <HorizontalScrollContainer className="gap-x-1">
           {allSizes.map((size, index) => {
             const isSelected = selectedSizes.has(size);
             return (
@@ -50,7 +49,14 @@ export function TransactionFilter({
                 key={size}
                 size="sm"
                 rounded
-                variant={isSelected ? 'primary-light' : 'default'}
+                variant="outline"
+                style={{
+                  ...(isSelected && {
+                    borderColor: CHART_COLORS[index % CHART_COLORS.length],
+                    backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
+                    color: 'white',
+                  }),
+                }}
                 onClick={() =>
                   onChangeSizes(
                     isSelected
@@ -64,16 +70,22 @@ export function TransactionFilter({
                 <span
                   className="block h-2 w-2 rounded-sm"
                   style={{
-                    backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
+                    ...(isSelected
+                      ? {
+                          backgroundColor: 'white',
+                        }
+                      : {
+                          backgroundColor:
+                            CHART_COLORS[index % CHART_COLORS.length],
+                        }),
                   }}
                 />
                 {formatPyeongText(size)}
               </Button>
             );
           })}
-        </div>
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-white to-transparent lg:hidden" />
+        </HorizontalScrollContainer>
       </div>
-    </div>
+    </Card>
   );
 }

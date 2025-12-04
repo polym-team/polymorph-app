@@ -76,7 +76,7 @@ export function PriceChangeRateBadge({
     <div className="fixed inset-0 z-50" onClick={handleTooltipClose}>
       <div
         className={cn(
-          'absolute rounded-lg border bg-white p-4 shadow transition-all duration-200 ease-in-out',
+          'absolute rounded border bg-white p-4 shadow transition-all duration-200 ease-in-out',
           isTooltipVisible
             ? 'translate-y-0 scale-100 opacity-100'
             : 'translate-y-1 scale-95 opacity-0'
@@ -124,7 +124,7 @@ export function PriceChangeRateBadge({
     <div className="relative" ref={containerRef}>
       <span
         className={cn(
-          'whitespace-nowrap rounded-full px-1.5 py-0.5 text-xs transition-colors lg:text-sm',
+          'whitespace-nowrap rounded-[6px] px-2 py-1 text-xs transition-colors lg:text-sm',
           previousTradeItem ? 'cursor-pointer' : '',
           priceChangeRate > 0
             ? 'bg-red-100 text-red-700'

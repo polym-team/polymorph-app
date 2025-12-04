@@ -15,7 +15,7 @@ export function DetailItem({
 }: DetailItemProsp) {
   return (
     <div className="flex flex-col items-start gap-y-1 rounded bg-gray-100 px-4 py-3">
-      <span className="whitespace-nowrap text-sm text-gray-700 lg:w-36 lg:text-base">
+      <span className="whitespace-nowrap text-sm text-gray-600 lg:w-36 lg:text-base">
         {title}
       </span>
       <div className="flex flex-col">

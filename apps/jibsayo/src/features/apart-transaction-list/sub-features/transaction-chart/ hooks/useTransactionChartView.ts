@@ -1,4 +1,3 @@
-import { useSelectedMonth } from '@/features/apart-transaction-list/SelectedMonthContext';
 import { formatKoreanAmountText } from '@/shared/utils/formatter';
 
 import * as d3 from 'd3';
@@ -21,10 +20,8 @@ export const useTransactionChartView = ({
 }: UseTransactionHistoryChartViewProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
-  const lastShownTooltipDateRef = useRef<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [containerWidth, setContainerWidth] = useState(1024);
-  const { setSelectedMonth } = useSelectedMonth();
 
   // 컨테이너 너비 감지
   useEffect(() => {
@@ -441,9 +438,6 @@ export const useTransactionChartView = ({
     const showTooltip = (dateString: string) => {
       const xPos = xScale(dateString) || 0;
 
-      // 마지막 툴팁 날짜 업데이트
-      lastShownTooltipDateRef.current = dateString;
-
       // y축 구분선 표시 (전체 관통)
       verticalLine.attr('x1', xPos).attr('x2', xPos).style('opacity', 1);
 
@@ -553,10 +547,6 @@ export const useTransactionChartView = ({
       if (tooltipRef.current) {
         tooltipRef.current.style.opacity = '0';
       }
-      // 툴팁 미노출 시점에 선택된 월 업데이트
-      if (lastShownTooltipDateRef.current) {
-        setSelectedMonth(lastShownTooltipDateRef.current);
-      }
     };
 
     // PC/Mobile 구분
@@ -640,11 +630,9 @@ export const useTransactionChartView = ({
       interactionNode.addEventListener('pointercancel', handlePointerUp);
     }
 
-    // 기본적으로 맨 우측 툴팁 노출 및 선택된 월 설정
+    // 기본적으로 맨 우측 툴팁 노출
     if (uniqueDates.length > 0) {
       const rightmostDate = uniqueDates[uniqueDates.length - 1];
-      lastShownTooltipDateRef.current = rightmostDate;
-      setSelectedMonth(rightmostDate);
       showTooltip(rightmostDate);
     }
 
@@ -671,7 +659,6 @@ export const useTransactionChartView = ({
     containerWidth,
     legendData,
     chartGap,
-    setSelectedMonth,
   ]);
 
   return {
