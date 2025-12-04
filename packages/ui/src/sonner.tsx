@@ -19,10 +19,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            '!bg-gray-800 !text-white !border-gray-700 !shadow-lg !w-fit !max-w-[90vw] !text-center [&_[data-icon]]:!hidden [&_svg]:!hidden',
+            '!bg-gray-800 !text-white !border-gray-700 !shadow-lg !w-fit !max-w-[90vw] !text-center [&_[data-icon]]:!hidden [&_svg]:!hidden !left-0 !right-0 !mx-auto ',
           description: '!text-gray-200 !text-center',
           closeButton:
-            '!absolute !top-0 !left-0 !w-full !h-full !bg-transparent !border-0 !cursor-pointer [&>*]:!hidden',
+            '!absolute !top-0 !left-0 !w-full !h-full !bg-transparent !border-0 !cursor-pointer [&>*]:!hidden !transform-none',
         },
       }}
       {...props}
