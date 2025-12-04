@@ -23,7 +23,7 @@ export function TransactionFilter({
 }: TransactionFilterProps) {
   return (
     <Card className="flex flex-col">
-      <div className="<spa flex flex-col gap-y-2 p-3 lg:p-4">
+      <div className="<spa flex flex-col gap-y-2 p-2 lg:p-4">
         {/* <span className="m-1 text-sm text-gray-500">기간 선택</span> */}
         <HorizontalScrollContainer className="gap-x-1">
           {PERIODS.map(p => (
@@ -39,7 +39,7 @@ export function TransactionFilter({
         </HorizontalScrollContainer>
       </div>
       <hr className="border-gray-100" />
-      <div className="flex flex-col gap-y-2 p-3 lg:p-4">
+      <div className="flex flex-col gap-y-2 p-2 lg:p-4">
         {/* <span className="m-1 text-sm text-gray-500">평형 선택</span> */}
         <HorizontalScrollContainer className="gap-x-1">
           {allSizes.map((size, index) => {
