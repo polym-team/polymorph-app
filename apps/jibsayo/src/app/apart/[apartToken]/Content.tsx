@@ -1,19 +1,19 @@
 import { ApartInfo } from '@/features/apart-info';
 import { ApartTransactionList } from '@/features/apart-transaction-list';
 
-import { ApartError } from './ApartError';
+import { Error } from './Error';
 import { Layout } from './Layout';
 import { fetchApartInfo } from './services';
 
-interface ApartContentProps {
+interface ContentProps {
   apartToken: string;
 }
 
-export async function ApartContent({ apartToken }: ApartContentProps) {
+export async function Content({ apartToken }: ContentProps) {
   const data = await fetchApartInfo(apartToken);
 
   if (!data) {
-    return <ApartError />;
+    return <Error />;
   }
 
   return (

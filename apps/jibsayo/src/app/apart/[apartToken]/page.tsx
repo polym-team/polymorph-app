@@ -2,8 +2,8 @@ import { PageLayout } from '@/widgets/ui/page-layout/PageLayout';
 
 import { Suspense } from 'react';
 
-import { ApartContent } from './ApartContent';
-import { ApartLoading } from './ApartLoading';
+import { Content } from './Content';
+import { Loading } from './Loading';
 
 interface ApartDetailPageRequest {
   params: { apartToken: string };
@@ -14,8 +14,8 @@ export default function ApartDetailPage({ params }: ApartDetailPageRequest) {
 
   return (
     <PageLayout showBackButton bgColor="gray">
-      <Suspense fallback={<ApartLoading />}>
-        <ApartContent apartToken={apartToken} />
+      <Suspense fallback={<Loading />}>
+        <Content apartToken={apartToken} />
       </Suspense>
     </PageLayout>
   );

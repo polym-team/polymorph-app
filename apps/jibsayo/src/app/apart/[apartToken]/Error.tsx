@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 
 import { toast } from '@package/ui';
 
-export function ApartError() {
+export function Error() {
   const router = useRouter();
   const { isInApp } = useGlobalConfigStore();
 

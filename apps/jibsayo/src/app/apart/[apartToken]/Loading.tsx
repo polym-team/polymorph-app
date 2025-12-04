@@ -3,7 +3,7 @@ import { ApartTransactionList } from '@/features/apart-transaction-list';
 
 import { Layout } from './Layout';
 
-export async function ApartLoading() {
+export async function Loading() {
   return (
     <Layout>
       <ApartInfo data={undefined} />
