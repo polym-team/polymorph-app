@@ -12,7 +12,7 @@ import { TransactionListSkeleton } from './TransactionListSkeleton';
 
 interface ApartTransactionListProps {
   apartToken: string;
-  data: ApartInfoType;
+  data?: ApartInfoType;
 }
 
 export function ApartTransactionList({
@@ -29,7 +29,7 @@ export function ApartTransactionList({
     changeSizes,
   } = useApartTransactionList({ apartToken });
 
-  if (isLoading) {
+  if (isLoading || !data) {
     return <TransactionListSkeleton />;
   }
 
