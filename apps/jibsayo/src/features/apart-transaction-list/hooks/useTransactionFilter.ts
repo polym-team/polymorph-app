@@ -3,6 +3,8 @@ import { useOnceEffect } from '@/shared/hooks/useOnceEffect';
 
 import { useState } from 'react';
 
+import { toast } from '@package/ui';
+
 import { calculateAllSizes } from '../services';
 import { PeriodValue } from '../types';
 
@@ -28,6 +30,11 @@ export const useTransactionFilter = (
   };
 
   const changeSizes = (value: Set<number>) => {
+    if (value.size === 0) {
+      toast.success('한 개 이상의 평형을 선택해 주세요');
+      return;
+    }
+
     setSelectedSizes(value);
   };
 
