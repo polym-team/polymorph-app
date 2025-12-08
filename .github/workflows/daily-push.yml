@@ -31,6 +31,7 @@ jobs:
 
       - name: Run push notification script
         env:
+          NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_PRIVATE_KEY_ID: ${{ secrets.FIREBASE_PRIVATE_KEY_ID }}
           FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
