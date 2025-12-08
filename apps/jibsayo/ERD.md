@@ -15,7 +15,7 @@ erDiagram
     }
 
     apartments {
-        serial id PK
+        int id PK "AUTO_INCREMENT"
         varchar region_code FK
         varchar apart_code "아파트 코드"
         varchar apart_name "아파트 이름"
@@ -37,11 +37,11 @@ erDiagram
         integer underground_parking_count "지하 주차"
         integer ev_parking_count "전기차 충전"
         integer max_floor "최고 층수"
-        text_array amenities "편의시설"
+        json amenities "편의시설"
     }
 
     transactions {
-        serial id PK
+        int id PK "AUTO_INCREMENT"
         varchar region_code FK
         integer apart_id FK
         date transaction_date "거래 날짜"
@@ -57,7 +57,7 @@ erDiagram
         varchar seller_type "매도자 유형"
         varchar buyer_type "매수자 유형"
         boolean is_land_lease "토지임대부"
-        timestamp created_at
+        timestamp created_at "DEFAULT CURRENT_TIMESTAMP"
     }
 ```
 
