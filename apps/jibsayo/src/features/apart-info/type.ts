@@ -1,6 +1,6 @@
 export interface ApartInfoType {
-  regionCode: string;
   apartName: string;
+  regionCode: string;
   buildYear: number;
   dong: string;
   doro: string | null;

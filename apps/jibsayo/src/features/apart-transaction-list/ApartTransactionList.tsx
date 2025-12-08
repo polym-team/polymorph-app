@@ -37,8 +37,8 @@ export function ApartTransactionList({
   }
 
   return (
-    <PageContainer bgColor="white" className="pb-10 pt-6">
-      <span className="font-semibold lg:text-lg">거래 내역</span>
+    <PageContainer bgColor="white" className="pb-12 pt-4">
+      <span className="text-sm text-gray-500 lg:text-base">거래 내역</span>
       <div className="mt-2 flex flex-col gap-y-5">
         <TransactionFilter
           allSizes={allSizes}

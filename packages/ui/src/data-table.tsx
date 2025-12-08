@@ -91,7 +91,15 @@ export function DataTable<TData, TValue>({
   // 로딩 스켈레톤 컴포넌트
   const LoadingSkeleton = () => {
     // 고정된 width 배열 (리렌더링 시에도 동일한 패턴 유지)
-    const skeletonWidths = ['w-[70%]', 'w-[75%]', 'w-[80%]', 'w-[85%]', 'w-[90%]', 'w-[95%]', 'w-[100%]'];
+    const skeletonWidths = [
+      'w-[70%]',
+      'w-[75%]',
+      'w-[80%]',
+      'w-[85%]',
+      'w-[90%]',
+      'w-[95%]',
+      'w-[100%]',
+    ];
 
     // 각 행과 셀에 대한 고정된 width 패턴 생성
     const getSkeletonWidth = (rowIndex: number, cellIndex: number) => {
@@ -184,7 +192,7 @@ export function DataTable<TData, TValue>({
   // 페이지네이션 컴포넌트
   const PaginationComponent = () => (
     <div className="mt-5 flex items-center justify-between">
-      <div className="flex flex-wrap items-center gap-x-1 text-gray-500">
+      <div className="flex flex-wrap items-center gap-x-1 text-sm text-gray-500">
         <div>
           총 <span className="text-primary">{totalItems}</span>건
         </div>{' '}

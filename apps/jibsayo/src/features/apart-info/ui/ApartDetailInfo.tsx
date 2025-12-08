@@ -1,7 +1,7 @@
+import { PageContainer } from '@/shared/ui/PageContainer';
 import { formatNumber } from '@/shared/utils/formatter';
 
 import { ApartInfoType } from '../type';
-import { Container } from './Container';
 import { DetailItem } from './DetailItem';
 
 interface ApartDetailInfoProps {
@@ -11,24 +11,37 @@ interface ApartDetailInfoProps {
 export function ApartDetailInfo({ data }: ApartDetailInfoProps) {
   if (!data) {
     return (
-      <Container title="단지 정보" isLoading>
+      <PageContainer
+        bgColor="white"
+        className="flex flex-col gap-y-3 py-4 lg:py-6"
+      >
+        <span className="h-5 w-20 animate-pulse rounded bg-gray-200 lg:h-6" />
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[1, 2, 3, 4].map(item => (
             <div
               key={item}
-              className="flex flex-col gap-y-2 rounded bg-gray-100 px-4 py-3"
+              className="flex flex-col items-start gap-y-1 rounded bg-gray-100 px-4 py-3"
             >
-              <div className="h-5 w-16 animate-pulse rounded bg-gray-200" />
-              <div className="h-6 w-24 animate-pulse rounded bg-gray-200" />
+              <div className="h-5 w-16 animate-pulse rounded bg-gray-200 lg:h-5" />
+              <div className="flex flex-col gap-y-1">
+                <div className="h-5 w-24 animate-pulse rounded bg-gray-200 lg:h-6" />
+                {item === 3 && (
+                  <div className="h-4 w-28 animate-pulse rounded bg-gray-200 lg:h-4" />
+                )}
+              </div>
             </div>
           ))}
         </div>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container title="단지 정보">
+    <PageContainer
+      bgColor="white"
+      className="flex flex-col gap-y-3 py-4 lg:py-6"
+    >
+      <span className="text-sm text-gray-500 lg:text-base">단지 정보</span>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {data.buildYear && (
           <DetailItem title="연식" content={`${data.buildYear}년식`} />
@@ -60,6 +73,6 @@ export function ApartDetailInfo({ data }: ApartDetailInfoProps) {
           />
         )}
       </div>
-    </Container>
+    </PageContainer>
   );
 }

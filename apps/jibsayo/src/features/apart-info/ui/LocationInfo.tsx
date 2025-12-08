@@ -216,8 +216,12 @@ export function LocationInfo({ data }: LocationInfoProps) {
 
   if (!data) {
     return (
-      <PageContainer className="p-0 lg:px-4 lg:pb-6 lg:pt-4" bgColor="white">
-        <div className="overflow-hidden lg:rounded">
+      <PageContainer
+        bgColor="white"
+        className="flex flex-col gap-y-3 py-4 lg:py-6 lg:pb-12"
+      >
+        <span className="h-5 w-12 animate-pulse rounded bg-gray-200 lg:h-6" />
+        <div className="overflow-hidden rounded">
           <div className="aspect-[4/3] max-h-[450px] w-full animate-pulse bg-gray-200" />
         </div>
       </PageContainer>
@@ -225,8 +229,12 @@ export function LocationInfo({ data }: LocationInfoProps) {
   }
 
   return (
-    <PageContainer className="p-0 lg:px-4 lg:pb-6 lg:pt-4" bgColor="white">
-      <div className="overflow-hidden lg:rounded">
+    <PageContainer
+      bgColor="white"
+      className="flex flex-col gap-y-3 py-4 lg:py-6 lg:pb-12"
+    >
+      <span className="text-sm text-gray-500 lg:text-base">위치</span>
+      <div className="overflow-hidden rounded">
         <div ref={mapRef} className="aspect-[4/3] max-h-[450px] w-full" />
       </div>
     </PageContainer>

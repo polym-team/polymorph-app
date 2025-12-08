@@ -18,7 +18,7 @@ export async function Content({ apartToken }: ContentProps) {
 
   return (
     <Layout>
-      <ApartInfo data={data} />
+      <ApartInfo apartToken={apartToken} data={data} />
       <ApartTransactionList apartToken={apartToken} data={data} />
     </Layout>
   );

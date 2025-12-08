@@ -1,9 +1,9 @@
 import { HorizontalScrollContainer } from '@/shared/ui/HorizontalScrollContainer';
+import { PageContainer } from '@/shared/ui/PageContainer';
 
 import { Button } from '@package/ui';
 
 import { ApartInfoType } from '../type';
-import { Container } from './Container';
 
 interface AmenitiesInfoProps {
   data?: ApartInfoType;
@@ -12,18 +12,22 @@ interface AmenitiesInfoProps {
 export function AmenitiesInfo({ data }: AmenitiesInfoProps) {
   if (!data) {
     return (
-      <Container title="편의시설" isLoading>
+      <PageContainer
+        bgColor="white"
+        className="flex flex-col gap-y-3 py-4 lg:py-6"
+      >
+        <span className="h-5 w-20 animate-pulse rounded bg-gray-200 lg:h-6" />
         <HorizontalScrollContainer>
           <div className="flex gap-x-1">
             {[1, 2, 3, 4, 5].map(item => (
               <div
                 key={item}
-                className="h-[34px] w-24 animate-pulse rounded-full bg-gray-200 lg:h-[34px]"
+                className="h-[34px] w-20 animate-pulse rounded-full bg-gray-200 lg:h-[34px]"
               />
             ))}
           </div>
         </HorizontalScrollContainer>
-      </Container>
+      </PageContainer>
     );
   }
 
@@ -32,7 +36,11 @@ export function AmenitiesInfo({ data }: AmenitiesInfoProps) {
   }
 
   return (
-    <Container title="편의시설">
+    <PageContainer
+      bgColor="white"
+      className="flex flex-col gap-y-3 py-4 lg:py-6"
+    >
+      <span className="text-sm text-gray-500 lg:text-base">편의시설</span>
       <HorizontalScrollContainer>
         <div className="flex gap-x-1">
           {data.amenities.map(item => (
@@ -42,6 +50,6 @@ export function AmenitiesInfo({ data }: AmenitiesInfoProps) {
           ))}
         </div>
       </HorizontalScrollContainer>
-    </Container>
+    </PageContainer>
   );
 }

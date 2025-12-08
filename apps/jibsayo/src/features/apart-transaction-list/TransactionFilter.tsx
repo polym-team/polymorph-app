@@ -29,7 +29,8 @@ export function TransactionFilter({
           {PERIODS.map(p => (
             <Button
               key={p.value}
-              // size="sm"
+              size="sm"
+              className="lg:text-base"
               variant={selectedPeriod === p.value ? 'primary-light' : 'ghost'}
               onClick={() => onChangePeriod(p.value)}
             >
