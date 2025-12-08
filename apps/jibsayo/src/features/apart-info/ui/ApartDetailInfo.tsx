@@ -43,13 +43,13 @@ export function ApartDetailInfo({ data }: ApartDetailInfoProps) {
     >
       <span className="text-sm text-gray-500 lg:text-base">단지 정보</span>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {data.buildYear && (
+        {!!data.buildYear && (
           <DetailItem title="연식" content={`${data.buildYear}년식`} />
         )}
-        {data.maxFloor && (
+        {!!data.maxFloor && (
           <DetailItem title="최고 층수" content={`${data.maxFloor}층`} />
         )}
-        {data.householdCount && (
+        {!!data.householdCount && (
           <DetailItem
             highlight
             title="세대수"
@@ -61,7 +61,7 @@ export function ApartDetailInfo({ data }: ApartDetailInfoProps) {
             }
           />
         )}
-        {data.parkingCount && (
+        {!!data.parkingCount && (
           <DetailItem
             title="주차"
             content={`${formatNumber(data.parkingCount)}대`}
