@@ -1,15 +1,13 @@
-name: Daily Transaction Batch
+name: Daily Push Notification
 
 on:
   schedule:
     # 매일 오전 9시 (KST) 실행
     - cron: '0 0 * * *'
-    # 매일 오후 3시 (KST) 실행
-    - cron: '0 6 * * *'
   workflow_dispatch: # 수동 실행 가능
 
 jobs:
-  fetch-transactions:
+  send-push-notifications:
     runs-on: ubuntu-latest
     environment: production
 
@@ -31,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run batch script
+      - name: Run push notification script
         env:
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_PRIVATE_KEY_ID: ${{ secrets.FIREBASE_PRIVATE_KEY_ID }}
@@ -39,13 +37,12 @@ jobs:
           FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
           FIREBASE_CLIENT_ID: ${{ secrets.FIREBASE_CLIENT_ID }}
           FIREBASE_CLIENT_CERT_URL: ${{ secrets.FIREBASE_CLIENT_CERT_URL }}
-          NEXT_PUBLIC_GO_DATA_API_KEY: ${{ secrets.NEXT_PUBLIC_GO_DATA_API_KEY }}
-        run: pnpm --filter jibsayo batch:run
+        run: pnpm --filter jibsayo push:run
 
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: batch-logs
+          name: push-logs
           path: apps/jibsayo/logs/
           retention-days: 7
