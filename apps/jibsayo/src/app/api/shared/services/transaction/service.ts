@@ -19,17 +19,21 @@ export const parseTransactionId = (
   tradeAmount: number;
 } | null => {
   try {
-    const parts = transactionId.split('__');
-    if (parts.length !== 7) {
-      console.error('Invalid transactionId format:', transactionId);
+    const parts = transactionId.split('::');
+    if (parts.length !== 2) {
+      return null;
+    }
+
+    const transactionParts = parts[1].split('__');
+    if (transactionParts.length !== 4) {
       return null;
     }
 
     const apartToken = parts[0];
-    const size = parseFloat(parts[1]);
-    const floor = parseFloat(parts[2]);
-    const tradeDate = parts[3];
-    const tradeAmount = parseInt(parts[4], 10);
+    const size = parseFloat(transactionParts[0]);
+    const floor = parseFloat(transactionParts[1]);
+    const tradeDate = transactionParts[2];
+    const tradeAmount = parseInt(transactionParts[3], 10);
 
     return {
       apartToken,
@@ -51,7 +55,7 @@ export const createTransactionId = (params: {
   tradeDate: string;
   tradeAmount: number;
 }): string => {
-  return `${params.apartToken}__${params.size}__${params.floor}__${params.tradeDate}__${params.tradeAmount}`;
+  return `${params.apartToken}::${params.size}__${params.floor}__${params.tradeDate}__${params.tradeAmount}`;
 };
 
 export const createApartToken = (params: {
