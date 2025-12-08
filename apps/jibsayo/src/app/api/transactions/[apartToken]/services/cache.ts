@@ -33,11 +33,10 @@ function getCacheKey(apartName: string, area: string): string {
 }
 
 export async function getCachedTransactions(
-  apartName: string,
-  area: string
+  apartToken: string
 ): Promise<CachedTransactionsByTokenData | null> {
   try {
-    const cacheKey = getCacheKey(apartName, area);
+    const cacheKey = apartToken;
     const document = await firestoreClient.getDocument(cacheKey);
     if (!document) return null;
 

@@ -1,6 +1,6 @@
 import {
   createTransactionId,
-  normalizeAddress,
+  parseApartToken,
 } from '@/app/api/shared/services/transaction/service';
 import { logger } from '@/app/api/shared/utils/logger';
 
@@ -29,50 +29,9 @@ const formatToAmount = (amountText: string): number => {
   return amount;
 };
 
-const calculateAddress = ($: CheerioAPI) => {
-  const getTradeInfoTable = () => {
-    let tradeInfoTable: Element | null = null;
-
-    $('table').each((_, table) => {
-      const tableText = $(table).text();
-
-      if (!tradeInfoTable && tableText.includes('주소복사')) {
-        tradeInfoTable = table;
-      }
-    });
-
-    return tradeInfoTable;
-  };
-
-  const getAddress = (tradeInfoTable: Element | null): string => {
-    if (!tradeInfoTable) {
-      return '';
-    }
-
-    // td 구조에 의존하지 않고 전체 텍스트에서 패턴 기반으로 추출
-    const fullText = $(tradeInfoTable).text();
-
-    //  주소 추출: "서울특별시", "경기도" 등으로 시작하는 주소
-    let rawAddress = '';
-    const addressMatch = fullText.match(
-      /(서울특별시|경기도|인천광역시|부산광역시|대구광역시|광주광역시|대전광역시|울산광역시|세종특별자치시|제주특별자치도|강원도|충청북도|충청남도|전라북도|전라남도|경상북도|경상남도)\s+[^\n]+/
-    );
-    if (addressMatch) {
-      rawAddress = addressMatch[0].split('세대수')[0].trim();
-    }
-    const address = normalizeAddress(rawAddress);
-
-    logger.info('파싱된 주소 정보', { address });
-
-    return address;
-  };
-
-  return getAddress(getTradeInfoTable());
-};
-
 const calculateTransactionItems = (
   $: CheerioAPI,
-  params: { apartName: string; regionCode: string; address: string }
+  apartToken: string
 ): TransactionsByTokenResponse['items'] => {
   const getTrs = () => {
     const trs: Element[] = [];
@@ -163,9 +122,7 @@ const calculateTransactionItems = (
       const floor = floorMatch ? Number(floorMatch[1]) : 0;
 
       const transactionId = createTransactionId({
-        regionCode: params.regionCode,
-        address: params.address,
-        apartName: params.apartName,
+        apartToken,
         tradeDate,
         tradeAmount,
         size,
@@ -279,19 +236,19 @@ const fetchTradeDetail = async (
 };
 
 export const createResponse = async (
-  apartName: string,
-  regionCode: string
+  apartToken: string
 ): Promise<TransactionsByTokenResponse> => {
+  const parsedApartToken = parseApartToken(apartToken);
+  if (!parsedApartToken) {
+    throw new Error('아파트 토큰 파싱 실패');
+  }
+
+  const { regionCode, apartName } = parsedApartToken;
   logger.info(`크롤링 시작(${apartName})`);
 
   const html = await fetchTradeDetail(apartName, regionCode);
   const $ = cheerio.load(html);
-  const address = calculateAddress($);
-  const items = calculateTransactionItems($, {
-    regionCode,
-    address,
-    apartName,
-  });
+  const items = calculateTransactionItems($, apartToken);
 
   logger.info('크롤링 완료', { result: JSON.stringify(items, null, 2) });
 

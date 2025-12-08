@@ -2,17 +2,17 @@ import { logger } from '@/app/api/shared/utils/logger';
 
 import { NextRequest, NextResponse } from 'next/server';
 
-import {
-  CreateFavoriteApartRequest,
-  FavoriteApart,
-  FavoriteApartResponse,
-} from './types';
 import { firestoreClient } from './services/fireStoreService';
 import {
   findExistingFavoriteApart,
   mapFavoriteApartToFirestore,
   validatePostRequestData,
 } from './services/validatorService';
+import {
+  CreateFavoriteApartRequest,
+  FavoriteApart,
+  FavoriteApartResponse,
+} from './types';
 
 // POST - 새로운 즐겨찾기 아파트 생성
 export async function POST(
@@ -20,14 +20,13 @@ export async function POST(
 ): Promise<NextResponse<FavoriteApartResponse>> {
   try {
     const body: CreateFavoriteApartRequest = await request.json();
-    const { deviceId, apartId, regionCode, address, apartName } = body;
+    const { deviceId, apartToken, regionCode, apartName } = body;
 
     // 입력 유효성 검사
     const validation = validatePostRequestData({
       deviceId,
-      apartId,
+      apartToken,
       regionCode,
-      address,
       apartName,
     });
 
@@ -39,7 +38,10 @@ export async function POST(
     }
 
     // 이미 존재하는 즐겨찾기인지 확인
-    const existingFavorite = await findExistingFavoriteApart(apartId, deviceId);
+    const existingFavorite = await findExistingFavoriteApart(
+      apartToken,
+      deviceId
+    );
 
     if (existingFavorite) {
       return NextResponse.json(
@@ -50,10 +52,9 @@ export async function POST(
 
     // 새 즐겨찾기 아파트 생성
     const favoriteApartData = mapFavoriteApartToFirestore({
-      apartId,
       deviceId,
+      apartToken,
       regionCode,
-      address,
       apartName,
     });
 
@@ -61,10 +62,9 @@ export async function POST(
 
     if (result.success) {
       const newFavoriteApart: FavoriteApart = {
-        apartId,
+        apartToken,
         deviceId,
         regionCode,
-        address,
         apartName,
         createdAt: new Date(),
         updatedAt: new Date(),

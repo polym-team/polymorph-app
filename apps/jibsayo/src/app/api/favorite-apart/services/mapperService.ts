@@ -4,9 +4,8 @@ import { FavoriteApart } from '../types';
 export function mapFirestoreToFavoriteApart(doc: any): FavoriteApart {
   return {
     id: doc.id,
-    apartId: doc.data.apartId,
+    apartToken: doc.data.apartToken,
     regionCode: doc.data.regionCode,
-    address: doc.data.address,
     apartName: doc.data.apartName,
     deviceId: doc.data.deviceId,
     createdAt: doc.data.createdAt?.toDate() || new Date(),
@@ -20,9 +19,8 @@ export function mapFavoriteApartToFirestore(
 ): Record<string, unknown> {
   const now = new Date();
   return {
-    apartId: favoriteApart.apartId,
+    apartToken: favoriteApart.apartToken,
     regionCode: favoriteApart.regionCode,
-    address: favoriteApart.address,
     apartName: favoriteApart.apartName,
     deviceId: favoriteApart.deviceId,
     createdAt: now,

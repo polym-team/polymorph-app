@@ -17,7 +17,8 @@ export async function GET(
     );
   }
 
-  const parsedApartToken = parseApartToken(params.apartToken);
+  const apartToken = params.apartToken;
+  const parsedApartToken = parseApartToken(apartToken);
   if (!parsedApartToken) {
     return Response.json(
       { message: '필수 파라미터(apartName, area)가 누락되었습니다.' },
@@ -28,13 +29,13 @@ export async function GET(
   const { regionCode, apartName } = parsedApartToken;
 
   try {
-    const cachedData = await getCachedTransactions(apartName, regionCode);
+    const cachedData = await getCachedTransactions(params.apartToken);
     if (cachedData) {
       logger.info('캐시 데이터 반환');
       return Response.json(cachedData.data);
     }
 
-    const result = await createResponse(apartName, regionCode);
+    const result = await createResponse(params.apartToken);
     logger.info('크롤링 완료');
 
     await saveCachedTransaction(apartName, regionCode, result);

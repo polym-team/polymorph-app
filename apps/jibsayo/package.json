@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:app": "NEXT_PUBLIC_TEST_DEVICE_ID=test-device next dev",
+    "dev:app": "NEXT_PUBLIC_TEST_DEVICE_ID=73a10e4d3c85bee2 next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -13,7 +13,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "batch:run": "tsx scripts/batch.ts"
+    "batch:run": "tsx scripts/batch.ts",
+    "push:run": "tsx scripts/push.ts"
   },
   "dependencies": {
     "@package/ui": "workspace:*",

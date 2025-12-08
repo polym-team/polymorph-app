@@ -2,12 +2,12 @@ import { logger } from '@/app/api/shared/utils/logger';
 
 import { NextRequest, NextResponse } from 'next/server';
 
-import { DeleteFavoriteApartResponse } from './types';
 import { firestoreClient } from './services/fireStoreService';
 import {
   findExistingFavoriteApart,
   validateDeleteRequestData,
 } from './services/validatorService';
+import { DeleteFavoriteApartResponse } from './types';
 
 // DELETE - 즐겨찾기 아파트 삭제
 export async function DELETE(
@@ -16,10 +16,10 @@ export async function DELETE(
   try {
     const { searchParams } = new URL(request.url);
     const deviceId = searchParams.get('deviceId') ?? '';
-    const apartId = searchParams.get('apartId') ?? '';
+    const apartToken = searchParams.get('apartToken') ?? '';
 
     // 필수 파라미터 검사
-    if (!deviceId || !apartId) {
+    if (!deviceId || !apartToken) {
       return NextResponse.json(
         {
           success: false,
@@ -32,7 +32,7 @@ export async function DELETE(
     // 입력 유효성 검사
     const validation = validateDeleteRequestData({
       deviceId,
-      apartId,
+      apartToken,
     });
 
     if (!validation.isValid) {
@@ -43,7 +43,10 @@ export async function DELETE(
     }
 
     // 삭제할 즐겨찾기 찾기
-    const existingFavorite = await findExistingFavoriteApart(apartId, deviceId);
+    const existingFavorite = await findExistingFavoriteApart(
+      apartToken,
+      deviceId
+    );
 
     if (!existingFavorite || !existingFavorite.id) {
       return NextResponse.json(

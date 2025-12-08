@@ -1,5 +1,4 @@
 import {
-  createApartId,
   createApartToken,
   createTransactionId,
   normalizeAddress,
@@ -63,32 +62,25 @@ const convertGovApiItemToTransaction = (
   const address = calculateAddress(item);
   const apartName = String(item.aptNm || '').trim();
 
-  const transactionId = createTransactionId({
-    regionCode: area,
-    address,
-    apartName,
-    size,
-    floor,
-    tradeDate,
-    tradeAmount,
-  });
-
-  const apartId = createApartId({
-    regionCode: area,
-    address,
-    apartName,
-  });
-
   const apartToken = createApartToken({
     regionCode: area,
     apartName,
     jibun: item.jibun ?? '',
   });
 
+  const transactionId = floor
+    ? createTransactionId({
+        apartToken,
+        size,
+        floor,
+        tradeDate,
+        tradeAmount,
+      })
+    : '';
+
   return {
     transactionId,
     apartToken,
-    apartId,
     apartName,
     buildedYear,
     address,

@@ -8,9 +8,8 @@ export function mapFavoriteApartToFirestore(
 ): Record<string, unknown> {
   const now = new Date();
   return {
-    apartId: favoriteApart.apartId,
     regionCode: favoriteApart.regionCode,
-    address: favoriteApart.address,
+    apartToken: favoriteApart.apartToken,
     apartName: favoriteApart.apartName,
     deviceId: favoriteApart.deviceId,
     createdAt: now,
@@ -20,14 +19,14 @@ export function mapFavoriteApartToFirestore(
 
 // 디바이스 ID와 아파트 정보로 기존 즐겨찾기 찾기
 export async function findExistingFavoriteApart(
-  apartId: string,
+  apartToken: string,
   deviceId: string
 ): Promise<FavoriteApart | null> {
   try {
     const documents = await firestoreClient.getDocuments({
       where: [
         { field: 'deviceId', operator: '==', value: deviceId },
-        { field: 'apartId', operator: '==', value: apartId },
+        { field: 'apartToken', operator: '==', value: apartToken },
       ],
     });
 
@@ -46,8 +45,8 @@ export function validateDeviceId(deviceId: string): boolean {
   return Boolean(deviceId && deviceId.length > 0);
 }
 
-export function validateApartId(apartId: string): boolean {
-  return Boolean(apartId && apartId.length > 0);
+export function validateApartToken(apartToken: string): boolean {
+  return Boolean(apartToken && apartToken.length > 0);
 }
 
 export function validateRegionCode(regionCode: string): boolean {
@@ -64,26 +63,21 @@ export function validateApartName(apartName: string): boolean {
 
 // POST 요청 데이터 유효성 검사
 export function validatePostRequestData(data: {
-  apartId: string;
   deviceId: string;
+  apartToken: string;
   regionCode: string;
-  address: string;
   apartName: string;
 }): { isValid: boolean; error?: string } {
   if (!validateDeviceId(data.deviceId)) {
     return { isValid: false, error: '유효한 디바이스 ID가 필요합니다.' };
   }
 
-  if (!validateApartId(data.apartId)) {
-    return { isValid: false, error: '유효한 아파트 ID가 필요합니다.' };
+  if (!validateApartToken(data.apartToken)) {
+    return { isValid: false, error: '유효한 아파트 토큰이 필요합니다.' };
   }
 
   if (!validateRegionCode(data.regionCode)) {
     return { isValid: false, error: '지역 코드가 필요합니다.' };
-  }
-
-  if (!validateAddress(data.address)) {
-    return { isValid: false, error: '주소가 필요합니다.' };
   }
 
   if (!validateApartName(data.apartName)) {
@@ -96,14 +90,14 @@ export function validatePostRequestData(data: {
 // DELETE 요청 데이터 유효성 검사
 export function validateDeleteRequestData(data: {
   deviceId: string;
-  apartId: string;
+  apartToken: string;
 }): { isValid: boolean; error?: string } {
   if (!validateDeviceId(data.deviceId)) {
     return { isValid: false, error: '유효한 디바이스 ID가 필요합니다.' };
   }
 
-  if (!validateApartId(data.apartId)) {
-    return { isValid: false, error: '유효한 아파트 ID가 필요합니다.' };
+  if (!validateApartToken(data.apartToken)) {
+    return { isValid: false, error: '유효한 아파트 토큰이 필요합니다.' };
   }
 
   return { isValid: true };
