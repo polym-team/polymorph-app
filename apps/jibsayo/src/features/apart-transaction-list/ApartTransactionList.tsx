@@ -6,8 +6,8 @@ import { ApartInfoType } from '../apart-info/type';
 import { useApartTransactionList } from './hooks/useApartTransactionList';
 import { TransactionChart } from './sub-features/transaction-chart/TransactionChart';
 import { TransactionList } from './sub-features/transaction-list/TransactionList';
-import { TransactionFilter } from './TransactionFilter';
-import { TransactionListSkeleton } from './TransactionListSkeleton';
+import { TransactionFilter } from './ui/TransactionFilter';
+import { TransactionListSkeleton } from './ui/TransactionListSkeleton';
 
 interface ApartTransactionListProps {
   apartToken: string;
@@ -37,7 +37,7 @@ export function ApartTransactionList({
   }
 
   return (
-    <PageContainer bgColor="white" className="pb-12 pt-4">
+    <PageContainer bgColor="white" className="pb-12 pt-4 lg:pt-6">
       <span className="text-sm text-gray-500 lg:text-base">거래 내역</span>
       <div className="mt-2 flex flex-col gap-y-5">
         <TransactionFilter

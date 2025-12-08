@@ -5,7 +5,7 @@ import { Card } from '@package/ui';
 
 export function TransactionListSkeleton() {
   return (
-    <PageContainer bgColor="white" className="pb-10 pt-6">
+    <PageContainer bgColor="white" className="pb-12 pt-4 lg:pt-6">
       <div className="h-6 w-24 animate-pulse rounded bg-gray-200 lg:h-7" />
       <div className="mt-2 flex flex-col gap-y-5">
         <Card className="flex flex-col">

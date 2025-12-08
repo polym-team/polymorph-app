@@ -3,8 +3,8 @@ import { formatPyeongText } from '@/shared/utils/formatter';
 
 import { Button, Card } from '@package/ui';
 
-import { CHART_COLORS, PERIODS } from './consts';
-import { PeriodValue, SizesValue } from './types';
+import { CHART_COLORS, PERIODS } from '../consts';
+import { PeriodValue, SizesValue } from '../types';
 
 interface TransactionFilterProps {
   allSizes: number[];
