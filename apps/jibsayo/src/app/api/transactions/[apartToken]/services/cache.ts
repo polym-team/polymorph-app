@@ -17,24 +17,17 @@ export function mapFirestoreToCachedData(
   if (!doc || !doc.data) return null;
 
   const crawledAt = doc.data.crawledAt?.toDate();
-
   if (!crawledAt) return null;
 
   return {
-    apartName: doc.data.apartName,
-    area: doc.data.area,
     data: doc.data.data,
     crawledAt,
   };
 }
 
-function getCacheKey(apartName: string, area: string): string {
-  return `${apartName}:${area}`;
-}
-
 export async function getCachedTransactions(
   apartToken: string
-): Promise<CachedTransactionsByTokenData | null> {
+): Promise<TransactionsByTokenResponse | null> {
   try {
     const cacheKey = apartToken;
     const document = await firestoreClient.getDocument(cacheKey);
@@ -49,7 +42,7 @@ export async function getCachedTransactions(
     );
 
     if (now < calculatedExpiresAt) {
-      return cachedData;
+      return cachedData.data;
     }
 
     await firestoreClient.deleteDocument(cacheKey);
@@ -62,17 +55,14 @@ export async function getCachedTransactions(
 
 // 캐시 저장 함수
 export async function saveCachedTransaction(
-  apartName: string,
-  area: string,
+  apartToken: string,
   data: TransactionsByTokenResponse
 ): Promise<boolean> {
   try {
     const now = new Date();
-    const cacheKey = getCacheKey(apartName, area);
+    const cacheKey = apartToken;
 
     const cacheData = {
-      apartName,
-      area,
       data,
       crawledAt: now,
     };

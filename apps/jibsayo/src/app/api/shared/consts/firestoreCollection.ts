@@ -9,14 +9,8 @@ export const COLLECTIONS = {
   // 푸시 토큰 컬렉션
   PUSH_TOKEN: 'push-token',
 
-  // API 호출 제한 컬렉션
-  API_RATE_LIMIT: 'api-rate-limit',
-
-  // 신규 실거래 캐시 컬렉션
-  NEW_TRANSACTIONS_CACHE: 'new-transactions-cache',
-
   // 아파트 상세 정보 캐시 컬렉션
-  APART_CACHE: 'apart-cache',
+  APART_CACHE: 'legacy-apart-cache',
 
   // 매일 거래 스냅샷 저장 (날짜별 지역별 거래 ID)
   LEGACY_TRANSACTIONS: 'legacy-transactions',

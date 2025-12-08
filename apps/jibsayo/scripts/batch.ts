@@ -2,9 +2,10 @@
  * GitHub Actions용 배치 스크립트
  * 국토부 API에서 거래 데이터를 조회하여 Firestore에 저장
  */
+import { AdminFirestoreClient } from '@polymorph/firebase';
 
 import * as dotenv from 'dotenv';
-import { AdminFirestoreClient } from '@polymorph/firebase';
+
 import { fetchGovApiData } from '../src/app/api/transactions/services/api';
 import { convertGovApiItemToTransactions } from '../src/app/api/transactions/services/converter';
 import regionCodesData from '../src/entities/region/models/codes.json';
@@ -54,12 +55,17 @@ async function fetchTransactionsForMonth(
   try {
     console.log(`[${regionCode}] Fetching ${dealYearMonth}...`);
     const govApiItems = await fetchGovApiData(regionCode, dealYearMonth);
-    const transactions = convertGovApiItemToTransactions(govApiItems, regionCode);
+    const transactions = convertGovApiItemToTransactions(
+      govApiItems,
+      regionCode
+    );
     const transactionIds = transactions
       .map((tx: any) => tx.transactionId || tx.id)
       .filter(Boolean);
 
-    console.log(`[${regionCode}] ${dealYearMonth}: ${transactionIds.length} transactions`);
+    console.log(
+      `[${regionCode}] ${dealYearMonth}: ${transactionIds.length} transactions`
+    );
     return transactionIds;
   } catch (error) {
     console.error(`[${regionCode}] Error fetching ${dealYearMonth}:`, error);
@@ -85,9 +91,7 @@ async function processRegion(
     ]);
 
     // 데이터 병합 및 중복 제거
-    const allTransactionIds = Array.from(
-      new Set([...idsMonth1, ...idsMonth2])
-    );
+    const allTransactionIds = Array.from(new Set([...idsMonth1, ...idsMonth2]));
 
     // Firestore에 저장 (재시도 포함)
     // KST 기준 날짜 (UTC+9)
@@ -112,7 +116,9 @@ async function processRegion(
           throw result.error || new Error('Unknown error');
         }
 
-        console.log(`[${regionCode}] ✅ Saved ${allTransactionIds.length} transactions`);
+        console.log(
+          `[${regionCode}] ✅ Saved ${allTransactionIds.length} transactions`
+        );
         return {
           success: true,
           count: allTransactionIds.length,
@@ -150,7 +156,9 @@ async function processWithLimit<T, R>(
 
   for (let i = 0; i < items.length; i += limit) {
     const batch = items.slice(i, i + limit);
-    console.log(`\n🔄 Processing batch ${Math.floor(i / limit) + 1}/${Math.ceil(items.length / limit)} (${batch.length} regions)`);
+    console.log(
+      `\n🔄 Processing batch ${Math.floor(i / limit) + 1}/${Math.ceil(items.length / limit)} (${batch.length} regions)`
+    );
 
     const batchResults = await Promise.all(batch.map(processor));
     results.push(...batchResults);
@@ -194,12 +202,18 @@ async function main(): Promise<void> {
     universe_domain: 'googleapis.com',
   };
 
-  if (!serviceAccount.project_id || !serviceAccount.private_key || !serviceAccount.client_email) {
+  if (
+    !serviceAccount.project_id ||
+    !serviceAccount.private_key ||
+    !serviceAccount.client_email
+  ) {
     throw new Error('Required Firebase environment variables are not set');
   }
 
   if (!process.env.NEXT_PUBLIC_GO_DATA_API_KEY) {
-    throw new Error('NEXT_PUBLIC_GO_DATA_API_KEY environment variable is not set');
+    throw new Error(
+      'NEXT_PUBLIC_GO_DATA_API_KEY environment variable is not set'
+    );
   }
 
   const firestoreClient = new AdminFirestoreClient({
@@ -216,7 +230,7 @@ async function main(): Promise<void> {
   const results = await processWithLimit(
     regionCodes,
     CONCURRENCY_LIMIT,
-    (regionCode) => processRegion(firestoreClient, regionCode, months)
+    regionCode => processRegion(firestoreClient, regionCode, months)
   );
 
   // 결과 집계
@@ -255,7 +269,7 @@ async function main(): Promise<void> {
 }
 
 // 실행
-main().catch((error) => {
+main().catch(error => {
   console.error('💥 Fatal error:', error);
   process.exit(1);
 });

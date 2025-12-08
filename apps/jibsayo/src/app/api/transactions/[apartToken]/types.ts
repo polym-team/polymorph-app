@@ -11,8 +11,6 @@ export interface TransactionsByTokenResponse {
 }
 
 export interface CachedTransactionsByTokenData {
-  apartName: string;
-  area: string;
   data: TransactionsByTokenResponse;
   crawledAt: Date;
 }

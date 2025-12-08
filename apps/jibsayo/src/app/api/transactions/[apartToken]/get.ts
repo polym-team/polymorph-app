@@ -26,19 +26,17 @@ export async function GET(
     );
   }
 
-  const { regionCode, apartName } = parsedApartToken;
-
   try {
     const cachedData = await getCachedTransactions(params.apartToken);
     if (cachedData) {
       logger.info('캐시 데이터 반환');
-      return Response.json(cachedData.data);
+      return Response.json(cachedData);
     }
 
     const result = await createResponse(params.apartToken);
     logger.info('크롤링 완료');
 
-    await saveCachedTransaction(apartName, regionCode, result);
+    await saveCachedTransaction(params.apartToken, result);
 
     return Response.json(result);
   } catch (error) {
