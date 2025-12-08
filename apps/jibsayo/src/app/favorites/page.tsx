@@ -3,7 +3,7 @@ import { PageLayout } from '@/widgets/ui/page-layout/PageLayout';
 
 import { WebviewInitializer } from './WebviewInitializer';
 
-export default function ApartPage() {
+export default function FavoritesPage() {
   return (
     <PageLayout bgColor="gray">
       <WebviewInitializer />

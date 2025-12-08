@@ -7,7 +7,7 @@ import { Suspense } from 'react';
 import { QueryParamProvider } from './QueryParamProvider';
 import { WebviewInitializer } from './WebviewInitializer';
 
-export default async function TransactionPage() {
+export default async function TransactionsPage() {
   return (
     <QueryParamProvider>
       <PageLayout bgColor="gray">

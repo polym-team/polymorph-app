@@ -19,7 +19,7 @@ export function Error() {
     if (isInApp) {
       closeWebview();
     } else {
-      router.replace(ROUTE_PATH.TRANSACTION);
+      router.replace(ROUTE_PATH.TRANSACTIONS);
     }
   }, [isInApp, router]);
 

@@ -5,11 +5,11 @@ import { Suspense } from 'react';
 import { Content } from './Content';
 import { Loading } from './Loading';
 
-interface ApartDetailPageRequest {
+interface ApartByTokenPageRequest {
   params: { apartToken: string };
 }
 
-export default function ApartDetailPage({ params }: ApartDetailPageRequest) {
+export default function ApartByTokenPage({ params }: ApartByTokenPageRequest) {
   const { apartToken } = params;
 
   return (

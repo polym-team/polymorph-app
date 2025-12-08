@@ -11,8 +11,8 @@ export function WebNavigation() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const handleNavigationClick = (item: 'TRANSACTION' | 'APART') => {
-    router.push(ROUTE_PATH[item]);
+  const handleNavigationClick = (key: keyof typeof ROUTE_PATH) => {
+    router.push(ROUTE_PATH[key]);
   };
 
   return (
@@ -20,7 +20,7 @@ export function WebNavigation() {
       <PageContainer>
         <div className="flex items-center justify-between">
           <Link
-            href={ROUTE_PATH.TRANSACTION}
+            href={ROUTE_PATH.TRANSACTIONS}
             className="flex items-center space-x-2 overflow-hidden transition-all duration-200"
           >
             <span className="flex h-[40px] overflow-hidden rounded-md">
@@ -31,19 +31,19 @@ export function WebNavigation() {
 
           {/* 네비게이션 */}
           <nav className="flex items-center lg:gap-x-1">
-            {['TRANSACTION' as const, 'APART' as const].map(item => (
+            {['TRANSACTIONS' as const, 'FAVORITES' as const].map(key => (
               <Button
-                key={item}
+                key={key}
                 size="sm"
                 className="lg:px-4 lg:py-5 lg:text-base"
                 variant={
-                  pathname.startsWith(ROUTE_PATH[item])
+                  pathname.startsWith(ROUTE_PATH[key])
                     ? 'primary-light'
                     : 'ghost'
                 }
-                onClick={() => handleNavigationClick(item)}
+                onClick={() => handleNavigationClick(key)}
               >
-                {ROUTE_PATH_LABEL[item]}
+                {ROUTE_PATH_LABEL[key]}
               </Button>
             ))}
           </nav>

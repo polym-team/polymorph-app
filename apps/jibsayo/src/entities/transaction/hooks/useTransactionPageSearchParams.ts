@@ -68,7 +68,7 @@ export const useTransactionPageSearchParams = (): Return => {
     Object.entries(params).forEach(([key, value]) => {
       newSearchParams.set(key, parseSearchParam(value));
     });
-    navigate(`${ROUTE_PATH.TRANSACTION}?${newSearchParams.toString()}`);
+    navigate(`${ROUTE_PATH.TRANSACTIONS}?${newSearchParams.toString()}`);
   };
 
   return { searchParams, setSearchParams };
