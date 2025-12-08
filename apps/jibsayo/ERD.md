@@ -23,6 +23,8 @@ erDiagram
         varchar sale_type "분양 형태"
         varchar building_structure "건물 형태"
         varchar heating_type "난방 방식"
+        varchar dong "동"
+        varchar jibun "지번"
         varchar jibun_addr "지번 주소"
         varchar doro_addr "도로명 주소"
         varchar constructor_company "시공사"
@@ -64,60 +66,67 @@ erDiagram
 ## 코드 정의
 
 ### apart_type (단지 분류)
-| 코드 | 설명 |
-|------|------|
-| APT | 아파트 |
-| MIX | 주상복합 |
-| ROW | 연립주택 |
-| URA | 도시형 생활주택(아파트) |
-| URM | 도시형 생활주택(주상복합) |
-| URR | 도시형 생활주택(연립주택) |
-| MLT | 다세대 |
+
+| 코드 | 설명                      |
+| ---- | ------------------------- |
+| APT  | 아파트                    |
+| MIX  | 주상복합                  |
+| ROW  | 연립주택                  |
+| URA  | 도시형 생활주택(아파트)   |
+| URM  | 도시형 생활주택(주상복합) |
+| URR  | 도시형 생활주택(연립주택) |
+| MLT  | 다세대                    |
 
 ### sale_type (분양 형태)
-| 코드 | 설명 |
-|------|------|
-| SALE | 분양 |
-| RENT | 임대 |
-| MIXED | 혼합 |
-| COMP | 사택 및 관사 |
+
+| 코드  | 설명         |
+| ----- | ------------ |
+| SALE  | 분양         |
+| RENT  | 임대         |
+| MIXED | 혼합         |
+| COMP  | 사택 및 관사 |
 
 ### building_structure (건물 형태)
-| 코드 | 설명 |
-|------|------|
+
+| 코드  | 설명   |
+| ----- | ------ |
 | STAIR | 계단식 |
-| CORR | 복도식 |
+| CORR  | 복도식 |
 | MIXED | 혼합식 |
-| ETC | 기타 |
+| ETC   | 기타   |
 
 ### heating_type (난방 방식)
-| 코드 | 설명 |
-|------|------|
-| IND | 개별난방 |
-| DIST | 지역난방 |
-| CENT | 중앙난방 |
+
+| 코드    | 설명          |
+| ------- | ------------- |
+| IND     | 개별난방      |
+| DIST    | 지역난방      |
+| CENT    | 중앙난방      |
 | IND_ETC | 개별난방+기타 |
-| ETC | 기타 |
+| ETC     | 기타          |
 
 ### deal_type (거래 유형)
-| 코드 | 설명 |
-|------|------|
-| DIRECT | 직거래 |
+
+| 코드   | 설명     |
+| ------ | -------- |
+| DIRECT | 직거래   |
 | AGENCY | 중개거래 |
 
 ### seller_type / buyer_type (거래 주체)
-| 코드 | 설명 |
-|------|------|
-| IND | 개인 |
-| CORP | 법인 |
+
+| 코드   | 설명     |
+| ------ | -------- |
+| IND    | 개인     |
+| CORP   | 법인     |
 | PUBLIC | 공공기관 |
-| ETC | 기타 |
+| ETC    | 기타     |
 
 ### cancellation_type (해제 유형)
-| 코드 | 설명 |
-|------|------|
-| NONE | 해당없음 |
-| CANCELED | 해제 |
+
+| 코드     | 설명     |
+| -------- | -------- |
+| NONE     | 해당없음 |
+| CANCELED | 해제     |
 
 ## SQL 스키마
 
@@ -133,12 +142,14 @@ CREATE TABLE regions (
 CREATE TABLE apartments (
     id INT AUTO_INCREMENT PRIMARY KEY,
     region_code VARCHAR(10) NOT NULL,
-    apart_code VARCHAR(20) NOT NULL,
+    apart_code VARCHAR(32) NOT NULL,
     apart_name VARCHAR(100) NOT NULL,
     apart_type VARCHAR(10),
     sale_type VARCHAR(10),
     building_structure VARCHAR(10),
     heating_type VARCHAR(10),
+    dong VARCHAR(20),
+    jibun VARCHAR(20),
     jibun_addr VARCHAR(200),
     doro_addr VARCHAR(200),
     constructor_company VARCHAR(100),

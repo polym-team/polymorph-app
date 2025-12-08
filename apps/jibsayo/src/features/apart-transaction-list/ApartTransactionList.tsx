@@ -32,10 +32,6 @@ export function ApartTransactionList({
     return <TransactionListSkeleton />;
   }
 
-  if (filteredTransactionItems.length === 0) {
-    return null;
-  }
-
   return (
     <PageContainer bgColor="white" className="pb-12 pt-4 lg:pt-6">
       <span className="text-sm text-gray-500 lg:text-base">거래 내역</span>

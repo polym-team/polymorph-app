@@ -1,5 +1,5 @@
-import { COLLECTIONS } from '@/app/api/shared/consts/firestoreCollection';
-import { getFirestoreClient } from '@/app/api/shared/libs/fireStore';
+import { query } from '@/app/api/shared/libs/database';
+import { parseApartToken } from '@/app/api/shared/services/transaction/service';
 import { logger } from '@/app/api/shared/utils/logger';
 
 import {
@@ -10,38 +10,60 @@ import {
 } from './consts';
 import type { ApartByIdResponse } from './types';
 
-const convertToResponse = (doc: any): ApartByIdResponse => {
+interface ApartmentRow {
+  region_code: string;
+  apart_name: string;
+  completion_year: number;
+  dong: string;
+  jibun_addr: string | null;
+  doro_addr: string | null;
+  apart_type: string | null;
+  sale_type: string | null;
+  heating_type: string | null;
+  building_structure: string | null;
+  building_count: number | null;
+  constructor_company: string | null;
+  developer_company: string | null;
+  sale_household_count: number | null;
+  total_household_count: number | null;
+  rent_household_count: number | null;
+  parking_count: number | null;
+  ground_parking_count: number | null;
+  underground_parking_count: number | null;
+  ev_parking_count: number | null;
+  max_floor: number | null;
+  amenities: string | null;
+}
+
+const convertToResponse = (row: ApartmentRow): ApartByIdResponse => {
   return {
-    regionCode: doc.data.regionCode,
-    apartName: doc.data.apartName,
-    buildYear: doc.data.buildYear,
-    dong: doc.data.dong,
-    doro: doc.data.doro ?? null,
+    regionCode: row.region_code,
+    apartName: row.apart_name,
+    buildYear: row.completion_year,
+    dong: row.dong,
     apartType:
-      APART_TYPE_MAP?.[doc.data.apartType as keyof typeof APART_TYPE_MAP] ??
-      null,
+      APART_TYPE_MAP?.[row.apart_type as keyof typeof APART_TYPE_MAP] ?? null,
     saleType:
-      SALE_TYPE_MAP?.[doc.data.saleType as keyof typeof SALE_TYPE_MAP] ?? null,
+      SALE_TYPE_MAP?.[row.sale_type as keyof typeof SALE_TYPE_MAP] ?? null,
     heatingType:
-      HEATING_TYPE_MAP?.[
-        doc.data.heatingType as keyof typeof HEATING_TYPE_MAP
-      ] ?? null,
+      HEATING_TYPE_MAP?.[row.heating_type as keyof typeof HEATING_TYPE_MAP] ??
+      null,
     buildedType:
       BUILDED_TYPE_MAP?.[
-        doc.data.buildedType as keyof typeof BUILDED_TYPE_MAP
+        row.building_structure as keyof typeof BUILDED_TYPE_MAP
       ] ?? null,
-    buildingCount: doc.data.buildingCount ?? null,
-    constructorCompany: doc.data.constructorCompany ?? null,
-    developerCompany: doc.data.developerCompany ?? null,
-    saleHouseholdCount: doc.data.saleHouseholdCount ?? null,
-    householdCount: doc.data.householdCount ?? null,
-    rentHouseholdCount: doc.data.rentHouseholdCount ?? null,
-    parkingCount: doc.data.parkingCount ?? null,
-    groundParkingCount: doc.data.groundParkingCount ?? null,
-    undergroundParkingCount: doc.data.undergroundParkingCount ?? null,
-    electronicParkingCount: doc.data.electronicParkingCount ?? null,
-    maxFloor: doc.data.maxFloor ?? null,
-    amenities: doc.data.amenities ?? null,
+    buildingCount: row.building_count ?? null,
+    constructorCompany: row.constructor_company ?? null,
+    developerCompany: row.developer_company ?? null,
+    saleHouseholdCount: row.sale_household_count ?? null,
+    householdCount: row.total_household_count ?? null,
+    rentHouseholdCount: row.rent_household_count ?? null,
+    parkingCount: row.parking_count ?? null,
+    groundParkingCount: row.ground_parking_count ?? null,
+    undergroundParkingCount: row.underground_parking_count ?? null,
+    electronicParkingCount: row.ev_parking_count ?? null,
+    maxFloor: row.max_floor ?? null,
+    amenities: row.amenities ? JSON.parse(row.amenities) : null,
   };
 };
 
@@ -49,15 +71,34 @@ export const getApartByApartToken = async (
   apartToken: string
 ): Promise<ApartByIdResponse | null> => {
   try {
-    const firestoreClient = getFirestoreClient(COLLECTIONS.APARTMENTS);
-    const document = await firestoreClient.getDocument(apartToken);
+    const parsed = parseApartToken(apartToken);
 
-    if (!document) {
-      logger.warn('아파트 정보를 찾을 수 없음', { apartToken });
+    if (!parsed) {
+      logger.warn('잘못된 apartToken 형식', { apartToken });
       return null;
     }
 
-    return convertToResponse(document);
+    const { regionCode, apartName, jibun } = parsed;
+
+    const rows = await query<ApartmentRow[]>(
+      `SELECT * FROM apartments
+       WHERE region_code = ?
+       AND apart_name = ?
+       AND jibun = ?`,
+      [regionCode, apartName, jibun]
+    );
+
+    if (!rows || rows.length === 0) {
+      logger.warn('아파트 정보를 찾을 수 없음', {
+        apartToken,
+        regionCode,
+        apartName,
+        jibun,
+      });
+      return null;
+    }
+
+    return convertToResponse(rows[0]);
   } catch (error) {
     logger.error('아파트 정보 조회 실패', {
       apartToken,

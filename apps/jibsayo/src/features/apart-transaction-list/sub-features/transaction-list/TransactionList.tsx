@@ -28,6 +28,10 @@ export function TransactionList({
     transactionItems,
   });
 
+  if (transactionItems.length === 0) {
+    return null;
+  }
+
   return (
     <div className="flex flex-col gap-y-3">
       <TrasactionYearSelect

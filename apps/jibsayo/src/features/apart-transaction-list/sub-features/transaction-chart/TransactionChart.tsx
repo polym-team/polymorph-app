@@ -17,6 +17,14 @@ export function TransactionChart({ transactionItems, allSizes }: Props) {
     allSizes,
   });
 
+  if (!isLoading && transactionItems.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-20 text-gray-500">
+        표시할 데이터가 없어요
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full">
       <div
