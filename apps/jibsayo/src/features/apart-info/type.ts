@@ -3,7 +3,6 @@ export interface ApartInfoType {
   regionCode: string;
   buildYear: number;
   dong: string;
-  doro: string | null;
   apartType: string | null;
   saleType: string | null;
   heatingType: string | null;
