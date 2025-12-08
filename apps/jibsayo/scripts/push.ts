@@ -20,7 +20,7 @@ dotenv.config({ path: '.env.local' });
 interface PushNotificationItem {
   deviceId: string;
   apartName: string;
-  regionCode: string;
+  apartToken: string;
   transactionCount: number;
 }
 
@@ -95,8 +95,8 @@ async function sendPushNotification(
   pushTokenClient: AdminFirestoreClient,
   deviceId: string,
   transactionCount: number,
-  regionCode: string,
-  apartName: string
+  apartName: string,
+  apartToken: string
 ): Promise<boolean> {
   try {
     const pushTitle = '새로운 아파트 거래';
@@ -105,7 +105,7 @@ async function sendPushNotification(
       action: 'gotoUrl',
       screen: 'modal',
       tabName: 'saved',
-      url: `https://jibsayo.vercel.app/${ROUTE_PATH.APART}?regionCode=${regionCode}&apartName=${apartName}`,
+      url: `https://jibsayo.vercel.app/${ROUTE_PATH.APART}/${apartToken}`,
     };
 
     // Firestore에서 토큰 조회
@@ -257,7 +257,7 @@ async function main(): Promise<void> {
         pushNotifications.push({
           deviceId: favorite.deviceId,
           apartName: favorite.apartName,
-          regionCode: favorite.regionCode,
+          apartToken: favorite.apartToken,
           transactionCount: matchedTransactions.length,
         });
         sentSet.add(key);
@@ -280,8 +280,8 @@ async function main(): Promise<void> {
           pushTokenClient,
           pushData.deviceId,
           pushData.transactionCount,
-          pushData.regionCode,
-          pushData.apartName
+          pushData.apartName,
+          pushData.apartToken
         );
 
         return { success, deviceId: pushData.deviceId };
