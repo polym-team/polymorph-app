@@ -130,6 +130,21 @@ export const extractTransactionYears = ({
   return Array.from(yearsSet).sort((a, b) => b - a);
 };
 
+export const calculateYearCounts = ({
+  transactionItems,
+}: {
+  transactionItems: ApartTransactionItem[];
+}): Record<number, number> => {
+  const yearCounts: Record<number, number> = {};
+
+  transactionItems.forEach(item => {
+    const year = parseInt(item.tradeDate.substring(0, 4), 10);
+    yearCounts[year] = (yearCounts[year] || 0) + 1;
+  });
+
+  return yearCounts;
+};
+
 export const calculateYearPageIndex = ({
   transactionItems,
   year,

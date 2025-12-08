@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 import { SortingState } from '@package/ui';
 
 import {
+  calculateYearCounts,
   calculateYearPageIndex,
   convertToTransactionItem,
   extractTransactionYears,
@@ -25,6 +26,7 @@ interface Return {
   totalCount: number;
   items: TransactionItemViewModel[];
   years: number[];
+  yearCounts: Record<number, number>;
   changeSorting: (newSorting: SortingState) => void;
   changePageIndex: (newPageIndex: number) => void;
   changeYear: (year: number) => void;
@@ -45,6 +47,10 @@ export const useTransactionList = ({
   const totalCount = transactionItems.length;
   const years = useMemo(
     () => extractTransactionYears({ transactionItems }),
+    [transactionItems]
+  );
+  const yearCounts = useMemo(
+    () => calculateYearCounts({ transactionItems }),
     [transactionItems]
   );
   const newTransactionIdsSet = useMemo(
@@ -96,6 +102,7 @@ export const useTransactionList = ({
     totalCount,
     items,
     years,
+    yearCounts,
     changeSorting,
     changePageIndex,
     changeYear,

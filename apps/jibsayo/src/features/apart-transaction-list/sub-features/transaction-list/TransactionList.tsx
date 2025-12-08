@@ -19,6 +19,7 @@ export function TransactionList({
     totalCount,
     items,
     years,
+    yearCounts,
     changeSorting,
     changePageIndex,
     changeYear,
@@ -29,7 +30,11 @@ export function TransactionList({
 
   return (
     <div className="flex flex-col gap-y-3">
-      <TrasactionYearSelect years={years} onYearChange={changeYear} />
+      <TrasactionYearSelect
+        years={years}
+        yearCounts={yearCounts}
+        onYearChange={changeYear}
+      />
       <TransactionListTable
         items={items}
         totalCount={totalCount}
