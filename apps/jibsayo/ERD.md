@@ -131,8 +131,8 @@ CREATE TABLE regions (
 
 -- 아파트 테이블
 CREATE TABLE apartments (
-    id SERIAL PRIMARY KEY,
-    region_code VARCHAR(10) NOT NULL REFERENCES regions(region_code),
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    region_code VARCHAR(10) NOT NULL,
     apart_code VARCHAR(20) NOT NULL,
     apart_name VARCHAR(100) NOT NULL,
     apart_type VARCHAR(10),
@@ -153,15 +153,16 @@ CREATE TABLE apartments (
     underground_parking_count INTEGER,
     ev_parking_count INTEGER,
     max_floor INTEGER,
-    amenities TEXT[],
-    UNIQUE(region_code, apart_code)
+    amenities JSON,
+    UNIQUE(region_code, apart_code),
+    FOREIGN KEY (region_code) REFERENCES regions(region_code)
 );
 
 -- 거래내역 테이블
 CREATE TABLE transactions (
-    id SERIAL PRIMARY KEY,
-    region_code VARCHAR(10) NOT NULL REFERENCES regions(region_code),
-    apart_id INTEGER NOT NULL REFERENCES apartments(id),
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    region_code VARCHAR(10) NOT NULL,
+    apart_id INTEGER NOT NULL,
     transaction_date DATE NOT NULL,
     transaction_amount INTEGER NOT NULL,
     exclusive_area DECIMAL(10,2),
@@ -175,8 +176,10 @@ CREATE TABLE transactions (
     seller_type VARCHAR(10),
     buyer_type VARCHAR(10),
     is_land_lease BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT NOW(),
-    UNIQUE(apart_id, transaction_date, exclusive_area, floor, building_dong, transaction_amount)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(apart_id, transaction_date, exclusive_area, floor, building_dong, transaction_amount),
+    FOREIGN KEY (region_code) REFERENCES regions(region_code),
+    FOREIGN KEY (apart_id) REFERENCES apartments(id)
 );
 
 -- 인덱스
