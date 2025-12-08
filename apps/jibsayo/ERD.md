@@ -10,21 +10,19 @@ erDiagram
 
     regions {
         varchar region_code PK "지역 코드"
-        varchar region_name "구/시 이름 (강동구, 하남시)"
-        varchar sido_name "시/도 이름 (서울시, 경기도)"
-        timestamp created_at
-        timestamp updated_at
+        varchar region_name "구/시 이름"
+        varchar sido_name "시/도 이름"
     }
 
     apartments {
-        serial id PK "고유 ID"
-        varchar region_code FK "지역 코드"
+        serial id PK
+        varchar region_code FK
         varchar apart_code "아파트 코드"
         varchar apart_name "아파트 이름"
-        varchar apart_type "단지 분류 (APT, MIX, ROW, URA, URM, URR, MLT)"
-        varchar sale_type "분양 형태 (SALE, RENT, MIXED, COMP)"
-        varchar building_structure "건물 형태 (STAIR, CORR, MIXED, ETC)"
-        varchar heating_type "난방 방식 (IND, DIST, CENT, IND_ETC, ETC)"
+        varchar apart_type "단지 분류"
+        varchar sale_type "분양 형태"
+        varchar building_structure "건물 형태"
+        varchar heating_type "난방 방식"
         varchar jibun_addr "지번 주소"
         varchar doro_addr "도로명 주소"
         varchar constructor_company "시공사"
@@ -35,32 +33,30 @@ erDiagram
         integer sale_household_count "분양 세대수"
         integer rent_household_count "임대 세대수"
         integer parking_count "주차 대수"
-        integer ground_parking_count "지상 주차 대수"
-        integer underground_parking_count "지하 주차 대수"
-        integer ev_parking_count "전기차 충전 주차 대수"
+        integer ground_parking_count "지상 주차"
+        integer underground_parking_count "지하 주차"
+        integer ev_parking_count "전기차 충전"
         integer max_floor "최고 층수"
-        text_array amenities "편의시설 목록"
-        timestamp created_at
-        timestamp updated_at
+        text_array amenities "편의시설"
     }
 
     transactions {
-        serial id PK "고유 ID"
-        varchar region_code FK "지역 코드"
-        integer apart_id FK "아파트 ID"
+        serial id PK
+        varchar region_code FK
+        integer apart_id FK
         date transaction_date "거래 날짜"
-        integer transaction_amount "거래 금액 (만원)"
-        decimal exclusive_area "전용 면적 (㎡)"
+        integer transaction_amount "거래 금액"
+        decimal exclusive_area "전용 면적"
         integer floor "층"
         varchar building_dong "동"
         varchar estate_agent_region "중개사 소재지"
         date registration_date "등기 일자"
-        varchar cancellation_type "해제 유형 (NONE, CANCELED)"
+        varchar cancellation_type "해제 유형"
         date cancellation_date "해제 날짜"
-        varchar deal_type "거래 유형 (DIRECT, AGENCY)"
-        varchar seller_type "매도자 유형 (IND, CORP, PUBLIC, ETC)"
-        varchar buyer_type "매수자 유형 (IND, CORP, PUBLIC, ETC)"
-        boolean is_land_lease "토지임대부 여부"
+        varchar deal_type "거래 유형"
+        varchar seller_type "매도자 유형"
+        varchar buyer_type "매수자 유형"
+        boolean is_land_lease "토지임대부"
         timestamp created_at
     }
 ```
@@ -123,25 +119,70 @@ erDiagram
 | NONE | 해당없음 |
 | CANCELED | 해제 |
 
-## 인덱스
+## SQL 스키마
 
 ```sql
--- apartments
+-- 지역 테이블
+CREATE TABLE regions (
+    region_code VARCHAR(10) PRIMARY KEY,
+    region_name VARCHAR(50) NOT NULL,
+    sido_name VARCHAR(50) NOT NULL
+);
+
+-- 아파트 테이블
+CREATE TABLE apartments (
+    id SERIAL PRIMARY KEY,
+    region_code VARCHAR(10) NOT NULL REFERENCES regions(region_code),
+    apart_code VARCHAR(20) NOT NULL,
+    apart_name VARCHAR(100) NOT NULL,
+    apart_type VARCHAR(10),
+    sale_type VARCHAR(10),
+    building_structure VARCHAR(10),
+    heating_type VARCHAR(10),
+    jibun_addr VARCHAR(200),
+    doro_addr VARCHAR(200),
+    constructor_company VARCHAR(100),
+    developer_company VARCHAR(100),
+    completion_year INTEGER,
+    building_count INTEGER,
+    total_household_count INTEGER,
+    sale_household_count INTEGER,
+    rent_household_count INTEGER,
+    parking_count INTEGER,
+    ground_parking_count INTEGER,
+    underground_parking_count INTEGER,
+    ev_parking_count INTEGER,
+    max_floor INTEGER,
+    amenities TEXT[],
+    UNIQUE(region_code, apart_code)
+);
+
+-- 거래내역 테이블
+CREATE TABLE transactions (
+    id SERIAL PRIMARY KEY,
+    region_code VARCHAR(10) NOT NULL REFERENCES regions(region_code),
+    apart_id INTEGER NOT NULL REFERENCES apartments(id),
+    transaction_date DATE NOT NULL,
+    transaction_amount INTEGER NOT NULL,
+    exclusive_area DECIMAL(10,2),
+    floor INTEGER,
+    building_dong VARCHAR(20),
+    estate_agent_region VARCHAR(50),
+    registration_date DATE,
+    cancellation_type VARCHAR(10),
+    cancellation_date DATE,
+    deal_type VARCHAR(10),
+    seller_type VARCHAR(10),
+    buyer_type VARCHAR(10),
+    is_land_lease BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(apart_id, transaction_date, exclusive_area, floor, building_dong, transaction_amount)
+);
+
+-- 인덱스
 CREATE INDEX idx_apartments_region ON apartments(region_code);
 CREATE INDEX idx_apartments_name ON apartments(apart_name);
-
--- transactions
 CREATE INDEX idx_transactions_region_date ON transactions(region_code, transaction_date DESC);
 CREATE INDEX idx_transactions_apart_date ON transactions(apart_id, transaction_date DESC);
 CREATE INDEX idx_transactions_date ON transactions(transaction_date DESC);
-```
-
-## 제약조건
-
-```sql
--- apartments: 지역 내 아파트 코드 유니크
-UNIQUE(region_code, apart_code)
-
--- transactions: 동일 거래 중복 방지
-UNIQUE(apart_id, transaction_date, exclusive_area, floor, building_dong, transaction_amount)
 ```
