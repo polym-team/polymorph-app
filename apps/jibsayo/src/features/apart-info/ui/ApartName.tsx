@@ -12,12 +12,14 @@ import { ApartInfoType } from '../type';
 
 interface ApartNameProps {
   data?: ApartInfoType;
+  isEmptyData: boolean;
   isFavorited: boolean;
   onFavoriteToggle: () => void;
 }
 
 export function ApartName({
   data,
+  isEmptyData,
   isFavorited,
   onFavoriteToggle,
 }: ApartNameProps) {
@@ -37,30 +39,28 @@ export function ApartName({
 
   return (
     <PageContainer bgColor="white" className="py-4">
-      <div className="flex items-start justify-between gap-x-0">
-        <div className="flex flex-col gap-y-1">
-          <div>
-            <span className="text-xl font-semibold lg:text-2xl">
-              {data.apartName}
-            </span>
-          </div>
-          <span className="text-sm text-gray-400 lg:text-base">
-            {getCityNameWithRegionCode(data.regionCode)}{' '}
-            {getRegionNameWithRegionCode(data.regionCode)} {data.dong}
+      <div className="flex flex-col gap-y-1">
+        <div className="flex items-center gap-x-2">
+          <span className="text-xl font-semibold lg:text-2xl">
+            {data.apartName}
           </span>
+          {!isEmptyData && (
+            <button className="-translate-y-[1px]" onClick={onFavoriteToggle}>
+              <Star
+                size={20}
+                className={cn(
+                  isFavorited
+                    ? 'fill-yellow-400 text-yellow-400'
+                    : 'fill-gray-300 text-gray-300'
+                )}
+              />
+            </button>
+          )}
         </div>
-        <div>
-          <button className="translate-y-[1.5px]" onClick={onFavoriteToggle}>
-            <Star
-              size={24}
-              className={cn(
-                isFavorited
-                  ? 'fill-yellow-400 text-yellow-400'
-                  : 'fill-gray-300 text-gray-300'
-              )}
-            />
-          </button>
-        </div>
+        <span className="text-sm text-gray-400 lg:text-base">
+          {getCityNameWithRegionCode(data.regionCode)}{' '}
+          {getRegionNameWithRegionCode(data.regionCode)} {data.dong}
+        </span>
       </div>
     </PageContainer>
   );

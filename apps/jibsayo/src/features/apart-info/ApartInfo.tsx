@@ -23,6 +23,7 @@ export function ApartInfo({ apartToken, data }: ApartInfoProps) {
     <div className="flex flex-col gap-y-5 lg:gap-y-0">
       <ApartName
         data={data}
+        isEmptyData={isEmptyData}
         isFavorited={isFavorited}
         onFavoriteToggle={toggleFavorite}
       />
