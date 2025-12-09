@@ -46,8 +46,8 @@ erDiagram
         int id PK "AUTO_INCREMENT"
         varchar region_code FK
         integer apart_id FK
-        date transaction_date "거래 날짜"
-        integer transaction_amount "거래 금액"
+        date deal_date "거래 날짜"
+        integer deal_amount "거래 금액"
         decimal exclusive_area "전용 면적"
         integer floor "층"
         varchar building_dong "동"
@@ -174,8 +174,8 @@ CREATE TABLE transactions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     region_code VARCHAR(10) NOT NULL,
     apart_id INTEGER NOT NULL,
-    transaction_date DATE NOT NULL,
-    transaction_amount INTEGER NOT NULL,
+    deal_date DATE NOT NULL,
+    deal_amount INTEGER NOT NULL,
     exclusive_area DECIMAL(10,2),
     floor INTEGER,
     building_dong VARCHAR(20),
@@ -188,7 +188,6 @@ CREATE TABLE transactions (
     buyer_type VARCHAR(10),
     is_land_lease BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(apart_id, transaction_date, exclusive_area, floor, building_dong, transaction_amount),
     FOREIGN KEY (region_code) REFERENCES regions(region_code),
     FOREIGN KEY (apart_id) REFERENCES apartments(id)
 );
@@ -196,7 +195,7 @@ CREATE TABLE transactions (
 -- 인덱스
 CREATE INDEX idx_apartments_region ON apartments(region_code);
 CREATE INDEX idx_apartments_name ON apartments(apart_name);
-CREATE INDEX idx_transactions_region_date ON transactions(region_code, transaction_date DESC);
-CREATE INDEX idx_transactions_apart_date ON transactions(apart_id, transaction_date DESC);
-CREATE INDEX idx_transactions_date ON transactions(transaction_date DESC);
+CREATE INDEX idx_transactions_region_date ON transactions(region_code, deal_date DESC);
+CREATE INDEX idx_transactions_apart_date ON transactions(apart_id, deal_date DESC);
+CREATE INDEX idx_transactions_date ON transactions(deal_date DESC);
 ```
