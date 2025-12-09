@@ -1,8 +1,8 @@
 export interface ApartInfoType {
   apartName: string;
   regionCode: string;
-  buildYear: number;
-  dong: string;
+  buildYear: number | null;
+  dong: string | null;
   apartType: string | null;
   saleType: string | null;
   heatingType: string | null;
@@ -21,7 +21,7 @@ export interface ApartInfoType {
   amenities: string[] | null;
 }
 
-export interface ApartInfoItemType {
-  label: string;
-  value: string;
+export interface FallbackApartInfoType {
+  apartName: string;
+  regionCode: string;
 }

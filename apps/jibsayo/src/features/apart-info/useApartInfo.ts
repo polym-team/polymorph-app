@@ -12,6 +12,7 @@ interface Params {
 }
 
 interface Return {
+  isEmptyData: boolean;
   isFavorited: boolean;
   toggleFavorite: () => void;
 }
@@ -24,6 +25,11 @@ export const useApartInfo = ({ apartToken, data }: Params): Return => {
 
   const isFavorited =
     favoriteApartList?.some(apart => apart.apartToken === apartToken) ?? false;
+  const isEmptyData = data
+    ? Object.keys(data)
+        .filter(key => key !== 'regionCode' && key !== 'apartName')
+        .every(key => !data[key as keyof ApartInfoType])
+    : false;
 
   const toggleFavorite = () => {
     if (!data) return;
@@ -43,5 +49,5 @@ export const useApartInfo = ({ apartToken, data }: Params): Return => {
     }
   };
 
-  return { isFavorited, toggleFavorite };
+  return { isEmptyData, isFavorited, toggleFavorite };
 };
