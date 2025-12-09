@@ -46,6 +46,7 @@ erDiagram
         int id PK "AUTO_INCREMENT"
         varchar region_code FK
         integer apart_id FK "NULLABLE"
+        varchar apart_name "아파트 이름"
         date deal_date "거래 날짜"
         integer deal_amount "거래 금액"
         decimal exclusive_area "전용 면적"
@@ -174,6 +175,7 @@ CREATE TABLE transactions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     region_code VARCHAR(10) NOT NULL,
     apart_id INTEGER NULL,
+    apart_name VARCHAR(100) NOT NULL,
     deal_date DATE NOT NULL,
     deal_amount INTEGER NOT NULL,
     exclusive_area DECIMAL(10,2),
