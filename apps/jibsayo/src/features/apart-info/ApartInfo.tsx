@@ -4,7 +4,6 @@ import { ApartInfoType } from './type';
 import { AmenitiesInfo } from './ui/AmenitiesInfo';
 import { ApartDetailInfo } from './ui/ApartDetailInfo';
 import { ApartName } from './ui/ApartName';
-import { EmptyInfo } from './ui/EmptyInfo';
 import { LocationInfo } from './ui/LocationInfo';
 import { useApartInfo } from './useApartInfo';
 
@@ -27,7 +26,6 @@ export function ApartInfo({ apartToken, data }: ApartInfoProps) {
         isFavorited={isFavorited}
         onFavoriteToggle={toggleFavorite}
       />
-      {isEmptyData && <EmptyInfo />}
       {!isEmptyData && (
         <>
           <ApartDetailInfo data={data} />
