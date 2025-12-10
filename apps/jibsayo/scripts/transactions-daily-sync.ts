@@ -247,7 +247,7 @@ async function processRegion(regionCode: string): Promise<{
 }> {
   try {
     const now = new Date();
-    const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+    const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, 1);
     const threeMonthsAgoStr = threeMonthsAgo.toISOString().split('T')[0];
 
     console.log(`[${regionCode}] 처리 시작...`);
