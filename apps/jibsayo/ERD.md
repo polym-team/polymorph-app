@@ -61,6 +61,7 @@ erDiagram
         varchar buyer_type "매수자 유형"
         boolean is_land_lease "토지임대부"
         timestamp created_at "DEFAULT CURRENT_TIMESTAMP"
+        timestamp updated_at "DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
     }
 ```
 
@@ -190,6 +191,7 @@ CREATE TABLE transactions (
     buyer_type VARCHAR(10),
     is_land_lease BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (region_code) REFERENCES regions(region_code),
     FOREIGN KEY (apart_id) REFERENCES apartments(id)
 );
