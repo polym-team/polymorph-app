@@ -26,7 +26,7 @@ export function RegionItem({
           <span className="text-primary">{item.apartItems.length}</span>
         </span>
       </div>
-      <div className="flex flex-col lg:overflow-hidden lg:rounded lg:border lg:border-gray-100">
+      <div className="flex flex-col lg:overflow-hidden lg:rounded lg:border lg:border-gray-200">
         {item.apartItems.map(item => (
           <ApartItem
             key={item.apartToken}

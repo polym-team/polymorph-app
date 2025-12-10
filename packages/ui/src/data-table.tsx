@@ -192,7 +192,7 @@ export function DataTable<TData, TValue>({
   // 페이지네이션 컴포넌트
   const PaginationComponent = () => (
     <div className="mt-5 flex items-center justify-between">
-      <div className="flex flex-wrap items-center gap-x-1 text-sm text-gray-500">
+      <div className="flex flex-wrap items-center gap-x-1 text-sm text-gray-500 lg:text-base">
         <div>
           총 <span className="text-primary">{totalItems}</span>건
         </div>{' '}
