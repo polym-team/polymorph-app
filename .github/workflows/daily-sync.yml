@@ -1,0 +1,39 @@
+name: Daily Transaction Sync
+
+on:
+  schedule:
+    # 매일 오전 2시 (KST) 실행 (UTC 17:00 = KST 02:00)
+    - cron: '0 17 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync-transactions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run daily sync
+        env:
+          MARIA_DB_HOST: ${{ secrets.MARIA_DB_HOST }}
+          MARIA_DB_PORT: ${{ secrets.MARIA_DB_PORT }}
+          MARIA_DB_ID: ${{ secrets.MARIA_DB_ID }}
+          MARIA_DB_PW: ${{ secrets.MARIA_DB_PW }}
+          MARIA_DB_NAME: ${{ secrets.MARIA_DB_NAME }}
+          NEXT_PUBLIC_GO_DATA_API_KEY: ${{ secrets.NEXT_PUBLIC_GO_DATA_API_KEY }}
+        run: pnpm --filter jibsayo daily-sync

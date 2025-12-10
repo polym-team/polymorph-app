@@ -14,7 +14,8 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "batch:run": "tsx scripts/batch.ts",
-    "push:run": "tsx scripts/push.ts"
+    "push:run": "tsx scripts/push.ts",
+    "daily-sync": "tsx scripts/daily-sync.ts"
   },
   "dependencies": {
     "@package/ui": "workspace:*",
