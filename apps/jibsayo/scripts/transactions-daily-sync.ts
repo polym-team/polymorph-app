@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv';
 import { getDbPool, query } from '../src/app/api/shared/libs/database';
 import { fetchGovApiData } from '../src/app/api/transactions/services/api';
 import { GovApiItem } from '../src/app/api/transactions/types';
+import regionCodesData from '../src/entities/region/models/codes.json';
 
 // .env.local 파일 로드 (로컬 실행 시)
 dotenv.config({ path: '.env.local' });
@@ -57,7 +58,7 @@ function mapDealType(dealingGbn: any): string | null {
 }
 
 function mapSellerBuyerType(gbn: any): string | null {
-  const trimmed = gbn ? gbn.trim() : '';
+  const trimmed = gbn ? String(gbn).trim() : '';
   if (!trimmed || trimmed === ' ') return null;
   if (trimmed === '개인') return 'IND';
   if (trimmed === '법인') return 'CORP';
@@ -66,20 +67,34 @@ function mapSellerBuyerType(gbn: any): string | null {
 }
 
 function mapCancellationType(cdealType: any): 'NONE' | 'CANCELED' {
-  const trimmed = cdealType ? cdealType.trim() : '';
+  const trimmed = cdealType ? String(cdealType).trim() : '';
   if (!trimmed || trimmed === ' ') return 'NONE';
   return 'CANCELED';
 }
 
 function parseDate(dateStr: any): string | null {
-  if (!dateStr || dateStr.trim() === ' ' || dateStr.trim() === '') return null;
-  const trimmed = dateStr.trim();
-  if (trimmed.length === 8) {
+  if (!dateStr) return null;
+  const str = String(dateStr);
+  if (str.trim() === ' ' || str.trim() === '') return null;
+  const trimmed = str.trim();
+
+  // 8자리 숫자 형식 (예: "20200323")
+  if (/^\d{8}$/.test(trimmed)) {
     const year = trimmed.substring(0, 4);
     const month = trimmed.substring(4, 6);
     const day = trimmed.substring(6, 8);
     return `${year}-${month}-${day}`;
   }
+
+  // 점 구분 형식 (예: "20.03.23")
+  if (/^\d{2}\.\d{2}\.\d{2}$/.test(trimmed)) {
+    const parts = trimmed.split('.');
+    const year = `20${parts[0]}`;
+    const month = parts[1];
+    const day = parts[2];
+    return `${year}-${month}-${day}`;
+  }
+
   return null;
 }
 
@@ -90,7 +105,6 @@ function calculateExclusiveArea(excluUseAr: any): number | null {
       : null;
   const validExclusiveArea =
     exclusiveArea !== null && exclusiveArea > 0 ? exclusiveArea : null;
-
   return validExclusiveArea;
 }
 
@@ -99,7 +113,6 @@ function calculateFloor(floor: any): number | null {
     floor && String(floor).trim() !== '' ? parseInt(floor) : null;
   const validFloor =
     parsedFloor !== null && parsedFloor >= 0 ? parsedFloor : null;
-
   return validFloor;
 }
 
@@ -312,7 +325,7 @@ async function deleteTransactions(
         `[DELETE #${dbRow._dbId}] ${dbRow.apart_name} | ${dbRow.deal_date} | ${dbRow.deal_amount}만원`
       );
 
-      // await query(`DELETE FROM transactions WHERE id = ?`, [dbRow._dbId]);
+      await query(`DELETE FROM transactions WHERE id = ?`, [dbRow._dbId]);
 
       deleted++;
     }
@@ -383,7 +396,6 @@ async function updateAndInsertTransactions(
         `[UPDATE #${dbRow._dbId}] ${newRow.apart_name} | ${newRow.deal_date} | ${newRow.deal_amount}만원\n  변경사항: ${changes.join(', ')}`
       );
 
-      /*
       await query(
         `
         UPDATE transactions SET
@@ -426,7 +438,6 @@ async function updateAndInsertTransactions(
           dbRow._dbId,
         ]
       );
-      */
 
       updated++;
     }
@@ -437,7 +448,6 @@ async function updateAndInsertTransactions(
       `[INSERT] ${newRow.apart_name} | ${newRow.deal_date} | ${newRow.deal_amount}만원 | ${newRow.exclusive_area}㎡ | ${newRow.floor}층`
     );
 
-    /*
     await query(
       `
       INSERT INTO transactions (
@@ -468,7 +478,6 @@ async function updateAndInsertTransactions(
         newRow.is_land_lease,
       ]
     );
-    */
 
     inserted++;
   }
@@ -621,11 +630,9 @@ async function main(): Promise<void> {
   console.log(`시작 시각: ${new Date().toLocaleString('ko-KR')}`);
   console.log('='.repeat(60));
 
-  // 테스트: 11680 지역만 처리
-  const regionCodes = ['11680'];
-  // const regionCodes = regionCodesData.flatMap(region =>
-  //   region.children.map(child => child.code)
-  // );
+  const regionCodes = regionCodesData.flatMap(region =>
+    region.children.map(child => child.code)
+  );
 
   console.log(`처리할 지역 수: ${regionCodes.length}개\n`);
 
