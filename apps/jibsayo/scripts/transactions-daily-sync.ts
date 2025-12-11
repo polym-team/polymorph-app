@@ -36,32 +36,28 @@ interface TransactionDbRow {
 // 변환 함수들 (업로드 스크립트와 동일한 이름)
 // ============================================================
 
-function parseDealAmount(dealAmountStr?: string): number | null {
+function parseDealAmount(dealAmountStr: any): number | null {
   if (!dealAmountStr) return null;
   const str = String(dealAmountStr).replace(/,/g, '').trim();
-  const num = parseInt(str, 10);
+  const num = parseInt(str);
   return isNaN(num) || num <= 0 ? null : num;
 }
 
-function formatDate(
-  year?: string | number,
-  month?: string | number,
-  day?: string | number
-): string | null {
+function formatDate(year: any, month: any, day: any): string | null {
   if (!year || !month || !day) return null;
   const paddedMonth = String(month).padStart(2, '0');
   const paddedDay = String(day).padStart(2, '0');
   return `${year}-${paddedMonth}-${paddedDay}`;
 }
 
-function mapDealType(dealingGbn?: string): string | null {
+function mapDealType(dealingGbn: any): string | null {
   if (dealingGbn === '중개거래') return 'AGENCY';
   if (dealingGbn === '직거래') return 'DIRECT';
   return null;
 }
 
-function mapSellerBuyerType(gbn?: string): string | null {
-  const trimmed = gbn ? String(gbn).trim() : '';
+function mapSellerBuyerType(gbn: any): string | null {
+  const trimmed = gbn ? gbn.trim() : '';
   if (!trimmed || trimmed === ' ') return null;
   if (trimmed === '개인') return 'IND';
   if (trimmed === '법인') return 'CORP';
@@ -69,54 +65,42 @@ function mapSellerBuyerType(gbn?: string): string | null {
   return 'ETC';
 }
 
-function mapCancellationType(cdealType?: string): 'NONE' | 'CANCELED' {
-  const trimmed = cdealType ? String(cdealType).trim() : '';
+function mapCancellationType(cdealType: any): 'NONE' | 'CANCELED' {
+  const trimmed = cdealType ? cdealType.trim() : '';
   if (!trimmed || trimmed === ' ') return 'NONE';
   return 'CANCELED';
 }
 
-function parseDate(dateStr?: string): string | null {
-  if (!dateStr) return null;
-  const str = String(dateStr);
-  if (str.trim() === ' ' || str.trim() === '') return null;
-  const trimmed = str.trim();
-
-  // 8자리 숫자 형식 (예: "20200323")
-  if (/^\d{8}$/.test(trimmed)) {
+function parseDate(dateStr: any): string | null {
+  if (!dateStr || dateStr.trim() === ' ' || dateStr.trim() === '') return null;
+  const trimmed = dateStr.trim();
+  if (trimmed.length === 8) {
     const year = trimmed.substring(0, 4);
     const month = trimmed.substring(4, 6);
     const day = trimmed.substring(6, 8);
     return `${year}-${month}-${day}`;
   }
-
-  // 점 구분 형식 (예: "20.03.23")
-  if (/^\d{2}\.\d{2}\.\d{2}$/.test(trimmed)) {
-    const parts = trimmed.split('.');
-    const year = `20${parts[0]}`;
-    const month = parts[1];
-    const day = parts[2];
-    return `${year}-${month}-${day}`;
-  }
-
   return null;
 }
 
-// 전용면적 계산 (DECIMAL(10,2) 반올림 처리)
-function calculateExclusiveArea(excluUseAr?: string): number | null {
-  const excluUseArText = String(excluUseAr || '').trim();
-  if (!excluUseArText) return null;
-  const value = parseFloat(excluUseArText);
-  if (value <= 0) return null;
-  // DECIMAL(10,2)와 동일한 반올림 처리
-  return Math.round(value * 100) / 100;
+function calculateExclusiveArea(excluUseAr: any): number | null {
+  const exclusiveArea =
+    excluUseAr && String(excluUseAr).trim() !== ''
+      ? parseFloat(excluUseAr)
+      : null;
+  const validExclusiveArea =
+    exclusiveArea !== null && exclusiveArea > 0 ? exclusiveArea : null;
+
+  return validExclusiveArea;
 }
 
-// 층 계산
-function calculateFloor(floor?: string | number): number | null {
-  const floorText = String(floor || '').trim();
-  if (!floorText) return null;
-  const floorNum = parseInt(floorText, 10);
-  return floorNum >= 0 ? floorNum : null;
+function calculateFloor(floor: any): number | null {
+  const parsedFloor =
+    floor && String(floor).trim() !== '' ? parseInt(floor) : null;
+  const validFloor =
+    parsedFloor !== null && parsedFloor >= 0 ? parsedFloor : null;
+
+  return validFloor;
 }
 
 // GovApiItem을 DB Row로 변환
@@ -143,7 +127,7 @@ function convertGovApiItemToDbRow(
   return {
     region_code: regionCode,
     apart_id: null,
-    apart_name: String(item.aptNm || '').trim(),
+    apart_name: item.aptNm!,
     deal_date: formatDate(item.dealYear, item.dealMonth, item.dealDay),
     deal_amount: parseDealAmount(item.dealAmount),
     exclusive_area: calculateExclusiveArea(item.excluUseAr),
@@ -278,8 +262,10 @@ function matchByKey(
     apiByKey.get(key)!.push(apiRow);
   }
 
-  const toUpdate: Array<{ dbRow: TransactionWithId; newRow: TransactionDbRow }> =
-    [];
+  const toUpdate: Array<{
+    dbRow: TransactionWithId;
+    newRow: TransactionDbRow;
+  }> = [];
   const toDelete: TransactionWithId[] = [];
   const toInsert: TransactionDbRow[] = [];
   const processedApiIndices = new Set<number>();
@@ -326,7 +312,7 @@ async function deleteTransactions(
         `[DELETE #${dbRow._dbId}] ${dbRow.apart_name} | ${dbRow.deal_date} | ${dbRow.deal_amount}만원`
       );
 
-      await query(`DELETE FROM transactions WHERE id = ?`, [dbRow._dbId]);
+      // await query(`DELETE FROM transactions WHERE id = ?`, [dbRow._dbId]);
 
       deleted++;
     }
@@ -397,6 +383,7 @@ async function updateAndInsertTransactions(
         `[UPDATE #${dbRow._dbId}] ${newRow.apart_name} | ${newRow.deal_date} | ${newRow.deal_amount}만원\n  변경사항: ${changes.join(', ')}`
       );
 
+      /*
       await query(
         `
         UPDATE transactions SET
@@ -439,6 +426,7 @@ async function updateAndInsertTransactions(
           dbRow._dbId,
         ]
       );
+      */
 
       updated++;
     }
@@ -449,6 +437,7 @@ async function updateAndInsertTransactions(
       `[INSERT] ${newRow.apart_name} | ${newRow.deal_date} | ${newRow.deal_amount}만원 | ${newRow.exclusive_area}㎡ | ${newRow.floor}층`
     );
 
+    /*
     await query(
       `
       INSERT INTO transactions (
@@ -479,6 +468,7 @@ async function updateAndInsertTransactions(
         newRow.is_land_lease,
       ]
     );
+    */
 
     inserted++;
   }
