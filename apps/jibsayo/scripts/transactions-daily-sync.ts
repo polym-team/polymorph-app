@@ -669,15 +669,15 @@ async function processRegion(regionCode: string): Promise<{
 
     return { success: true, updated, inserted, deleted, regionCode };
   } catch (error) {
+    // 에러 전체 출력
+    console.error(`[${regionCode}] ❌ 처리 실패 - 에러 전체:`, error);
+
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
 
-    console.error(`[${regionCode}] ❌ 처리 실패:`, errorMessage);
+    console.error(`[${regionCode}] 에러 메시지:`, errorMessage || '(빈 메시지)');
     if (errorStack) {
-      console.error('스택 트레이스:', errorStack);
-    }
-    if (error && typeof error === 'object') {
-      console.error('전체 에러 객체:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+      console.error(`[${regionCode}] 스택 트레이스:`, errorStack);
     }
 
     return {
@@ -686,7 +686,7 @@ async function processRegion(regionCode: string): Promise<{
       inserted: 0,
       deleted: 0,
       regionCode,
-      error: errorMessage,
+      error: errorMessage || 'Unknown error',
     };
   }
 }
