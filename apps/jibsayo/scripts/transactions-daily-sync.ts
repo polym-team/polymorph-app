@@ -34,6 +34,39 @@ interface TransactionDbRow {
 }
 
 // ============================================================
+// Apartments 조회
+// ============================================================
+
+interface ApartmentInfo {
+  id: number;
+  apart_name: string;
+  jibun: string;
+}
+
+// 지역의 모든 아파트 정보 조회
+async function loadApartmentsForRegion(
+  regionCode: string
+): Promise<Map<string, number>> {
+  const apartments = await query<ApartmentInfo[]>(
+    `
+    SELECT id, apart_name, jibun
+    FROM apartments
+    WHERE region_code = ?
+  `,
+    [regionCode]
+  );
+
+  // "apart_name|jibun" 형태의 키로 Map 생성
+  const apartmentMap = new Map<string, number>();
+  for (const apt of apartments) {
+    const key = `${apt.apart_name}|${apt.jibun || ''}`;
+    apartmentMap.set(key, apt.id);
+  }
+
+  return apartmentMap;
+}
+
+// ============================================================
 // 변환 함수들 (업로드 스크립트와 동일한 이름)
 // ============================================================
 
@@ -119,7 +152,8 @@ function calculateFloor(floor: any): number | null {
 // GovApiItem을 DB Row로 변환
 function convertGovApiItemToDbRow(
   item: GovApiItem,
-  regionCode: string
+  regionCode: string,
+  apartmentsMap: Map<string, number>
 ): TransactionDbRow {
   // building_dong: 빈 문자열과 공백 문자(" ") 모두 null 처리
   const buildingDong =
@@ -137,10 +171,16 @@ function convertGovApiItemToDbRow(
       ? String(item.estateAgentSggNm).trim()
       : null;
 
+  // apart_id 매칭: apart_name과 jibun으로 apartments 테이블에서 찾기
+  const apartName = item.aptNm || '';
+  const jibun = item.jibun || '';
+  const apartKey = `${apartName}|${jibun}`;
+  const apartId = apartmentsMap.get(apartKey) || null;
+
   return {
     region_code: regionCode,
-    apart_id: null,
-    apart_name: item.aptNm!,
+    apart_id: apartId,
+    apart_name: apartName,
     deal_date: formatDate(item.dealYear, item.dealMonth, item.dealDay),
     deal_amount: parseDealAmount(item.dealAmount),
     exclusive_area: calculateExclusiveArea(item.excluUseAr),
@@ -205,6 +245,7 @@ function removeExactMatches(
 }
 
 // DB row를 TransactionWithId로 변환 (id 포함)
+// INSERT 시점의 타입과 일치하도록 필요한 필드만 타입 변환
 function convertDbRowToTransactionWithId(dbRow: any): TransactionWithId {
   return {
     region_code: dbRow.region_code,
@@ -212,7 +253,9 @@ function convertDbRowToTransactionWithId(dbRow: any): TransactionWithId {
     apart_name: dbRow.apart_name,
     deal_date: dbRow.deal_date,
     deal_amount: dbRow.deal_amount,
-    exclusive_area: parseFloat(dbRow.exclusive_area),
+    // DECIMAL 타입은 mysql2가 string으로 반환하므로 number로 변환
+    exclusive_area:
+      dbRow.exclusive_area !== null ? parseFloat(dbRow.exclusive_area) : null,
     floor: dbRow.floor,
     building_dong: dbRow.building_dong,
     estate_agent_region: dbRow.estate_agent_region,
@@ -222,6 +265,7 @@ function convertDbRowToTransactionWithId(dbRow: any): TransactionWithId {
     deal_type: dbRow.deal_type,
     seller_type: dbRow.seller_type,
     buyer_type: dbRow.buyer_type,
+    // BOOLEAN 타입은 0/1로 반환되므로 boolean으로 변환
     is_land_lease: Boolean(dbRow.is_land_lease),
     _dbId: dbRow.id,
   };
@@ -392,6 +436,11 @@ async function updateAndInsertTransactions(
         );
       }
 
+      // 변경사항이 없으면 UPDATE 스킵
+      if (changes.length === 0) {
+        continue;
+      }
+
       updatesLog.push(
         `[UPDATE #${dbRow._dbId}] ${newRow.apart_name} | ${newRow.deal_date} | ${newRow.deal_amount}만원\n  변경사항: ${changes.join(', ')}`
       );
@@ -499,7 +548,8 @@ async function updateAndInsertTransactions(
 async function fetchApiForRecentMonths(
   regionCode: string,
   monthCount: number,
-  baseDate: Date
+  baseDate: Date,
+  apartmentsMap: Map<string, number>
 ): Promise<TransactionDbRow[]> {
   const allRows: TransactionDbRow[] = [];
 
@@ -512,7 +562,7 @@ async function fetchApiForRecentMonths(
     try {
       const govApiItems = await fetchGovApiData(regionCode, yearMonth);
       const rows = govApiItems.map(item =>
-        convertGovApiItemToDbRow(item, regionCode)
+        convertGovApiItemToDbRow(item, regionCode, apartmentsMap)
       );
       allRows.push(...rows);
     } catch (error) {
@@ -547,11 +597,22 @@ async function processRegion(regionCode: string): Promise<{
 
     console.log(`[${regionCode}] 처리 시작...`);
 
+    // 0. Apartments 캐시 생성
+    const apartmentsMap = await loadApartmentsForRegion(regionCode);
+    console.log(
+      `[${regionCode}] Apartments 캐시 생성 완료: ${apartmentsMap.size}개`
+    );
+
     // 1. DB에서 최근 3개월 데이터 조회 (어제까지의 상태)
     const yesterday = await loadDbTransactions(regionCode, threeMonthsAgoStr);
 
     // 2. 오늘 API 조회
-    const today = await fetchApiForRecentMonths(regionCode, 3, now);
+    const today = await fetchApiForRecentMonths(
+      regionCode,
+      3,
+      now,
+      apartmentsMap
+    );
 
     console.log(
       `[${regionCode}] 조회 완료 - DB: ${yesterday.length}건, API: ${today.length}건`
@@ -561,7 +622,6 @@ async function processRegion(regionCode: string): Promise<{
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const yesterdayWithoutId = yesterday.map(({ _dbId, ...rest }) => ({
       ...rest,
-      apart_id: null, // 비교 시 apart_id 무시 (배치에서는 매핑 안 함)
     }));
 
     const { yesterdayRemaining, todayRemaining } = removeExactMatches(
@@ -578,9 +638,7 @@ async function processRegion(regionCode: string): Promise<{
       const original = yesterday.find(y => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { _dbId, ...rest } = y;
-        return (
-          JSON.stringify({ ...rest, apart_id: null }) === JSON.stringify(yRow)
-        );
+        return JSON.stringify(rest) === JSON.stringify(yRow);
       });
       return {
         ...yRow,

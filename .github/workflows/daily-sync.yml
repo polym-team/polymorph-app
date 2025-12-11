@@ -2,9 +2,11 @@ name: Daily Transaction Sync
 
 on:
   schedule:
-    # 매일 오전 2시 (KST) 실행 (UTC 17:00 = KST 02:00)
-    - cron: '0 17 * * *'
-  workflow_dispatch:
+    # 매일 오전 8시 (KST) 실행
+    - cron: '0 23 * * *'
+    # 매일 오후 2시 (KST) 실행
+    - cron: '0 5 * * *'
+  workflow_dispatch: # 수동 실행 가능
 
 jobs:
   sync-transactions:
