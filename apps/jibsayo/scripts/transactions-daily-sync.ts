@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 
 import { getDbPool, query } from '../src/app/api/shared/libs/database';
-import { fetchGovApiData } from '../src/app/api/transactions/services/api';
+import { fetchGovApiData } from '../src/app/api/transactions/services/legacy-api';
 import { GovApiItem } from '../src/app/api/transactions/types';
 import regionCodesData from '../src/entities/region/models/codes.json';
 

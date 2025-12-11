@@ -1,3 +1,23 @@
+export interface FetchTransactionListParams {
+  regionCode: string;
+  dealPeriod: string;
+  pageIndex: number;
+  pageSize: number;
+}
+
+export interface DbTransactionRow {
+  id: number;
+  apartName: string;
+  tradeDate: string;
+  tradeAmount: number;
+  size: number;
+  floor: number;
+  apartId: number | null;
+  buildedYear: number | null;
+  householdCount: number | null;
+  dong: string;
+}
+
 export interface TransactionItem {
   transactionId: string;
   apartToken: string;

@@ -6,8 +6,8 @@ import { AdminFirestoreClient } from '@polymorph/firebase';
 
 import * as dotenv from 'dotenv';
 
-import { fetchGovApiData } from '../src/app/api/transactions/services/api';
 import { convertGovApiItemToTransactions } from '../src/app/api/transactions/services/converter';
+import { fetchGovApiData } from '../src/app/api/transactions/services/legacy-api';
 import regionCodesData from '../src/entities/region/models/codes.json';
 
 // .env.local 파일 로드 (로컬 실행 시)
