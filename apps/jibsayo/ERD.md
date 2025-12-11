@@ -179,7 +179,7 @@ CREATE TABLE transactions (
     apart_name VARCHAR(100) NOT NULL,
     deal_date DATE NOT NULL,
     deal_amount INTEGER NOT NULL,
-    exclusive_area DECIMAL(10,2),
+    exclusive_area DECIMAL(10,4),
     floor INTEGER,
     building_dong VARCHAR(20),
     estate_agent_region VARCHAR(50),
