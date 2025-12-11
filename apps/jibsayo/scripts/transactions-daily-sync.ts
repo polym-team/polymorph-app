@@ -670,7 +670,16 @@ async function processRegion(regionCode: string): Promise<{
     return { success: true, updated, inserted, deleted, regionCode };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
     console.error(`[${regionCode}] ❌ 처리 실패:`, errorMessage);
+    if (errorStack) {
+      console.error('스택 트레이스:', errorStack);
+    }
+    if (error && typeof error === 'object') {
+      console.error('전체 에러 객체:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    }
+
     return {
       success: false,
       updated: 0,
