@@ -8,7 +8,7 @@ export interface TransactionItemViewModel extends TransactionItem {
 }
 
 export interface Sorting {
-  id: keyof TransactionItemViewModel;
+  id: keyof TransactionItem;
   desc: boolean;
 }
 

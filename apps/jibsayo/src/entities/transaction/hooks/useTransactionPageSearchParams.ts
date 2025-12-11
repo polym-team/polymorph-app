@@ -5,7 +5,7 @@ import { useSearchParams as useNavigationSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 
 import { SEARCH_PARAM_CONFIGS } from '../consts/rule';
-import { type SearchParams } from '../types';
+import { type SearchParams, TransactionItem } from '../types';
 
 interface Return {
   searchParams: SearchParams;
@@ -39,6 +39,11 @@ export const useTransactionPageSearchParams = (): Return => {
   const favoriteOnly = navigationSearchParams.get('favoriteOnly') === 'true';
   const newTransactionOnly =
     navigationSearchParams.get('newTransactionOnly') === 'true';
+  const orderBy =
+    (navigationSearchParams.get('orderBy') as keyof TransactionItem) ||
+    'tradeDate';
+  const orderDirection =
+    (navigationSearchParams.get('orderDirection') as 'asc' | 'desc') || 'desc';
 
   const searchParams = useMemo(
     () => ({
@@ -50,6 +55,8 @@ export const useTransactionPageSearchParams = (): Return => {
       maxSize,
       favoriteOnly,
       newTransactionOnly,
+      orderBy,
+      orderDirection,
     }),
     [
       regionCode,
@@ -60,6 +67,8 @@ export const useTransactionPageSearchParams = (): Return => {
       maxSize,
       favoriteOnly,
       newTransactionOnly,
+      orderBy,
+      orderDirection,
     ]
   );
 

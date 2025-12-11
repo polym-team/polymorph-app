@@ -3,8 +3,6 @@ import { STORAGE_KEY } from '@/shared/consts/storageKey';
 import { useOnceEffect } from '@/shared/hooks/useOnceEffect';
 import { getItem, setItem } from '@/shared/lib/localStorage';
 
-import { useState } from 'react';
-
 import { PageIndexState, SortingState } from '../types';
 
 interface Return {
@@ -12,18 +10,20 @@ interface Return {
   pageIndex: PageIndexState;
 }
 
-const DEFAULT_SORTING: SortingState['state'] = { id: 'tradeDate', desc: true };
-
 export const useTransactionViewSetting = (): Return => {
   const { searchParams, setSearchParams } = useTransactionPageSearchParams();
 
-  const [sorting, setSorting] =
-    useState<SortingState['state']>(DEFAULT_SORTING);
-
   const pageIndex = Number(searchParams.pageIndex) ?? 0;
+  const sorting = {
+    id: searchParams.orderBy,
+    desc: searchParams.orderDirection === 'desc',
+  };
 
   const updateSorting = (newSorting: SortingState['state']) => {
-    setSorting(newSorting);
+    setSearchParams({
+      orderBy: newSorting.id,
+      orderDirection: newSorting.desc ? 'desc' : 'asc',
+    });
     setItem(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS, {
       sorting: newSorting,
     });
@@ -38,7 +38,12 @@ export const useTransactionViewSetting = (): Return => {
       STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS
     );
 
-    setSorting(savedSettings?.sorting ?? DEFAULT_SORTING);
+    if (savedSettings?.sorting) {
+      setSearchParams({
+        orderBy: savedSettings.sorting.id,
+        orderDirection: savedSettings.sorting.desc ? 'desc' : 'asc',
+      });
+    }
   });
 
   return {

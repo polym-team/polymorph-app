@@ -19,6 +19,8 @@ export interface SearchParams {
   maxSize: number;
   favoriteOnly: boolean;
   newTransactionOnly: boolean;
+  orderBy: keyof TransactionItem;
+  orderDirection: 'asc' | 'desc';
 }
 
 export interface TransactionListResponse {

@@ -40,11 +40,11 @@ export function RegionSelect({ form, onFormChange }: RegionSelectProps) {
   return (
     <div>
       <Select
-        value={`${selectedCityName} ${getRegionNameWithRegionCode(form.regionCode)}`}
+        value={`${form.cityName} ${getRegionNameWithRegionCode(form.regionCode)}`}
       >
         <SelectTrigger className="w-full" onClick={openModal}>
           <SelectValue placeholder="지역 선택">
-            {selectedCityName} {getRegionNameWithRegionCode(form.regionCode)}
+            {form.cityName} {getRegionNameWithRegionCode(form.regionCode)}
           </SelectValue>
         </SelectTrigger>
       </Select>
