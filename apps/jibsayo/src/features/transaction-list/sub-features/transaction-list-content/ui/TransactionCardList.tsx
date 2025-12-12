@@ -17,7 +17,7 @@ import { TRANSACTION_LIST_PAGE_SIZE } from '../../../consts';
 import { TransactionItemViewModel } from '../../../types';
 
 interface TransactionCardListProps {
-  isLoading: boolean;
+  isFetching: boolean;
   totalCount: number;
   pageIndex: number;
   items: TransactionItemViewModel[];
@@ -27,7 +27,7 @@ interface TransactionCardListProps {
 }
 
 export function TransactionCardList({
-  isLoading,
+  isFetching,
   totalCount,
   pageIndex,
   items,
@@ -38,7 +38,7 @@ export function TransactionCardList({
   return (
     <div>
       <div className="flex flex-col gap-y-2">
-        {isLoading &&
+        {isFetching &&
           Array.from({ length: TRANSACTION_LIST_PAGE_SIZE }).map((_, index) => (
             <Card key={index}>
               <Card.Content>
@@ -59,7 +59,7 @@ export function TransactionCardList({
             </Card>
           ))}
 
-        {!isLoading &&
+        {!isFetching &&
           items.map(item => (
             <Card
               key={item.id}

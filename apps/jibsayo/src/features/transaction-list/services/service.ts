@@ -1,15 +1,15 @@
 import { TransactionState } from '../types';
 
 export const calculateTransactionFetchStatus = ({
-  isLoading,
+  isFetching,
   isLoadedData,
   transactionTotalCount,
 }: {
-  isLoading: boolean;
+  isFetching: boolean;
   isLoadedData: boolean;
   transactionTotalCount: number;
 }): TransactionState['fetchStatus'] => {
-  if (isLoading) {
+  if (isFetching) {
     return 'LOADING';
   }
 

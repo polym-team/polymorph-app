@@ -23,7 +23,7 @@ import { TRANSACTION_LIST_PAGE_SIZE } from '../../../consts';
 import { Sorting, TransactionItemViewModel } from '../../../types';
 
 interface TransactionTableListProps {
-  isLoading: boolean;
+  isFetching: boolean;
   sorting: Sorting;
   pageIndex: number;
   totalCount: number;
@@ -35,7 +35,7 @@ interface TransactionTableListProps {
 }
 
 export function TransactionTableList({
-  isLoading,
+  isFetching,
   sorting,
   pageIndex,
   totalCount,
@@ -160,7 +160,7 @@ export function TransactionTableList({
 
   return (
     <DataTable
-      loading={isLoading}
+      loading={isFetching}
       pageSize={TRANSACTION_LIST_PAGE_SIZE}
       columns={columns}
       data={items}

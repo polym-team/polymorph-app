@@ -1,6 +1,11 @@
 import { query } from '@/app/api/shared/libs/database';
 
-import { DbTransactionRow, OrderBy, OrderDirection } from '../types';
+import {
+  DbTransactionRow,
+  OrderBy,
+  OrderDirection,
+  PageIndexes,
+} from '../types';
 
 export const buildWhereConditions = ({
   apartId,
@@ -108,4 +113,48 @@ export const getTransactionsByApartId = async ({
   >(sql, [...queryParams, pageSize, offset]);
 
   return rows;
+};
+
+export const getPageIndexesByYear = async ({
+  whereConditions,
+  queryParams,
+  pageSize,
+  orderBy = 'dealDate',
+  orderDirection = 'desc',
+}: {
+  whereConditions: string[];
+  queryParams: (string | number)[];
+  pageSize: number;
+  orderBy?: OrderBy;
+  orderDirection?: OrderDirection;
+}): Promise<PageIndexes> => {
+  const orderByColumn = orderBy === 'dealDate' ? 'deal_date' : 'deal_amount';
+  const finalOrderDirection = orderDirection || 'desc';
+
+  const sql = `
+    WITH numbered_transactions AS (
+      SELECT
+        YEAR(deal_date) as year,
+        ROW_NUMBER() OVER (ORDER BY ${orderByColumn} ${finalOrderDirection.toUpperCase()}) as row_num
+      FROM transactions
+      WHERE ${whereConditions.join(' AND ')}
+    )
+    SELECT
+      year,
+      FLOOR((MIN(row_num) - 1) / ?) as page_index,
+      COUNT(*) as count
+    FROM numbered_transactions
+    GROUP BY year
+    ORDER BY year DESC
+  `;
+
+  const rows = await query<
+    Array<{ year: number; page_index: number; count: number }>
+  >(sql, [...queryParams, pageSize]);
+
+  return rows.map((row) => ({
+    year: row.year,
+    index: row.page_index,
+    count: Number(row.count),
+  }));
 };

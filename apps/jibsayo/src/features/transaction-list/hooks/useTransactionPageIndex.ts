@@ -6,12 +6,12 @@ import {
 import { PageIndexState } from '../types';
 
 export const useTransactionPageIndex = (): PageIndexState => {
-  const { isLoading } = useTransactionListQuery();
+  const { isFetching } = useTransactionListQuery();
   const { searchParams, setSearchParams } = useTransactionPageSearchParams();
   const pageIndex = Number(searchParams.pageIndex) ?? 0;
 
   const updatePageIndex = (newPageIndex: number) => {
-    if (isLoading) return;
+    if (isFetching) return;
     setSearchParams({ pageIndex: newPageIndex });
   };
 

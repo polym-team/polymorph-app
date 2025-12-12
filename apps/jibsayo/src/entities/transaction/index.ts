@@ -6,4 +6,3 @@ export { calculateAreaPyeong } from './services/calculator';
 
 export { useTransactionPageSearchParams } from './hooks/useTransactionPageSearchParams';
 export { useTransactionListQuery } from './hooks/useTransactionListQuery';
-export { useNewTransactionListQuery } from './hooks/useNewTransactionListQuery';

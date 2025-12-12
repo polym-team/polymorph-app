@@ -1,4 +1,5 @@
 import { ApartTransactionItem } from '@/entities/apart-transaction';
+import { PageIndexByYear } from '@/entities/apart-transaction/types';
 import { useApartTransactionListQuery } from '@/entities/apart-transaction/useApartTransactionListQuery';
 
 import { useEffect, useState } from 'react';
@@ -17,15 +18,14 @@ interface Params {
 }
 
 interface Return {
+  isFetching: boolean;
   sorting: Sorting;
   pageIndex: number;
   totalCount: number;
+  pageIndexes: PageIndexByYear[];
   items: ApartTransactionItem[];
-  years: number[];
-  yearCounts: Record<number, number>;
   changeSorting: (newSorting: SortingState) => void;
   changePageIndex: (newPageIndex: number) => void;
-  changeYear: (year: number) => void;
 }
 
 export const useTransactionList = ({
@@ -39,7 +39,7 @@ export const useTransactionList = ({
   ]);
   const [pageIndex, setPageIndex] = useState<number>(0);
 
-  const { data } = useApartTransactionListQuery({
+  const { isFetching, data } = useApartTransactionListQuery({
     apartId,
     pageIndex,
     pageSize: TRANSACTION_LIST_PAGE_SIZE,
@@ -50,14 +50,19 @@ export const useTransactionList = ({
   });
 
   const totalCount = data?.totalCount ?? 0;
+  const pageIndexes = data?.pageIndexes ?? [];
   const items = data?.transactions ?? [];
 
   const changeSorting = (newSorting: SortingState) => {
+    if (isFetching) return;
+
     setSorting(newSorting as Sorting);
     setPageIndex(0);
   };
 
   const changePageIndex = (newPageIndex: number) => {
+    if (isFetching) return;
+
     setPageIndex(newPageIndex);
   };
 
@@ -65,27 +70,14 @@ export const useTransactionList = ({
     setPageIndex(0);
   }, [totalCount]);
 
-  // const changeYear = (year: number) => {
-  //   const dateSorting: Sorting = [{ id: 'tradeDate', desc: true }];
-  //   setSorting(dateSorting);
-
-  //   const targetPageIndex = calculateYearPageIndex({
-  //     transactionItems,
-  //     year,
-  //     sorting: dateSorting,
-  //   });
-  //   setPageIndex(targetPageIndex);
-  // };
-
   return {
+    isFetching,
     sorting,
     pageIndex,
     totalCount,
+    pageIndexes,
     items,
-    years: [],
-    yearCounts: {},
     changeSorting,
     changePageIndex,
-    changeYear: () => {},
   };
 };

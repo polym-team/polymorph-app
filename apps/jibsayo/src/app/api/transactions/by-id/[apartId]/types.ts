@@ -1,5 +1,6 @@
 export type OrderBy = 'dealDate' | 'dealAmount';
 export type OrderDirection = 'asc' | 'desc';
+export type PageIndexes = { year: number; index: number; count: number }[];
 
 export interface DbTransactionRow {
   id: number;
@@ -25,7 +26,8 @@ export interface TransactionItem {
   > | null;
 }
 
-export interface TransactionsByTokenResponse {
+export interface TransactionsByIdResponse {
   totalCount: number;
+  pageIndexes: PageIndexes;
   transactions: TransactionItem[];
 }

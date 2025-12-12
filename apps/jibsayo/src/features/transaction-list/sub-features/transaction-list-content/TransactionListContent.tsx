@@ -24,7 +24,7 @@ export function TransactionListContent({
     <>
       <div className="hidden lg:block">
         <TransactionTableList
-          isLoading={transaction.fetchStatus === 'LOADING'}
+          isFetching={false}
           sorting={sorting.state}
           pageIndex={pageIndex.state}
           totalCount={transaction.totalCount}
@@ -37,7 +37,7 @@ export function TransactionListContent({
       </div>
       <div className="lg:hidden">
         <TransactionCardList
-          isLoading={transaction.fetchStatus === 'LOADING'}
+          isFetching={transaction.fetchStatus === 'LOADING'}
           pageIndex={pageIndex.state}
           totalCount={transaction.totalCount}
           items={transaction.items}

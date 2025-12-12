@@ -40,6 +40,7 @@ import { Sorting } from '../types';
 import { PriceChangeRateBadge } from './PriceChangeRateBadge';
 
 interface TransactionListTableProps {
+  isFetching: boolean;
   items: ApartTransactionItem[];
   totalCount: number;
   sorting: Sorting;
@@ -61,6 +62,7 @@ const getYearKey = (dateString: string): string => {
 };
 
 export function TransactionListTable({
+  isFetching,
   items,
   totalCount,
   sorting,
@@ -139,7 +141,7 @@ export function TransactionListTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {totalCount === 0 ? (
+            {totalCount === 0 && (
               <TableRow>
                 <TableCell
                   colSpan={3}
@@ -150,7 +152,27 @@ export function TransactionListTable({
                   </div>
                 </TableCell>
               </TableRow>
-            ) : (
+            )}
+
+            {isFetching &&
+              Array.from({ length: TRANSACTION_LIST_PAGE_SIZE }).map(
+                (_, index) => (
+                  <TableRow key={`skeleton-${index}`}>
+                    <TableCell>
+                      <div className="h-6 w-16 animate-pulse rounded bg-gray-200" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-6 w-20 animate-pulse rounded bg-gray-200" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="ml-auto h-6 w-24 animate-pulse rounded bg-gray-200" />
+                    </TableCell>
+                  </TableRow>
+                )
+              )}
+
+            {!isFetching &&
+              totalCount > 0 &&
               items.map((item, index) => {
                 const prevItem = index > 0 ? items[index - 1] : null;
                 const currentYear = getYearKey(item.dealDate);
@@ -209,8 +231,7 @@ export function TransactionListTable({
                     </TableRow>
                   </React.Fragment>
                 );
-              })
-            )}
+              })}
           </TableBody>
         </Table>
       </div>

@@ -16,7 +16,7 @@ import { TransactionState } from '../types';
 export const useTransactionData = (): TransactionState => {
   const { searchParams } = useTransactionPageSearchParams();
 
-  const { data: transactionListData, isLoading: isTransactionListLoading } =
+  const { data: transactionListData, isFetching: isTransactionListFetching } =
     useTransactionListQuery();
   const { data: favoriteApartListData } = useFavoriteApartListQuery();
 
@@ -30,7 +30,7 @@ export const useTransactionData = (): TransactionState => {
   const averageAmount = transactionListData?.averagePricePerPyeong ?? 0;
 
   const fetchStatus = calculateTransactionFetchStatus({
-    isLoading: isTransactionListLoading,
+    isFetching: isTransactionListFetching,
     isLoadedData: !!transactionListData,
     transactionTotalCount: transactionListData?.totalCount ?? 0,
   });

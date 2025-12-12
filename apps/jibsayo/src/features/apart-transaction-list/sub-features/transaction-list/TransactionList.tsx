@@ -17,25 +17,24 @@ export function TransactionList({
   selectedPeriod,
 }: TransactionListProps) {
   const {
+    isFetching,
     sorting,
     pageIndex,
     totalCount,
+    pageIndexes,
     items,
-    years,
-    yearCounts,
     changeSorting,
     changePageIndex,
-    changeYear,
   } = useTransactionList({ apartId, allSizes, selectedSizes, selectedPeriod });
 
   return (
     <div className="flex flex-col gap-y-3">
       <TrasactionYearSelect
-        years={years}
-        yearCounts={yearCounts}
-        onYearChange={changeYear}
+        pageIndexes={pageIndexes}
+        onPageIndexChange={changePageIndex}
       />
       <TransactionListTable
+        isFetching={isFetching}
         items={items}
         totalCount={totalCount}
         sorting={sorting}

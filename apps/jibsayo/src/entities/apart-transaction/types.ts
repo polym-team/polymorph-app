@@ -12,6 +12,12 @@ export interface ApartTransactionItem {
   > | null;
 }
 
+export interface PageIndexByYear {
+  year: number;
+  index: number;
+  count: number;
+}
+
 export interface FetchApartTransactionListRequest {
   apartId: number;
   pageIndex: number;
@@ -24,5 +30,6 @@ export interface FetchApartTransactionListRequest {
 
 export interface FetchApartTransactionListResponse {
   totalCount: number;
+  pageIndexes: PageIndexByYear[];
   transactions: ApartTransactionItem[];
 }

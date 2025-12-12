@@ -5,10 +5,11 @@ import { NextRequest } from 'next/server';
 import { covertToTransactionItem } from './services/converter';
 import {
   buildWhereConditions,
+  getPageIndexesByYear,
   getTransactionsByApartId,
   getTransactionTotalCountByApartId,
 } from './services/db';
-import { OrderBy, OrderDirection, TransactionsByTokenResponse } from './types';
+import { OrderBy, OrderDirection, TransactionsByIdResponse } from './types';
 
 export async function GET(
   request: NextRequest,
@@ -51,6 +52,15 @@ export async function GET(
       whereConditions,
       queryParams
     );
+    const pageIndexes = await getPageIndexesByYear({
+      whereConditions,
+      queryParams,
+      pageSize,
+      orderBy: orderBy ? (orderBy as OrderBy) : undefined,
+      orderDirection: orderDirection
+        ? (orderDirection as OrderDirection)
+        : undefined,
+    });
     const transactions = covertToTransactionItem(
       await getTransactionsByApartId({
         whereConditions,
@@ -64,8 +74,9 @@ export async function GET(
       })
     );
 
-    const response: TransactionsByTokenResponse = {
+    const response: TransactionsByIdResponse = {
       totalCount,
+      pageIndexes,
       transactions,
     };
 
