@@ -6,16 +6,21 @@ import { Content } from './Content';
 import { Loading } from './Loading';
 
 interface ApartByTokenPageRequest {
-  params: { apartToken: string };
+  params: { apartId: string };
+  searchParams: { fallbackToken?: string };
 }
 
-export default function ApartByTokenPage({ params }: ApartByTokenPageRequest) {
-  const { apartToken } = params;
+export default function ApartByTokenPage({
+  params,
+  searchParams,
+}: ApartByTokenPageRequest) {
+  const { apartId } = params;
+  const { fallbackToken } = searchParams;
 
   return (
     <PageLayout showBackButton bgColor="gray">
       <Suspense fallback={<Loading />}>
-        <Content apartToken={apartToken} />
+        <Content apartId={apartId} fallbackToken={fallbackToken} />
       </Suspense>
     </PageLayout>
   );

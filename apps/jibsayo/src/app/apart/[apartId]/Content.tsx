@@ -7,20 +7,21 @@ import { Layout } from './Layout';
 import { fetchApartInfo } from './services';
 
 interface ContentProps {
-  apartToken: string;
+  apartId: string;
+  fallbackToken?: string;
 }
 
-export async function Content({ apartToken }: ContentProps) {
-  const response = await fetchApartInfo(apartToken);
-  const parsedToken = parseFallbackToken(apartToken);
+export async function Content({ apartId, fallbackToken }: ContentProps) {
+  const response = apartId === 'null' ? null : await fetchApartInfo(apartId);
+  const parsedToken = fallbackToken ? parseFallbackToken(fallbackToken) : null;
 
-  if (!parsedToken) {
+  if (!response && !parsedToken) {
     return <Error />;
   }
 
   const data: ApartInfoType = response ?? {
-    regionCode: parsedToken.regionCode,
-    apartName: parsedToken.apartName,
+    regionCode: parsedToken!.regionCode,
+    apartName: parsedToken!.apartName,
     buildYear: null,
     dong: null,
     apartType: null,
@@ -43,8 +44,8 @@ export async function Content({ apartToken }: ContentProps) {
 
   return (
     <Layout>
-      <ApartInfo apartToken={apartToken} data={data} />
-      <ApartTransactionList apartToken={apartToken} data={data} />
+      <ApartInfo apartToken={apartId} data={data} />
+      <ApartTransactionList apartToken={apartId} data={data} />
     </Layout>
   );
 }

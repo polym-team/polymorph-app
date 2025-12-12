@@ -1,5 +1,4 @@
 import { query } from '@/app/api/shared/libs/database';
-import { parseFallbackToken } from '@/app/api/shared/services/transaction/service';
 import { logger } from '@/app/api/shared/utils/logger';
 
 import {
@@ -67,39 +66,25 @@ const convertToResponse = (row: ApartmentRow): ApartByIdResponse => {
   };
 };
 
-export const getApartByApartToken = async (
-  apartToken: string
+export const getApartByApartId = async (
+  apartId: string
 ): Promise<ApartByIdResponse | null> => {
   try {
-    const parsed = parseFallbackToken(apartToken);
-
-    if (!parsed) {
-      logger.warn('잘못된 apartToken 형식', { apartToken });
-      return null;
-    }
-
-    const { regionCode, apartName } = parsed;
-
     const rows = await query<ApartmentRow[]>(
       `SELECT * FROM apartments
-       WHERE region_code = ?
-       AND apart_name = ?`,
-      [regionCode, apartName]
+       WHERE id = ?`,
+      [apartId]
     );
 
     if (!rows || rows.length === 0) {
-      logger.warn('아파트 정보를 찾을 수 없음', {
-        apartToken,
-        regionCode,
-        apartName,
-      });
+      logger.warn('아파트 정보를 찾을 수 없음', { apartId });
       return null;
     }
 
     return convertToResponse(rows[0]);
   } catch (error) {
     logger.error('아파트 정보 조회 실패', {
-      apartToken,
+      apartId,
       error: error instanceof Error ? error.message : '알 수 없는 오류',
     });
     throw error;

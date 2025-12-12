@@ -1,19 +1,19 @@
 import { NextRequest } from 'next/server';
 
-import { getApartByApartToken } from './service';
+import { getApartByApartId } from './service';
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: { apartId: string } }
 ) {
-  const { token } = params;
+  const { apartId } = params;
 
-  if (!token) {
-    return Response.json({ message: 'token이 필요합니다.' }, { status: 400 });
+  if (!apartId) {
+    return Response.json({ message: 'apartId가 필요합니다.' }, { status: 400 });
   }
 
   try {
-    const apart = await getApartByApartToken(token);
+    const apart = await getApartByApartId(apartId);
 
     if (!apart) {
       return Response.json(
