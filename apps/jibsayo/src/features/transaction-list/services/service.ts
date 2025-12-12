@@ -1,8 +1,6 @@
-import { calculateAreaPyeong, TransactionItem } from '@/entities/transaction';
+import { TransactionState } from '../types';
 
-import { TransactionStatus } from '../types';
-
-export const calculateTransactionListStatus = ({
+export const calculateTransactionFetchStatus = ({
   isLoading,
   isLoadedData,
   transactionTotalCount,
@@ -10,7 +8,7 @@ export const calculateTransactionListStatus = ({
   isLoading: boolean;
   isLoadedData: boolean;
   transactionTotalCount: number;
-}): TransactionStatus => {
+}): TransactionState['fetchStatus'] => {
   if (isLoading) {
     return 'LOADING';
   }
@@ -24,18 +22,4 @@ export const calculateTransactionListStatus = ({
   }
 
   return 'LOADED';
-};
-
-export const calculateTransactionAverageAmount = (
-  transactions: TransactionItem[]
-): number => {
-  if (transactions.length === 0) return 0;
-
-  const totalAmount = transactions.reduce(
-    (acc, transaction) =>
-      acc + transaction.dealAmount / calculateAreaPyeong(transaction.size),
-    0
-  );
-
-  return Math.floor(totalAmount / transactions.length);
 };

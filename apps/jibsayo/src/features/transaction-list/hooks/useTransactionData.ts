@@ -10,16 +10,14 @@ import {
   convertToFavoriteApartTokenSet,
   convertToTransactionListViewModel,
 } from '../services/converter';
-import { TransactionItemViewModel } from '../types';
+import { calculateTransactionFetchStatus } from '../services/service';
+import { TransactionState } from '../types';
 
-interface Return {
-  transactions: TransactionItemViewModel[];
-}
-
-export const useTransactionData = (): Return => {
+export const useTransactionData = (): TransactionState => {
   const { searchParams } = useTransactionPageSearchParams();
 
-  const { data: transactionListData } = useTransactionListQuery();
+  const { data: transactionListData, isLoading: isTransactionListLoading } =
+    useTransactionListQuery();
   const { data: favoriteApartListData } = useFavoriteApartListQuery();
 
   const favoriteApartTokenSet = useMemo(
@@ -28,7 +26,16 @@ export const useTransactionData = (): Return => {
     [favoriteApartListData, searchParams]
   );
 
-  const transactions = useMemo(() => {
+  const totalCount = transactionListData?.totalCount ?? 0;
+  const averageAmount = transactionListData?.averagePricePerPyeong ?? 0;
+
+  const fetchStatus = calculateTransactionFetchStatus({
+    isLoading: isTransactionListLoading,
+    isLoadedData: !!transactionListData,
+    transactionTotalCount: transactionListData?.totalCount ?? 0,
+  });
+
+  const items = useMemo(() => {
     if (!transactionListData?.transactions) return [];
 
     return convertToTransactionListViewModel(
@@ -37,5 +44,5 @@ export const useTransactionData = (): Return => {
     );
   }, [transactionListData?.transactions, favoriteApartTokenSet]);
 
-  return { transactions };
+  return { fetchStatus, totalCount, averageAmount, items };
 };

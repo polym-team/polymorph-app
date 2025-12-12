@@ -1,4 +1,8 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useQuery,
+  UseQueryResult,
+} from '@tanstack/react-query';
 
 import { calculateExclusiveAreaSquareMeters } from '../services/calculator';
 import { FetchTransactionListResponse } from '../types';
@@ -53,6 +57,7 @@ export const useTransactionListQuery = (): UseQueryResult<
     staleTime: 1000 * 60 * 60,
     gcTime: 1000 * 60 * 60,
     enabled: !!searchParams.regionCode && !!searchParams.tradeDate,
+    placeholderData: keepPreviousData,
     queryFn: async () => {
       const response = await fetch(
         `/api/transactions?${urlSearchParams.toString()}`

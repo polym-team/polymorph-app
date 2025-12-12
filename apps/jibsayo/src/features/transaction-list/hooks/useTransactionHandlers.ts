@@ -7,14 +7,9 @@ import { useTransactionPageSearchParams } from '@/entities/transaction';
 import { ROUTE_PATH } from '@/shared/consts/route';
 import { useNavigate } from '@/shared/hooks/useNavigate';
 
-import { TransactionItemViewModel } from '../types';
+import { HandlerState, TransactionItemViewModel } from '../types';
 
-interface Return {
-  toggleFavorite: (item: TransactionItemViewModel) => void;
-  navigateToApartDetail: (item: TransactionItemViewModel) => void;
-}
-
-export const useTransactionHandler = (): Return => {
+export const useTransactionHandlers = (): HandlerState => {
   const { navigate } = useNavigate();
   const { searchParams } = useTransactionPageSearchParams();
   const { mutate: mutateFavoriteApartRemove } =

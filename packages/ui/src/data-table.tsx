@@ -88,9 +88,8 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  // 로딩 스켈레톤 컴포넌트
-  const LoadingSkeleton = () => {
-    // 고정된 width 배열 (리렌더링 시에도 동일한 패턴 유지)
+  // Body 스켈레톤 컴포넌트
+  const LoadingTableBody = () => {
     const skeletonWidths = [
       'w-[70%]',
       'w-[75%]',
@@ -101,7 +100,6 @@ export function DataTable<TData, TValue>({
       'w-[100%]',
     ];
 
-    // 각 행과 셀에 대한 고정된 width 패턴 생성
     const getSkeletonWidth = (rowIndex: number, cellIndex: number) => {
       const patternIndex =
         (rowIndex * columns.length + cellIndex) % skeletonWidths.length;
@@ -109,89 +107,37 @@ export function DataTable<TData, TValue>({
     };
 
     return (
-      <div className="relative w-full">
-        {/* 스켈레톤 테이블 */}
-        <div className="overflow-x-auto">
-          <Table>
-            <colgroup>
-              {columns.map((column, index) => {
-                const columnDef = column as ExtendedColumnDef<TData, TValue>;
-                if (columnDef.size === Infinity) {
-                  return <col key={index} width="*" />;
-                } else if (typeof columnDef.size === 'number') {
-                  return <col key={index} width={columnDef.size} />;
-                } else {
-                  return <col key={index} />;
-                }
-              })}
-            </colgroup>
-            <TableHeader>
-              <TableRow>
-                {columns.map((_, index) => {
-                  const isLastColumn = index === columns.length - 1;
-                  return (
-                    <TableHead key={index} className="overflow-hidden">
-                      <div
-                        className={
-                          isLastColumn ? 'flex justify-end' : 'text-left'
-                        }
-                      >
-                        <div
-                          className={`h-4 ${getSkeletonWidth(0, index)} animate-pulse rounded-sm bg-gray-200 px-2`}
-                        />
-                      </div>
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Array.from({ length: pageSize }, (_, rowIndex) => (
-                <TableRow key={rowIndex}>
-                  {columns.map((_, cellIndex) => {
-                    const isLastColumn = cellIndex === columns.length - 1;
-                    return (
-                      <TableCell
-                        key={cellIndex}
-                        className={isLastColumn ? 'text-right' : 'text-left'}
-                      >
-                        <div className="py-1">
-                          <div
-                            className={`h-4 ${getSkeletonWidth(rowIndex + 1, cellIndex)} max-w-full animate-pulse rounded-sm bg-gray-200 px-2 ${
-                              isLastColumn ? 'ml-auto' : ''
-                            }`}
-                          />
-                        </div>
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-
-        {/* 하단 페이지네이션 스켈레톤 */}
-        <div className="flex items-center justify-between py-2">
-          <div className="flex items-center gap-x-1 text-sm text-gray-700">
-            <div className="h-4 w-16 animate-pulse rounded-sm bg-gray-200" />
-            <div className="h-4 w-20 animate-pulse rounded-sm bg-gray-200" />
-          </div>
-          <div className="flex items-center space-x-1">
-            <div className="h-8 w-8 animate-pulse rounded bg-gray-200" />
-            <div className="h-8 w-8 animate-pulse rounded bg-gray-200" />
-            <div className="h-8 w-[52px] animate-pulse rounded bg-gray-200" />
-            <div className="h-8 w-8 animate-pulse rounded bg-gray-200" />
-            <div className="h-8 w-8 animate-pulse rounded bg-gray-200" />
-          </div>
-        </div>
-      </div>
+      <>
+        {Array.from({ length: pageSize }, (_, rowIndex) => (
+          <TableRow key={rowIndex}>
+            {columns.map((_, cellIndex) => {
+              const isLastColumn = cellIndex === columns.length - 1;
+              return (
+                <TableCell
+                  key={cellIndex}
+                  className={isLastColumn ? 'text-right' : 'text-left'}
+                >
+                  <div className="py-1">
+                    <div
+                      className={`h-4 ${getSkeletonWidth(rowIndex, cellIndex)} max-w-full animate-pulse rounded-sm bg-gray-200 px-2 ${
+                        isLastColumn ? 'ml-auto' : ''
+                      }`}
+                    />
+                  </div>
+                </TableCell>
+              );
+            })}
+          </TableRow>
+        ))}
+      </>
     );
   };
 
   // 페이지네이션 컴포넌트
   const PaginationComponent = () => (
-    <div className="mt-5 flex items-center justify-between">
+    <div
+      className={`mt-5 flex items-center justify-between ${loading ? 'pointer-events-none opacity-50' : ''}`}
+    >
       <div className="flex flex-wrap items-center gap-x-1 text-sm text-gray-500 lg:text-base">
         <div>
           총 <span className="text-primary">{totalItems}</span>건
@@ -223,6 +169,7 @@ export function DataTable<TData, TValue>({
         <Select
           value={pageIndex.toString()}
           onValueChange={value => onPageIndexChange(parseInt(value))}
+          disabled={loading}
         >
           <SelectTrigger size="sm" className="border bg-white">
             <SelectValue />
@@ -255,11 +202,6 @@ export function DataTable<TData, TValue>({
       </div>
     </div>
   );
-
-  // 로딩 상태일 때 스켈레톤 UI 표시
-  if (loading) {
-    return <LoadingSkeleton />;
-  }
 
   return (
     <div className="w-full">
@@ -310,7 +252,9 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {totalItems === 0 ? (
+            {loading ? (
+              <LoadingTableBody />
+            ) : totalItems === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}

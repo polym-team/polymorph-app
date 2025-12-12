@@ -1,33 +1,35 @@
-import { SortingState, SummaryState } from '../../types';
+import { SortingState, TransactionState } from '../../types';
 import { Sorting } from './ui/Sorting';
 import { Summary } from './ui/Summary';
 import { useTransactionListHeader } from './useTransactionListHeader';
 
 interface TransactionListHeaderProps {
-  isLoading: boolean;
-  summary: SummaryState;
+  transaction: TransactionState;
   sorting: SortingState;
 }
 
 export function TransactionListHeader({
-  isLoading,
-  summary,
+  transaction,
   sorting,
 }: TransactionListHeaderProps) {
   const { cityName, regionName } = useTransactionListHeader();
+
+  if (transaction.fetchStatus === 'NOT_SEARCHED') {
+    return null;
+  }
 
   return (
     <div className="flex items-center justify-between">
       <div>
         <Summary
-          isLoading={isLoading}
           cityName={cityName}
           regionName={regionName}
-          summary={summary}
+          totalCount={transaction.totalCount}
+          averageAmount={transaction.averageAmount}
         />
       </div>
       <div className="lg:hidden">
-        <Sorting isLoading={isLoading} sorting={sorting} />
+        <Sorting sorting={sorting} />
       </div>
     </div>
   );

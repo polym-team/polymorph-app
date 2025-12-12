@@ -1,54 +1,51 @@
 import {
+  HandlerState,
   PageIndexState,
   SortingState,
-  SummaryState,
-  TransactionItemViewModel,
+  TransactionState,
 } from '../../types';
 import { TransactionCardList } from './ui/TransactionCardList';
 import { TransactionTableList } from './ui/TransactionTableList';
 
 interface TransactionListContentProps {
-  isLoading: boolean;
-  summary: SummaryState;
   sorting: SortingState;
   pageIndex: PageIndexState;
-  items: TransactionItemViewModel[];
-  onFavoriteToggle: (item: TransactionItemViewModel) => void;
-  onRowClick: (item: TransactionItemViewModel) => void;
+  transaction: TransactionState;
+  handlers: HandlerState;
 }
 
 export function TransactionListContent({
-  isLoading,
   sorting,
-  summary,
   pageIndex,
-  items,
-  onFavoriteToggle,
-  onRowClick,
+  transaction,
+  handlers,
 }: TransactionListContentProps) {
   return (
-    <div>
+    <>
       <div className="hidden lg:block">
         <TransactionTableList
-          isLoading={isLoading}
-          summary={summary}
-          sorting={sorting}
-          pageIndex={pageIndex}
-          items={items}
-          onFavoriteToggle={onFavoriteToggle}
-          onRowClick={onRowClick}
+          isLoading={transaction.fetchStatus === 'LOADING'}
+          sorting={sorting.state}
+          pageIndex={pageIndex.state}
+          totalCount={transaction.totalCount}
+          items={transaction.items}
+          onSortingChange={sorting.update}
+          onPageIndexChange={pageIndex.update}
+          onFavoriteToggle={handlers.toggleFavorite}
+          onRowClick={handlers.navigateToApartDetail}
         />
       </div>
       <div className="lg:hidden">
         <TransactionCardList
-          isLoading={isLoading}
-          summary={summary}
-          pageIndex={pageIndex}
-          items={items}
-          onFavoriteToggle={onFavoriteToggle}
-          onRowClick={onRowClick}
+          isLoading={transaction.fetchStatus === 'LOADING'}
+          pageIndex={pageIndex.state}
+          totalCount={transaction.totalCount}
+          items={transaction.items}
+          onPageIndexChange={pageIndex.update}
+          onFavoriteToggle={handlers.toggleFavorite}
+          onRowClick={handlers.navigateToApartDetail}
         />
       </div>
-    </div>
+    </>
   );
 }

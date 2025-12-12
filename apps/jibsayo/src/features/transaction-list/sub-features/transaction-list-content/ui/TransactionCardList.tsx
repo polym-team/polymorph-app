@@ -14,32 +14,27 @@ import { Card } from '@package/ui';
 import { cn } from '@package/utils';
 
 import { TRANSACTION_LIST_PAGE_SIZE } from '../../../consts';
-import {
-  PageIndexState,
-  SummaryState,
-  TransactionItemViewModel,
-} from '../../../types';
+import { TransactionItemViewModel } from '../../../types';
 
 interface TransactionCardListProps {
   isLoading: boolean;
-  summary: SummaryState;
-  pageIndex: PageIndexState;
+  totalCount: number;
+  pageIndex: number;
   items: TransactionItemViewModel[];
+  onPageIndexChange: (pageIndex: number) => void;
   onFavoriteToggle: (item: TransactionItemViewModel) => void;
   onRowClick: (item: TransactionItemViewModel) => void;
 }
 
 export function TransactionCardList({
   isLoading,
-  summary,
+  totalCount,
   pageIndex,
   items,
+  onPageIndexChange,
   onFavoriteToggle,
   onRowClick,
 }: TransactionCardListProps) {
-  const totalItems = summary.transactionTotalCount;
-  const { state: pageIndexState, update: onPageIndexChange } = pageIndex;
-
   return (
     <div>
       <div className="flex flex-col gap-y-2">
@@ -121,12 +116,12 @@ export function TransactionCardList({
               </Card.Content>
             </Card>
           ))}
-        {totalItems > TRANSACTION_LIST_PAGE_SIZE && (
+        {totalCount > TRANSACTION_LIST_PAGE_SIZE && (
           <div className="mt-5">
             <Pagination
               pageSize={TRANSACTION_LIST_PAGE_SIZE}
-              pageIndex={pageIndexState}
-              totalItems={totalItems}
+              pageIndex={pageIndex}
+              totalItems={totalCount}
               onPageIndexChange={onPageIndexChange}
             />
           </div>

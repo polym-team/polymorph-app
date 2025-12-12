@@ -1,21 +1,17 @@
-import { SummaryState } from '@/features/transaction-list/types';
-import {
-  formatKoreanAmountText,
-  formatQuantityText,
-} from '@/shared/utils/formatter';
+import { formatQuantityText } from '@/shared/utils/formatter';
 
 interface SummaryProps {
-  isLoading: boolean;
   cityName: string;
   regionName: string;
-  summary: SummaryState;
+  totalCount: number;
+  averageAmount: number;
 }
 
 export function Summary({
-  isLoading,
   cityName,
   regionName,
-  summary,
+  totalCount,
+  averageAmount,
 }: SummaryProps) {
   return (
     <div className="flex flex-col lg:flex-row lg:items-center lg:gap-x-2.5">
@@ -24,25 +20,21 @@ export function Summary({
           {cityName} {regionName}
         </strong>
       </div>
-      <div>
-        {isLoading && (
-          <div className="flex py-1">
-            <div className="h-4 w-48 animate-pulse rounded bg-gray-200 lg:h-5 lg:w-56" />
-          </div>
-        )}
-        {!isLoading && (
+      {totalCount > 0 && averageAmount > 0 && (
+        <div>
           <span className="text-sm text-gray-500 lg:text-base">
             총{' '}
             <span className="text-primary">
-              {formatQuantityText(summary.transactionTotalCount)}
+              {formatQuantityText(totalCount)}
             </span>{' '}
             · 평당{' '}
             <span className="text-primary">
-              {formatKoreanAmountText(summary.transactionAverageAmount)}
+              {Math.round(averageAmount / 10000).toLocaleString()}
+              만원
             </span>
           </span>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

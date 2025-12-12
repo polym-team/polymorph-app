@@ -18,6 +18,7 @@ export interface FetchTransactionListParams {
 export interface FetchTransactionListResponse {
   totalCount: number;
   transactions: DbTransactionRow[];
+  averagePricePerPyeong: number;
 }
 
 export interface DbTransactionRow {

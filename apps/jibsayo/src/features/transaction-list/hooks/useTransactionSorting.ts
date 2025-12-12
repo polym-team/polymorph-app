@@ -1,36 +1,33 @@
-import { useTransactionPageSearchParams } from '@/entities/transaction';
+import {
+  useTransactionListQuery,
+  useTransactionPageSearchParams,
+} from '@/entities/transaction';
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
 import { useOnceEffect } from '@/shared/hooks/useOnceEffect';
 import { getItem, setItem } from '@/shared/lib/localStorage';
 
-import { PageIndexState, SortingState } from '../types';
+import { SortingState } from '../types';
 
-interface Return {
-  sorting: SortingState;
-  pageIndex: PageIndexState;
-}
-
-export const useTransactionViewSetting = (): Return => {
+export const useTransactionSorting = (): SortingState => {
+  const { isLoading } = useTransactionListQuery();
   const { searchParams, setSearchParams } = useTransactionPageSearchParams();
 
-  const pageIndex = Number(searchParams.pageIndex) ?? 0;
   const sorting = {
     id: searchParams.orderBy,
     desc: searchParams.orderDirection === 'desc',
   };
 
   const updateSorting = (newSorting: SortingState['state']) => {
+    if (isLoading) return;
+
     setSearchParams({
       orderBy: newSorting.id,
       orderDirection: newSorting.desc ? 'desc' : 'asc',
     });
+
     setItem(STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS, {
       sorting: newSorting,
     });
-  };
-
-  const updatePageIndex = (newPageIndex: number) => {
-    setSearchParams({ pageIndex: newPageIndex });
   };
 
   useOnceEffect(true, () => {
@@ -46,8 +43,5 @@ export const useTransactionViewSetting = (): Return => {
     }
   });
 
-  return {
-    sorting: { state: sorting, update: updateSorting },
-    pageIndex: { state: pageIndex, update: updatePageIndex },
-  };
+  return { state: sorting, update: updateSorting };
 };

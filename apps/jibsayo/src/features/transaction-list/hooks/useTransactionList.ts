@@ -1,41 +1,31 @@
 import {
+  HandlerState,
   PageIndexState,
   SortingState,
-  SummaryState,
-  TransactionItemViewModel,
-  TransactionStatus,
+  TransactionState,
 } from '../types';
 import { useTransactionData } from './useTransactionData';
-import { useTransactionHandler } from './useTransactionHandler';
-import { useTransactionStatus } from './useTransactionStatus';
-import { useTransactionSummary } from './useTransactionSummary';
-import { useTransactionViewSetting } from './useTransactionViewSetting';
+import { useTransactionHandlers } from './useTransactionHandlers';
+import { useTransactionPageIndex } from './useTransactionPageIndex';
+import { useTransactionSorting } from './useTransactionSorting';
 
 interface Return {
-  summary: SummaryState;
   sorting: SortingState;
   pageIndex: PageIndexState;
-  transactionStatus: TransactionStatus;
-  transactions: TransactionItemViewModel[];
-  toggleFavorite: (item: TransactionItemViewModel) => void;
-  navigateToApartDetail: (item: TransactionItemViewModel) => void;
+  transaction: TransactionState;
+  handlers: HandlerState;
 }
 
 export const useTransactionList = (): Return => {
-  const { pageIndex, sorting } = useTransactionViewSetting();
-
-  const { transactions } = useTransactionData();
-  const { transactionStatus } = useTransactionStatus();
-  const { toggleFavorite, navigateToApartDetail } = useTransactionHandler();
-  const summary = useTransactionSummary();
+  const sorting = useTransactionSorting();
+  const pageIndex = useTransactionPageIndex();
+  const transaction = useTransactionData();
+  const handlers = useTransactionHandlers();
 
   return {
-    summary,
     sorting,
     pageIndex,
-    transactionStatus,
-    transactions,
-    toggleFavorite,
-    navigateToApartDetail,
+    transaction,
+    handlers,
   };
 };

@@ -20,19 +20,16 @@ import {
 import { cn } from '@package/utils';
 
 import { TRANSACTION_LIST_PAGE_SIZE } from '../../../consts';
-import {
-  PageIndexState,
-  SortingState,
-  SummaryState,
-  TransactionItemViewModel,
-} from '../../../types';
+import { Sorting, TransactionItemViewModel } from '../../../types';
 
 interface TransactionTableListProps {
   isLoading: boolean;
-  summary: SummaryState;
-  sorting: SortingState;
-  pageIndex: PageIndexState;
+  sorting: Sorting;
+  pageIndex: number;
+  totalCount: number;
   items: TransactionItemViewModel[];
+  onSortingChange: (sorting: Sorting) => void;
+  onPageIndexChange: (pageIndex: number) => void;
   onFavoriteToggle: (item: TransactionItemViewModel) => void;
   onRowClick: (item: TransactionItemViewModel) => void;
 }
@@ -40,9 +37,11 @@ interface TransactionTableListProps {
 export function TransactionTableList({
   isLoading,
   sorting,
-  summary,
   pageIndex,
+  totalCount,
   items,
+  onSortingChange,
+  onPageIndexChange,
   onFavoriteToggle,
   onRowClick,
 }: TransactionTableListProps) {
@@ -148,19 +147,15 @@ export function TransactionTableList({
     [onFavoriteToggle]
   );
 
-  const totalItems = summary.transactionTotalCount;
-  const dataTableSorting = [{ id: sorting.state.id, desc: sorting.state.desc }];
-  const dataTablePageIndex = pageIndex.state;
-
-  const onDataTableSortingChange = (nextSorting: OriginSortingState) => {
-    sorting.update({
-      id: nextSorting[0].id as typeof sorting.state.id,
+  const handleDataTableSortingChange = (nextSorting: OriginSortingState) => {
+    onSortingChange({
+      id: nextSorting[0].id as typeof sorting.id,
       desc: nextSorting[0].desc,
     });
   };
 
-  const onDataTablePageIndexChange = (nextPageIndex: number) => {
-    pageIndex.update(nextPageIndex);
+  const handleDataTablePageIndexChange = (nextPageIndex: number) => {
+    onPageIndexChange(nextPageIndex);
   };
 
   return (
@@ -169,11 +164,11 @@ export function TransactionTableList({
       pageSize={TRANSACTION_LIST_PAGE_SIZE}
       columns={columns}
       data={items}
-      sorting={dataTableSorting}
-      pageIndex={dataTablePageIndex}
-      totalItems={totalItems}
-      onSortingChange={onDataTableSortingChange}
-      onPageIndexChange={onDataTablePageIndexChange}
+      sorting={[sorting]}
+      pageIndex={pageIndex}
+      totalItems={totalCount}
+      onSortingChange={handleDataTableSortingChange}
+      onPageIndexChange={handleDataTablePageIndexChange}
       onRowClick={onRowClick}
     />
   );

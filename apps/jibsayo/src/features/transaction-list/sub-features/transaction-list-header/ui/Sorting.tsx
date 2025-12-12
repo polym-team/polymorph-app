@@ -5,15 +5,10 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@package/utils';
 
 interface SortingProps {
-  isLoading: boolean;
   sorting: SortingState;
 }
 
-export function Sorting({ isLoading, sorting }: SortingProps) {
-  if (isLoading) {
-    return <div className="h-5 w-28 animate-pulse rounded bg-gray-200" />;
-  }
-
+export function Sorting({ sorting }: SortingProps) {
   return (
     <div className="flex gap-x-2">
       <button

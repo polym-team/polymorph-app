@@ -1,5 +1,6 @@
 import { query } from '@/app/api/shared/libs/database';
 import { createFallbackToken } from '@/app/api/shared/services/transaction/service';
+import { calculateAreaPyeong } from '@/entities/transaction/services/calculator';
 
 import {
   DbTransactionRow,
@@ -63,7 +64,6 @@ const fetchTotalCount = async (
   const countSql = `
     SELECT COUNT(*) as totalCount
     FROM transactions t
-    LEFT JOIN apartments a ON t.apart_id = a.id
     WHERE ${whereConditions.join(' AND ')}
   `;
 
@@ -125,6 +125,32 @@ const fetchTransactions = async (
   }));
 };
 
+const fetchAveragePricePerPyeong = async (
+  whereConditions: string[],
+  queryParams: (string | number)[]
+): Promise<number> => {
+  const sql = `
+    SELECT t.exclusive_area, t.deal_amount
+    FROM transactions t
+    WHERE ${whereConditions.join(' AND ')}
+  `;
+
+  const rows = await query<{ exclusive_area: number; deal_amount: number }[]>(
+    sql,
+    queryParams
+  );
+
+  if (rows.length === 0) return 0;
+
+  const totalPricePerPyeong = rows.reduce((sum, row) => {
+    const pyeong = calculateAreaPyeong(row.exclusive_area);
+    const pricePerPyeong = pyeong > 0 ? (row.deal_amount * 10000) / pyeong : 0;
+    return sum + pricePerPyeong;
+  }, 0);
+
+  return Math.round(totalPricePerPyeong / rows.length);
+};
+
 export const fetchTransactionList = async ({
   regionCode,
   dealPeriod,
@@ -164,5 +190,11 @@ export const fetchTransactionList = async ({
     offset
   );
 
-  return { totalCount, transactions };
+  // 평균 평단가 계산
+  const averagePricePerPyeong = await fetchAveragePricePerPyeong(
+    whereConditions,
+    queryParams
+  );
+
+  return { totalCount, transactions, averagePricePerPyeong };
 };

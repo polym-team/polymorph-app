@@ -1,19 +1,8 @@
 import { TransactionItem } from '@/entities/transaction';
 
-export type TransactionStatus = 'LOADING' | 'NOT_SEARCHED' | 'EMPTY' | 'LOADED';
-
-export interface TransactionItemViewModel extends TransactionItem {
-  isFavorite: boolean;
-}
-
 export interface Sorting {
   id: keyof TransactionItem;
   desc: boolean;
-}
-
-export interface SummaryState {
-  transactionTotalCount: number;
-  transactionAverageAmount: number;
 }
 
 export interface SortingState {
@@ -24,4 +13,20 @@ export interface SortingState {
 export interface PageIndexState {
   state: number;
   update: (pageIndex: number) => void;
+}
+
+export interface TransactionState {
+  fetchStatus: 'LOADING' | 'NOT_SEARCHED' | 'EMPTY' | 'LOADED';
+  totalCount: number;
+  averageAmount: number;
+  items: TransactionItemViewModel[];
+}
+
+export interface HandlerState {
+  toggleFavorite: (item: TransactionItemViewModel) => void;
+  navigateToApartDetail: (item: TransactionItemViewModel) => void;
+}
+
+export interface TransactionItemViewModel extends TransactionItem {
+  isFavorite: boolean;
 }

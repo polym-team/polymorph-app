@@ -9,40 +9,25 @@ import { EmptyContent } from './ui/EmptyContent';
 import { NotSearchedContent } from './ui/NotSearchedContent';
 
 export function TransactionList() {
-  const {
-    sorting,
-    summary,
-    pageIndex,
-    transactionStatus,
-    transactions,
-    toggleFavorite,
-    navigateToApartDetail,
-  } = useTransactionList();
+  const { sorting, pageIndex, transaction, handlers } = useTransactionList();
 
-  if (transactionStatus === 'NOT_SEARCHED') {
+  if (transaction.fetchStatus === 'NOT_SEARCHED') {
     return <NotSearchedContent />;
   }
 
-  if (transactionStatus === 'EMPTY') {
+  if (transaction.fetchStatus === 'EMPTY') {
     return <EmptyContent />;
   }
 
   return (
     <PageContainer className="pb-10 pt-6">
       <div className="flex flex-col gap-y-2">
-        <TransactionListHeader
-          isLoading={transactionStatus === 'LOADING'}
-          sorting={sorting}
-          summary={summary}
-        />
+        <TransactionListHeader transaction={transaction} sorting={sorting} />
         <TransactionListContent
-          isLoading={transactionStatus === 'LOADING'}
           sorting={sorting}
-          summary={summary}
           pageIndex={pageIndex}
-          items={transactions}
-          onFavoriteToggle={toggleFavorite}
-          onRowClick={navigateToApartDetail}
+          transaction={transaction}
+          handlers={handlers}
         />
       </div>
     </PageContainer>

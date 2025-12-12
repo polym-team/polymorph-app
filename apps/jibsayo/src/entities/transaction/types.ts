@@ -29,5 +29,6 @@ export interface TransactionItem {
 
 export interface FetchTransactionListResponse {
   totalCount: number;
+  averagePricePerPyeong: number;
   transactions: TransactionItem[];
 }
