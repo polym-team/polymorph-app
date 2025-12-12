@@ -9,6 +9,8 @@ import { useNavigate } from '@/shared/hooks/useNavigate';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { toast } from '@package/ui';
+
 import { convertToRegionItems } from './services';
 import { FavoriteApartItemViewModel, RegionItemViewModel } from './types';
 
@@ -42,7 +44,7 @@ export const useFavoriteApartList = (): Return => {
   }, [data]);
 
   const favoriteApartIdsSet = useMemo(() => {
-    return new Set(data.map(item => item.apartToken));
+    return new Set(data.map(item => item.apartId));
   }, [data]);
 
   const regionItems = useMemo(() => {
@@ -68,7 +70,12 @@ export const useFavoriteApartList = (): Return => {
   };
 
   const clickApartItem = (apartItem: FavoriteApartItemViewModel) => {
-    navigate(`${ROUTE_PATH.APART}/${apartItem.apartToken}`);
+    if (!apartItem.apartId) {
+      toast.error('아파트 정보를 불러오지 못했어요');
+      return;
+    }
+
+    navigate(`${ROUTE_PATH.APART}/${apartItem.apartId}`);
   };
 
   return {

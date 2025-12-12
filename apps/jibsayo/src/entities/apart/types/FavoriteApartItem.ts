@@ -1,5 +1,5 @@
 export interface FavoriteApartItem {
-  apartToken: string;
+  apartId: number;
   regionCode: string;
   apartName: string;
 }

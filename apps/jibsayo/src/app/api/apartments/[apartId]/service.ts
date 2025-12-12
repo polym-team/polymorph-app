@@ -67,7 +67,7 @@ const convertToResponse = (row: ApartmentRow): ApartByIdResponse => {
 };
 
 export const getApartByApartId = async (
-  apartId: string
+  apartId: number
 ): Promise<ApartByIdResponse | null> => {
   try {
     const rows = await query<ApartmentRow[]>(

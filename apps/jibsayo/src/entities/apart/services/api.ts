@@ -32,7 +32,7 @@ export const addFavoriteApart = async (
     },
     body: JSON.stringify({
       deviceId,
-      apartToken: item.apartToken,
+      apartToken: item.apartId,
       regionCode: item.regionCode,
       apartName: item.apartName,
     }),
@@ -48,9 +48,9 @@ export const addFavoriteApart = async (
 
 export const removeFavoriteApart = async (
   deviceId: string,
-  apartToken: string
+  apartId: number
 ): Promise<void> => {
-  const params = new URLSearchParams({ deviceId, apartToken });
+  const params = new URLSearchParams({ deviceId, apartId: apartId.toString() });
   const response = await fetch(`/api/favorite-apart?${params}`, {
     method: 'DELETE',
   });

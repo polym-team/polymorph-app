@@ -18,6 +18,7 @@ const buildWhereConditions = (
     't.region_code = ?',
     't.deal_date >= ?',
     't.deal_date < ?',
+    "t.cancellation_type != 'CANCELED'",
   ];
   const params: (string | number)[] = [regionCode, startDate, endDate];
 

@@ -73,7 +73,7 @@ export const parseFallbackToken = (
 } | null => {
   try {
     const parts = token.split('__');
-    if (parts.length !== 3) {
+    if (parts.length !== 2) {
       return null;
     }
 

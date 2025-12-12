@@ -10,12 +10,12 @@ import { TransactionFilter } from './ui/TransactionFilter';
 import { TransactionListSkeleton } from './ui/TransactionListSkeleton';
 
 interface ApartTransactionListProps {
-  apartToken: string;
+  apartId: number | null;
   data?: ApartInfoType;
 }
 
 export function ApartTransactionList({
-  apartToken,
+  apartId,
   data,
 }: ApartTransactionListProps) {
   const {
@@ -26,7 +26,7 @@ export function ApartTransactionList({
     filteredTransactionItems,
     changePeriod,
     changeSizes,
-  } = useApartTransactionList({ apartToken });
+  } = useApartTransactionList({ apartId });
 
   if (isLoading || !data) {
     return <TransactionListSkeleton />;

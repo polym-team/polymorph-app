@@ -6,7 +6,7 @@ import { PeriodValue } from '../types';
 import { useTransactionFilter } from './useTransactionFilter';
 
 interface Params {
-  apartToken: string;
+  apartId: number | null;
 }
 
 interface Return {
@@ -19,8 +19,10 @@ interface Return {
   changeSizes: (value: Set<number>) => void;
 }
 
-export const useApartTransactionList = ({ apartToken }: Params): Return => {
-  const { isLoading, data } = useApartTransactionListQuery({ apartToken });
+export const useApartTransactionList = ({ apartId }: Params): Return => {
+  const { isLoading, data } = useApartTransactionListQuery({
+    apartId: apartId ?? -1,
+  });
   const transactionItems = data?.items ?? [];
 
   const { selectedPeriod, selectedSizes, changePeriod, changeSizes } =

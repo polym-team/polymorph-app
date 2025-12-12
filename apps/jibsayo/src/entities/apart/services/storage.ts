@@ -10,18 +10,20 @@ export const getFavoriteApartList = (): FavoriteApartItem[] => {
 export const addFavoriteApart = (item: FavoriteApartItem): void => {
   const currentFavoriteApartList =
     getItem<FavoriteApartItem[]>(STORAGE_KEY.FAVORITE_APART_LIST) ?? [];
+  const hasAlready = currentFavoriteApartList.some(
+    savedItem => savedItem.apartId === item.apartId
+  );
 
+  if (hasAlready) return;
   setItem(STORAGE_KEY.FAVORITE_APART_LIST, [...currentFavoriteApartList, item]);
 };
 
-export const removeFavoriteApart = (apartId: string): void => {
+export const removeFavoriteApart = (apartId: number): void => {
   const currentFavoriteApartList =
     getItem<FavoriteApartItem[]>(STORAGE_KEY.FAVORITE_APART_LIST) ?? [];
 
   setItem(
     STORAGE_KEY.FAVORITE_APART_LIST,
-    currentFavoriteApartList.filter(
-      savedItem => savedItem.apartToken !== apartId
-    )
+    currentFavoriteApartList.filter(savedItem => savedItem.apartId !== apartId)
   );
 };

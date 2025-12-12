@@ -12,7 +12,9 @@ interface ContentProps {
 }
 
 export async function Content({ apartId, fallbackToken }: ContentProps) {
-  const response = apartId === 'null' ? null : await fetchApartInfo(apartId);
+  const numericApartId = apartId === 'null' ? -1 : Number(apartId);
+  const response =
+    numericApartId === -1 ? null : await fetchApartInfo(numericApartId);
   const parsedToken = fallbackToken ? parseFallbackToken(fallbackToken) : null;
 
   if (!response && !parsedToken) {
@@ -44,8 +46,8 @@ export async function Content({ apartId, fallbackToken }: ContentProps) {
 
   return (
     <Layout>
-      <ApartInfo apartToken={apartId} data={data} />
-      <ApartTransactionList apartToken={apartId} data={data} />
+      <ApartInfo apartId={numericApartId} data={data} />
+      <ApartTransactionList apartId={numericApartId} data={data} />
     </Layout>
   );
 }

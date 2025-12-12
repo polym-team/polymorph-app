@@ -6,8 +6,8 @@ import { Layout } from './Layout';
 export async function Loading() {
   return (
     <Layout>
-      <ApartInfo apartToken="" data={undefined} />
-      <ApartTransactionList apartToken="" data={undefined} />
+      <ApartInfo apartId={-1} data={undefined} />
+      <ApartTransactionList apartId={-1} data={undefined} />
     </Layout>
   );
 }

@@ -7,7 +7,7 @@ import {
 import { ApartInfoType } from './type';
 
 interface Params {
-  apartToken: string;
+  apartId: number | null;
   data: ApartInfoType | undefined;
 }
 
@@ -17,14 +17,14 @@ interface Return {
   toggleFavorite: () => void;
 }
 
-export const useApartInfo = ({ apartToken, data }: Params): Return => {
+export const useApartInfo = ({ apartId, data }: Params): Return => {
   const { data: favoriteApartList } = useFavoriteApartListQuery();
   const { mutate: mutateAddFavoriteApart } = useAddFavoriteApartMutation();
   const { mutate: mutateRemoveFavoriteApart } =
     useRemoveFavoriteApartMutation();
 
   const isFavorited =
-    favoriteApartList?.some(apart => apart.apartToken === apartToken) ?? false;
+    favoriteApartList?.some(apart => apart.apartId === apartId) ?? false;
   const isEmptyData = data
     ? Object.keys(data)
         .filter(key => key !== 'regionCode' && key !== 'apartName')
@@ -32,17 +32,17 @@ export const useApartInfo = ({ apartToken, data }: Params): Return => {
     : false;
 
   const toggleFavorite = () => {
-    if (!data) return;
+    if (!data || !apartId) return;
 
     if (isFavorited) {
       mutateRemoveFavoriteApart({
-        apartToken,
+        apartId,
         apartName: data.apartName,
         regionCode: data.regionCode,
       });
     } else {
       mutateAddFavoriteApart({
-        apartToken,
+        apartId,
         apartName: data.apartName,
         regionCode: data.regionCode,
       });

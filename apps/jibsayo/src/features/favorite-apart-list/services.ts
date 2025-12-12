@@ -8,7 +8,7 @@ import { RegionItemViewModel } from './types';
 
 export const convertToRegionItems = (
   favoriteApartList: FavoriteApartItem[],
-  favoriteApartIdsSet: Set<string>
+  favoriteApartIdsSet: Set<number>
 ): RegionItemViewModel[] => {
   const regionItems: RegionItemViewModel[] = [];
   const regionCodes = Array.from(
@@ -20,7 +20,7 @@ export const convertToRegionItems = (
       .filter(item => item.regionCode === regionCode)
       .map(item => ({
         ...item,
-        isFavorite: favoriteApartIdsSet.has(item.apartToken),
+        isFavorite: favoriteApartIdsSet.has(item.apartId),
       }));
 
     regionItems.push({

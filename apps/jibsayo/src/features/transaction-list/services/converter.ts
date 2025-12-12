@@ -6,20 +6,20 @@ import { TransactionItemViewModel } from '../types';
 export const convertToFavoriteApartTokenSet = (
   searchParams: SearchParams,
   favoriteApartList: FavoriteApartItem[]
-): Set<string> => {
+): Set<number> => {
   const filteredFavoriteApartList = favoriteApartList.filter(
     item => item.regionCode === searchParams.regionCode
   );
 
-  return new Set(filteredFavoriteApartList.map(item => item.apartToken));
+  return new Set(filteredFavoriteApartList.map(item => item.apartId));
 };
 
 export const convertToTransactionListViewModel = (
   transaction: TransactionItem[],
-  favoriteApartTokenSet: Set<string>
+  favoriteApartTokenSet: Set<number>
 ): TransactionItemViewModel[] => {
   return transaction.map(item => ({
     ...item,
-    isFavorite: !favoriteApartTokenSet, // FIXME
+    isFavorite: item.apartId ? favoriteApartTokenSet.has(item.apartId) : false,
   }));
 };

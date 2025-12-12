@@ -7,7 +7,7 @@ export interface ApartTransactionItem {
 }
 
 export interface FetchApartTransactionListRequest {
-  apartToken: string;
+  apartId: number;
 }
 
 export interface FetchApartTransactionListResponse {

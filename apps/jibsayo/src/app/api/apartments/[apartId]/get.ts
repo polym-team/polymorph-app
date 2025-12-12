@@ -13,7 +13,7 @@ export async function GET(
   }
 
   try {
-    const apart = await getApartByApartId(apartId);
+    const apart = await getApartByApartId(Number(apartId));
 
     if (!apart) {
       return Response.json(

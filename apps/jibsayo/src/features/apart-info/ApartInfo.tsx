@@ -8,13 +8,13 @@ import { LocationInfo } from './ui/LocationInfo';
 import { useApartInfo } from './useApartInfo';
 
 interface ApartInfoProps {
-  apartToken: string;
+  apartId: number | null;
   data?: ApartInfoType;
 }
 
-export function ApartInfo({ apartToken, data }: ApartInfoProps) {
+export function ApartInfo({ apartId, data }: ApartInfoProps) {
   const { isEmptyData, isFavorited, toggleFavorite } = useApartInfo({
-    apartToken,
+    apartId,
     data,
   });
 

@@ -9,9 +9,9 @@ export const useApartTransactionListQuery = (
   params: FetchApartTransactionListRequest
 ): UseQueryResult<FetchApartTransactionListResponse, unknown> => {
   return useQuery({
-    queryKey: ['apartTransactionListQuery', params.apartToken],
+    queryKey: ['apartTransactionListQuery', params.apartId],
     queryFn: async () => {
-      const response = await fetch(`/api/transactions/${params.apartToken}`);
+      const response = await fetch(`/api/transactions/${params.apartId}`);
 
       return response.json();
     },
