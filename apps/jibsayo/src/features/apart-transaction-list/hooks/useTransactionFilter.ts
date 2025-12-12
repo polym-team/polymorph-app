@@ -1,5 +1,3 @@
-import { useOnceEffect } from '@/shared/hooks/useOnceEffect';
-
 import { useState } from 'react';
 
 import { toast } from '@package/ui';
@@ -15,11 +13,7 @@ interface Return {
 
 export const useTransactionFilter = (allSizes: SizesValue): Return => {
   const [selectedPeriod, setPeriod] = useState<PeriodValue>(60);
-  const [selectedSizes, setSelectedSizes] = useState<SizesValue>([]);
-
-  useOnceEffect(allSizes.length > 0, () => {
-    setSelectedSizes(allSizes);
-  });
+  const [selectedSizes, setSelectedSizes] = useState<SizesValue>(allSizes);
 
   const changePeriod = (value: PeriodValue) => {
     setPeriod(value);

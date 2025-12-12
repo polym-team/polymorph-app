@@ -1,4 +1,5 @@
 import { query } from '@/app/api/shared/libs/database';
+import { groupSizesByPyeong } from '@/app/api/shared/services/transaction/service';
 import { logger } from '@/app/api/shared/utils/logger';
 
 import {
@@ -98,29 +99,7 @@ export const getApartByApartId = async (
     );
 
     const sizes = sizeRows.map(row => row.exclusive_area);
-
-    const allSizes: [number, number][] = [];
-    if (sizes.length > 0) {
-      let groupStart = sizes[0];
-      let groupEnd = sizes[0];
-      let prevFloor = Math.floor(sizes[0]);
-
-      for (let i = 1; i < sizes.length; i++) {
-        const currentFloor = Math.floor(sizes[i]);
-
-        if (currentFloor - prevFloor <= 3.3) {
-          groupEnd = sizes[i];
-        } else {
-          allSizes.push([groupStart, groupEnd]);
-          groupStart = sizes[i];
-          groupEnd = sizes[i];
-        }
-
-        prevFloor = currentFloor;
-      }
-
-      allSizes.push([groupStart, groupEnd]);
-    }
+    const allSizes = groupSizesByPyeong(sizes);
 
     return convertToResponse(rows[0], allSizes);
   } catch (error) {

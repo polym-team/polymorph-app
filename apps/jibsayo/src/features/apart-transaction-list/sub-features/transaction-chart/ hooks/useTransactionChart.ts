@@ -1,12 +1,18 @@
-import { ApartTransactionItem } from '@/entities/apart-transaction';
+import { useMonthlyTransactionQuery } from '@/entities/apart-transaction/hooks/useMonthlyTransactionQuery';
+import {
+  PeriodValue,
+  SizesValue,
+} from '@/features/apart-transaction-list/types';
 
 import { CHART_HEIGHT } from '../consts';
 import { useTransactionChartData } from './useTransactionChartData';
 import { useTransactionChartView } from './useTransactionChartView';
 
 interface Props {
-  allSizes: number[];
-  transactionItems: ApartTransactionItem[];
+  apartId: number;
+  allSizes: SizesValue;
+  selectedSizes: SizesValue;
+  selectedPeriod: PeriodValue;
 }
 
 interface Return {
@@ -15,12 +21,20 @@ interface Return {
 }
 
 export const useTransactionChart = ({
+  apartId,
   allSizes,
-  transactionItems,
+  selectedSizes,
+  selectedPeriod,
 }: Props): Return => {
+  const { isFetching, data } = useMonthlyTransactionQuery({
+    apartId,
+    sizes: allSizes.length === selectedSizes.length ? undefined : selectedSizes,
+    period: selectedPeriod,
+  });
+
   const { chartData, legendData } = useTransactionChartData({
-    transactionItems,
-    allSizes,
+    monthlyData: data || [],
+    allSizes: allSizes,
   });
 
   const { svgRef, isLoading } = useTransactionChartView({
@@ -29,5 +43,5 @@ export const useTransactionChart = ({
     height: CHART_HEIGHT,
   });
 
-  return { svgRef, isLoading };
+  return { svgRef, isLoading: isLoading || isFetching };
 };

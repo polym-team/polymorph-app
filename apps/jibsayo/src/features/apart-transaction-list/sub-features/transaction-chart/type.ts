@@ -3,8 +3,9 @@ export interface TransactionChartData {
   averagePrice: number;
   count: number;
   size: number;
-  sizes?: number[];
+  sizes: [number, number];
   pyeong: number;
+  color: string;
 }
 
 export interface ChartLegendItem {

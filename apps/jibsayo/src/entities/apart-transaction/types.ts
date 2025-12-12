@@ -33,3 +33,20 @@ export interface FetchApartTransactionListResponse {
   pageIndexes: PageIndexByYear[];
   transactions: ApartTransactionItem[];
 }
+
+export interface MonthlyTransactionItem {
+  month: number;
+  transactions: {
+    sizes: [number, number];
+    count: number;
+    averageAmount: number;
+  }[];
+}
+
+export interface FetchMonthlyTransactionRequest {
+  apartId: number;
+  period?: number;
+  sizes?: [number, number][];
+}
+
+export type FetchMonthlyTransactionResponse = MonthlyTransactionItem[];

@@ -331,13 +331,9 @@ export const useTransactionChartView = ({
     });
 
     // 평형별 실거래가 라인 차트 (상단 차트)
-    Array.from(pyeongGroups, ([pyeong, data]) => {
-      const color =
-        legendData.findIndex(l => l.pyeong === pyeong) % legendData.length >= 0
-          ? legendData[
-              legendData.findIndex(l => l.pyeong === pyeong) % legendData.length
-            ]?.color || '#3b82f6'
-          : '#3b82f6';
+    Array.from(pyeongGroups, ([, data]) => {
+      // chartData에 이미 색상 정보가 포함되어 있음
+      const color = data[0]?.color || '#3b82f6';
 
       const sortedData = data.sort(
         (a, b) => a.date.getTime() - b.date.getTime()

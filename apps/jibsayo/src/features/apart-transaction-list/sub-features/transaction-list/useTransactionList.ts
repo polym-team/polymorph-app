@@ -1,6 +1,6 @@
 import { ApartTransactionItem } from '@/entities/apart-transaction';
+import { useApartTransactionListQuery } from '@/entities/apart-transaction';
 import { PageIndexByYear } from '@/entities/apart-transaction/types';
-import { useApartTransactionListQuery } from '@/entities/apart-transaction/useApartTransactionListQuery';
 
 import { useEffect, useState } from 'react';
 

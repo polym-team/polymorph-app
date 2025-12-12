@@ -8,7 +8,7 @@ import {
 import {
   FetchApartTransactionListRequest,
   FetchApartTransactionListResponse,
-} from './types';
+} from '../types';
 
 export const useApartTransactionListQuery = (
   params: FetchApartTransactionListRequest,
@@ -28,7 +28,7 @@ export const useApartTransactionListQuery = (
   const searchParams = urlSearchParams.toString();
 
   return useQuery({
-    queryKey: ['apartTransactionListQuery', searchParams],
+    queryKey: ['apartTransactionListQuery', params.apartId, searchParams],
     queryFn: async () => {
       const response = await fetch(
         `/api/transactions/by-id/${params.apartId}?${searchParams}`

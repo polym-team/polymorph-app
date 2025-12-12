@@ -85,3 +85,32 @@ export const parseFallbackToken = (
     return null;
   }
 };
+
+export const groupSizesByPyeong = (sizes: number[]): [number, number][] => {
+  if (sizes.length === 0) return [];
+
+  const sortedSizes = [...sizes].sort((a, b) => a - b);
+  const allSizes: [number, number][] = [];
+
+  let groupStart = sortedSizes[0];
+  let groupEnd = sortedSizes[0];
+  let prevFloor = Math.floor(sortedSizes[0]);
+
+  for (let i = 1; i < sortedSizes.length; i++) {
+    const currentFloor = Math.floor(sortedSizes[i]);
+
+    if (currentFloor - prevFloor <= 3.3) {
+      groupEnd = sortedSizes[i];
+    } else {
+      allSizes.push([groupStart, groupEnd]);
+      groupStart = sortedSizes[i];
+      groupEnd = sortedSizes[i];
+    }
+
+    prevFloor = currentFloor;
+  }
+
+  allSizes.push([groupStart, groupEnd]);
+
+  return allSizes;
+};

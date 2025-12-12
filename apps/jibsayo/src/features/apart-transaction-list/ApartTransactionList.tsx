@@ -4,6 +4,7 @@ import { PageContainer } from '@/shared/ui/PageContainer';
 
 import { ApartInfoType } from '../apart-info';
 import { useApartTransactionList } from './hooks/useApartTransactionList';
+import { TransactionChart } from './sub-features/transaction-chart/TransactionChart';
 import { TransactionList } from './sub-features/transaction-list/TransactionList';
 import { TransactionFilter } from './ui/TransactionFilter';
 
@@ -30,10 +31,12 @@ export function ApartTransactionList({
           onChangePeriod={changePeriod}
           onChangeSizes={changeSizes}
         />
-        {/* <TransactionChart
+        <TransactionChart
+          apartId={apartId}
           allSizes={allSizes}
-          transactionItems={filteredTransactionItems}
-        /> */}
+          selectedSizes={selectedSizes}
+          selectedPeriod={selectedPeriod}
+        />
         <TransactionList
           apartId={apartId}
           allSizes={allSizes}

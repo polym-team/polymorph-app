@@ -1,29 +1,29 @@
 'use client';
 
-import { ApartTransactionItem } from '@/entities/apart-transaction';
-
+import { PeriodValue, SizesValue } from '../../types';
 import { useTransactionChart } from './ hooks/useTransactionChart';
 
 interface Props {
-  allSizes: number[];
-  transactionItems: ApartTransactionItem[];
+  apartId: number;
+  allSizes: SizesValue;
+  selectedSizes: SizesValue;
+  selectedPeriod: PeriodValue;
 }
 
 const CHART_HEIGHT = 300;
 
-export function TransactionChart({ transactionItems, allSizes }: Props) {
+export function TransactionChart({
+  apartId,
+  allSizes,
+  selectedSizes,
+  selectedPeriod,
+}: Props) {
   const { svgRef, isLoading } = useTransactionChart({
-    transactionItems,
+    apartId,
     allSizes,
+    selectedSizes,
+    selectedPeriod,
   });
-
-  if (!isLoading && transactionItems.length === 0) {
-    return (
-      <div className="flex items-center justify-center py-20 text-gray-500">
-        표시할 데이터가 없어요
-      </div>
-    );
-  }
 
   return (
     <div className="relative w-full">

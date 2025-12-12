@@ -1,84 +1,96 @@
 'use client';
 
-import { ApartTransactionItem } from '@/entities/apart-transaction';
+import { MonthlyTransactionItem } from '@/entities/apart-transaction';
 import { calculateAreaPyeong } from '@/entities/transaction';
 import { CHART_COLORS } from '@/features/apart-transaction-list/consts';
 
-import * as d3 from 'd3';
 import { useMemo } from 'react';
 
 import { TransactionChartData } from '../type';
 
 interface Props {
-  allSizes: number[];
-  transactionItems: ApartTransactionItem[];
+  allSizes: [number, number][];
+  monthlyData: MonthlyTransactionItem[];
 }
 
 export const useTransactionChartData = ({
   allSizes,
-  transactionItems,
+  monthlyData,
 }: Props) => {
+  // allSizes를 평형별로 매핑 (색상 할당을 위해)
+  const pyeongColorMap = useMemo(() => {
+    const map = new Map<number, string>();
+    allSizes.forEach(([minSize, maxSize], index) => {
+      // 문자열일 수 있으므로 Number로 변환
+      const min = Number(minSize);
+      const max = Number(maxSize);
+      const avgSize = (min + max) / 2;
+      const pyeong = calculateAreaPyeong(avgSize);
+      const color = CHART_COLORS[index % CHART_COLORS.length];
+      map.set(pyeong, color);
+    });
+    return map;
+  }, [allSizes]);
+
   // 차트 데이터 계산
   const chartData = useMemo(() => {
-    if (!transactionItems.length) return [];
-
-    // 월별로 그룹화
-    const monthlyData = d3.group(transactionItems, d =>
-      d3.timeMonth(new Date(d.dealDate))
-    );
+    if (!monthlyData.length) return [];
 
     const result: TransactionChartData[] = [];
 
-    // 각 월별로 평형대별 데이터 생성
-    Array.from(monthlyData, ([date, items]) => {
-      if (items.length > 0) {
-        // 평형대별로 그룹화
-        const pyeongGroups = d3.group(items, d => calculateAreaPyeong(d.size));
+    // 월별 데이터 순회
+    monthlyData.forEach(monthItem => {
+      // month를 Date로 변환 (YYYYMM -> YYYY-MM-01)
+      const monthStr = monthItem.month.toString();
+      const year = monthStr.slice(0, 4);
+      const month = monthStr.slice(4, 6);
+      const date = new Date(`${year}-${month}-01`);
 
-        Array.from(pyeongGroups, ([pyeong, pyeongItems]) => {
-          const validItems = pyeongItems.filter(item => item.dealAmount > 0);
+      // 평형별 거래 데이터 순회
+      monthItem.transactions.forEach(transaction => {
+        const [minSize, maxSize] = transaction.sizes;
+        // 평형 계산 (범위의 중간값 사용)
+        const avgSize = (minSize + maxSize) / 2;
+        const pyeong = calculateAreaPyeong(avgSize);
 
-          if (validItems.length > 0) {
-            const allSizes = Array.from(
-              new Set(validItems.map(item => item.size))
-            ).sort((a, b) => a - b);
+        // 평형으로 색상 찾기
+        const color = pyeongColorMap.get(pyeong) || '#3b82f6';
 
-            result.push({
-              date: date,
-              averagePrice: d3.mean(validItems, d => d.dealAmount) || 0,
-              count: validItems.length,
-              size: allSizes[0],
-              sizes: allSizes,
-              pyeong: pyeong,
-            });
-          }
+        result.push({
+          date: date,
+          averagePrice: transaction.averageAmount,
+          count: transaction.count,
+          size: minSize,
+          sizes: [minSize, maxSize],
+          pyeong: pyeong,
+          color: color,
         });
-      }
+      });
     });
 
     return result.sort((a, b) => a.date.getTime() - b.date.getTime());
-  }, [transactionItems]);
+  }, [monthlyData, pyeongColorMap]);
 
   // 범례 데이터 계산
   const legendData = useMemo(() => {
-    if (!transactionItems.length) return [];
+    if (!allSizes.length) return [];
 
-    // 이미 정렬된 평형 배열 사용
-    return allSizes.map((pyeong, index) => {
-      const items = transactionItems.filter(
-        item => calculateAreaPyeong(item.size) === pyeong
-      );
-      const allSizesForPyeong = Array.from(
-        new Set(items.map(item => item.size))
-      ).sort((a, b) => a - b);
+    // allSizes의 순서를 그대로 사용하여 색상 할당
+    return allSizes.map(([minSize, maxSize], index) => {
+      // 문자열일 수 있으므로 Number로 변환
+      const min = Number(minSize);
+      const max = Number(maxSize);
+      const avgSize = (min + max) / 2;
+      const pyeong = calculateAreaPyeong(avgSize);
+      const sizes = min === max ? [min] : [min, max].sort((a, b) => a - b);
 
       return {
         pyeong,
         color: CHART_COLORS[index % CHART_COLORS.length],
-        sizes: allSizesForPyeong,
+        sizes,
       };
     });
-  }, [transactionItems, allSizes]);
+  }, [allSizes]);
 
   return {
     chartData,
