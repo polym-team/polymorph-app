@@ -1,10 +1,12 @@
 import mysql from 'mysql2/promise';
 
-let pool: mysql.Pool | null = null;
+const globalForDb = globalThis as unknown as {
+  dbPool: mysql.Pool | undefined;
+};
 
 export const getDbPool = () => {
-  if (!pool) {
-    pool = mysql.createPool({
+  if (!globalForDb.dbPool) {
+    globalForDb.dbPool = mysql.createPool({
       host: process.env.MARIA_DB_HOST,
       port: Number(process.env.MARIA_DB_PORT),
       user: process.env.MARIA_DB_ID,
@@ -16,7 +18,7 @@ export const getDbPool = () => {
       dateStrings: true,
     });
   }
-  return pool;
+  return globalForDb.dbPool;
 };
 
 export const query = async <T>(sql: string, params?: any[]): Promise<T> => {

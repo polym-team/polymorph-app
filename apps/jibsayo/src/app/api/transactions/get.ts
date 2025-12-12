@@ -48,7 +48,7 @@ export async function GET(request: Request): Promise<Response> {
 
     return Response.json(result);
   } catch (error) {
-    logger.error('국토부 API 조회 오류', { error });
+    logger.error('실거래가 목록 조회 오류', { error });
 
     return Response.json(
       {

@@ -24,7 +24,7 @@ export const useTransactionChartData = ({
 
     // 월별로 그룹화
     const monthlyData = d3.group(transactionItems, d =>
-      d3.timeMonth(new Date(d.tradeDate))
+      d3.timeMonth(new Date(d.dealDate))
     );
 
     const result: TransactionChartData[] = [];
@@ -36,7 +36,7 @@ export const useTransactionChartData = ({
         const pyeongGroups = d3.group(items, d => calculateAreaPyeong(d.size));
 
         Array.from(pyeongGroups, ([pyeong, pyeongItems]) => {
-          const validItems = pyeongItems.filter(item => item.tradeAmount > 0);
+          const validItems = pyeongItems.filter(item => item.dealAmount > 0);
 
           if (validItems.length > 0) {
             const allSizes = Array.from(
@@ -45,7 +45,7 @@ export const useTransactionChartData = ({
 
             result.push({
               date: date,
-              averagePrice: d3.mean(validItems, d => d.tradeAmount) || 0,
+              averagePrice: d3.mean(validItems, d => d.dealAmount) || 0,
               count: validItems.length,
               size: allSizes[0],
               sizes: allSizes,

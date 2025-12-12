@@ -18,7 +18,7 @@ interface Return {
 export const useTransactionFilter = (
   transactionItems: ApartTransactionItem[]
 ): Return => {
-  const [selectedPeriod, setPeriod] = useState<PeriodValue>('60');
+  const [selectedPeriod, setPeriod] = useState<PeriodValue>(60);
   const [selectedSizes, setSelectedSizes] = useState<Set<number>>(new Set());
 
   useOnceEffect(transactionItems.length > 0, () => {

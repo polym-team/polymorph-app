@@ -7,7 +7,7 @@ export async function Loading() {
   return (
     <Layout>
       <ApartInfo apartId={-1} data={undefined} />
-      <ApartTransactionList apartId={-1} data={undefined} />
+      <ApartTransactionList apartId={-1} />
     </Layout>
   );
 }

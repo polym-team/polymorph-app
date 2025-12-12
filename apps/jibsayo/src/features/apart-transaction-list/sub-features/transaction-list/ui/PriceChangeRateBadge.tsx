@@ -15,12 +15,12 @@ import { cn } from '@package/utils';
 
 interface PriceChangeRateBadgeProps {
   priceChangeRate: number;
-  previousTradeItem?: ApartTransactionItem;
+  prevTransactionItem?: ApartTransactionItem['prevTransaction'];
 }
 
 export function PriceChangeRateBadge({
   priceChangeRate,
-  previousTradeItem,
+  prevTransactionItem,
 }: PriceChangeRateBadgeProps) {
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
@@ -28,7 +28,7 @@ export function PriceChangeRateBadge({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleClick = () => {
-    if (previousTradeItem && containerRef.current) {
+    if (prevTransactionItem && containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       setTooltipPosition({
         x: rect.left + rect.width / 2,
@@ -72,7 +72,7 @@ export function PriceChangeRateBadge({
     };
   }, [isTooltipVisible]);
 
-  const tooltipContent = shouldRender && previousTradeItem && (
+  const tooltipContent = shouldRender && prevTransactionItem && (
     <div className="fixed inset-0 z-50" onClick={handleTooltipClose}>
       <div
         className={cn(
@@ -97,22 +97,22 @@ export function PriceChangeRateBadge({
           <div className="flex justify-between">
             <span className="text-gray-900">거래일</span>
             <span className="text-primary">
-              {formatDealDate(previousTradeItem.tradeDate)}
+              {formatDealDate(prevTransactionItem.dealDate)}
             </span>
           </div>
 
           <div className="flex justify-between">
             <span className="text-gray-900">층/평수</span>
             <span className="text-primary">
-              {formatFloorText(previousTradeItem.floor)} /{' '}
-              {formatPyeongText(calculateAreaPyeong(previousTradeItem.size))}
+              {formatFloorText(prevTransactionItem.floor)} /{' '}
+              {formatPyeongText(calculateAreaPyeong(prevTransactionItem.size))}
             </span>
           </div>
 
           <div className="flex justify-between">
             <span className="text-gray-900">거래가격:</span>
             <span className="text-primary">
-              {formatKoreanAmountText(previousTradeItem.tradeAmount)}
+              {formatKoreanAmountText(prevTransactionItem.dealAmount)}
             </span>
           </div>
         </div>
@@ -125,7 +125,7 @@ export function PriceChangeRateBadge({
       <span
         className={cn(
           'whitespace-nowrap rounded-[6px] px-2 py-1 text-xs transition-colors lg:text-sm',
-          previousTradeItem ? 'cursor-pointer' : '',
+          prevTransactionItem ? 'cursor-pointer' : '',
           priceChangeRate > 0
             ? 'bg-red-100 text-red-700'
             : 'bg-blue-100 text-blue-700'

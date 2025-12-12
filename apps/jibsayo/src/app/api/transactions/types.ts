@@ -1,3 +1,19 @@
+export interface DbTransactionRow {
+  regionCode: string;
+  apartName: string;
+  dealDate: string;
+  dealAmount: number;
+  size: number;
+  floor: number;
+  isNewTransaction: boolean;
+  apartId: number | null;
+  buildedYear: number | null;
+  householdCount: number | null;
+  jibun: string | null;
+  dong: string | null;
+  fallbackToken: string | null;
+}
+
 export interface FetchTransactionListParams {
   regionCode: string;
   dealPeriod: string;
@@ -19,23 +35,6 @@ export interface FetchTransactionListResponse {
   totalCount: number;
   transactions: DbTransactionRow[];
   averagePricePerPyeong: number;
-}
-
-export interface DbTransactionRow {
-  id: number;
-  regionCode: string;
-  apartName: string;
-  dealDate: string;
-  dealAmount: number;
-  size: number;
-  floor: number;
-  isNewTransaction: boolean;
-  apartId: number | null;
-  buildedYear: number | null;
-  householdCount: number | null;
-  jibun: string | null;
-  dong: string | null;
-  fallbackToken: string | null;
 }
 
 // 국토부 API 응답 타입

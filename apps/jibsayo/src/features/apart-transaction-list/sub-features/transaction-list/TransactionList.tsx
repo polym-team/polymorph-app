@@ -1,17 +1,16 @@
-import { ApartTransactionItem } from '@/entities/apart-transaction';
-
+import { PeriodValue } from '../../types';
 import { TransactionListTable } from './ui/TransactionListTable';
 import { TrasactionYearSelect } from './ui/TransactionYearSelect';
 import { useTransactionList } from './useTransactionList';
 
 interface TransactionListProps {
-  regionCode: string;
-  transactionItems: ApartTransactionItem[];
+  apartId: number | null;
+  selectedPeriod: PeriodValue;
 }
 
 export function TransactionList({
-  regionCode,
-  transactionItems,
+  apartId,
+  selectedPeriod,
 }: TransactionListProps) {
   const {
     sorting,
@@ -23,14 +22,7 @@ export function TransactionList({
     changeSorting,
     changePageIndex,
     changeYear,
-  } = useTransactionList({
-    regionCode,
-    transactionItems,
-  });
-
-  if (transactionItems.length === 0) {
-    return null;
-  }
+  } = useTransactionList({ apartId, selectedPeriod });
 
   return (
     <div className="flex flex-col gap-y-3">

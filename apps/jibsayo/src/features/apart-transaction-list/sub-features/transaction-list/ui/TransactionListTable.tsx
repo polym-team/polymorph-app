@@ -1,3 +1,4 @@
+import { ApartTransactionItem } from '@/entities/apart-transaction';
 import { calculateAreaPyeong } from '@/entities/transaction';
 import { NewTransactionIcon } from '@/shared/ui/NewTransactionIcon';
 import {
@@ -35,11 +36,11 @@ import {
 } from '@package/ui';
 
 import { TRANSACTION_LIST_PAGE_SIZE } from '../consts';
-import { Sorting, TransactionItemViewModel } from '../types';
+import { Sorting } from '../types';
 import { PriceChangeRateBadge } from './PriceChangeRateBadge';
 
 interface TransactionListTableProps {
-  items: TransactionItemViewModel[];
+  items: ApartTransactionItem[];
   totalCount: number;
   sorting: Sorting;
   pageIndex: number;
@@ -72,7 +73,7 @@ export function TransactionListTable({
   const startIndex = pageIndex * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalCount);
 
-  const handleSortingChange = (field: 'tradeDate' | 'tradeAmount') => {
+  const handleSortingChange = (field: keyof ApartTransactionItem) => {
     const currentSort = sorting[0];
     const newSorting: Sorting = [
       {
@@ -83,7 +84,7 @@ export function TransactionListTable({
     onSortingChange(newSorting);
   };
 
-  const getSortIcon = (field: 'tradeDate' | 'tradeAmount') => {
+  const getSortIcon = (field: keyof ApartTransactionItem) => {
     const currentSort = sorting[0];
     if (currentSort.id !== field) {
       return <ChevronsUpDown className="ml-2 h-4 w-4" />;
@@ -112,15 +113,15 @@ export function TransactionListTable({
                     size="sm"
                     variant="ghost"
                     className="px-0 lg:hover:bg-transparent lg:hover:font-bold"
-                    onClick={() => handleSortingChange('tradeDate')}
+                    onClick={() => handleSortingChange('dealDate')}
                   >
                     <span>거래일</span>
-                    {getSortIcon('tradeDate')}
+                    {getSortIcon('dealDate')}
                   </Button>
                 </div>
               </TableHead>
               <TableHead className="overflow-hidden">
-                <div>층 / 평수</div>
+                <span className="text-sm">층 / 평수</span>
               </TableHead>
               <TableHead className="overflow-hidden">
                 <div className="flex translate-x-2 items-center justify-end gap-2">
@@ -128,10 +129,10 @@ export function TransactionListTable({
                     size="sm"
                     variant="ghost"
                     className="px-0 lg:hover:bg-transparent lg:hover:font-bold"
-                    onClick={() => handleSortingChange('tradeAmount')}
+                    onClick={() => handleSortingChange('dealAmount')}
                   >
                     <span>거래가격</span>
-                    {getSortIcon('tradeAmount')}
+                    {getSortIcon('dealAmount')}
                   </Button>
                 </div>
               </TableHead>
@@ -152,22 +153,22 @@ export function TransactionListTable({
             ) : (
               items.map((item, index) => {
                 const prevItem = index > 0 ? items[index - 1] : null;
-                const currentYear = getYearKey(item.tradeDate);
+                const currentYear = getYearKey(item.dealDate);
                 const prevYear = prevItem
-                  ? getYearKey(prevItem.tradeDate)
+                  ? getYearKey(prevItem.dealDate)
                   : null;
                 const shouldShowSeparator =
                   prevYear && currentYear !== prevYear;
 
                 return (
-                  <React.Fragment key={`${item.transactionId}-${index}`}>
+                  <React.Fragment key={item.id}>
                     {shouldShowSeparator && (
                       <TableRow key={`separator-${currentYear}`}>
                         <TableCell
                           colSpan={3}
                           className="bg-gray-50 py-[2px] text-center text-xs text-gray-600 lg:text-sm"
                         >
-                          {getYear(item.tradeDate)}
+                          {getYear(item.dealDate)}
                         </TableCell>
                       </TableRow>
                     )}
@@ -178,7 +179,7 @@ export function TransactionListTable({
                             {item.isNewTransaction && <NewTransactionIcon />}
                           </span>
                           <span className="text-sm text-gray-500 lg:text-base">
-                            {formatDealDate(item.tradeDate)}
+                            {formatDealDate(item.dealDate)}
                           </span>
                         </div>
                       </TableCell>
@@ -190,16 +191,16 @@ export function TransactionListTable({
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1">
-                          {item.priceChangeRate !== 0 && (
+                          {item.changeRate !== 0 && item.prevTransaction && (
                             <span className="translate-x-[1px]">
                               <PriceChangeRateBadge
-                                priceChangeRate={item.priceChangeRate}
-                                previousTradeItem={item.prevTransactionItem}
+                                priceChangeRate={item.changeRate}
+                                prevTransactionItem={item.prevTransaction}
                               />
                             </span>
                           )}
                           <span className="text-primary font-bold">
-                            {formatKoreanAmountText(item.tradeAmount)}
+                            {formatKoreanAmountText(item.dealAmount)}
                           </span>
                         </div>
                       </TableCell>

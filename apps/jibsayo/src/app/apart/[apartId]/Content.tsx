@@ -21,7 +21,7 @@ export async function Content({ apartId: apartIdParam }: ContentProps) {
   console.log('apartId: ', apartId);
   console.log('fallbackToken: ', fallbackToken);
 
-  if (!apartId && !fallbackToken) {
+  if (!response && !fallbackToken) {
     return <Error />;
   }
 
@@ -51,7 +51,7 @@ export async function Content({ apartId: apartIdParam }: ContentProps) {
   return (
     <Layout>
       <ApartInfo apartId={apartId} data={data} />
-      <ApartTransactionList apartId={apartId} data={data} />
+      <ApartTransactionList apartId={apartId} />
     </Layout>
   );
 }

@@ -1,30 +1,24 @@
 import { ApartTransactionItem } from '@/entities/apart-transaction';
-import { useNewTransactionListQuery } from '@/entities/transaction';
+import { useApartTransactionListQuery } from '@/entities/apart-transaction/useApartTransactionListQuery';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { SortingState } from '@package/ui';
 
-import {
-  calculateYearCounts,
-  calculateYearPageIndex,
-  convertToTransactionItem,
-  extractTransactionYears,
-  sliceTransactionItems,
-  sortTransactionItems,
-} from './services';
-import { Sorting, TransactionItemViewModel } from './types';
+import { PeriodValue } from '../../types';
+import { TRANSACTION_LIST_PAGE_SIZE } from './consts';
+import { Sorting } from './types';
 
 interface Params {
-  regionCode: string;
-  transactionItems: ApartTransactionItem[];
+  apartId: number | null;
+  selectedPeriod: PeriodValue;
 }
 
 interface Return {
   sorting: Sorting;
   pageIndex: number;
   totalCount: number;
-  items: TransactionItemViewModel[];
+  items: ApartTransactionItem[];
   years: number[];
   yearCounts: Record<number, number>;
   changeSorting: (newSorting: SortingState) => void;
@@ -33,47 +27,28 @@ interface Return {
 }
 
 export const useTransactionList = ({
-  regionCode,
-  transactionItems,
+  apartId,
+  selectedPeriod,
 }: Params): Return => {
-  const { data: newTransactionListData } =
-    useNewTransactionListQuery(regionCode);
-
   const [sorting, setSorting] = useState<Sorting>([
-    { id: 'tradeDate', desc: true },
+    { id: 'dealDate', desc: true },
   ]);
   const [pageIndex, setPageIndex] = useState<number>(0);
 
-  const totalCount = transactionItems.length;
-  const years = useMemo(
-    () => extractTransactionYears({ transactionItems }),
-    [transactionItems]
-  );
-  const yearCounts = useMemo(
-    () => calculateYearCounts({ transactionItems }),
-    [transactionItems]
-  );
-  const newTransactionIdsSet = useMemo(
-    () => new Set(newTransactionListData?.transactionIds?.map(id => id) ?? []),
-    [newTransactionListData]
-  );
-
-  const items = useMemo(() => {
-    const sortedTransactionItems = sortTransactionItems({
-      transactionItems,
-      sorting,
-    });
-    const slicedTransactionItems = sliceTransactionItems({
-      transactionItems: sortedTransactionItems,
+  const { data } = useApartTransactionListQuery(
+    {
+      apartId: apartId!,
       pageIndex,
-    });
-    const convertedTransactionItems = convertToTransactionItem({
-      transactionItems: slicedTransactionItems,
-      newTransactionIdsSet,
-    });
+      pageSize: TRANSACTION_LIST_PAGE_SIZE,
+      period: selectedPeriod,
+      orderBy: sorting[0].id as keyof ApartTransactionItem,
+      orderDirection: sorting[0].desc ? 'desc' : 'asc',
+    },
+    { enabled: !!apartId }
+  );
 
-    return convertedTransactionItems;
-  }, [transactionItems, sorting, pageIndex, newTransactionIdsSet]);
+  const totalCount = data?.totalCount ?? 0;
+  const items = data?.transactions ?? [];
 
   const changeSorting = (newSorting: SortingState) => {
     setSorting(newSorting as Sorting);
@@ -84,27 +59,31 @@ export const useTransactionList = ({
     setPageIndex(newPageIndex);
   };
 
-  const changeYear = (year: number) => {
-    const dateSorting: Sorting = [{ id: 'tradeDate', desc: true }];
-    setSorting(dateSorting);
+  useEffect(() => {
+    setPageIndex(0);
+  }, [totalCount]);
 
-    const targetPageIndex = calculateYearPageIndex({
-      transactionItems,
-      year,
-      sorting: dateSorting,
-    });
-    setPageIndex(targetPageIndex);
-  };
+  // const changeYear = (year: number) => {
+  //   const dateSorting: Sorting = [{ id: 'tradeDate', desc: true }];
+  //   setSorting(dateSorting);
+
+  //   const targetPageIndex = calculateYearPageIndex({
+  //     transactionItems,
+  //     year,
+  //     sorting: dateSorting,
+  //   });
+  //   setPageIndex(targetPageIndex);
+  // };
 
   return {
     sorting,
     pageIndex,
     totalCount,
     items,
-    years,
-    yearCounts,
+    years: [],
+    yearCounts: {},
     changeSorting,
     changePageIndex,
-    changeYear,
+    changeYear: () => {},
   };
 };

@@ -1,15 +1,27 @@
 export interface ApartTransactionItem {
-  transactionId: string;
-  tradeDate: string;
+  id: number;
+  dealDate: string;
   size: number;
   floor: number;
-  tradeAmount: number;
+  dealAmount: number;
+  changeRate: number;
+  isNewTransaction: boolean;
+  prevTransaction: Omit<
+    ApartTransactionItem,
+    'prevTransaction' | 'changeRate'
+  > | null;
 }
 
 export interface FetchApartTransactionListRequest {
   apartId: number;
+  pageIndex: number;
+  pageSize: number;
+  period?: number;
+  orderBy?: keyof ApartTransactionItem;
+  orderDirection?: 'asc' | 'desc';
 }
 
 export interface FetchApartTransactionListResponse {
-  items: ApartTransactionItem[];
+  totalCount: number;
+  transactions: ApartTransactionItem[];
 }

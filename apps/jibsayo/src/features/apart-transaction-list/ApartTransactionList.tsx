@@ -2,35 +2,17 @@
 
 import { PageContainer } from '@/shared/ui/PageContainer';
 
-import { ApartInfoType } from '../apart-info/type';
 import { useApartTransactionList } from './hooks/useApartTransactionList';
-import { TransactionChart } from './sub-features/transaction-chart/TransactionChart';
 import { TransactionList } from './sub-features/transaction-list/TransactionList';
 import { TransactionFilter } from './ui/TransactionFilter';
-import { TransactionListSkeleton } from './ui/TransactionListSkeleton';
 
 interface ApartTransactionListProps {
   apartId: number | null;
-  data?: ApartInfoType;
 }
 
-export function ApartTransactionList({
-  apartId,
-  data,
-}: ApartTransactionListProps) {
-  const {
-    isLoading,
-    allSizes,
-    selectedPeriod,
-    selectedSizes,
-    filteredTransactionItems,
-    changePeriod,
-    changeSizes,
-  } = useApartTransactionList({ apartId });
-
-  if (isLoading || !data) {
-    return <TransactionListSkeleton />;
-  }
+export function ApartTransactionList({ apartId }: ApartTransactionListProps) {
+  const { allSizes, selectedPeriod, selectedSizes, changePeriod, changeSizes } =
+    useApartTransactionList();
 
   return (
     <PageContainer bgColor="white" className="pb-12 pt-4 lg:pt-6">
@@ -43,14 +25,11 @@ export function ApartTransactionList({
           onChangePeriod={changePeriod}
           onChangeSizes={changeSizes}
         />
-        <TransactionChart
+        {/* <TransactionChart
           allSizes={allSizes}
           transactionItems={filteredTransactionItems}
-        />
-        <TransactionList
-          regionCode={data.regionCode}
-          transactionItems={filteredTransactionItems}
-        />
+        /> */}
+        <TransactionList apartId={apartId} selectedPeriod={selectedPeriod} />
       </div>
     </PageContainer>
   );
