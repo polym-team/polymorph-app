@@ -13,7 +13,7 @@ interface ApartInfoProps {
 }
 
 export function ApartInfo({ apartId, data }: ApartInfoProps) {
-  const { isEmptyData, isFavorited, toggleFavorite } = useApartInfo({
+  const { isFavorited, toggleFavorite } = useApartInfo({
     apartId,
     data,
   });
@@ -22,11 +22,11 @@ export function ApartInfo({ apartId, data }: ApartInfoProps) {
     <div className="flex flex-col gap-y-5 lg:gap-y-0">
       <ApartName
         data={data}
-        isEmptyData={isEmptyData}
+        apartId={apartId}
         isFavorited={isFavorited}
         onFavoriteToggle={toggleFavorite}
       />
-      {!isEmptyData && (
+      {apartId && (
         <>
           <ApartDetailInfo data={data} />
           <AmenitiesInfo data={data} />

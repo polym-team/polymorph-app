@@ -12,14 +12,14 @@ import { ApartInfoType } from '../type';
 
 interface ApartNameProps {
   data?: ApartInfoType;
-  isEmptyData: boolean;
+  apartId: number | null;
   isFavorited: boolean;
   onFavoriteToggle: () => void;
 }
 
 export function ApartName({
   data,
-  isEmptyData,
+  apartId,
   isFavorited,
   onFavoriteToggle,
 }: ApartNameProps) {
@@ -44,7 +44,7 @@ export function ApartName({
           <span className="text-xl font-semibold lg:text-2xl">
             {data.apartName}
           </span>
-          {!isEmptyData && (
+          {apartId && (
             <button className="-translate-y-[1px]" onClick={onFavoriteToggle}>
               <Star
                 size={20}

@@ -1,29 +1,33 @@
-import { parseFallbackToken } from '@/app/api/shared/services/transaction/service';
 import { ApartInfo, ApartInfoType } from '@/features/apart-info';
 import { ApartTransactionList } from '@/features/apart-transaction-list';
 
 import { Error } from './Error';
 import { Layout } from './Layout';
-import { fetchApartInfo } from './services';
+import {
+  calculateApartId,
+  calculateFallbackToken,
+  fetchApartInfo,
+} from './services';
 
 interface ContentProps {
   apartId: string;
-  fallbackToken?: string;
 }
 
-export async function Content({ apartId, fallbackToken }: ContentProps) {
-  const numericApartId = apartId === 'null' ? -1 : Number(apartId);
-  const response =
-    numericApartId === -1 ? null : await fetchApartInfo(numericApartId);
-  const parsedToken = fallbackToken ? parseFallbackToken(fallbackToken) : null;
+export async function Content({ apartId: apartIdParam }: ContentProps) {
+  const apartId = calculateApartId(apartIdParam);
+  const fallbackToken = calculateFallbackToken(apartIdParam);
+  const response = apartId ? await fetchApartInfo(apartId) : null;
 
-  if (!response && !parsedToken) {
+  console.log('apartId: ', apartId);
+  console.log('fallbackToken: ', fallbackToken);
+
+  if (!apartId && !fallbackToken) {
     return <Error />;
   }
 
   const data: ApartInfoType = response ?? {
-    regionCode: parsedToken!.regionCode,
-    apartName: parsedToken!.apartName,
+    regionCode: fallbackToken!.regionCode,
+    apartName: fallbackToken!.apartName,
     buildYear: null,
     dong: null,
     apartType: null,
@@ -46,8 +50,8 @@ export async function Content({ apartId, fallbackToken }: ContentProps) {
 
   return (
     <Layout>
-      <ApartInfo apartId={numericApartId} data={data} />
-      <ApartTransactionList apartId={numericApartId} data={data} />
+      <ApartInfo apartId={apartId} data={data} />
+      <ApartTransactionList apartId={apartId} data={data} />
     </Layout>
   );
 }

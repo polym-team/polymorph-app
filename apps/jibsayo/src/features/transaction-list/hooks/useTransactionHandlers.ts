@@ -32,9 +32,7 @@ export const useTransactionHandlers = (): HandlerState => {
   };
 
   const navigateToApartDetail = (item: TransactionItemViewModel) => {
-    navigate(
-      `${ROUTE_PATH.APART}/${item.apartId}?fallbackToken=${item.fallbackToken}`
-    );
+    navigate(`${ROUTE_PATH.APART}/${item.apartId ?? item.fallbackToken}`);
   };
 
   return { toggleFavorite, navigateToApartDetail };
