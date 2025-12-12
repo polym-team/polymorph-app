@@ -34,7 +34,14 @@ interface ApartmentRow {
   amenities: string | null;
 }
 
-const convertToResponse = (row: ApartmentRow): ApartByIdResponse => {
+interface SizeRow {
+  exclusive_area: number;
+}
+
+const convertToResponse = (
+  row: ApartmentRow,
+  allSizes: [number, number][]
+): ApartByIdResponse => {
   return {
     regionCode: row.region_code,
     apartName: row.apart_name,
@@ -63,6 +70,7 @@ const convertToResponse = (row: ApartmentRow): ApartByIdResponse => {
     electronicParkingCount: row.ev_parking_count ?? null,
     maxFloor: row.max_floor ?? null,
     amenities: row.amenities ? JSON.parse(row.amenities) : null,
+    allSizes,
   };
 };
 
@@ -81,7 +89,40 @@ export const getApartByApartId = async (
       return null;
     }
 
-    return convertToResponse(rows[0]);
+    const sizeRows = await query<SizeRow[]>(
+      `SELECT DISTINCT exclusive_area
+       FROM transactions
+       WHERE apart_id = ? AND exclusive_area IS NOT NULL
+       ORDER BY exclusive_area`,
+      [apartId]
+    );
+
+    const sizes = sizeRows.map(row => row.exclusive_area);
+
+    const allSizes: [number, number][] = [];
+    if (sizes.length > 0) {
+      let groupStart = sizes[0];
+      let groupEnd = sizes[0];
+      let prevFloor = Math.floor(sizes[0]);
+
+      for (let i = 1; i < sizes.length; i++) {
+        const currentFloor = Math.floor(sizes[i]);
+
+        if (currentFloor - prevFloor <= 3.3) {
+          groupEnd = sizes[i];
+        } else {
+          allSizes.push([groupStart, groupEnd]);
+          groupStart = sizes[i];
+          groupEnd = sizes[i];
+        }
+
+        prevFloor = currentFloor;
+      }
+
+      allSizes.push([groupStart, groupEnd]);
+    }
+
+    return convertToResponse(rows[0], allSizes);
   } catch (error) {
     logger.error('아파트 정보 조회 실패', {
       apartId,

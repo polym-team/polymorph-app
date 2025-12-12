@@ -12,7 +12,7 @@ import { ApartInfoType } from '../type';
 
 interface ApartNameProps {
   data?: ApartInfoType;
-  apartId: number | null;
+  apartId: number;
   isFavorited: boolean;
   onFavoriteToggle: () => void;
 }

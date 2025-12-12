@@ -36,6 +36,15 @@ export function ApartDetailInfo({ data }: ApartDetailInfoProps) {
     );
   }
 
+  if (
+    !data.buildYear &&
+    !data.maxFloor &&
+    !data.householdCount &&
+    !data.parkingCount
+  ) {
+    return null;
+  }
+
   return (
     <PageContainer
       bgColor="white"

@@ -19,4 +19,5 @@ export interface ApartByIdResponse {
   electronicParkingCount: number | null;
   maxFloor: number | null;
   amenities: string[] | null;
+  allSizes: [number, number][];
 }

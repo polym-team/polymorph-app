@@ -5,12 +5,14 @@ import { useEffect, useState } from 'react';
 
 import { SortingState } from '@package/ui';
 
-import { PeriodValue } from '../../types';
+import { PeriodValue, SizesValue } from '../../types';
 import { TRANSACTION_LIST_PAGE_SIZE } from './consts';
 import { Sorting } from './types';
 
 interface Params {
-  apartId: number | null;
+  apartId: number;
+  allSizes: SizesValue;
+  selectedSizes: SizesValue;
   selectedPeriod: PeriodValue;
 }
 
@@ -28,6 +30,8 @@ interface Return {
 
 export const useTransactionList = ({
   apartId,
+  allSizes,
+  selectedSizes,
   selectedPeriod,
 }: Params): Return => {
   const [sorting, setSorting] = useState<Sorting>([
@@ -35,17 +39,15 @@ export const useTransactionList = ({
   ]);
   const [pageIndex, setPageIndex] = useState<number>(0);
 
-  const { data } = useApartTransactionListQuery(
-    {
-      apartId: apartId!,
-      pageIndex,
-      pageSize: TRANSACTION_LIST_PAGE_SIZE,
-      period: selectedPeriod,
-      orderBy: sorting[0].id as keyof ApartTransactionItem,
-      orderDirection: sorting[0].desc ? 'desc' : 'asc',
-    },
-    { enabled: !!apartId }
-  );
+  const { data } = useApartTransactionListQuery({
+    apartId,
+    pageIndex,
+    pageSize: TRANSACTION_LIST_PAGE_SIZE,
+    sizes: allSizes.length === selectedSizes.length ? undefined : selectedSizes,
+    period: selectedPeriod,
+    orderBy: sorting[0].id as keyof ApartTransactionItem,
+    orderDirection: sorting[0].desc ? 'desc' : 'asc',
+  });
 
   const totalCount = data?.totalCount ?? 0;
   const items = data?.transactions ?? [];

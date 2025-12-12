@@ -19,6 +19,7 @@ export interface ApartInfoType {
   electronicParkingCount: number | null;
   maxFloor: number | null;
   amenities: string[] | null;
+  allSizes: [number, number][];
 }
 
 export interface FallbackApartInfoType {

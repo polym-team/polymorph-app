@@ -1,36 +1,32 @@
-import { ApartTransactionItem } from '@/entities/apart-transaction';
 import { useOnceEffect } from '@/shared/hooks/useOnceEffect';
 
 import { useState } from 'react';
 
 import { toast } from '@package/ui';
 
-import { calculateAllSizes } from '../services';
-import { PeriodValue } from '../types';
+import { PeriodValue, SizesValue } from '../types';
 
 interface Return {
   selectedPeriod: PeriodValue;
-  selectedSizes: Set<number>;
+  selectedSizes: SizesValue;
   changePeriod: (value: PeriodValue) => void;
-  changeSizes: (value: Set<number>) => void;
+  changeSizes: (value: SizesValue) => void;
 }
 
-export const useTransactionFilter = (
-  transactionItems: ApartTransactionItem[]
-): Return => {
+export const useTransactionFilter = (allSizes: SizesValue): Return => {
   const [selectedPeriod, setPeriod] = useState<PeriodValue>(60);
-  const [selectedSizes, setSelectedSizes] = useState<Set<number>>(new Set());
+  const [selectedSizes, setSelectedSizes] = useState<SizesValue>([]);
 
-  useOnceEffect(transactionItems.length > 0, () => {
-    setSelectedSizes(new Set(calculateAllSizes(transactionItems)));
+  useOnceEffect(allSizes.length > 0, () => {
+    setSelectedSizes(allSizes);
   });
 
   const changePeriod = (value: PeriodValue) => {
     setPeriod(value);
   };
 
-  const changeSizes = (value: Set<number>) => {
-    if (value.size === 0) {
+  const changeSizes = (value: SizesValue) => {
+    if (value.length === 0) {
       toast.success('한 개 이상의 평형을 선택해 주세요');
       return;
     }

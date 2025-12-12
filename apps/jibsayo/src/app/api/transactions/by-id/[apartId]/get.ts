@@ -17,6 +17,7 @@ export async function GET(
   const { searchParams } = new URL(request.url);
   const pageIndexParam = searchParams.get('pageIndex'); // 페이지 인덱스
   const pageSizeParam = searchParams.get('pageSize'); // 페이지 크기
+  const sizesParams = searchParams.get('sizes'); // 크기 (예: [[10, 20], [30, 40]])
   const periodParam = searchParams.get('period'); // 기간 (예: 최근 5년 -> 60개월)
   const orderBy = searchParams.get('orderBy'); // 정렬 기준
   const orderDirection = searchParams.get('orderDirection'); // 정렬 방향
@@ -35,10 +36,14 @@ export async function GET(
   const pageIndex = Number(pageIndexParam);
   const pageSize = Number(pageSizeParam);
   const period = periodParam ? Number(periodParam) : undefined;
+  const sizes = sizesParams
+    ? (JSON.parse(sizesParams) as [number, number][])
+    : undefined;
 
   const { whereConditions, queryParams } = buildWhereConditions({
     apartId,
     period,
+    sizes,
   });
 
   try {

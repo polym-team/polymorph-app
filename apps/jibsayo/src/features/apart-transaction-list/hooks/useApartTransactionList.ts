@@ -1,21 +1,26 @@
-import { calculateAllSizes } from '../services';
-import { PeriodValue } from '../types';
+import { ApartInfoType } from '@/features/apart-info';
+
+import { PeriodValue, SizesValue } from '../types';
 import { useTransactionFilter } from './useTransactionFilter';
+
+interface Params {
+  data: ApartInfoType | undefined;
+}
 
 interface Return {
   isLoading: boolean;
-  allSizes: number[];
+  allSizes: SizesValue;
   selectedPeriod: PeriodValue;
-  selectedSizes: Set<number>;
+  selectedSizes: SizesValue;
   changePeriod: (value: PeriodValue) => void;
-  changeSizes: (value: Set<number>) => void;
+  changeSizes: (value: SizesValue) => void;
 }
 
-export const useApartTransactionList = (): Return => {
-  const { selectedPeriod, selectedSizes, changePeriod, changeSizes } =
-    useTransactionFilter([]);
+export const useApartTransactionList = ({ data }: Params): Return => {
+  const allSizes = data?.allSizes ?? [];
 
-  const allSizes = calculateAllSizes([]);
+  const { selectedPeriod, selectedSizes, changePeriod, changeSizes } =
+    useTransactionFilter(allSizes);
 
   return {
     isLoading: false,

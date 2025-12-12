@@ -16,6 +16,7 @@ export interface FetchApartTransactionListRequest {
   apartId: number;
   pageIndex: number;
   pageSize: number;
+  sizes?: [number, number][];
   period?: number;
   orderBy?: keyof ApartTransactionItem;
   orderDirection?: 'asc' | 'desc';

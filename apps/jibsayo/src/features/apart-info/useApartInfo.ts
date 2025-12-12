@@ -7,7 +7,7 @@ import {
 import { ApartInfoType } from './type';
 
 interface Params {
-  apartId: number | null;
+  apartId: number;
   data: ApartInfoType | undefined;
 }
 

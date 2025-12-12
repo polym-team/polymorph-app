@@ -2,17 +2,22 @@
 
 import { PageContainer } from '@/shared/ui/PageContainer';
 
+import { ApartInfoType } from '../apart-info';
 import { useApartTransactionList } from './hooks/useApartTransactionList';
 import { TransactionList } from './sub-features/transaction-list/TransactionList';
 import { TransactionFilter } from './ui/TransactionFilter';
 
 interface ApartTransactionListProps {
-  apartId: number | null;
+  apartId: number;
+  data?: ApartInfoType;
 }
 
-export function ApartTransactionList({ apartId }: ApartTransactionListProps) {
+export function ApartTransactionList({
+  apartId,
+  data,
+}: ApartTransactionListProps) {
   const { allSizes, selectedPeriod, selectedSizes, changePeriod, changeSizes } =
-    useApartTransactionList();
+    useApartTransactionList({ data });
 
   return (
     <PageContainer bgColor="white" className="pb-12 pt-4 lg:pt-6">
@@ -29,7 +34,12 @@ export function ApartTransactionList({ apartId }: ApartTransactionListProps) {
           allSizes={allSizes}
           transactionItems={filteredTransactionItems}
         /> */}
-        <TransactionList apartId={apartId} selectedPeriod={selectedPeriod} />
+        <TransactionList
+          apartId={apartId}
+          allSizes={allSizes}
+          selectedSizes={selectedSizes}
+          selectedPeriod={selectedPeriod}
+        />
       </div>
     </PageContainer>
   );

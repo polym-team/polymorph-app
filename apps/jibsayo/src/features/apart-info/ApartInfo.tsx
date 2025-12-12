@@ -8,7 +8,7 @@ import { LocationInfo } from './ui/LocationInfo';
 import { useApartInfo } from './useApartInfo';
 
 interface ApartInfoProps {
-  apartId: number | null;
+  apartId: number;
   data?: ApartInfoType;
 }
 

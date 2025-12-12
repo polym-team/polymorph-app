@@ -158,7 +158,9 @@ export function TransactionListTable({
                   ? getYearKey(prevItem.dealDate)
                   : null;
                 const shouldShowSeparator =
-                  prevYear && currentYear !== prevYear;
+                  sorting[0].id === 'dealDate' &&
+                  prevYear &&
+                  currentYear !== prevYear;
 
                 return (
                   <React.Fragment key={item.id}>

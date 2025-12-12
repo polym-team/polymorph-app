@@ -18,6 +18,8 @@ export const useApartTransactionListQuery = (
 
   urlSearchParams.append('pageIndex', params.pageIndex.toString());
   urlSearchParams.append('pageSize', params.pageSize.toString());
+  if (params.sizes)
+    urlSearchParams.append('sizes', JSON.stringify(params.sizes));
   if (params.period) urlSearchParams.append('period', params.period.toString());
   if (params.orderBy) urlSearchParams.append('orderBy', params.orderBy);
   if (params.orderDirection)

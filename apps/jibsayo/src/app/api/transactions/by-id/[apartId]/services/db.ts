@@ -5,9 +5,11 @@ import { DbTransactionRow, OrderBy, OrderDirection } from '../types';
 export const buildWhereConditions = ({
   apartId,
   period,
+  sizes,
 }: {
   apartId: number;
   period?: number;
+  sizes?: [number, number][];
 }): { whereConditions: string[]; queryParams: (string | number)[] } => {
   const whereConditions = ['apart_id = ?'];
   const queryParams: (string | number)[] = [apartId];
@@ -15,6 +17,17 @@ export const buildWhereConditions = ({
   if (period) {
     whereConditions.push('deal_date >= DATE_SUB(CURDATE(), INTERVAL ? MONTH)');
     queryParams.push(period);
+  }
+
+  if (sizes && sizes.length > 0) {
+    const sizeConditions = sizes
+      .map(() => 'exclusive_area BETWEEN ? AND ?')
+      .join(' OR ');
+    whereConditions.push(`(${sizeConditions})`);
+
+    sizes.forEach(([min, max]) => {
+      queryParams.push(min, max);
+    });
   }
 
   return { whereConditions, queryParams };

@@ -1,3 +1,4 @@
+import { calculateAreaPyeong } from '@/entities/transaction';
 import { HorizontalScrollContainer } from '@/shared/ui/HorizontalScrollContainer';
 import { formatPyeongText } from '@/shared/utils/formatter';
 
@@ -7,7 +8,7 @@ import { CHART_COLORS, PERIODS } from '../consts';
 import { PeriodValue, SizesValue } from '../types';
 
 interface TransactionFilterProps {
-  allSizes: number[];
+  allSizes: SizesValue;
   selectedPeriod: PeriodValue;
   selectedSizes: SizesValue;
   onChangePeriod: (value: PeriodValue) => void;
@@ -44,10 +45,16 @@ export function TransactionFilter({
         {/* <span className="m-1 text-sm text-gray-500">평형 선택</span> */}
         <HorizontalScrollContainer className="gap-x-1">
           {allSizes.map((size, index) => {
-            const isSelected = selectedSizes.has(size);
+            const isSelected = selectedSizes.some(
+              selectedSize =>
+                selectedSize[0] === size[0] && selectedSize[1] === size[1]
+            );
+            const minPyeong = calculateAreaPyeong(size[0]);
+            const maxPyeong = calculateAreaPyeong(size[1]);
+
             return (
               <Button
-                key={size}
+                key={`${size[0]}-${size[1]}`}
                 size="sm"
                 rounded
                 variant="outline"
@@ -61,10 +68,10 @@ export function TransactionFilter({
                 onClick={() =>
                   onChangeSizes(
                     isSelected
-                      ? new Set(
-                          Array.from(selectedSizes).filter(s => s !== size)
+                      ? selectedSizes.filter(
+                          s => !(s[0] === size[0] && s[1] === size[1])
                         )
-                      : new Set(Array.from(selectedSizes).concat(size))
+                      : [...selectedSizes, size]
                   )
                 }
               >
@@ -81,7 +88,14 @@ export function TransactionFilter({
                         }),
                   }}
                 />
-                {formatPyeongText(size)}
+                {minPyeong !== maxPyeong ? (
+                  <>
+                    {formatPyeongText(minPyeong)} ~{' '}
+                    {formatPyeongText(maxPyeong)}
+                  </>
+                ) : (
+                  formatPyeongText(minPyeong)
+                )}
               </Button>
             );
           })}

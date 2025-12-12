@@ -1,15 +1,19 @@
-import { PeriodValue } from '../../types';
+import { PeriodValue, SizesValue } from '../../types';
 import { TransactionListTable } from './ui/TransactionListTable';
 import { TrasactionYearSelect } from './ui/TransactionYearSelect';
 import { useTransactionList } from './useTransactionList';
 
 interface TransactionListProps {
-  apartId: number | null;
+  apartId: number;
+  allSizes: SizesValue;
+  selectedSizes: SizesValue;
   selectedPeriod: PeriodValue;
 }
 
 export function TransactionList({
   apartId,
+  allSizes,
+  selectedSizes,
   selectedPeriod,
 }: TransactionListProps) {
   const {
@@ -22,7 +26,7 @@ export function TransactionList({
     changeSorting,
     changePageIndex,
     changeYear,
-  } = useTransactionList({ apartId, selectedPeriod });
+  } = useTransactionList({ apartId, allSizes, selectedSizes, selectedPeriod });
 
   return (
     <div className="flex flex-col gap-y-3">
