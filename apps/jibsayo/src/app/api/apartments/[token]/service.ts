@@ -1,5 +1,5 @@
 import { query } from '@/app/api/shared/libs/database';
-import { parseApartToken } from '@/app/api/shared/services/transaction/service';
+import { parseFallbackToken } from '@/app/api/shared/services/transaction/service';
 import { logger } from '@/app/api/shared/utils/logger';
 
 import {
@@ -71,21 +71,20 @@ export const getApartByApartToken = async (
   apartToken: string
 ): Promise<ApartByIdResponse | null> => {
   try {
-    const parsed = parseApartToken(apartToken);
+    const parsed = parseFallbackToken(apartToken);
 
     if (!parsed) {
       logger.warn('잘못된 apartToken 형식', { apartToken });
       return null;
     }
 
-    const { regionCode, apartName, jibun } = parsed;
+    const { regionCode, apartName } = parsed;
 
     const rows = await query<ApartmentRow[]>(
       `SELECT * FROM apartments
        WHERE region_code = ?
-       AND apart_name = ?
-       AND jibun = ?`,
-      [regionCode, apartName, jibun]
+       AND apart_name = ?`,
+      [regionCode, apartName]
     );
 
     if (!rows || rows.length === 0) {
@@ -93,7 +92,6 @@ export const getApartByApartToken = async (
         apartToken,
         regionCode,
         apartName,
-        jibun,
       });
       return null;
     }

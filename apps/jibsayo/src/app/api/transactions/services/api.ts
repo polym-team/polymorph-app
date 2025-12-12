@@ -1,13 +1,138 @@
 import { query } from '@/app/api/shared/libs/database';
+import { createFallbackToken } from '@/app/api/shared/services/transaction/service';
 
-import { DbTransactionRow, FetchTransactionListParams } from '../types';
+import {
+  DbTransactionRow,
+  FetchTransactionListParams,
+  FetchTransactionListResponse,
+} from '../types';
+
+const buildWhereConditions = (
+  regionCode: string,
+  startDate: string,
+  endDate: string,
+  filter: FetchTransactionListParams['filter']
+): { conditions: string[]; params: (string | number)[] } => {
+  const conditions: string[] = [
+    't.region_code = ?',
+    't.deal_date >= ?',
+    't.deal_date < ?',
+  ];
+  const params: (string | number)[] = [regionCode, startDate, endDate];
+
+  if (filter.apartName) {
+    conditions.push('t.apart_name LIKE ?');
+    params.push(`%${filter.apartName}%`);
+  }
+
+  if (filter.minSize !== undefined) {
+    conditions.push('t.exclusive_area >= ?');
+    params.push(filter.minSize);
+  }
+
+  if (filter.maxSize !== undefined) {
+    conditions.push('t.exclusive_area <= ?');
+    params.push(filter.maxSize);
+  }
+
+  if (filter.newTransactionOnly) {
+    conditions.push('DATE(t.created_at) = CURDATE()');
+  }
+
+  return { conditions, params };
+};
+
+const buildOrderByClause = (
+  sort: FetchTransactionListParams['sort']
+): string => {
+  if (!sort.orderBy) {
+    return 'ORDER BY t.deal_date DESC';
+  }
+
+  const orderByColumn =
+    sort.orderBy === 'dealDate' ? 't.deal_date' : 't.deal_amount';
+  const orderDirection = sort.orderDirection || 'desc';
+
+  return `ORDER BY ${orderByColumn} ${orderDirection.toUpperCase()}`;
+};
+
+const fetchTotalCount = async (
+  whereConditions: string[],
+  queryParams: (string | number)[]
+): Promise<number> => {
+  const countSql = `
+    SELECT COUNT(*) as totalCount
+    FROM transactions t
+    LEFT JOIN apartments a ON t.apart_id = a.id
+    WHERE ${whereConditions.join(' AND ')}
+  `;
+
+  const countResult = await query<{ totalCount: number }[]>(
+    countSql,
+    queryParams
+  );
+
+  return countResult[0]?.totalCount || 0;
+};
+
+const fetchTransactions = async (
+  whereConditions: string[],
+  queryParams: (string | number)[],
+  orderByClause: string,
+  pageSize: number,
+  offset: number
+): Promise<DbTransactionRow[]> => {
+  const dataSql = `
+    SELECT
+      t.id,
+      t.region_code as regionCode,
+      t.apart_name as apartName,
+      t.deal_date as dealDate,
+      t.deal_amount as dealAmount,
+      t.exclusive_area as size,
+      t.floor,
+      t.apart_id as apartId,
+      a.jibun,
+      a.dong as dong,
+      a.completion_year as buildedYear,
+      a.total_household_count as householdCount,
+      DATE(t.created_at) = CURDATE() as isNewTransaction
+    FROM transactions t
+    LEFT JOIN apartments a ON t.apart_id = a.id
+    WHERE ${whereConditions.join(' AND ')}
+    ${orderByClause}
+    LIMIT ? OFFSET ?
+  `;
+
+  const dataParams = [...queryParams, pageSize, offset];
+
+  const rows = await query<
+    Array<
+      Omit<DbTransactionRow, 'fallbackToken' | 'isNewTransaction'> & {
+        isNewTransaction: number;
+      }
+    >
+  >(dataSql, dataParams);
+
+  return rows.map(row => ({
+    ...row,
+    isNewTransaction: Boolean(row.isNewTransaction),
+    dealAmount: row.dealAmount * 10000,
+    fallbackToken: createFallbackToken({
+      regionCode: row.regionCode,
+      apartName: row.apartName,
+    }),
+  }));
+};
 
 export const fetchTransactionList = async ({
   regionCode,
   dealPeriod,
   pageIndex,
   pageSize,
-}: FetchTransactionListParams): Promise<DbTransactionRow[]> => {
+  filter,
+  sort,
+}: FetchTransactionListParams): Promise<FetchTransactionListResponse> => {
   // dealPeriod를 날짜 범위로 변환 (예: "202510" => "2025-10-01" ~ "2025-11-01")
   const year = dealPeriod.substring(0, 4);
   const month = dealPeriod.substring(4, 6);
@@ -20,35 +145,24 @@ export const fetchTransactionList = async ({
   // offset 계산
   const offset = pageIndex * pageSize;
 
-  // SQL 쿼리 실행
-  const sql = `
-    SELECT
-      t.id,
-      t.apart_name as apartName,
-      t.deal_date as tradeDate,
-      t.deal_amount as tradeAmount,
-      t.exclusive_area as size,
-      t.floor,
-      t.apart_id as apartId,
-      a.dong as dong,
-      a.completion_year as buildedYear,
-      a.total_household_count as householdCount
-    FROM transactions t
-    LEFT JOIN apartments a ON t.apart_id = a.id
-    WHERE t.region_code = ?
-      AND t.deal_date >= ?
-      AND t.deal_date < ?
-    ORDER BY t.deal_date DESC
-    LIMIT ? OFFSET ?
-  `;
+  // WHERE 조건 동적 구성
+  const { conditions: whereConditions, params: queryParams } =
+    buildWhereConditions(regionCode, startDate, endDate, filter);
 
-  const rows = await query<DbTransactionRow[]>(sql, [
-    regionCode,
-    startDate,
-    endDate,
+  // ORDER BY 절 동적 구성
+  const orderByClause = buildOrderByClause(sort);
+
+  // 전체 개수 조회 (페이지네이션 적용 전)
+  const totalCount = await fetchTotalCount(whereConditions, queryParams);
+
+  // 페이지네이션 적용된 데이터 조회
+  const transactions = await fetchTransactions(
+    whereConditions,
+    queryParams,
+    orderByClause,
     pageSize,
-    offset,
-  ]);
+    offset
+  );
 
-  return rows;
+  return { totalCount, transactions };
 };

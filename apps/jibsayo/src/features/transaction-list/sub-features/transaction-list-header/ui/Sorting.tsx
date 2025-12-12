@@ -20,14 +20,14 @@ export function Sorting({ isLoading, sorting }: SortingProps) {
         type="button"
         className={cn(
           'flex items-center text-sm opacity-40',
-          sorting.state.id === 'tradeDate' && 'opacity-100'
+          sorting.state.id === 'dealDate' && 'opacity-100'
         )}
         onClick={() =>
-          sorting.update({ id: 'tradeDate', desc: !sorting.state.desc })
+          sorting.update({ id: 'dealDate', desc: !sorting.state.desc })
         }
       >
         최신순{' '}
-        {sorting.state.id === 'tradeDate' &&
+        {sorting.state.id === 'dealDate' &&
           (sorting.state.desc ? (
             <ChevronDown size={16} />
           ) : (
@@ -39,14 +39,14 @@ export function Sorting({ isLoading, sorting }: SortingProps) {
         type="button"
         className={cn(
           'flex items-center text-sm opacity-40',
-          sorting.state.id === 'tradeAmount' && 'opacity-100'
+          sorting.state.id === 'dealAmount' && 'opacity-100'
         )}
         onClick={() =>
-          sorting.update({ id: 'tradeAmount', desc: !sorting.state.desc })
+          sorting.update({ id: 'dealAmount', desc: !sorting.state.desc })
         }
       >
         가격순{' '}
-        {sorting.state.id === 'tradeAmount' &&
+        {sorting.state.id === 'dealAmount' &&
           (sorting.state.desc ? (
             <ChevronDown size={16} />
           ) : (

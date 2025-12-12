@@ -14,7 +14,7 @@ export function TransactionList() {
     summary,
     pageIndex,
     transactionStatus,
-    transactionItems,
+    transactions,
     toggleFavorite,
     navigateToApartDetail,
   } = useTransactionList();
@@ -40,7 +40,7 @@ export function TransactionList() {
           sorting={sorting}
           summary={summary}
           pageIndex={pageIndex}
-          items={transactionItems}
+          items={transactions}
           onFavoriteToggle={toggleFavorite}
           onRowClick={navigateToApartDetail}
         />

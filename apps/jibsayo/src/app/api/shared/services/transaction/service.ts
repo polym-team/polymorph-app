@@ -58,20 +58,18 @@ export const createTransactionId = (params: {
   return `${params.apartToken}::${params.size}__${params.floor}__${params.tradeDate}__${params.tradeAmount}`;
 };
 
-export const createApartToken = (params: {
+export const createFallbackToken = (params: {
   regionCode: string;
   apartName: string;
-  jibun: string;
 }): string => {
-  return `${params.regionCode}__${obfuscateKorean(params.apartName)}__${params.jibun}`;
+  return `${params.regionCode}__${obfuscateKorean(params.apartName)}`;
 };
 
-export const parseApartToken = (
+export const parseFallbackToken = (
   token: string
 ): {
   regionCode: string;
   apartName: string;
-  jibun: string;
 } | null => {
   try {
     const parts = token.split('__');
@@ -81,9 +79,8 @@ export const parseApartToken = (
 
     const regionCode = parts[0];
     const apartName = deobfuscateKorean(parts[1]);
-    const jibun = parts[2];
 
-    return { regionCode, apartName, jibun };
+    return { regionCode, apartName };
   } catch {
     return null;
   }

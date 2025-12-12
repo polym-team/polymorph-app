@@ -2,7 +2,7 @@ import { logger } from '@/app/api/shared/utils/logger';
 
 import { NextRequest } from 'next/server';
 
-import { parseApartToken } from '../../shared/services/transaction/service';
+import { parseFallbackToken } from '../../shared/services/transaction/service';
 import { getCachedTransactions, saveCachedTransaction } from './services/cache';
 import { createResponse } from './services/crawl';
 
@@ -18,7 +18,7 @@ export async function GET(
   }
 
   const apartToken = params.apartToken;
-  const parsedApartToken = parseApartToken(apartToken);
+  const parsedApartToken = parseFallbackToken(apartToken);
   if (!parsedApartToken) {
     return Response.json(
       { message: '필수 파라미터(apartName, area)가 누락되었습니다.' },

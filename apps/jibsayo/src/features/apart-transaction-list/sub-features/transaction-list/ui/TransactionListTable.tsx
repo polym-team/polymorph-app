@@ -1,10 +1,10 @@
 import { calculateAreaPyeong } from '@/entities/transaction';
 import { NewTransactionIcon } from '@/shared/ui/NewTransactionIcon';
 import {
+  formatDealDate,
   formatFloorText,
   formatKoreanAmountText,
   formatPyeongText,
-  formatTransactionDate,
 } from '@/shared/utils/formatter';
 
 import {
@@ -178,7 +178,7 @@ export function TransactionListTable({
                             {item.isNewTransaction && <NewTransactionIcon />}
                           </span>
                           <span className="text-sm text-gray-500 lg:text-base">
-                            {formatTransactionDate(item.tradeDate)}
+                            {formatDealDate(item.tradeDate)}
                           </span>
                         </div>
                       </TableCell>

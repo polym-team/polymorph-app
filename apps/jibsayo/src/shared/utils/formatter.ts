@@ -2,7 +2,7 @@ export const formatNumber = (number: number): string => {
   return number.toLocaleString();
 };
 
-export const formatTransactionDate = (dateString: string): string => {
+export const formatDealDate = (dateString: string): string => {
   const [year, month, day] = dateString.split('-');
   const shortYear = year.slice(-2);
 

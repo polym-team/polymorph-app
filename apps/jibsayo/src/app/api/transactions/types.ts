@@ -3,36 +3,38 @@ export interface FetchTransactionListParams {
   dealPeriod: string;
   pageIndex: number;
   pageSize: number;
+  filter: {
+    apartName?: string;
+    minSize?: number;
+    maxSize?: number;
+    newTransactionOnly?: boolean;
+  };
+  sort: {
+    orderBy?: 'dealDate' | 'dealAmount';
+    orderDirection?: 'asc' | 'desc';
+  };
+}
+
+export interface FetchTransactionListResponse {
+  totalCount: number;
+  transactions: DbTransactionRow[];
 }
 
 export interface DbTransactionRow {
   id: number;
+  regionCode: string;
   apartName: string;
-  tradeDate: string;
-  tradeAmount: number;
+  dealDate: string;
+  dealAmount: number;
   size: number;
   floor: number;
+  isNewTransaction: boolean;
   apartId: number | null;
   buildedYear: number | null;
   householdCount: number | null;
-  dong: string;
-}
-
-export interface TransactionItem {
-  transactionId: string;
-  apartToken: string;
-  apartName: string;
-  buildedYear: number | null;
-  address: string;
-  tradeDate: string;
-  size: number;
-  floor: number | null;
-  tradeAmount: number;
-}
-
-export interface TransactionsResponse {
-  count: number;
-  list: TransactionItem[];
+  jibun: string | null;
+  dong: string | null;
+  fallbackToken: string | null;
 }
 
 // 국토부 API 응답 타입

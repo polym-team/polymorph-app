@@ -1,9 +1,6 @@
 import { logger } from '@/app/api/shared/utils/logger';
 
 import { fetchTransactionList } from './services/api';
-import { convertGovApiItemToTransactions } from './services/converter';
-import { fetchGovApiData } from './services/legacy-api';
-import { TransactionItem, TransactionsResponse } from './types';
 
 export async function GET(request: Request): Promise<Response> {
   try {
@@ -20,28 +17,34 @@ export async function GET(request: Request): Promise<Response> {
       );
     }
 
-    const items = await fetchTransactionList({
+    const result = await fetchTransactionList({
       regionCode: area,
       dealPeriod: createDt,
       pageIndex: parseInt(pageIndex, 10),
       pageSize: parseInt(pageSize, 10),
+      filter: {
+        apartName: searchParams.get('apartName') || undefined,
+        minSize: searchParams.get('minSize')
+          ? parseFloat(searchParams.get('minSize') as string)
+          : undefined,
+        maxSize: searchParams.get('maxSize')
+          ? parseFloat(searchParams.get('maxSize') as string)
+          : undefined,
+        newTransactionOnly: searchParams.get('newTransactionOnly')
+          ? searchParams.get('newTransactionOnly') === 'true'
+          : undefined,
+      },
+      sort: {
+        orderBy: searchParams.get('orderBy') as
+          | 'dealDate'
+          | 'dealAmount'
+          | undefined,
+        orderDirection: searchParams.get('orderDirection') as
+          | 'asc'
+          | 'desc'
+          | undefined,
+      },
     });
-
-    console.log('items: ', items);
-
-    // 국토부 API 호출
-    const govApiItems = await fetchGovApiData(area, createDt.replace(/-/g, ''));
-
-    // 내부 형식으로 변환 (신규 거래 여부 포함)
-    const transactions: TransactionItem[] = convertGovApiItemToTransactions(
-      govApiItems,
-      area
-    );
-
-    const result: TransactionsResponse = {
-      count: transactions.length,
-      list: transactions,
-    };
 
     return Response.json(result);
   } catch (error) {

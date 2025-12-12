@@ -4,17 +4,15 @@ import { calculateTransactionAverageAmount } from '../services/service';
 import { SummaryState } from '../types';
 
 type Params = {
-  filteredTransactions: TransactionItem[];
+  transactions: TransactionItem[];
 };
 
 type Return = SummaryState;
 
-export const useTransactionSummary = ({
-  filteredTransactions,
-}: Params): Return => {
-  const transactionTotalCount = filteredTransactions.length;
+export const useTransactionSummary = ({ transactions }: Params): Return => {
+  const transactionTotalCount = transactions.length;
   const transactionAverageAmount =
-    calculateTransactionAverageAmount(filteredTransactions);
+    calculateTransactionAverageAmount(transactions);
 
   return { transactionTotalCount, transactionAverageAmount };
 };

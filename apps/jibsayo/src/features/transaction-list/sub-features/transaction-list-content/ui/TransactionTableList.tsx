@@ -1,10 +1,10 @@
 import { calculateAreaPyeong } from '@/entities/transaction';
 import { NewTransactionIcon } from '@/shared/ui/NewTransactionIcon';
 import {
+  formatDealDate,
   formatFloorText,
   formatKoreanAmountText,
   formatPyeongText,
-  formatTransactionDate,
 } from '@/shared/utils/formatter';
 
 import { Star } from 'lucide-react';
@@ -78,13 +78,13 @@ export function TransactionTableList({
         ),
         cell: ({ row }) => (
           <span className="relative">
-            {row.original.isNew && (
+            {row.original.isNewTransaction && (
               <span className="absolute -top-5 left-0">
                 <NewTransactionIcon />
               </span>
             )}
             <span className="text-sm text-gray-600">
-              {formatTransactionDate(row.original.tradeDate)}
+              {formatDealDate(row.original.dealDate)}
             </span>
           </span>
         ),
@@ -127,13 +127,13 @@ export function TransactionTableList({
       },
       {
         size: 150,
-        accessorKey: 'tradeAmount',
+        accessorKey: 'dealAmount',
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="거래가격" />
         ),
         cell: ({ row }) => (
           <span className="text-primary text-base font-bold">
-            {formatKoreanAmountText(row.original.tradeAmount)}
+            {formatKoreanAmountText(row.original.dealAmount)}
           </span>
         ),
       },

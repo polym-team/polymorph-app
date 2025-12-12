@@ -1,10 +1,10 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
-import { TransactionListResponse } from '../types';
+import { FetchTransactionListResponse } from '../types';
 import { useTransactionPageSearchParams } from './useTransactionPageSearchParams';
 
 export const useTransactionListQuery = (): UseQueryResult<
-  TransactionListResponse,
+  FetchTransactionListResponse,
   unknown
 > => {
   const { searchParams } = useTransactionPageSearchParams();

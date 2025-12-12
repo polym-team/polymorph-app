@@ -1,4 +1,4 @@
-import { parseApartToken } from '@/app/api/shared/services/transaction/service';
+import { parseFallbackToken } from '@/app/api/shared/services/transaction/service';
 import { ApartInfo, ApartInfoType } from '@/features/apart-info';
 import { ApartTransactionList } from '@/features/apart-transaction-list';
 
@@ -12,7 +12,7 @@ interface ContentProps {
 
 export async function Content({ apartToken }: ContentProps) {
   const response = await fetchApartInfo(apartToken);
-  const parsedToken = parseApartToken(apartToken);
+  const parsedToken = parseFallbackToken(apartToken);
 
   if (!parsedToken) {
     return <Error />;

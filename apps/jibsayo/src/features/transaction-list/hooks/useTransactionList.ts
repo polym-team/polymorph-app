@@ -16,29 +16,26 @@ interface Return {
   sorting: SortingState;
   pageIndex: PageIndexState;
   transactionStatus: TransactionStatus;
-  transactionItems: TransactionItemViewModel[];
+  transactions: TransactionItemViewModel[];
   toggleFavorite: (item: TransactionItemViewModel) => void;
   navigateToApartDetail: (item: TransactionItemViewModel) => void;
 }
 
 export const useTransactionList = (): Return => {
   const { pageIndex, sorting } = useTransactionViewSetting();
-  const { filteredTransactions, convertedTransactions } = useTransactionData({
-    pageIndex: pageIndex.state,
-    sorting: sorting.state,
-  });
-  const { transactionStatus } = useTransactionStatus({ filteredTransactions });
+
+  const { transactions } = useTransactionData();
+  const { transactionStatus } = useTransactionStatus({ transactions });
   const { toggleFavorite, navigateToApartDetail } = useTransactionHandler();
 
-  const summary = useTransactionSummary({ filteredTransactions });
-  const transactionItems = convertedTransactions;
+  const summary = useTransactionSummary({ transactions });
 
   return {
     summary,
     sorting,
     pageIndex,
     transactionStatus,
-    transactionItems,
+    transactions,
     toggleFavorite,
     navigateToApartDetail,
   };

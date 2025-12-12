@@ -1,11 +1,11 @@
 import { ApartTransactionItem } from '@/entities/apart-transaction';
 import { calculateAreaPyeong } from '@/entities/transaction';
 import {
+  formatDealDate,
   formatFloorText,
   formatKoreanAmountText,
   formatPercentText,
   formatPyeongText,
-  formatTransactionDate,
 } from '@/shared/utils/formatter';
 
 import { useEffect, useRef, useState } from 'react';
@@ -97,7 +97,7 @@ export function PriceChangeRateBadge({
           <div className="flex justify-between">
             <span className="text-gray-900">거래일</span>
             <span className="text-primary">
-              {formatTransactionDate(previousTradeItem.tradeDate)}
+              {formatDealDate(previousTradeItem.tradeDate)}
             </span>
           </div>
 

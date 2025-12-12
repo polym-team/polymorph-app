@@ -2,10 +2,10 @@ import { calculateAreaPyeong } from '@/entities/transaction';
 import { NewTransactionIcon } from '@/shared/ui/NewTransactionIcon';
 import { Pagination } from '@/shared/ui/Pagination';
 import {
+  formatDealDate,
   formatFloorText,
   formatKoreanAmountText,
   formatPyeongText,
-  formatTransactionDate,
 } from '@/shared/utils/formatter';
 
 import { Star } from 'lucide-react';
@@ -65,9 +65,9 @@ export function TransactionCardList({
           ))}
 
         {!isLoading &&
-          items.map((item, index) => (
+          items.map(item => (
             <Card
-              key={`${item.transactionId}__${index}`}
+              key={item.id}
               className="active:text-accent-foreground transition-colors duration-200 active:bg-gray-300"
               onClick={() => onRowClick(item)}
             >
@@ -75,7 +75,7 @@ export function TransactionCardList({
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex flex-col gap-y-0.5">
                     <div className="relative flex flex-wrap items-center gap-2">
-                      {item.isNew && (
+                      {item.isNewTransaction && (
                         <span className="absolute -top-5 left-0">
                           <NewTransactionIcon />
                         </span>
@@ -109,10 +109,10 @@ export function TransactionCardList({
                   </div>
                   <div className="flex flex-col items-end gap-y-0.5">
                     <strong className="text-primary whitespace-nowrap font-bold">
-                      {formatKoreanAmountText(item.tradeAmount)}
+                      {formatKoreanAmountText(item.dealAmount)}
                     </strong>
                     <time className="text-xs text-gray-400">
-                      {formatTransactionDate(item.tradeDate)}
+                      {formatDealDate(item.dealDate)}
                     </time>
                   </div>
                 </div>

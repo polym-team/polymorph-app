@@ -3,7 +3,6 @@ import { TransactionItem } from '@/entities/transaction';
 export type TransactionStatus = 'LOADING' | 'NOT_SEARCHED' | 'EMPTY' | 'LOADED';
 
 export interface TransactionItemViewModel extends TransactionItem {
-  isNew: boolean;
   isFavorite: boolean;
 }
 

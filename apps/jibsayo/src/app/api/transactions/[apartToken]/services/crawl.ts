@@ -1,6 +1,6 @@
 import {
   createTransactionId,
-  parseApartToken,
+  parseFallbackToken,
 } from '@/app/api/shared/services/transaction/service';
 import { logger } from '@/app/api/shared/utils/logger';
 
@@ -238,7 +238,7 @@ const fetchTradeDetail = async (
 export const createResponse = async (
   apartToken: string
 ): Promise<TransactionsByTokenResponse> => {
-  const parsedApartToken = parseApartToken(apartToken);
+  const parsedApartToken = parseFallbackToken(apartToken);
   if (!parsedApartToken) {
     throw new Error('아파트 토큰 파싱 실패');
   }

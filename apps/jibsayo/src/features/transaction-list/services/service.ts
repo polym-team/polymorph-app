@@ -33,7 +33,7 @@ export const calculateTransactionAverageAmount = (
 
   const totalAmount = transactions.reduce(
     (acc, transaction) =>
-      acc + transaction.tradeAmount / calculateAreaPyeong(transaction.size),
+      acc + transaction.dealAmount / calculateAreaPyeong(transaction.size),
     0
   );
 

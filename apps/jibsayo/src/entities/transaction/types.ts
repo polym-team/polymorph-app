@@ -1,15 +1,3 @@
-export interface TransactionItem {
-  transactionId: string;
-  apartToken: string;
-  apartName: string;
-  buildedYear: number | null;
-  address: string;
-  tradeDate: string;
-  size: number;
-  floor: number | null;
-  tradeAmount: number;
-}
-
 export interface SearchParams {
   regionCode: string;
   tradeDate: string;
@@ -23,7 +11,23 @@ export interface SearchParams {
   orderDirection: 'asc' | 'desc';
 }
 
-export interface TransactionListResponse {
-  count: number;
-  list: TransactionItem[];
+export interface TransactionItem {
+  id: number;
+  regionCode: string;
+  apartName: string;
+  dealDate: string;
+  dealAmount: number;
+  size: number;
+  floor: number;
+  isNewTransaction: boolean;
+  apartId: number | null;
+  fallbackToken: string | null;
+  buildedYear: number | null;
+  householdCount: number | null;
+  dong: string | null;
+}
+
+export interface FetchTransactionListResponse {
+  totalCount: number;
+  transactions: TransactionItem[];
 }
