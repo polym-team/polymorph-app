@@ -5,6 +5,7 @@ import {
   formatFloorText,
   formatKoreanAmountText,
   formatPyeongText,
+  formatSizeText,
 } from '@/shared/utils/formatter';
 
 import { Star } from 'lucide-react';
@@ -51,24 +52,25 @@ export function TransactionTableList({
         size: 50,
         accessorKey: 'favorite',
         header: () => <></>,
-        cell: ({ row }) => (
-          <button
-            className="flex items-center"
-            onClick={e => {
-              e.stopPropagation();
-              e.preventDefault();
-              onFavoriteToggle(row.original);
-            }}
-          >
-            <Star
-              className={cn(
-                'h-[16px] w-[16px]',
-                row.original.isFavorite && 'fill-yellow-400 text-yellow-400',
-                !row.original.isFavorite && 'fill-gray-300 text-gray-300'
-              )}
-            />
-          </button>
-        ),
+        cell: ({ row }) =>
+          row.original.apartId ? (
+            <button
+              className="flex items-center"
+              onClick={e => {
+                e.stopPropagation();
+                e.preventDefault();
+                onFavoriteToggle(row.original);
+              }}
+            >
+              <Star
+                className={cn(
+                  'h-[16px] w-[16px]',
+                  row.original.isFavorite && 'fill-yellow-400 text-yellow-400',
+                  !row.original.isFavorite && 'fill-gray-300 text-gray-300'
+                )}
+              />
+            </button>
+          ) : null,
       },
       {
         size: 120,
@@ -113,16 +115,21 @@ export function TransactionTableList({
         ),
       },
       {
-        size: 120,
+        size: 180,
         accessorKey: 'size',
         enableSorting: true,
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="평수" />
         ),
         cell: ({ row }) => (
-          <span className="text-gray-600">
-            {formatPyeongText(calculateAreaPyeong(row.original.size))}
-          </span>
+          <div className="flex items-center gap-x-1">
+            <span className="text-gray-600">
+              {formatPyeongText(calculateAreaPyeong(row.original.size))}
+            </span>
+            <span className="-translate-y-[1px] text-sm text-gray-500">
+              ({formatSizeText(Number(row.original.size))})
+            </span>
+          </div>
         ),
       },
       {

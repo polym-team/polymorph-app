@@ -1,5 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
+import { calculateExclusiveAreaSquareMeters } from '../services/calculator';
 import { FetchTransactionListResponse } from '../types';
 import { useTransactionPageSearchParams } from './useTransactionPageSearchParams';
 
@@ -15,8 +16,14 @@ export const useTransactionListQuery = (): UseQueryResult<
   urlSearchParams.append('pageIndex', searchParams.pageIndex.toString());
   urlSearchParams.append('pageSize', '15');
   urlSearchParams.append('apartName', searchParams.apartName);
-  urlSearchParams.append('minSize', searchParams.minSize.toString());
-  urlSearchParams.append('maxSize', searchParams.maxSize.toString());
+  urlSearchParams.append(
+    'minSize',
+    calculateExclusiveAreaSquareMeters(searchParams.minSize, 'min').toString()
+  );
+  urlSearchParams.append(
+    'maxSize',
+    calculateExclusiveAreaSquareMeters(searchParams.maxSize, 'max').toString()
+  );
   urlSearchParams.append(
     'newTransactionOnly',
     searchParams.newTransactionOnly.toString()

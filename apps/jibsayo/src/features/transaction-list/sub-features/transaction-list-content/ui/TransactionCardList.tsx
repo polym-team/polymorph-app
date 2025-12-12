@@ -83,24 +83,26 @@ export function TransactionCardList({
                       <span className="inline-block text-sm font-semibold leading-5">
                         {item.apartName}
                       </span>
-                      <button
-                        type="button"
-                        className="-translate-y-[0.5px]"
-                        onClick={e => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          onFavoriteToggle(item);
-                        }}
-                      >
-                        <Star
-                          className={cn(
-                            'h-[16px] w-[16px]',
-                            item.isFavorite &&
-                              'fill-yellow-400 text-yellow-400',
-                            !item.isFavorite && 'fill-gray-300 text-gray-300'
-                          )}
-                        />
-                      </button>
+                      {item.apartId && (
+                        <button
+                          type="button"
+                          className="-translate-y-[0.5px]"
+                          onClick={e => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            onFavoriteToggle(item);
+                          }}
+                        >
+                          <Star
+                            className={cn(
+                              'h-[16px] w-[16px]',
+                              item.isFavorite &&
+                                'fill-yellow-400 text-yellow-400',
+                              !item.isFavorite && 'fill-gray-300 text-gray-300'
+                            )}
+                          />
+                        </button>
+                      )}
                     </div>
                     <span className="text-sm text-gray-500">
                       {item.floor ? formatFloorText(item.floor) : ''} ·{' '}

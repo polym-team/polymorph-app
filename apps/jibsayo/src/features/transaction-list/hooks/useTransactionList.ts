@@ -25,10 +25,9 @@ export const useTransactionList = (): Return => {
   const { pageIndex, sorting } = useTransactionViewSetting();
 
   const { transactions } = useTransactionData();
-  const { transactionStatus } = useTransactionStatus({ transactions });
+  const { transactionStatus } = useTransactionStatus();
   const { toggleFavorite, navigateToApartDetail } = useTransactionHandler();
-
-  const summary = useTransactionSummary({ transactions });
+  const summary = useTransactionSummary();
 
   return {
     summary,

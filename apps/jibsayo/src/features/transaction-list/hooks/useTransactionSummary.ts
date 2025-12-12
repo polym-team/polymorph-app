@@ -1,18 +1,17 @@
-import { TransactionItem } from '@/entities/transaction';
+import { useTransactionListQuery } from '@/entities/transaction';
 
 import { calculateTransactionAverageAmount } from '../services/service';
 import { SummaryState } from '../types';
 
-type Params = {
-  transactions: TransactionItem[];
-};
-
 type Return = SummaryState;
 
-export const useTransactionSummary = ({ transactions }: Params): Return => {
-  const transactionTotalCount = transactions.length;
-  const transactionAverageAmount =
-    calculateTransactionAverageAmount(transactions);
+export const useTransactionSummary = (): Return => {
+  const { data: transactionListData } = useTransactionListQuery();
+
+  const transactionTotalCount = transactionListData?.totalCount ?? 0;
+  const transactionAverageAmount = calculateTransactionAverageAmount(
+    transactionListData?.transactions ?? []
+  );
 
   return { transactionTotalCount, transactionAverageAmount };
 };
