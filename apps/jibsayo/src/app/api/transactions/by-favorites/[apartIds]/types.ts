@@ -11,6 +11,7 @@ export interface ApartmentTransactionSummary {
   latestTransaction: TransactionItem | null;
   highestPriceTransaction: TransactionItem | null;
   lowestPriceTransaction: TransactionItem | null;
+  hasNewTransaction: boolean;
 }
 
 export interface TransactionsByFavoritesResponse {

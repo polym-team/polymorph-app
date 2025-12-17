@@ -41,7 +41,7 @@ export const useTransactionPageSearchParams = (): Return => {
     navigationSearchParams.get('newTransactionOnly') === 'true';
   const orderBy =
     (navigationSearchParams.get('orderBy') as keyof TransactionItem) ||
-    'tradeDate';
+    'dealDate';
   const orderDirection =
     (navigationSearchParams.get('orderDirection') as 'asc' | 'desc') || 'desc';
 

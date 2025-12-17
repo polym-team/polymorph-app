@@ -67,6 +67,7 @@ export const getLowestPriceTransactionByApartId = async (
     FROM transactions
     WHERE apart_id = ?
       AND cancellation_type != 'CANCELED'
+      AND deal_date >= DATE_SUB(CURDATE(), INTERVAL 5 YEAR)
     ORDER BY deal_amount ASC, deal_date DESC
     LIMIT 1
   `;
@@ -74,4 +75,19 @@ export const getLowestPriceTransactionByApartId = async (
   const rows = await query<DbTransactionRow[]>(sql, [apartId]);
 
   return rows[0] || null;
+};
+
+export const hasNewTransactionByApartId = async (
+  apartId: number
+): Promise<boolean> => {
+  const sql = `
+    SELECT COUNT(*) as count
+    FROM transactions
+    WHERE apart_id = ?
+      AND DATE(created_at) = CURDATE()
+  `;
+
+  const rows = await query<{ count: number }[]>(sql, [apartId]);
+
+  return (rows[0]?.count || 0) > 0;
 };

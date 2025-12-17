@@ -12,11 +12,19 @@ export function FavoriteApartList() {
     useFavoriteApartList();
 
   if (isLoading) {
-    return <Skeleton />;
+    return (
+      <PageContainer className="p-0 lg:p-3">
+        <Skeleton />
+      </PageContainer>
+    );
   }
 
   if (!regionItems.length) {
-    return <EmptyList />;
+    return (
+      <PageContainer className="p-0 lg:p-3">
+        <EmptyList />
+      </PageContainer>
+    );
   }
 
   return (

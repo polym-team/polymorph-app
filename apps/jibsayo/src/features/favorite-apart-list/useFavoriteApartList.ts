@@ -1,6 +1,7 @@
 import {
   useAddFavoriteApartMutation,
   useFavoriteApartListQuery,
+  useFavoritesTransactions,
   useRemoveFavoriteApartMutation,
 } from '@/entities/apart';
 import { FavoriteApartItem } from '@/entities/apart';
@@ -23,7 +24,8 @@ interface Return {
 
 export const useFavoriteApartList = (): Return => {
   const { navigate } = useNavigate();
-  const { data = [], isLoading } = useFavoriteApartListQuery();
+  const { data: favoriteApartsData = [], isLoading: isFavoriteApartsLoading } =
+    useFavoriteApartListQuery();
   const { mutate: mutateFavoriteApartAdd } = useAddFavoriteApartMutation();
   const { mutate: mutateFavoriteApartRemove } =
     useRemoveFavoriteApartMutation();
@@ -34,22 +36,42 @@ export const useFavoriteApartList = (): Return => {
     FavoriteApartItem[]
   >([]);
 
+  const apartIds = useMemo(() => {
+    return favoriteApartsData.map(item => item.apartId);
+  }, [favoriteApartsData]);
+
+  const { data: transactionsData, isLoading: isFavoritesTransactionsLoading } =
+    useFavoritesTransactions(apartIds);
+
   useEffect(() => {
     if (isChangingFavoriteApartList.current) {
       isChangingFavoriteApartList.current = true;
       return;
     }
 
-    setLocalFavoriteApartList(data);
-  }, [data]);
+    setLocalFavoriteApartList(favoriteApartsData);
+  }, [favoriteApartsData]);
 
+  const isLoading = isFavoriteApartsLoading || isFavoritesTransactionsLoading;
   const favoriteApartIdsSet = useMemo(() => {
-    return new Set(data.map(item => item.apartId));
-  }, [data]);
+    return new Set(favoriteApartsData.map(item => item.apartId));
+  }, [favoriteApartsData]);
+
+  const transactionsMap = useMemo(() => {
+    const map = new Map();
+    transactionsData?.results.forEach(summary => {
+      map.set(summary.apartId, summary);
+    });
+    return map;
+  }, [transactionsData]);
 
   const regionItems = useMemo(() => {
-    return convertToRegionItems(localFavoriteApartList, favoriteApartIdsSet);
-  }, [localFavoriteApartList, favoriteApartIdsSet]);
+    return convertToRegionItems(
+      localFavoriteApartList,
+      favoriteApartIdsSet,
+      transactionsMap
+    );
+  }, [localFavoriteApartList, favoriteApartIdsSet, transactionsMap]);
 
   const addFavoriteApart = (apartItem: FavoriteApartItemViewModel) => {
     isChangingFavoriteApartList.current = true;
@@ -77,7 +99,8 @@ export const useFavoriteApartList = (): Return => {
 
     navigate(`${ROUTE_PATH.APART}/${apartItem.apartId}`);
   };
-
+  console.log('transactionsMap: ', transactionsMap);
+  console.log('regionItems: ', regionItems);
   return {
     isLoading,
     regionItems,
