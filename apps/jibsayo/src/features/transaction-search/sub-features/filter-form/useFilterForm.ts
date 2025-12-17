@@ -54,7 +54,7 @@ export const useFilterForm = ({ form, onFormChange }: Params): Return => {
   const clearFilter = () => {
     onFormChange({
       minSize: SEARCH_PARAM_CONFIGS.SEARCH_MIN_SIZE,
-      maxSize: SEARCH_PARAM_CONFIGS.SEARCH_MAX_SIZE,
+      maxSize: Infinity,
       apartName: '',
       favoriteOnly: false,
       newTransactionOnly: false,

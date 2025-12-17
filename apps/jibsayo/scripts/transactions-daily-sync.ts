@@ -310,6 +310,7 @@ function matchByKey(
   dbRemaining: TransactionWithId[],
   apiRemaining: TransactionDbRow[]
 ): MatchingResult {
+  // 1. API 데이터를 키별로 그룹화
   const apiByKey = new Map<string, TransactionDbRow[]>();
   for (const apiRow of apiRemaining) {
     const key = createUniqueKey(apiRow);
@@ -319,37 +320,57 @@ function matchByKey(
     apiByKey.get(key)!.push(apiRow);
   }
 
+  // 2. DB 데이터를 키별로 그룹화
+  const dbByKey = new Map<string, TransactionWithId[]>();
+  for (const dbRow of dbRemaining) {
+    const key = createUniqueKey(dbRow);
+    if (!dbByKey.has(key)) {
+      dbByKey.set(key, []);
+    }
+    dbByKey.get(key)!.push(dbRow);
+  }
+
   const toUpdate: Array<{
     dbRow: TransactionWithId;
     newRow: TransactionDbRow;
   }> = [];
   const toDelete: TransactionWithId[] = [];
   const toInsert: TransactionDbRow[] = [];
-  const processedApiIndices = new Set<number>();
+  const consumedApiRows = new Set<TransactionDbRow>();
 
-  for (const dbRow of dbRemaining) {
-    const key = createUniqueKey(dbRow);
+  // 3. 모든 고유 키에 대해 1:1 매칭 수행
+  const allKeys = new Set([...apiByKey.keys(), ...dbByKey.keys()]);
+
+  for (const key of allKeys) {
     const apiMatches = apiByKey.get(key) || [];
+    const dbMatches = dbByKey.get(key) || [];
+    const minLength = Math.min(dbMatches.length, apiMatches.length);
 
-    if (apiMatches.length === 0) {
-      toDelete.push(dbRow);
-    } else if (apiMatches.length === 1) {
-      toUpdate.push({ dbRow, newRow: apiMatches[0] });
-      processedApiIndices.add(apiRemaining.indexOf(apiMatches[0]));
-    } else {
-      toUpdate.push({ dbRow, newRow: apiMatches[0] });
-      processedApiIndices.add(apiRemaining.indexOf(apiMatches[0]));
+    // 3.1. 1:1 매칭 (UPDATE)
+    for (let i = 0; i < minLength; i++) {
+      toUpdate.push({
+        dbRow: dbMatches[i],
+        newRow: apiMatches[i],
+      });
+      consumedApiRows.add(apiMatches[i]);
+    }
 
-      for (let i = 1; i < apiMatches.length; i++) {
-        toInsert.push(apiMatches[i]);
-        processedApiIndices.add(apiRemaining.indexOf(apiMatches[i]));
-      }
+    // 3.2. DB 행이 더 많으면 나머지 DELETE
+    for (let i = minLength; i < dbMatches.length; i++) {
+      toDelete.push(dbMatches[i]);
+    }
+
+    // 3.3. API 행이 더 많으면 나머지 INSERT
+    for (let i = minLength; i < apiMatches.length; i++) {
+      toInsert.push(apiMatches[i]);
+      consumedApiRows.add(apiMatches[i]);
     }
   }
 
-  for (let i = 0; i < apiRemaining.length; i++) {
-    if (!processedApiIndices.has(i)) {
-      toInsert.push(apiRemaining[i]);
+  // 4. 안전장치: 소진되지 않은 API 행은 INSERT
+  for (const apiRow of apiRemaining) {
+    if (!consumedApiRows.has(apiRow)) {
+      toInsert.push(apiRow);
     }
   }
 
@@ -634,12 +655,22 @@ async function processRegion(regionCode: string): Promise<{
     );
 
     // 4. DB id 매핑 (yesterdayRemaining을 원본 yesterday에서 id 찾기)
+    const usedOriginals = new Set<number>();
     const yesterdayWithIds = yesterdayRemaining.map(yRow => {
       const original = yesterday.find(y => {
+        // 이미 사용된 원본은 스킵
+        if (y._dbId && usedOriginals.has(y._dbId)) {
+          return false;
+        }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { _dbId, ...rest } = y;
         return JSON.stringify(rest) === JSON.stringify(yRow);
       });
+
+      if (original?._dbId) {
+        usedOriginals.add(original._dbId);
+      }
+
       return {
         ...yRow,
         _dbId: original?._dbId,
@@ -675,7 +706,10 @@ async function processRegion(regionCode: string): Promise<{
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
 
-    console.error(`[${regionCode}] 에러 메시지:`, errorMessage || '(빈 메시지)');
+    console.error(
+      `[${regionCode}] 에러 메시지:`,
+      errorMessage || '(빈 메시지)'
+    );
     if (errorStack) {
       console.error(`[${regionCode}] 스택 트레이스:`, errorStack);
     }
@@ -697,6 +731,15 @@ async function main(): Promise<void> {
   console.log(`시작 시각: ${new Date().toLocaleString('ko-KR')}`);
   console.log('='.repeat(60));
 
+  // 지역 코드와 이름 매핑 생성
+  const regionCodeMap = new Map<string, string>();
+  regionCodesData.forEach(region => {
+    region.children.forEach(child => {
+      regionCodeMap.set(child.code, `${region.name} ${child.name}`);
+    });
+  });
+
+  // 전체 지역
   const regionCodes = regionCodesData.flatMap(region =>
     region.children.map(child => child.code)
   );
@@ -749,18 +792,43 @@ async function main(): Promise<void> {
   console.log(`🗑️  총 삭제: ${totalDeleted}건`);
   console.log(`➕ 총 신규 등록: ${totalInserted}건`);
 
+  // 지역별 상세 결과 출력
+  console.log('\n' + '='.repeat(60));
+  console.log('📊 지역별 상세 결과:');
+  console.log('='.repeat(60));
+
+  // 성공한 지역만 필터링하고 INSERT+UPDATE+DELETE 건수가 있는 지역만 출력
+  const successResults = results.filter(
+    r => r.success && (r.inserted > 0 || r.updated > 0 || r.deleted > 0)
+  );
+
+  if (successResults.length > 0) {
+    successResults.forEach(result => {
+      const regionName = regionCodeMap.get(result.regionCode) || '알 수 없음';
+      console.log(
+        `- [${result.regionCode}] ${regionName}: INSERT: ${result.inserted}건, UPDATE: ${result.updated}건, DELETE: ${result.deleted}건`
+      );
+    });
+  } else {
+    console.log('변경사항이 있는 지역이 없습니다.');
+  }
+
   // 실패한 지역 상세 출력
   if (failCount > 0) {
+    console.log('\n' + '='.repeat(60));
+    console.log('❌ 실패한 지역:');
+    console.log('='.repeat(60));
+
     const errors = results
       .filter(r => !r.success)
       .map(r => ({
         regionCode: r.regionCode,
+        regionName: regionCodeMap.get(r.regionCode) || '알 수 없음',
         error: r.error || 'Unknown error',
       }));
 
-    console.log('\n❌ 실패한 지역:');
-    errors.forEach(({ regionCode, error }) => {
-      console.log(`  - [${regionCode}] ${error}`);
+    errors.forEach(({ regionCode, regionName, error }) => {
+      console.log(`- [${regionCode}] ${regionName}: ${error}`);
     });
   }
 
