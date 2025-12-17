@@ -73,7 +73,7 @@ export function TransactionTableList({
       },
       {
         size: 120,
-        accessorKey: 'tradeDate',
+        accessorKey: 'dealDate',
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="거래일" />
         ),

@@ -18,7 +18,7 @@ const buildWhereConditions = (
     't.region_code = ?',
     't.deal_date >= ?',
     't.deal_date < ?',
-    "t.cancellation_type != 'CANCELED'",
+    // "t.cancellation_type != 'CANCELED'",
   ];
   const params: (string | number)[] = [regionCode, startDate, endDate];
 
@@ -87,12 +87,12 @@ const fetchTransactions = async (
     SELECT
       t.id,
       t.region_code as regionCode,
-      t.apart_name as apartName,
       t.deal_date as dealDate,
       t.deal_amount as dealAmount,
       t.exclusive_area as size,
       t.floor,
       t.apart_id as apartId,
+      a.apart_name as apartName,
       a.jibun,
       a.dong as dong,
       a.completion_year as buildedYear,
@@ -167,7 +167,7 @@ export const fetchTransactionList = async ({
 
   // 다음 달의 첫날 계산 (해당 월의 마지막 날짜를 포함하기 위해)
   const nextMonth = new Date(parseInt(year), parseInt(month), 1);
-  const endDate = nextMonth.toISOString().split('T')[0];
+  const endDate = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}-${String(nextMonth.getDate()).padStart(2, '0')}`;
 
   // offset 계산
   const offset = pageIndex * pageSize;
