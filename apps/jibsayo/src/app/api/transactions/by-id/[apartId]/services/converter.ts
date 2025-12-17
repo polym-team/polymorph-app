@@ -21,6 +21,7 @@ export const covertToTransactionItem = (
     const result: TransactionItem = {
       id: row.id,
       dealDate: row.dealDate,
+      cancellationDate: row.cancellationDate,
       floor: row.floor,
       size: parseFloat(row.size),
       isNewTransaction: Boolean(row.isNewTransaction),

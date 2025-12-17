@@ -5,6 +5,7 @@ export type PageIndexes = { year: number; index: number; count: number }[];
 export interface DbTransactionRow {
   id: number;
   dealDate: string;
+  cancellationDate: string | null;
   size: string;
   floor: number;
   dealAmount: number;
@@ -15,6 +16,7 @@ export interface DbTransactionRow {
 export interface TransactionItem {
   id: number;
   dealDate: string;
+  cancellationDate: string | null;
   size: number;
   floor: number;
   dealAmount: number;
@@ -22,7 +24,11 @@ export interface TransactionItem {
   isNewTransaction: boolean;
   prevTransaction: Omit<
     TransactionItem,
-    'id' | 'prevTransaction' | 'changeRate' | 'isNewTransaction'
+    | 'id'
+    | 'prevTransaction'
+    | 'changeRate'
+    | 'isNewTransaction'
+    | 'cancellationDate'
   > | null;
 }
 

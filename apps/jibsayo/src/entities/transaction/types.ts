@@ -24,6 +24,7 @@ export interface TransactionItem {
   fallbackToken: string | null;
   buildedYear: number | null;
   householdCount: number | null;
+  completionYear: number | null;
   dong: string | null;
 }
 

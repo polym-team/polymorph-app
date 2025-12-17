@@ -4,6 +4,7 @@ import {
   formatDealDate,
   formatFloorText,
   formatKoreanAmountText,
+  formatNumber,
   formatPyeongText,
   formatSizeText,
 } from '@/shared/utils/formatter';
@@ -97,7 +98,19 @@ export function TransactionTableList({
           <DataTableColumnHeader column={column} title="아파트명" />
         ),
         cell: ({ row }) => (
-          <span className="font-semibold">{row.original.apartName}</span>
+          <div className="flex items-center gap-x-2">
+            <span className="font-semibold">{row.original.apartName}</span>
+            {row.original.householdCount || row.original.completionYear ? (
+              <span className="-translate-y-[1px] text-sm text-gray-500">
+                (
+                {!!row.original.householdCount &&
+                  `${formatNumber(row.original.householdCount)}세대 · `}
+                {!!row.original.completionYear &&
+                  `${row.original.completionYear}년식`}
+                )
+              </span>
+            ) : null}
+          </div>
         ),
       },
       {

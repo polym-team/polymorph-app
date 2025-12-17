@@ -1,6 +1,7 @@
 export interface ApartTransactionItem {
   id: number;
   dealDate: string;
+  cancellationDate: string | null;
   size: number;
   floor: number;
   dealAmount: number;

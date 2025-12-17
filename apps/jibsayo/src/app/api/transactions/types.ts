@@ -9,6 +9,7 @@ export interface DbTransactionRow {
   apartId: number | null;
   buildedYear: number | null;
   householdCount: number | null;
+  completionYear: number | null;
   jibun: string | null;
   dong: string | null;
   fallbackToken: string | null;

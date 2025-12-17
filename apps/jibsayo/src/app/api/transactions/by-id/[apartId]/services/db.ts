@@ -82,6 +82,7 @@ export const getTransactionsByApartId = async ({
       t.exclusive_area as size,
       t.floor,
       t.deal_amount as dealAmount,
+      t. cancellation_date as cancellationDate,
       DATE(t.created_at) = CURDATE() as isNewTransaction,
       (
         SELECT JSON_OBJECT(
@@ -95,6 +96,7 @@ export const getTransactionsByApartId = async ({
         WHERE pt.apart_id = t.apart_id
           AND pt.exclusive_area = t.exclusive_area
           AND pt.deal_date < t.deal_date
+          AND pt.cancellation_type != 'CANCELED'
         ORDER BY pt.deal_date DESC
         LIMIT 1
       ) as prevTransaction
@@ -152,7 +154,7 @@ export const getPageIndexesByYear = async ({
     Array<{ year: number; page_index: number; count: number }>
   >(sql, [...queryParams, pageSize]);
 
-  return rows.map((row) => ({
+  return rows.map(row => ({
     year: row.year,
     index: row.page_index,
     count: Number(row.count),

@@ -18,7 +18,7 @@ const buildWhereConditions = (
     't.region_code = ?',
     't.deal_date >= ?',
     't.deal_date < ?',
-    // "t.cancellation_type != 'CANCELED'",
+    "t.cancellation_type != 'CANCELED'",
   ];
   const params: (string | number)[] = [regionCode, startDate, endDate];
 
@@ -120,6 +120,7 @@ const fetchTransactions = async (
       a.dong as dong,
       a.completion_year as buildedYear,
       a.total_household_count as householdCount,
+      a.completion_year as completionYear,
       DATE(t.created_at) = CURDATE() as isNewTransaction
     FROM transactions t
     LEFT JOIN apartments a ON t.apart_id = a.id

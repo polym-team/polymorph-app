@@ -34,6 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from '@package/ui';
+import { cn } from '@package/utils';
 
 import { TRANSACTION_LIST_PAGE_SIZE } from '../consts';
 import { Sorting } from '../types';
@@ -199,31 +200,56 @@ export function TransactionListTable({
                     <TableRow>
                       <TableCell>
                         <div className="relative">
-                          <span className="absolute left-0 top-[-16px]">
-                            {item.isNewTransaction && <NewTransactionIcon />}
-                          </span>
-                          <span className="text-sm text-gray-500 lg:text-base">
+                          {item.isNewTransaction && !item.cancellationDate && (
+                            <span className="absolute left-0 top-[-16px]">
+                              <NewTransactionIcon />
+                            </span>
+                          )}
+                          <span
+                            className={cn(
+                              'text-sm text-gray-500 lg:text-base',
+                              item.cancellationDate && 'line-through'
+                            )}
+                          >
                             {formatDealDate(item.dealDate)}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="flex gap-x-1 text-sm text-gray-600 lg:text-base">
+                        <span
+                          className={cn(
+                            'flex gap-x-1 text-sm text-gray-600 lg:text-base',
+                            item.cancellationDate && 'line-through'
+                          )}
+                        >
                           {formatFloorText(item.floor)} /{' '}
                           {formatPyeongText(calculateAreaPyeong(item.size))}
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1">
-                          {item.changeRate !== 0 && item.prevTransaction && (
-                            <span className="translate-x-[1px]">
-                              <PriceChangeRateBadge
-                                priceChangeRate={item.changeRate}
-                                prevTransactionItem={item.prevTransaction}
-                              />
+                          {item.changeRate !== 0 &&
+                            item.prevTransaction &&
+                            !item.cancellationDate && (
+                              <span className="translate-x-[1px]">
+                                <PriceChangeRateBadge
+                                  priceChangeRate={item.changeRate}
+                                  prevTransactionItem={item.prevTransaction}
+                                />
+                              </span>
+                            )}
+                          {item.cancellationDate && (
+                            <span className="rounded-[6px] bg-gray-200 px-2 py-1 text-sm">
+                              거래 취소
                             </span>
                           )}
-                          <span className="text-primary font-bold">
+                          <span
+                            className={cn(
+                              item.cancellationDate &&
+                                'text-gray-500 line-through',
+                              !item.cancellationDate && 'text-primary font-bold'
+                            )}
+                          >
                             {formatKoreanAmountText(item.dealAmount)}
                           </span>
                         </div>

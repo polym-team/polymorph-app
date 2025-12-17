@@ -59,9 +59,12 @@ export const useTransactionListQuery = (): UseQueryResult<
     enabled: !!searchParams.regionCode && !!searchParams.tradeDate,
     placeholderData: keepPreviousData,
     queryFn: async () => {
-      const response = await fetch(
-        `/api/transactions?${urlSearchParams.toString()}`
-      );
+      const MIN_DELAY = 300;
+      const [response] = await Promise.all([
+        fetch(`/api/transactions?${urlSearchParams.toString()}`),
+        new Promise(resolve => setTimeout(resolve, MIN_DELAY)),
+      ]);
+
       return response.json();
     },
   });
