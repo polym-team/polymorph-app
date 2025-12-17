@@ -92,10 +92,17 @@ export const useTransactionChartView = ({
       return d3.scaleLinear().domain([0, 100000]).range([priceChartHeight, 0]);
     }
 
+    const minPrice = d3.min(chartData, d => d.averagePrice) || 0;
     const maxPrice = d3.max(chartData, d => d.averagePrice) || 0;
+
+    const eok = 100000000;
+
+    const minDomain = Math.floor(minPrice / eok) * eok;
+    const maxDomain = (Math.ceil(maxPrice / eok) + 1) * eok;
+
     return d3
       .scaleLinear()
-      .domain([0, maxPrice * 1.1])
+      .domain([minDomain, maxDomain])
       .range([priceChartHeight, 0]);
   }, [chartData, priceChartHeight]);
 
