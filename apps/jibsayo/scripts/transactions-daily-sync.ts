@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import * as dotenv from 'dotenv';
 
 import { getDbPool, query } from '../src/app/api/shared/libs/database';
@@ -11,13 +12,27 @@ dotenv.config({ path: '.env.local' });
 const REGION_BATCH_SIZE = 10;
 
 // ============================================================
+// Apartment Code 생성
+// ============================================================
+
+function generateApartmentCode(
+  regionCode: string,
+  apartName: string,
+  jibun: string | null,
+  dong: string | null,
+  completionYear: number | null
+): string {
+  const str = `${regionCode}_${apartName}_${jibun || ''}_${dong || ''}_${completionYear || ''}`;
+  return crypto.createHash('md5').update(str).digest('hex').substring(0, 16);
+}
+
+// ============================================================
 // 타입 정의
 // ============================================================
 
 interface TransactionDbRow {
   region_code: string;
   apart_id: number | null;
-  apart_name: string;
   deal_date: string | null;
   deal_amount: number | null;
   exclusive_area: number | null;
@@ -40,7 +55,20 @@ interface TransactionDbRow {
 interface ApartmentInfo {
   id: number;
   apart_name: string;
-  jibun: string;
+  jibun: string | null;
+  dong: string | null;
+  completion_year: number | null;
+}
+
+// 복합 키 생성 함수 (아파트 찾기용)
+function createApartmentKey(
+  regionCode: string,
+  apartName: string,
+  jibun: string | null,
+  dong: string | null,
+  completionYear: number | null
+): string {
+  return `${regionCode}|${apartName}|${jibun || ''}|${dong || ''}|${completionYear || ''}`;
 }
 
 // 지역의 모든 아파트 정보 조회
@@ -49,21 +77,101 @@ async function loadApartmentsForRegion(
 ): Promise<Map<string, number>> {
   const apartments = await query<ApartmentInfo[]>(
     `
-    SELECT id, apart_name, jibun
+    SELECT id, apart_name, jibun, dong, completion_year
     FROM apartments
     WHERE region_code = ?
   `,
     [regionCode]
   );
 
-  // "apart_name|jibun" 형태의 키로 Map 생성
+  // 복합 키 (regionCode|name|jibun|dong|year)를 키로 하는 Map 생성
   const apartmentMap = new Map<string, number>();
   for (const apt of apartments) {
-    const key = `${apt.apart_name}|${apt.jibun || ''}`;
+    const key = createApartmentKey(
+      regionCode,
+      apt.apart_name,
+      apt.jibun,
+      apt.dong,
+      apt.completion_year
+    );
     apartmentMap.set(key, apt.id);
   }
 
   return apartmentMap;
+}
+
+// 아파트 찾기 또는 생성
+async function findOrCreateApartment(
+  regionCode: string,
+  apartName: string,
+  jibun: string | null,
+  dong: string | null,
+  completionYear: number | null,
+  apartmentsMap: Map<string, number>
+): Promise<number> {
+  // 1. 캐시에서 복합 키로 먼저 확인
+  const apartKey = createApartmentKey(
+    regionCode,
+    apartName,
+    jibun,
+    dong,
+    completionYear
+  );
+  const cachedId = apartmentsMap.get(apartKey);
+  if (cachedId) {
+    return cachedId;
+  }
+
+  // 2. DB에서 확인 (캐시 미스) - 복합 조건으로 검색
+  const existing = await query<{ id: number }[]>(
+    `
+    SELECT id FROM apartments
+    WHERE region_code = ?
+      AND apart_name = ?
+      AND (jibun = ? OR (jibun IS NULL AND ? IS NULL))
+      AND (dong = ? OR (dong IS NULL AND ? IS NULL))
+      AND (completion_year = ? OR (completion_year IS NULL AND ? IS NULL))
+    `,
+    [
+      regionCode,
+      apartName,
+      jibun,
+      jibun,
+      dong,
+      dong,
+      completionYear,
+      completionYear,
+    ]
+  );
+
+  if (existing.length > 0) {
+    const apartId = existing[0].id;
+    apartmentsMap.set(apartKey, apartId);
+    return apartId;
+  }
+
+  // 3. 새로 생성 (이때만 apart_code 생성)
+  const apartCode = generateApartmentCode(
+    regionCode,
+    apartName,
+    jibun,
+    dong,
+    completionYear
+  );
+
+  const result = await query<{ insertId: number }>(
+    `
+    INSERT INTO apartments (
+      region_code, apart_code, apart_name, completion_year, dong, jibun
+    ) VALUES (?, ?, ?, ?, ?, ?)
+  `,
+    [regionCode, apartCode, apartName, completionYear, dong, jibun]
+  );
+
+  const newApartId = result.insertId;
+  apartmentsMap.set(apartKey, newApartId);
+
+  return newApartId;
 }
 
 // ============================================================
@@ -150,11 +258,11 @@ function calculateFloor(floor: any): number | null {
 }
 
 // GovApiItem을 DB Row로 변환
-function convertGovApiItemToDbRow(
+async function convertGovApiItemToDbRow(
   item: GovApiItem,
   regionCode: string,
   apartmentsMap: Map<string, number>
-): TransactionDbRow {
+): Promise<TransactionDbRow> {
   // building_dong: 빈 문자열과 공백 문자(" ") 모두 null 처리
   const buildingDong =
     item.aptDong &&
@@ -171,16 +279,25 @@ function convertGovApiItemToDbRow(
       ? String(item.estateAgentSggNm).trim()
       : null;
 
-  // apart_id 매칭: apart_name과 jibun으로 apartments 테이블에서 찾기
+  // 아파트 정보 추출
   const apartName = item.aptNm || '';
-  const jibun = item.jibun || '';
-  const apartKey = `${apartName}|${jibun}`;
-  const apartId = apartmentsMap.get(apartKey) || null;
+  const jibun = item.jibun || null;
+  const dong = item.umdNm || null;
+  const completionYear = item.buildYear ? parseInt(item.buildYear) : null;
+
+  // 아파트 찾기 또는 생성
+  const apartId = await findOrCreateApartment(
+    regionCode,
+    apartName,
+    jibun,
+    dong,
+    completionYear,
+    apartmentsMap
+  );
 
   return {
     region_code: regionCode,
     apart_id: apartId,
-    apart_name: apartName,
     deal_date: formatDate(item.dealYear, item.dealMonth, item.dealDay),
     deal_amount: parseDealAmount(item.dealAmount),
     exclusive_area: calculateExclusiveArea(item.excluUseAr),
@@ -213,7 +330,7 @@ interface MatchingResult {
 
 // 고유 키 생성
 function createUniqueKey(row: TransactionDbRow): string {
-  return `${row.region_code}|${row.apart_id || ''}|${row.apart_name}|${row.deal_date}|${row.deal_amount}|${row.exclusive_area}|${row.floor || ''}`;
+  return `${row.region_code}|${row.apart_id || ''}|${row.deal_date}|${row.deal_amount}|${row.exclusive_area}|${row.floor || ''}`;
 }
 
 // Diff 처리 (1:1 배열 매칭)
@@ -250,7 +367,6 @@ function convertDbRowToTransactionWithId(dbRow: any): TransactionWithId {
   return {
     region_code: dbRow.region_code,
     apart_id: dbRow.apart_id,
-    apart_name: dbRow.apart_name,
     deal_date: dbRow.deal_date,
     deal_amount: dbRow.deal_amount,
     // DECIMAL 타입은 mysql2가 string으로 반환하므로 number로 변환
@@ -282,7 +398,6 @@ async function loadDbTransactions(
       id,
       region_code,
       apart_id,
-      apart_name,
       DATE_FORMAT(deal_date, '%Y-%m-%d') as deal_date,
       deal_amount,
       exclusive_area,
@@ -336,41 +451,30 @@ function matchByKey(
   }> = [];
   const toDelete: TransactionWithId[] = [];
   const toInsert: TransactionDbRow[] = [];
-  const consumedApiRows = new Set<TransactionDbRow>();
 
-  // 3. 모든 고유 키에 대해 1:1 매칭 수행
+  // 3. 모든 고유 키에 대해 개수 일치 여부로 분기 처리
   const allKeys = new Set([...apiByKey.keys(), ...dbByKey.keys()]);
 
   for (const key of allKeys) {
     const apiMatches = apiByKey.get(key) || [];
     const dbMatches = dbByKey.get(key) || [];
-    const minLength = Math.min(dbMatches.length, apiMatches.length);
 
-    // 3.1. 1:1 매칭 (UPDATE)
-    for (let i = 0; i < minLength; i++) {
-      toUpdate.push({
-        dbRow: dbMatches[i],
-        newRow: apiMatches[i],
-      });
-      consumedApiRows.add(apiMatches[i]);
-    }
-
-    // 3.2. DB 행이 더 많으면 나머지 DELETE
-    for (let i = minLength; i < dbMatches.length; i++) {
-      toDelete.push(dbMatches[i]);
-    }
-
-    // 3.3. API 행이 더 많으면 나머지 INSERT
-    for (let i = minLength; i < apiMatches.length; i++) {
-      toInsert.push(apiMatches[i]);
-      consumedApiRows.add(apiMatches[i]);
-    }
-  }
-
-  // 4. 안전장치: 소진되지 않은 API 행은 INSERT
-  for (const apiRow of apiRemaining) {
-    if (!consumedApiRows.has(apiRow)) {
-      toInsert.push(apiRow);
+    if (dbMatches.length === apiMatches.length) {
+      // 3.1. 개수 일치: 순서대로 1:1 UPDATE
+      for (let i = 0; i < dbMatches.length; i++) {
+        toUpdate.push({
+          dbRow: dbMatches[i],
+          newRow: apiMatches[i],
+        });
+      }
+    } else {
+      // 3.2. 개수 불일치: 모두 DELETE 후 모두 INSERT
+      for (const dbRow of dbMatches) {
+        toDelete.push(dbRow);
+      }
+      for (const apiRow of apiMatches) {
+        toInsert.push(apiRow);
+      }
     }
   }
 
@@ -380,14 +484,14 @@ function matchByKey(
 // DELETE 처리
 async function deleteTransactions(
   toDelete: TransactionWithId[]
-): Promise<number> {
+): Promise<{ deleted: number; logs: string[] }> {
   let deleted = 0;
   const deletesLog: string[] = [];
 
   for (const dbRow of toDelete) {
     if (dbRow._dbId) {
       deletesLog.push(
-        `[DELETE #${dbRow._dbId}] ${dbRow.apart_name} | ${dbRow.deal_date} | ${dbRow.deal_amount}만원`
+        `ApartID: ${dbRow.apart_id} | ${dbRow.deal_date} | ${dbRow.deal_amount}만원`
       );
 
       await query(`DELETE FROM transactions WHERE id = ?`, [dbRow._dbId]);
@@ -396,19 +500,19 @@ async function deleteTransactions(
     }
   }
 
-  if (deletesLog.length > 0) {
-    console.log('\n=== DELETE 목록 ===');
-    deletesLog.forEach(log => console.log(log));
-  }
-
-  return deleted;
+  return { deleted, logs: deletesLog };
 }
 
 // UPDATE/INSERT 처리
 async function updateAndInsertTransactions(
   toUpdate: Array<{ dbRow: TransactionWithId; newRow: TransactionDbRow }>,
   toInsert: TransactionDbRow[]
-): Promise<{ updated: number; inserted: number }> {
+): Promise<{
+  updated: number;
+  inserted: number;
+  updateLogs: string[];
+  insertLogs: string[];
+}> {
   let updated = 0;
   let inserted = 0;
 
@@ -463,7 +567,7 @@ async function updateAndInsertTransactions(
       }
 
       updatesLog.push(
-        `[UPDATE #${dbRow._dbId}] ${newRow.apart_name} | ${newRow.deal_date} | ${newRow.deal_amount}만원\n  변경사항: ${changes.join(', ')}`
+        `[UPDATE #${dbRow._dbId}] ApartID: ${newRow.apart_id} | ${newRow.deal_date} | ${newRow.deal_amount}만원\n  변경사항: ${changes.join(', ')}`
       );
 
       await query(
@@ -471,7 +575,6 @@ async function updateAndInsertTransactions(
         UPDATE transactions SET
           region_code = ?,
           apart_id = ?,
-          apart_name = ?,
           deal_date = ?,
           deal_amount = ?,
           exclusive_area = ?,
@@ -491,7 +594,6 @@ async function updateAndInsertTransactions(
         [
           newRow.region_code,
           newRow.apart_id,
-          newRow.apart_name,
           newRow.deal_date,
           newRow.deal_amount,
           newRow.exclusive_area,
@@ -515,24 +617,23 @@ async function updateAndInsertTransactions(
 
   for (const newRow of toInsert) {
     insertsLog.push(
-      `[INSERT] ${newRow.apart_name} | ${newRow.deal_date} | ${newRow.deal_amount}만원 | ${newRow.exclusive_area}㎡ | ${newRow.floor}층`
+      `[INSERT] ApartID: ${newRow.apart_id} | ${newRow.deal_date} | ${newRow.deal_amount}만원 | ${newRow.exclusive_area}㎡ | ${newRow.floor}층`
     );
 
     await query(
       `
       INSERT INTO transactions (
-        region_code, apart_id, apart_name, deal_date, deal_amount,
+        region_code, apart_id, deal_date, deal_amount,
         exclusive_area, floor, building_dong,
         estate_agent_region, registration_date,
         cancellation_type, cancellation_date,
         deal_type, seller_type, buyer_type, is_land_lease,
         created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `,
       [
         newRow.region_code,
         newRow.apart_id,
-        newRow.apart_name,
         newRow.deal_date,
         newRow.deal_amount,
         newRow.exclusive_area,
@@ -552,17 +653,12 @@ async function updateAndInsertTransactions(
     inserted++;
   }
 
-  if (updatesLog.length > 0) {
-    console.log('\n=== UPDATE 목록 ===');
-    updatesLog.forEach(log => console.log(log));
-  }
-
-  if (insertsLog.length > 0) {
-    console.log('\n=== INSERT 목록 ===');
-    insertsLog.forEach(log => console.log(log));
-  }
-
-  return { updated, inserted };
+  return {
+    updated,
+    inserted,
+    updateLogs: updatesLog,
+    insertLogs: insertsLog,
+  };
 }
 
 // API 조회 (최근 N개월)
@@ -582,8 +678,10 @@ async function fetchApiForRecentMonths(
 
     try {
       const govApiItems = await fetchGovApiData(regionCode, yearMonth);
-      const rows = govApiItems.map(item =>
-        convertGovApiItemToDbRow(item, regionCode, apartmentsMap)
+      const rows = await Promise.all(
+        govApiItems.map(item =>
+          convertGovApiItemToDbRow(item, regionCode, apartmentsMap)
+        )
       );
       allRows.push(...rows);
     } catch (error) {
@@ -604,6 +702,11 @@ async function processRegion(regionCode: string): Promise<{
   updated: number;
   inserted: number;
   deleted: number;
+  newApartmentsCount: number;
+  newApartmentNames: string[];
+  deleteLogs: string[];
+  updateLogs: string[];
+  insertLogs: string[];
   regionCode: string;
   error?: string;
 }> {
@@ -620,8 +723,9 @@ async function processRegion(regionCode: string): Promise<{
 
     // 0. Apartments 캐시 생성
     const apartmentsMap = await loadApartmentsForRegion(regionCode);
+    const initialApartmentCount = apartmentsMap.size;
     console.log(
-      `[${regionCode}] Apartments 캐시 생성 완료: ${apartmentsMap.size}개`
+      `[${regionCode}] Apartments 캐시 생성 완료: ${initialApartmentCount}개`
     );
 
     // 1. DB에서 최근 3개월 데이터 조회 (어제까지의 상태)
@@ -687,18 +791,41 @@ async function processRegion(regionCode: string): Promise<{
       `[${regionCode}] 매칭 결과 - UPDATE: ${toUpdate.length}건, DELETE: ${toDelete.length}건, INSERT: ${toInsert.length}건`
     );
 
-    // 6. DB 작업 실행
-    const deleted = await deleteTransactions(toDelete);
-    const { updated, inserted } = await updateAndInsertTransactions(
-      toUpdate,
-      toInsert
+    // 6. 초기 아파트 키 저장 (신규 아파트 추적용)
+    const initialApartmentKeys = new Set(apartmentsMap.keys());
+
+    // 7. DB 작업 실행
+    const { deleted, logs: deleteLogs } = await deleteTransactions(toDelete);
+    const { updated, inserted, updateLogs, insertLogs } =
+      await updateAndInsertTransactions(toUpdate, toInsert);
+
+    // 8. 새로 생성된 아파트 수 계산 및 목록 추출
+    const newApartmentKeys = [...apartmentsMap.keys()].filter(
+      key => !initialApartmentKeys.has(key)
     );
+    const newApartmentNames = newApartmentKeys.map(key => {
+      // 키 형식: "regionCode|apartName|jibun|dong|year"
+      const parts = key.split('|');
+      return parts[1]; // apartName
+    });
+    const newApartmentsCount = newApartmentNames.length;
 
     console.log(
-      `[${regionCode}] ✅ 완료 - UPDATE: ${updated}건, DELETE: ${deleted}건, INSERT: ${inserted}건`
+      `[${regionCode}] ✅ 완료 - UPDATE: ${updated}건, DELETE: ${deleted}건, INSERT: ${inserted}건, 신규 아파트: ${newApartmentsCount}개`
     );
 
-    return { success: true, updated, inserted, deleted, regionCode };
+    return {
+      success: true,
+      updated,
+      inserted,
+      deleted,
+      newApartmentsCount,
+      newApartmentNames,
+      deleteLogs,
+      updateLogs,
+      insertLogs,
+      regionCode,
+    };
   } catch (error) {
     // 에러 전체 출력
     console.error(`[${regionCode}] ❌ 처리 실패 - 에러 전체:`, error);
@@ -719,6 +846,11 @@ async function processRegion(regionCode: string): Promise<{
       updated: 0,
       inserted: 0,
       deleted: 0,
+      newApartmentsCount: 0,
+      newApartmentNames: [],
+      deleteLogs: [],
+      updateLogs: [],
+      insertLogs: [],
       regionCode,
       error: errorMessage || 'Unknown error',
     };
@@ -751,6 +883,11 @@ async function main(): Promise<void> {
     updated: number;
     inserted: number;
     deleted: number;
+    newApartmentsCount: number;
+    newApartmentNames: string[];
+    deleteLogs: string[];
+    updateLogs: string[];
+    insertLogs: string[];
     regionCode: string;
     error?: string;
   }[] = [];
@@ -780,6 +917,10 @@ async function main(): Promise<void> {
   const totalUpdated = results.reduce((sum, r) => sum + r.updated, 0);
   const totalDeleted = results.reduce((sum, r) => sum + r.deleted, 0);
   const totalInserted = results.reduce((sum, r) => sum + r.inserted, 0);
+  const totalNewApartments = results.reduce(
+    (sum, r) => sum + r.newApartmentsCount,
+    0
+  );
 
   console.log('\n' + '='.repeat(60));
   console.log('✨ Daily sync completed');
@@ -791,23 +932,60 @@ async function main(): Promise<void> {
   console.log(`📝 총 업데이트: ${totalUpdated}건`);
   console.log(`🗑️  총 삭제: ${totalDeleted}건`);
   console.log(`➕ 총 신규 등록: ${totalInserted}건`);
+  console.log(`🏢 총 신규 아파트: ${totalNewApartments}개`);
 
   // 지역별 상세 결과 출력
   console.log('\n' + '='.repeat(60));
   console.log('📊 지역별 상세 결과:');
   console.log('='.repeat(60));
 
-  // 성공한 지역만 필터링하고 INSERT+UPDATE+DELETE 건수가 있는 지역만 출력
+  // 성공한 지역만 필터링하고 INSERT+UPDATE+DELETE+신규아파트 건수가 있는 지역만 출력
   const successResults = results.filter(
-    r => r.success && (r.inserted > 0 || r.updated > 0 || r.deleted > 0)
+    r =>
+      r.success &&
+      (r.inserted > 0 ||
+        r.updated > 0 ||
+        r.deleted > 0 ||
+        r.newApartmentsCount > 0)
   );
 
   if (successResults.length > 0) {
     successResults.forEach(result => {
       const regionName = regionCodeMap.get(result.regionCode) || '알 수 없음';
-      console.log(
-        `- [${result.regionCode}] ${regionName}: INSERT: ${result.inserted}건, UPDATE: ${result.updated}건, DELETE: ${result.deleted}건`
-      );
+
+      console.log(`\n# ${regionName}(${result.regionCode})`);
+
+      // 신규 아파트
+      if (result.newApartmentNames.length > 0) {
+        console.log('\n## NEW APARTMENT');
+        result.newApartmentNames.forEach(name => {
+          console.log(`- ${name}`);
+        });
+      }
+
+      // INSERT
+      if (result.inserted > 0) {
+        console.log(`\n## INSERT: ${result.inserted}건`);
+        result.insertLogs.forEach(log => {
+          console.log(`- ${log}`);
+        });
+      }
+
+      // DELETE
+      if (result.deleted > 0) {
+        console.log(`\n## DELETE: ${result.deleted}건`);
+        result.deleteLogs.forEach(log => {
+          console.log(`- ${log}`);
+        });
+      }
+
+      // UPDATE
+      if (result.updated > 0) {
+        console.log(`\n## UPDATE: ${result.updated}건`);
+        result.updateLogs.forEach(log => {
+          console.log(`- ${log}`);
+        });
+      }
     });
   } else {
     console.log('변경사항이 있는 지역이 없습니다.');

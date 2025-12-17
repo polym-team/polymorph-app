@@ -23,7 +23,7 @@ const buildWhereConditions = (
   const params: (string | number)[] = [regionCode, startDate, endDate];
 
   if (filter.apartName) {
-    conditions.push('t.apart_name LIKE ?');
+    conditions.push('a.apart_name LIKE ?');
     params.push(`%${filter.apartName}%`);
   }
 
@@ -41,6 +41,9 @@ const buildWhereConditions = (
     conditions.push('DATE(t.created_at) = CURDATE()');
   }
 
+  console.log('conditions: ', conditions);
+  console.log('params: ', params);
+
   return { conditions, params };
 };
 
@@ -51,8 +54,27 @@ const buildOrderByClause = (
     return 'ORDER BY t.deal_date DESC';
   }
 
-  const orderByColumn =
-    sort.orderBy === 'dealDate' ? 't.deal_date' : 't.deal_amount';
+  const buildOrderByColumn = (): string => {
+    if (!sort.orderBy || sort.orderBy === 'dealDate') {
+      return 't.deal_date';
+    }
+    if (sort.orderBy === 'dealAmount') {
+      return 't.deal_amount';
+    }
+    if (sort.orderBy === 'floor') {
+      return 't.floor';
+    }
+    if (sort.orderBy === 'size') {
+      return 't.exclusive_area';
+    }
+    if (sort.orderBy === 'apartName') {
+      return 'a.apart_name';
+    }
+    const _exhaustiveCheck: never = sort.orderBy;
+    return _exhaustiveCheck;
+  };
+
+  const orderByColumn = buildOrderByColumn();
   const orderDirection = sort.orderDirection || 'desc';
 
   return `ORDER BY ${orderByColumn} ${orderDirection.toUpperCase()}`;
@@ -65,6 +87,7 @@ const fetchTotalCount = async (
   const countSql = `
     SELECT COUNT(*) as totalCount
     FROM transactions t
+    LEFT JOIN apartments a ON t.apart_id = a.id
     WHERE ${whereConditions.join(' AND ')}
   `;
 
@@ -133,6 +156,7 @@ const fetchAveragePricePerPyeong = async (
   const sql = `
     SELECT t.exclusive_area, t.deal_amount
     FROM transactions t
+    LEFT JOIN apartments a ON t.apart_id = a.id
     WHERE ${whereConditions.join(' AND ')}
   `;
 

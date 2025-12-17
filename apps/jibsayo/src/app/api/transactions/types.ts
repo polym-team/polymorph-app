@@ -26,7 +26,7 @@ export interface FetchTransactionListParams {
     newTransactionOnly?: boolean;
   };
   sort: {
-    orderBy?: 'dealDate' | 'dealAmount';
+    orderBy?: 'dealDate' | 'dealAmount' | 'apartName' | 'floor' | 'size';
     orderDirection?: 'asc' | 'desc';
   };
 }
