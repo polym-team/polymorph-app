@@ -37,8 +37,8 @@ export const useFavoriteApartList = (): Return => {
   >([]);
 
   const apartIds = useMemo(() => {
-    return favoriteApartsData.map(item => item.apartId);
-  }, [favoriteApartsData]);
+    return localFavoriteApartList.map(item => item.apartId);
+  }, [localFavoriteApartList]);
 
   const { data: transactionsData, isLoading: isFavoritesTransactionsLoading } =
     useFavoritesTransactions(apartIds);
