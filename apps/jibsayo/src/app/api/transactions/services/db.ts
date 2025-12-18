@@ -1,6 +1,5 @@
 import { query } from '@/app/api/shared/libs/database';
 import { createFallbackToken } from '@/app/api/shared/services/transaction/service';
-import { calculateAreaPyeong } from '@/entities/transaction/services/calculator';
 
 import {
   DbTransactionRow,
@@ -27,12 +26,12 @@ const buildWhereConditions = (
     params.push(`%${filter.apartName}%`);
   }
 
-  if (filter.minSize !== undefined) {
+  if (filter.minSize !== undefined && isFinite(filter.minSize)) {
     conditions.push('t.exclusive_area >= ?');
     params.push(filter.minSize);
   }
 
-  if (filter.maxSize !== undefined) {
+  if (filter.maxSize !== undefined && isFinite(filter.maxSize)) {
     conditions.push('t.exclusive_area <= ?');
     params.push(filter.maxSize);
   }
@@ -40,9 +39,6 @@ const buildWhereConditions = (
   if (filter.newTransactionOnly) {
     conditions.push('DATE(t.created_at) = CURDATE()');
   }
-
-  console.log('conditions: ', conditions);
-  console.log('params: ', params);
 
   return { conditions, params };
 };
@@ -155,26 +151,31 @@ const fetchAveragePricePerPyeong = async (
   queryParams: (string | number)[]
 ): Promise<number> => {
   const sql = `
-    SELECT t.exclusive_area, t.deal_amount
+    SELECT AVG(
+      (t.deal_amount * 10000) /
+      (
+        CASE
+          WHEN (t.exclusive_area * 0.3025) < 17 THEN ROUND((t.exclusive_area * 0.3025) * 1.4)
+          WHEN (t.exclusive_area * 0.3025) < 20 THEN ROUND((t.exclusive_area * 0.3025) * 1.35)
+          WHEN (t.exclusive_area * 0.3025) < 28 THEN ROUND((t.exclusive_area * 0.3025) * 1.35)
+          WHEN (t.exclusive_area * 0.3025) < 35 THEN ROUND((t.exclusive_area * 0.3025) * 1.3)
+          WHEN (t.exclusive_area * 0.3025) < 39 THEN ROUND((t.exclusive_area * 0.3025) * 1.23)
+          ELSE ROUND((t.exclusive_area * 0.3025) * 1.22)
+        END
+      )
+    ) as avgPricePerPyeong
     FROM transactions t
     LEFT JOIN apartments a ON t.apart_id = a.id
     WHERE ${whereConditions.join(' AND ')}
+      AND t.exclusive_area > 0
   `;
 
-  const rows = await query<{ exclusive_area: number; deal_amount: number }[]>(
+  const result = await query<{ avgPricePerPyeong: number | null }[]>(
     sql,
     queryParams
   );
 
-  if (rows.length === 0) return 0;
-
-  const totalPricePerPyeong = rows.reduce((sum, row) => {
-    const pyeong = calculateAreaPyeong(row.exclusive_area);
-    const pricePerPyeong = pyeong > 0 ? (row.deal_amount * 10000) / pyeong : 0;
-    return sum + pricePerPyeong;
-  }, 0);
-
-  return Math.round(totalPricePerPyeong / rows.length);
+  return Math.round(result[0]?.avgPricePerPyeong || 0);
 };
 
 export const fetchTransactionList = async ({
