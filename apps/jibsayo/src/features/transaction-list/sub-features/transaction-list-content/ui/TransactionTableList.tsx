@@ -358,7 +358,7 @@ export function TransactionTableList({
     isFetching && items.length === 0
       ? Array.from(
           { length: TRANSACTION_LIST_PAGE_SIZE },
-          () => ({}) as TransactionItemViewModel
+          (_, index) => ({ id: -index - 1 }) as TransactionItemViewModel
         )
       : items;
 
