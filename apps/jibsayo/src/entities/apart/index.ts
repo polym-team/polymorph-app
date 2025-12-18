@@ -8,3 +8,7 @@ export {
   type TransactionItem,
   type ApartmentTransactionSummary,
 } from './hooks/useFavoritesTransactions';
+export {
+  useApartSearchQuery,
+  type SearchedApartmentItem,
+} from './hooks/useApartSearchQuery';

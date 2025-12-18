@@ -1,0 +1,78 @@
+'use client';
+
+import {
+  getCityNameWithRegionCode,
+  getRegionNameWithRegionCode,
+} from '@/entities/region';
+import { formatNumber } from '@/shared/utils/formatter';
+
+import { Loader2 } from 'lucide-react';
+
+import { calculateHighlightSegments } from './services';
+import { useApartSearch } from './useApartSearch';
+
+export function ApartSearch() {
+  const { isFetching, isEmpty, items, apartName, changeApartName } =
+    useApartSearch();
+
+  return (
+    <div className="w-full max-w-screen-md py-5 pb-10">
+      <input
+        className="w-full border-gray-200 bg-white p-4 text-lg outline-none lg:rounded lg:border"
+        placeholder="아파트 이름을 입력해주세요"
+        onChange={e => changeApartName(e.target.value)}
+      />
+      {isFetching && (
+        <div className="flex justify-center py-10">
+          <span className="mt-2 inline-block animate-spin">
+            <Loader2 size={24} color="gray" />
+          </span>
+        </div>
+      )}
+      {isEmpty && !isFetching && (
+        <div className="flex justify-center py-10 text-gray-500">
+          검색 결과가 없어요
+        </div>
+      )}
+      {items.length > 0 && !isFetching && (
+        <div className="mt-8 px-3 lg:px-0">
+          <p className="text-sm lg:text-base">
+            <span className="text-primary font-semibold">{apartName}</span> 검색
+            결과
+          </p>
+          <ul className="-mx-3 mt-3 overflow-hidden border-gray-200 bg-white lg:mx-0 lg:rounded lg:border">
+            {items.map(item => (
+              <li
+                key={item.id}
+                className="flex cursor-pointer items-center justify-between border-b border-gray-100 p-4 last:border-none hover:bg-gray-100"
+              >
+                <div>
+                  {calculateHighlightSegments(item.apartName, apartName).map(
+                    (
+                      segment: { text: string; highlighted: boolean },
+                      index: number
+                    ) =>
+                      segment.highlighted ? (
+                        <span key={index} className="text-primary">
+                          {segment.text}
+                        </span>
+                      ) : (
+                        <span key={index}>{segment.text}</span>
+                      )
+                  )}
+                </div>
+                <div className="text-sm text-gray-500">
+                  {getCityNameWithRegionCode(item.regionCode)}{' '}
+                  {getRegionNameWithRegionCode(item.regionCode)} {item.dong} ·{' '}
+                  {item.completionYear}년식
+                  {!!item.householdCount &&
+                    `· ${formatNumber(item.householdCount)}세대`}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
