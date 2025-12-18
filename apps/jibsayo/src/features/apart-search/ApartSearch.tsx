@@ -89,7 +89,7 @@ export function ApartSearch() {
             {items.map(item => (
               <li
                 key={item.id}
-                className="flex cursor-pointer items-center justify-between border-b border-gray-100 p-4 last:border-none hover:bg-gray-100"
+                className="flex cursor-pointer flex-col justify-between gap-1 border-b border-gray-100 p-3 last:border-none hover:bg-gray-100 lg:flex-row lg:items-center lg:p-4"
                 onClick={() => clickApartItem(item)}
               >
                 <div className="flex items-center gap-x-2">

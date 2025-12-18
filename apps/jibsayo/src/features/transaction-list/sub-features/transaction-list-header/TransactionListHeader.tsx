@@ -22,6 +22,7 @@ export function TransactionListHeader({
     <div className="flex items-center justify-between">
       <div>
         <Summary
+          isLoading={transaction.fetchStatus === 'LOADING'}
           cityName={cityName}
           regionName={regionName}
           totalCount={transaction.totalCount}

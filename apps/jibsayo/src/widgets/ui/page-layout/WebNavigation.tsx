@@ -48,11 +48,11 @@ export function WebNavigation() {
           </nav>
 
           <div
-            className="ml-auto flex w-[200px] cursor-pointer items-center gap-x-1 rounded bg-gray-100 px-3 py-3 text-sm text-gray-500 transition-colors duration-200 hover:bg-gray-200"
+            className="ml-auto flex cursor-pointer items-center gap-x-1 rounded bg-gray-100 px-3 py-3 text-sm text-gray-500 transition-colors duration-200 hover:bg-gray-200 lg:w-[200px]"
             onClick={() => handleNavigationClick('SEARCH')}
           >
             <Search size={16} />
-            <span>아파트 이름으로 검색</span>
+            <span className="hidden lg:block">아파트 이름으로 검색</span>
           </div>
         </div>
       </PageContainer>
