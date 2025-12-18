@@ -42,3 +42,22 @@ export interface FetchTransactionListResponse {
   averagePricePerPyeong: number;
   transactions: TransactionItem[];
 }
+
+export interface MonthlyTransactionByApart {
+  id: number;
+  apartName: string;
+  averageAmount: number;
+}
+
+export interface MonthlyTransactionsByApartsItem {
+  month: number;
+  transactions: MonthlyTransactionByApart[];
+}
+
+export interface FetchMonthlyTransactionsByApartsRequest {
+  apartIds: number[];
+  period?: number;
+}
+
+export type FetchMonthlyTransactionsByApartsResponse =
+  MonthlyTransactionsByApartsItem[];
