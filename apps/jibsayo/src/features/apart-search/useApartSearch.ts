@@ -5,7 +5,9 @@ import {
   useRemoveFavoriteApartMutation,
 } from '@/entities/apart';
 import { ROUTE_PATH } from '@/shared/consts/route';
+import { STORAGE_KEY } from '@/shared/consts/storageKey';
 import { useNavigate } from '@/shared/hooks/useNavigate';
+import { getItem, setItem } from '@/shared/lib/localStorage';
 
 import { useRouter } from 'next/navigation';
 import { useMemo, useRef, useState } from 'react';
@@ -21,9 +23,11 @@ interface Return {
   isEmpty: boolean;
   items: ApartSearchItemViewModel[];
   apartName: string;
+  recentSearchedApartNames: string[];
   changeApartName: (value: string) => void;
   toggleFavorite: (item: ApartSearchItemViewModel) => void;
   clickApartItem: (item: ApartSearchItemViewModel) => void;
+  removeRecentSearchedApartName: (apartName: string) => void;
 }
 
 export const useApartSearch = (): Return => {
@@ -32,6 +36,9 @@ export const useApartSearch = (): Return => {
 
   const [apartName, setApartName] = useState(
     location.searchParams.get('apartName') ?? ''
+  );
+  const [recentSearchedApartNames, setRecentSearchedApartNames] = useState(
+    getItem<string[]>(STORAGE_KEY.RECENT_SEARCHED_APART_LIST) ?? []
   );
   const timerRef = useRef(0);
 
@@ -54,13 +61,29 @@ export const useApartSearch = (): Return => {
   const isEmpty = !!data && data.length === 0;
 
   const changeApartName = (value: string) => {
+    const trimmedValue = value.trim();
+    if (trimmedValue === '') {
+      setApartName('');
+      return;
+    }
+
     if (timerRef.current) {
       window.clearTimeout(timerRef.current);
     }
 
     timerRef.current = window.setTimeout(() => {
-      router.push(`${ROUTE_PATH.SEARCH}?apartName=${value}`);
-      setApartName(value);
+      router.push(`${ROUTE_PATH.SEARCH}?apartName=${trimmedValue}`);
+      setApartName(trimmedValue);
+
+      if (!recentSearchedApartNames.includes(trimmedValue)) {
+        setTimeout(() => {
+          setRecentSearchedApartNames(prev => {
+            const nextValue = [trimmedValue, ...prev].slice(0, 10);
+            setItem(STORAGE_KEY.RECENT_SEARCHED_APART_LIST, nextValue);
+            return nextValue;
+          });
+        }, 300);
+      }
     }, 300);
   };
 
@@ -84,13 +107,23 @@ export const useApartSearch = (): Return => {
     navigate(`${ROUTE_PATH.APART}/${item.id}`);
   };
 
+  const removeRecentSearchedApartName = (apartName: string) => {
+    setRecentSearchedApartNames(prev => {
+      const nextValue = prev.filter(name => name !== apartName);
+      setItem(STORAGE_KEY.RECENT_SEARCHED_APART_LIST, nextValue);
+      return nextValue;
+    });
+  };
+
   return {
     isFetching,
     isEmpty,
     items,
     apartName,
+    recentSearchedApartNames,
     changeApartName,
     toggleFavorite,
     clickApartItem,
+    removeRecentSearchedApartName,
   };
 };

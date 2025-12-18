@@ -38,7 +38,7 @@ export function ApartName({
   }
 
   return (
-    <PageContainer bgColor="white" className="py-4">
+    <PageContainer bgColor="white" className="pb-4 pt-6">
       <div className="flex flex-col gap-y-1">
         <div className="flex items-center gap-x-2">
           <span className="text-xl font-semibold lg:text-2xl">
