@@ -1,6 +1,6 @@
 import { logger } from '@/app/api/shared/utils/logger';
 
-import { fetchTransactionList } from './services/api';
+import { fetchTransactionList } from './services/db';
 
 export async function GET(request: Request): Promise<Response> {
   try {

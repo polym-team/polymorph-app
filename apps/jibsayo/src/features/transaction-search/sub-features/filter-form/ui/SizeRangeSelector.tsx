@@ -248,11 +248,9 @@ export function SizeRangeSelector({
       <div className="flex items-center justify-between">
         <span className="block text-sm text-gray-500 lg:text-base">평수</span>
         <span className="text-primary text-sm">
-          {localMin === 0 && localMax === 50
-            ? '전체 평수'
-            : localMax === Infinity
-              ? `${localMin}평 이상`
-              : `${localMin}~${localMax}평`}
+          {localMax === Infinity
+            ? `${localMin}평 이상`
+            : `${localMin}~${localMax}평`}
         </span>
       </div>
 
