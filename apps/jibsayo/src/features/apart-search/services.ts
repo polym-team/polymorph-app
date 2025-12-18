@@ -1,3 +1,23 @@
+import { FavoriteApartItem, SearchedApartmentItem } from '@/entities/apart';
+
+import { ApartSearchItemViewModel } from './types';
+
+export const convertToFavoriteApartIdSet = (
+  favoriteApartList: FavoriteApartItem[]
+): Set<number> => {
+  return new Set(favoriteApartList.map(item => item.apartId));
+};
+
+export const convertToApartSearchViewModel = (
+  apartments: SearchedApartmentItem[],
+  favoriteApartIdSet: Set<number>
+): ApartSearchItemViewModel[] => {
+  return apartments.map(item => ({
+    ...item,
+    isFavorite: favoriteApartIdSet.has(item.id),
+  }));
+};
+
 export const calculateHighlightSegments = (
   text: string,
   searchQuery: string

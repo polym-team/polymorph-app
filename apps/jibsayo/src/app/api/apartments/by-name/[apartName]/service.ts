@@ -16,7 +16,24 @@ export const getApartmentsByName = async (
   apartName: string
 ): Promise<ApartmentsByNameResponse> => {
   try {
-    const keywords = apartName.trim().split(/\s+/);
+    let keywords: string[] = [];
+    const trimmed = apartName.trim();
+
+    if (trimmed.includes(' ')) {
+      keywords = trimmed.split(/\s+/).filter(k => k.length > 0);
+    } else {
+      for (let i = 0; i < trimmed.length; i += 2) {
+        const chunk = trimmed.substring(i, i + 2);
+        if (chunk.length >= 2) {
+          keywords.push(chunk);
+        }
+      }
+    }
+
+    if (keywords.length === 0) {
+      return [];
+    }
+
     const likeConditions = keywords.map(() => 'apart_name LIKE ?').join(' AND ');
     const likeParams = keywords.map(keyword => `%${keyword}%`);
 
