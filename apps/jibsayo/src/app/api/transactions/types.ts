@@ -1,3 +1,10 @@
+export interface PriceHistoryDeal {
+  dealAmount: number;
+  dealDate: string;
+  size: number;
+  floor: number;
+}
+
 export interface DbTransactionRow {
   regionCode: string;
   apartName: string;
@@ -13,6 +20,8 @@ export interface DbTransactionRow {
   jibun: string | null;
   dong: string | null;
   fallbackToken: string | null;
+  highestTransaction: PriceHistoryDeal | null;
+  lowestTransaction: PriceHistoryDeal | null;
 }
 
 export interface FetchTransactionListParams {

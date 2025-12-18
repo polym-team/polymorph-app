@@ -1,3 +1,10 @@
+interface TransactionHistoryItem {
+  dealAmount: number;
+  dealDate: string;
+  size: number;
+  floor: number;
+}
+
 export interface SearchParams {
   regionCode: string;
   tradeDate: string;
@@ -26,6 +33,8 @@ export interface TransactionItem {
   householdCount: number | null;
   completionYear: number | null;
   dong: string | null;
+  highestTransaction: TransactionHistoryItem | null;
+  lowestTransaction: TransactionHistoryItem | null;
 }
 
 export interface FetchTransactionListResponse {

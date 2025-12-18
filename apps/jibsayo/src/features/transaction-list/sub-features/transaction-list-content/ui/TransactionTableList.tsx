@@ -9,13 +9,16 @@ import {
   formatSizeText,
 } from '@/shared/utils/formatter';
 
-import { Star } from 'lucide-react';
+import { ArrowDown, ArrowUp, Star } from 'lucide-react';
 import { useMemo } from 'react';
 
 import {
   ColumnDef,
   DataTable,
   DataTableColumnHeader,
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
   SortingState as OriginSortingState,
 } from '@package/ui';
 import { cn } from '@package/utils';
@@ -98,16 +101,17 @@ export function TransactionTableList({
           <DataTableColumnHeader column={column} title="아파트명" />
         ),
         cell: ({ row }) => (
-          <div className="flex items-center gap-x-2">
+          <div className="flex flex-col gap-y-1">
             <span className="font-semibold">{row.original.apartName}</span>
             {row.original.householdCount || row.original.completionYear ? (
               <span className="-translate-y-[1px] text-sm text-gray-500">
-                (
                 {!!row.original.householdCount &&
-                  `${formatNumber(row.original.householdCount)}세대 · `}
+                  `${formatNumber(row.original.householdCount)}세대`}
+                {!!row.original.householdCount &&
+                  !!row.original.completionYear &&
+                  ' · '}
                 {!!row.original.completionYear &&
                   `${row.original.completionYear}년식`}
-                )
               </span>
             ) : null}
           </div>
@@ -134,26 +138,145 @@ export function TransactionTableList({
           <DataTableColumnHeader column={column} title="평수" />
         ),
         cell: ({ row }) => (
-          <div className="flex items-center gap-x-1">
+          <div className="flex flex-col gap-y-1">
             <span className="text-gray-600">
               {formatPyeongText(calculateAreaPyeong(row.original.size))}
             </span>
             <span className="-translate-y-[1px] text-sm text-gray-500">
-              ({formatSizeText(Number(row.original.size))})
+              {formatSizeText(Number(row.original.size))}
             </span>
           </div>
         ),
       },
       {
-        size: 150,
+        size: 200,
         accessorKey: 'dealAmount',
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="거래가격" />
         ),
         cell: ({ row }) => (
-          <span className="text-primary text-base font-bold">
-            {formatKoreanAmountText(row.original.dealAmount)}
-          </span>
+          <div className="flex flex-col items-end gap-y-1">
+            <span className="text-primary text-base font-bold">
+              {formatKoreanAmountText(row.original.dealAmount)}
+            </span>
+            {row.original.highestTransaction &&
+              row.original.lowestTransaction && (
+                <div className="flex items-center gap-x-1">
+                  <HoverCard openDelay={100}>
+                    <HoverCardTrigger asChild>
+                      <span
+                        className="flex cursor-pointer items-center gap-x-[1px] text-sm text-red-600"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <ArrowUp size={14} />
+                        {formatKoreanAmountText(
+                          row.original.highestTransaction.dealAmount
+                        ).replace('원', '')}
+                      </span>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-auto">
+                      <div className="w-32 space-y-2">
+                        <div className="text-left text-sm font-semibold text-red-600">
+                          역대 최고가
+                        </div>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">거래가격</span>
+                            <span>
+                              {formatKoreanAmountText(
+                                row.original.highestTransaction.dealAmount
+                              )}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">거래일</span>
+                            <span>
+                              {formatDealDate(
+                                row.original.highestTransaction.dealDate
+                              )}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">평형</span>
+                            <span>
+                              {formatPyeongText(
+                                calculateAreaPyeong(
+                                  row.original.highestTransaction.size
+                                )
+                              )}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">층</span>
+                            <span>
+                              {formatFloorText(
+                                row.original.highestTransaction.floor
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                  <HoverCard openDelay={100}>
+                    <HoverCardTrigger asChild>
+                      <span
+                        className="flex cursor-pointer items-center gap-x-[1px] text-sm text-blue-600"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <ArrowDown size={14} />
+                        {formatKoreanAmountText(
+                          row.original.lowestTransaction.dealAmount
+                        ).replace('원', '')}
+                      </span>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-auto">
+                      <div className="w-32 space-y-2">
+                        <div className="text-left text-sm font-semibold text-blue-600">
+                          최근 5년 최저가
+                        </div>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">거래가격</span>
+                            <span>
+                              {formatKoreanAmountText(
+                                row.original.lowestTransaction.dealAmount
+                              )}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">거래일</span>
+                            <span>
+                              {formatDealDate(
+                                row.original.lowestTransaction.dealDate
+                              )}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">평형</span>
+                            <span>
+                              {formatPyeongText(
+                                calculateAreaPyeong(
+                                  row.original.lowestTransaction.size
+                                )
+                              )}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">층</span>
+                            <span>
+                              {formatFloorText(
+                                row.original.lowestTransaction.floor
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                </div>
+              )}
+          </div>
         ),
       },
     ],

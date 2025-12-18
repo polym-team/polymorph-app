@@ -117,9 +117,61 @@ const fetchTransactions = async (
       a.completion_year as buildedYear,
       a.total_household_count as householdCount,
       a.completion_year as completionYear,
-      DATE(t.created_at) = CURDATE() as isNewTransaction
+      DATE(t.created_at) = CURDATE() as isNewTransaction,
+      highest.deal_amount as highestDealAmount,
+      highest.deal_date as highestDealDate,
+      highest.exclusive_area as highestDealSize,
+      highest.floor as highestDealFloor,
+      lowest.deal_amount as lowestDealAmount,
+      lowest.deal_date as lowestDealDate,
+      lowest.exclusive_area as lowestDealSize,
+      lowest.floor as lowestDealFloor
     FROM transactions t
     LEFT JOIN apartments a ON t.apart_id = a.id
+    LEFT JOIN (
+      SELECT
+        t1.apart_id,
+        t1.exclusive_area,
+        t1.deal_amount,
+        t1.deal_date,
+        t1.floor
+      FROM transactions t1
+      INNER JOIN (
+        SELECT
+          apart_id,
+          exclusive_area,
+          MAX(deal_amount) as max_amount
+        FROM transactions
+        WHERE cancellation_type != 'CANCELED'
+        GROUP BY apart_id, exclusive_area
+      ) t2 ON t1.apart_id = t2.apart_id
+        AND t1.exclusive_area = t2.exclusive_area
+        AND t1.deal_amount = t2.max_amount
+      WHERE t1.cancellation_type != 'CANCELED'
+    ) highest ON t.apart_id = highest.apart_id AND t.exclusive_area = highest.exclusive_area
+    LEFT JOIN (
+      SELECT
+        t1.apart_id,
+        t1.exclusive_area,
+        t1.deal_amount,
+        t1.deal_date,
+        t1.floor
+      FROM transactions t1
+      INNER JOIN (
+        SELECT
+          apart_id,
+          exclusive_area,
+          MIN(deal_amount) as min_amount
+        FROM transactions
+        WHERE cancellation_type != 'CANCELED'
+          AND deal_date >= DATE_SUB(CURDATE(), INTERVAL 5 YEAR)
+        GROUP BY apart_id, exclusive_area
+      ) t2 ON t1.apart_id = t2.apart_id
+        AND t1.exclusive_area = t2.exclusive_area
+        AND t1.deal_amount = t2.min_amount
+      WHERE t1.cancellation_type != 'CANCELED'
+        AND t1.deal_date >= DATE_SUB(CURDATE(), INTERVAL 5 YEAR)
+    ) lowest ON t.apart_id = lowest.apart_id AND t.exclusive_area = lowest.exclusive_area
     WHERE ${whereConditions.join(' AND ')}
     ${orderByClause}
     LIMIT ? OFFSET ?
@@ -129,21 +181,55 @@ const fetchTransactions = async (
 
   const rows = await query<
     Array<
-      Omit<DbTransactionRow, 'fallbackToken' | 'isNewTransaction'> & {
+      Omit<DbTransactionRow, 'fallbackToken' | 'isNewTransaction' | 'highestTransaction' | 'lowestTransaction'> & {
         isNewTransaction: number;
+        highestDealAmount: number | null;
+        highestDealDate: string | null;
+        highestDealSize: number | null;
+        highestDealFloor: number | null;
+        lowestDealAmount: number | null;
+        lowestDealDate: string | null;
+        lowestDealSize: number | null;
+        lowestDealFloor: number | null;
       }
     >
   >(dataSql, dataParams);
 
-  return rows.map(row => ({
-    ...row,
-    isNewTransaction: Boolean(row.isNewTransaction),
-    dealAmount: row.dealAmount * 10000,
-    fallbackToken: createFallbackToken({
-      regionCode: row.regionCode,
-      apartName: row.apartName,
-    }),
-  }));
+  return rows.map(row => {
+    const {
+      highestDealAmount,
+      highestDealDate,
+      highestDealSize,
+      highestDealFloor,
+      lowestDealAmount,
+      lowestDealDate,
+      lowestDealSize,
+      lowestDealFloor,
+      ...rest
+    } = row;
+
+    return {
+      ...rest,
+      isNewTransaction: Boolean(row.isNewTransaction),
+      dealAmount: row.dealAmount * 10000,
+      fallbackToken: createFallbackToken({
+        regionCode: row.regionCode,
+        apartName: row.apartName,
+      }),
+      highestTransaction: highestDealAmount !== null ? {
+        dealAmount: highestDealAmount * 10000,
+        dealDate: highestDealDate!,
+        size: highestDealSize!,
+        floor: highestDealFloor!,
+      } : null,
+      lowestTransaction: lowestDealAmount !== null ? {
+        dealAmount: lowestDealAmount * 10000,
+        dealDate: lowestDealDate!,
+        size: lowestDealSize!,
+        floor: lowestDealFloor!,
+      } : null,
+    };
+  });
 };
 
 const fetchAveragePricePerPyeong = async (
