@@ -6,7 +6,7 @@ import {
 } from '@/entities/region';
 import { formatNumber } from '@/shared/utils/formatter';
 
-import { Loader2, Star, X } from 'lucide-react';
+import { Loader2, Search, Star, X } from 'lucide-react';
 
 import { Button } from '@package/ui';
 import { cn } from '@package/utils';
@@ -29,12 +29,23 @@ export function ApartSearch() {
 
   return (
     <div className="w-full max-w-screen-md py-5 pb-10">
-      <input
-        defaultValue={apartName}
-        className="w-full border-gray-200 bg-white p-4 text-lg outline-none lg:rounded lg:border"
-        placeholder="아파트 이름을 입력해주세요"
-        onChange={e => changeApartName(e.target.value)}
-      />
+      <div className="relative">
+        <Search
+          className="absolute left-3 top-1/2 -translate-y-[10px] text-gray-300"
+          size={20}
+        />
+        <X
+          size={20}
+          className="absolute right-3 top-1/2 -translate-y-[10px] cursor-pointer text-gray-400"
+          onClick={() => changeApartName('')}
+        />
+        <input
+          defaultValue={apartName}
+          className="w-full border-gray-200 bg-white p-4 pl-10 outline-none lg:rounded lg:border"
+          placeholder="아파트 이름으로 검색"
+          onChange={e => changeApartName(e.target.value)}
+        />
+      </div>
       {recentSearchedApartNames.length > 0 && (
         <div className="mt-5 flex flex-col gap-y-2 px-3 lg:px-0">
           <span className="text-sm text-gray-500">최근 검색</span>

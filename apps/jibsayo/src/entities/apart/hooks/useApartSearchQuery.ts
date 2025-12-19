@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 interface Params {
   apartName: string;
@@ -37,6 +37,7 @@ export const useApartSearchQuery = (params: Params) => {
   return useQuery({
     queryKey: ['apartmentSearch', params.apartName],
     queryFn: () => fetchApartmentsByName(params.apartName),
+    placeholderData: keepPreviousData,
     enabled: params.apartName.trim().length > 0,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,

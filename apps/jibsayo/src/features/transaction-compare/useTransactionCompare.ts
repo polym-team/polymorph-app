@@ -4,12 +4,14 @@ import { useRef, useState } from 'react';
 
 import { toast } from '@package/ui';
 
+import { MAX_COMPARE_APART_COUNT } from './consts';
+
 interface Return {
   isFetching: boolean;
   showsItems: boolean;
   items: SearchedApartmentItem[];
   selectedApartIds: number[];
-  apartName: string;
+  apartNameValue: string;
   focusSearchInput: () => void;
   blurSearchInput: () => void;
   changeApartName: (value: string) => void;
@@ -17,40 +19,47 @@ interface Return {
 }
 
 export const useTransactionCompare = (): Return => {
-  const [showsItems, setShowsItems] = useState<boolean>(false);
+  const [activedInput, setActivedInput] = useState<boolean>(false);
   const [selectedApartIds, setSelectedApartIds] = useState<number[]>([]);
-  const [apartName, setApartName] = useState<string>('');
+  const [apartNameValue, setApartNameValue] = useState<string>('');
+  const [apartNameParam, setApartNameParam] = useState<string>('');
 
   const itemTimerRef = useRef(0);
   const inputTimerRef = useRef(0);
 
-  const { isFetching, data } = useApartSearchQuery({ apartName });
+  const { isFetching, data } = useApartSearchQuery({
+    apartName: apartNameParam,
+  });
 
   const items = data ?? [];
+  const showsItems = activedInput && (isFetching || items.length > 0);
 
   const focusSearchInput = () => {
-    setShowsItems(true);
+    setActivedInput(true);
   };
 
   const blurSearchInput = () => {
     itemTimerRef.current = window.setTimeout(() => {
-      setShowsItems(false);
+      setActivedInput(false);
     }, 100);
   };
 
   const changeApartName = (value: string) => {
     const trimmedValue = value.trim();
     if (trimmedValue === '') {
-      setApartName('');
+      setApartNameValue('');
+      setApartNameParam('');
       return;
     }
+
+    setApartNameValue(trimmedValue);
 
     if (inputTimerRef.current) {
       window.clearTimeout(inputTimerRef.current);
     }
 
     inputTimerRef.current = window.setTimeout(() => {
-      setApartName(trimmedValue);
+      setApartNameParam(trimmedValue);
     }, 300);
   };
 
@@ -60,8 +69,8 @@ export const useTransactionCompare = (): Return => {
       return;
     }
 
-    if (selectedApartIds.length >= 10) {
-      toast.error('최대 10개까지 선택할 수 있어요');
+    if (selectedApartIds.length >= MAX_COMPARE_APART_COUNT) {
+      toast.error(`최대 ${MAX_COMPARE_APART_COUNT}개까지 선택할 수 있어요`);
       return;
     }
 
@@ -73,7 +82,7 @@ export const useTransactionCompare = (): Return => {
     showsItems,
     items,
     selectedApartIds,
-    apartName,
+    apartNameValue,
     focusSearchInput,
     blurSearchInput,
     changeApartName,
