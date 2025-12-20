@@ -18,15 +18,13 @@ export function RegionItem({
   onClickApart,
 }: RegionItemProps) {
   return (
-    <div>
-      <div className="p-3 lg:px-0">
-        <span className="text-sm text-gray-500 lg:text-base">
-          {getCityNameWithRegionCode(item.code)}{' '}
-          {getRegionNameWithRegionCode(item.code)}{' '}
-          <span className="text-primary">{item.apartItems.length}</span>
-        </span>
-      </div>
-      <div className="flex flex-col lg:rounded lg:border lg:border-gray-200">
+    <div className="py-3">
+      <span className="text-sm text-gray-500 lg:text-base">
+        {getCityNameWithRegionCode(item.code)}{' '}
+        {getRegionNameWithRegionCode(item.code)}{' '}
+        <span className="text-primary">{item.apartItems.length}</span>
+      </span>
+      <div className="-mx-3 mt-2 flex flex-col md:mx-0 md:rounded md:border md:border-gray-100">
         {item.apartItems.map(item => (
           <ApartItem
             key={item.apartId}

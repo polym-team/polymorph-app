@@ -21,7 +21,7 @@ export function ApartItem({ item, onToggle, onClick }: ApartItemProps) {
   return (
     <div
       key={item.apartId}
-      className="flex flex-col items-start gap-2 border-b border-gray-100 bg-white p-3 transition-colors duration-200 last:border-b-0 active:bg-gray-100 lg:cursor-pointer lg:flex-row lg:items-center lg:justify-between lg:px-5 lg:py-4 lg:first:rounded-t lg:last:rounded-b lg:hover:bg-gray-100"
+      className="flex flex-col items-start gap-2 border-b border-gray-100 bg-white p-3 transition-colors duration-200 last:border-b-0 active:bg-gray-100 md:cursor-pointer md:flex-row md:items-center md:justify-between md:px-5 md:py-4 md:first:rounded-t md:last:rounded-b md:hover:bg-gray-100"
       onClick={() => onClick()}
     >
       <span className="leading-1 relative flex items-center gap-x-1">
@@ -49,7 +49,7 @@ export function ApartItem({ item, onToggle, onClick }: ApartItemProps) {
           />
         </button>
       </span>
-      <div className="gap-x flex flex-col gap-2 lg:flex-row lg:gap-x-5">
+      <div className="gap-x flex flex-col gap-2 md:flex-row md:gap-x-5">
         {item.latestTransaction && (
           <div className="flex items-center gap-x-2">
             <span className="bg-primary/5 text-primary rounded-sm px-1.5 py-0.5 text-sm">

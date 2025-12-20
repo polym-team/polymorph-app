@@ -264,7 +264,7 @@ export function TransactionListTable({
 
       {totalCount > 0 && (
         <div className="mt-5 flex items-center justify-between">
-          <div className="flex flex-wrap items-center gap-x-1 text-sm text-gray-500">
+          <div className="flex flex-wrap items-center gap-x-1 text-sm text-gray-500 lg:text-base">
             <div>
               총 <span className="text-primary">{totalCount}</span>건
             </div>{' '}

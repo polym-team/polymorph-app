@@ -1,7 +1,5 @@
 'use client';
 
-import { PageContainer } from '@/shared/ui/PageContainer';
-
 import { useTransactionList } from './hooks/useTransactionList';
 import { TransactionListContent } from './sub-features/transaction-list-content/TransactionListContent';
 import { TransactionListHeader } from './sub-features/transaction-list-header/TransactionListHeader';
@@ -20,16 +18,14 @@ export function TransactionList() {
   }
 
   return (
-    <PageContainer className="pb-10 pt-6">
-      <div className="flex flex-col gap-y-2">
-        <TransactionListHeader transaction={transaction} sorting={sorting} />
-        <TransactionListContent
-          sorting={sorting}
-          pageIndex={pageIndex}
-          transaction={transaction}
-          handlers={handlers}
-        />
-      </div>
-    </PageContainer>
+    <div className="flex flex-col gap-y-2">
+      <TransactionListHeader transaction={transaction} sorting={sorting} />
+      <TransactionListContent
+        sorting={sorting}
+        pageIndex={pageIndex}
+        transaction={transaction}
+        handlers={handlers}
+      />
+    </div>
   );
 }

@@ -25,7 +25,7 @@ export function ApartName({
 }: ApartNameProps) {
   if (!data) {
     return (
-      <PageContainer bgColor="white" className="py-4">
+      <PageContainer bgColor="white">
         <div className="flex items-start justify-between gap-x-0">
           <div className="flex flex-col gap-y-1">
             <div className="h-7 w-48 animate-pulse rounded bg-gray-200 lg:h-8" />
@@ -38,7 +38,7 @@ export function ApartName({
   }
 
   return (
-    <PageContainer bgColor="white" className="pb-4 pt-6">
+    <PageContainer bgColor="white">
       <div className="flex flex-col gap-y-1">
         <div className="flex items-center gap-x-2">
           <span className="text-xl font-semibold lg:text-2xl">

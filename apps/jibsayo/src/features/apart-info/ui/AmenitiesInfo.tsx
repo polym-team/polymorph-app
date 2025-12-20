@@ -12,10 +12,7 @@ interface AmenitiesInfoProps {
 export function AmenitiesInfo({ data }: AmenitiesInfoProps) {
   if (!data) {
     return (
-      <PageContainer
-        bgColor="white"
-        className="flex flex-col gap-y-3 py-4 lg:py-6"
-      >
+      <PageContainer bgColor="white" className="flex flex-col gap-y-3">
         <span className="h-5 w-20 animate-pulse rounded bg-gray-200 lg:h-6" />
         <HorizontalScrollContainer>
           <div className="flex gap-x-1">
@@ -36,10 +33,7 @@ export function AmenitiesInfo({ data }: AmenitiesInfoProps) {
   }
 
   return (
-    <PageContainer
-      bgColor="white"
-      className="flex flex-col gap-y-3 py-4 lg:py-6"
-    >
+    <PageContainer bgColor="white" className="flex flex-col gap-y-3">
       <span className="text-sm text-gray-500 lg:text-base">편의시설</span>
       <HorizontalScrollContainer>
         <div className="flex gap-x-1">

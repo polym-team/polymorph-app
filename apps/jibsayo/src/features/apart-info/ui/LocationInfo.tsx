@@ -1,7 +1,5 @@
 'use client';
 
-import { PageContainer } from '@/shared/ui/PageContainer';
-
 import { useEffect, useRef, useState } from 'react';
 
 import { ApartInfoType } from '../type';
@@ -216,27 +214,15 @@ export function LocationInfo({ data }: LocationInfoProps) {
 
   if (!data) {
     return (
-      <PageContainer
-        bgColor="white"
-        className="flex flex-col gap-y-3 py-4 lg:py-6 lg:pb-12"
-      >
-        <span className="h-5 w-12 animate-pulse rounded bg-gray-200 lg:h-6" />
-        <div className="overflow-hidden rounded">
-          <div className="aspect-[4/3] max-h-[450px] w-full animate-pulse bg-gray-200" />
-        </div>
-      </PageContainer>
+      <div className="-mx-3 overflow-hidden md:mx-0 md:rounded">
+        <div className="aspect-[4/3] max-h-[450px] w-full animate-pulse bg-gray-200" />
+      </div>
     );
   }
 
   return (
-    <PageContainer
-      bgColor="white"
-      className="flex flex-col gap-y-3 py-4 lg:py-6 lg:pb-12"
-    >
-      <span className="text-sm text-gray-500 lg:text-base">위치</span>
-      <div className="overflow-hidden rounded">
-        <div ref={mapRef} className="aspect-[4/3] max-h-[450px] w-full" />
-      </div>
-    </PageContainer>
+    <div className="-mx-3 overflow-hidden md:mx-0 md:rounded">
+      <div ref={mapRef} className="aspect-[4/3] max-h-[450px] w-full" />
+    </div>
   );
 }

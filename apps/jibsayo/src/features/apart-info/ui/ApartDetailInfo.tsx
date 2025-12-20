@@ -11,10 +11,7 @@ interface ApartDetailInfoProps {
 export function ApartDetailInfo({ data }: ApartDetailInfoProps) {
   if (!data) {
     return (
-      <PageContainer
-        bgColor="white"
-        className="flex flex-col gap-y-3 py-4 lg:py-6"
-      >
+      <PageContainer bgColor="white" className="flex flex-col gap-y-3">
         <span className="h-5 w-20 animate-pulse rounded bg-gray-200 lg:h-6" />
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[1, 2, 3, 4].map(item => (
@@ -46,10 +43,7 @@ export function ApartDetailInfo({ data }: ApartDetailInfoProps) {
   }
 
   return (
-    <PageContainer
-      bgColor="white"
-      className="flex flex-col gap-y-3 py-4 lg:py-6"
-    >
+    <PageContainer bgColor="white" className="flex flex-col gap-y-3">
       <span className="text-sm text-gray-500 lg:text-base">단지 정보</span>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {!!data.buildYear && (

@@ -19,7 +19,7 @@ export function ApartInfo({ apartId, data }: ApartInfoProps) {
   });
 
   return (
-    <div className="flex flex-col gap-y-5 lg:gap-y-0">
+    <div className="flex flex-col gap-y-3">
       <ApartName
         data={data}
         apartId={apartId}

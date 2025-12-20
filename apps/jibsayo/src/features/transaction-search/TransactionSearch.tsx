@@ -20,7 +20,7 @@ export function TransactionSearch() {
   } = useTransactionSearch();
 
   return (
-    <PageContainer className="py-6" bgColor="white">
+    <PageContainer bgColor="white">
       <form
         className="flex flex-col gap-2 lg:flex-row"
         onSubmit={e => {

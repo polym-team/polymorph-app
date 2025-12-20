@@ -7,7 +7,7 @@ export function Skeleton() {
         {[1, 2, 3].map(index => (
           <div key={index}>
             {/* 지역명 헤더 스켈레톤 */}
-            <div className="px-3 py-3.5 lg:px-0">
+            <div className="px-3 py-3 lg:px-0">
               <div className="h-5 w-32 animate-pulse rounded bg-gray-200" />
             </div>
             {/* 아파트 아이템들 스켈레톤 */}

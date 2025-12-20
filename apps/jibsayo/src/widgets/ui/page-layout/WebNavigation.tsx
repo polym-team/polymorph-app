@@ -1,8 +1,6 @@
 import logo from '@/assets/logo.png';
 import { ROUTE_PATH, ROUTE_PATH_LABEL } from '@/shared/consts/route';
-import { PageContainer } from '@/shared/ui/PageContainer';
 
-import { Search } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -17,29 +15,31 @@ export function WebNavigation() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/80 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      <PageContainer>
-        <div className="flex items-center">
-          <Link
-            href={ROUTE_PATH.TRANSACTIONS}
-            className="flex flex-shrink-0 items-center space-x-2 overflow-hidden transition-all duration-200"
-          >
-            <span className="flex h-[40px] overflow-hidden rounded-md">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={logo.src} alt="집사요" className="h-full w-auto" />
-            </span>
-          </Link>
+    <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <div className="mx-auto flex max-w-screen-md items-center justify-between gap-x-5 px-3 py-3 lg:max-w-screen-lg">
+        <Link
+          href={ROUTE_PATH.TRANSACTIONS}
+          className="flex flex-shrink-0 items-center space-x-2 overflow-hidden transition-all duration-200"
+        >
+          <span className="flex h-[40px] overflow-hidden rounded-md">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={logo.src} alt="집사요" className="h-full w-auto" />
+          </span>
+        </Link>
 
-          <div className="relative mx-5 min-w-0 flex-1">
-            <nav className="scrollbar-hide flex items-center gap-x-2 overflow-x-auto">
+        <div className="relative min-w-0 flex-1">
+          <nav className="scrollbar-hide flex items-center justify-end overflow-x-auto lg:gap-x-3">
+            <div className="flex flex-shrink-0 items-center gap-x-1 lg:gap-x-3">
               {[
                 'TRANSACTIONS' as const,
                 'TRANSACTION_COMPARE' as const,
                 'FAVORITES' as const,
+                'SEARCH' as const,
               ].map(key => (
                 <Button
                   key={key}
                   size="sm"
+                  className="flex-shrink-0 whitespace-nowrap text-xs lg:text-sm"
                   variant={
                     pathname.startsWith(ROUTE_PATH[key])
                       ? 'primary-light'
@@ -50,19 +50,10 @@ export function WebNavigation() {
                   {ROUTE_PATH_LABEL[key]}
                 </Button>
               ))}
-            </nav>
-            <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-white to-transparent" />
-          </div>
-
-          <div
-            className="ml-auto flex flex-shrink-0 cursor-pointer items-center gap-x-1 rounded bg-gray-100 px-3 py-3 text-sm text-gray-500 transition-colors duration-200 hover:bg-gray-200 lg:w-[200px]"
-            onClick={() => handleNavigationClick('SEARCH')}
-          >
-            <Search size={16} />
-            <span className="hidden lg:block">아파트 이름으로 검색</span>
-          </div>
+            </div>
+          </nav>
         </div>
-      </PageContainer>
+      </div>
     </header>
   );
 }

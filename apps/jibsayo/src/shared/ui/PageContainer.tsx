@@ -4,30 +4,19 @@ import { cn } from '@package/utils';
 
 interface PageContainerProps {
   className?: string;
-  bgColor?: 'white';
+  bgColor?: 'white' | 'gray';
   children: React.ReactNode;
 }
 
-export function PageContainer({
-  className,
-  bgColor,
-  children,
-}: PageContainerProps) {
+export function PageContainer({ className, children }: PageContainerProps) {
   return (
     <section
       className={cn(
-        'flex w-full justify-center',
-        bgColor === 'white' && 'bg-white'
+        '-mx-3 border-gray-100 bg-white p-3 md:-mx-0 md:rounded md:border md:p-5',
+        className
       )}
     >
-      <div
-        className={cn(
-          'w-full max-w-screen-md p-3 lg:max-w-screen-lg',
-          className
-        )}
-      >
-        {children}
-      </div>
+      {children}
     </section>
   );
 }

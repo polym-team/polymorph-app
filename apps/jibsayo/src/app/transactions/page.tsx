@@ -13,8 +13,10 @@ export default async function TransactionsPage() {
       <PageLayout bgColor="gray">
         <WebviewInitializer />
         <Suspense fallback={null}>
-          <TransactionSearch />
-          <TransactionList />
+          <div className="flex flex-col gap-y-8">
+            <TransactionSearch />
+            <TransactionList />
+          </div>
         </Suspense>
       </PageLayout>
     </QueryParamProvider>
