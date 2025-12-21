@@ -20,6 +20,7 @@ const Card = React.forwardRef<
   Header: typeof CardHeader;
   Footer: typeof CardFooter;
   Content: typeof CardContent;
+  Divider: typeof CardDivider;
 };
 Card.displayName = 'Card';
 
@@ -29,7 +30,7 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('border-b border-gray-100/50 p-4', className)}
+    className={cn('border-b border-gray-100 p-4', className)}
     {...props}
   />
 ));
@@ -49,14 +50,17 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('border-t border-gray-100/50 p-4', className)}
+    className={cn('border-t border-gray-100 p-4', className)}
     {...props}
   />
 ));
 CardFooter.displayName = 'CardFooter';
 
+const CardDivider = () => <hr className="h-[1px] w-full border-gray-100" />;
+
 Card.Header = CardHeader;
 Card.Footer = CardFooter;
 Card.Content = CardContent;
+Card.Divider = CardDivider;
 
 export { Card };

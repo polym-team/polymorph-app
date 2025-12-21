@@ -24,6 +24,12 @@ export const convertToMonthlyTransactionsByIds = (
       id: apartId,
       apartName,
       averageAmount: Math.round(averageAmount * 10000),
+      latestDealDate: row.latestDealDate,
+      latestDealAmount: row.latestDealAmount
+        ? Math.round(row.latestDealAmount * 10000)
+        : null,
+      latestFloor: row.latestFloor,
+      latestSize: row.latestSize,
     });
   });
 

@@ -32,7 +32,7 @@ export const useTransactionCompare = (): Return => {
   });
 
   const items = data ?? [];
-  const showsItems = activedInput && (isFetching || items.length > 0);
+  const showsItems = !!apartNameValue && activedInput;
 
   const focusSearchInput = () => {
     setActivedInput(true);

@@ -25,17 +25,36 @@ export const getMonthlyTransactionsByApartIds = async ({
   }
 
   const sql = `
+    WITH ranked AS (
+      SELECT
+        t.apart_id,
+        a.apart_name,
+        DATE_FORMAT(t.deal_date, '%Y%m') as month,
+        t.deal_date,
+        t.deal_amount,
+        t.floor,
+        t.exclusive_area,
+        ROW_NUMBER() OVER (
+          PARTITION BY t.apart_id, DATE_FORMAT(t.deal_date, '%Y%m')
+          ORDER BY t.deal_date DESC
+        ) as rn
+      FROM transactions t
+      LEFT JOIN apartments a ON t.apart_id = a.id
+      WHERE ${whereConditions.join(' AND ')}
+    )
     SELECT
-      t.apart_id as apartId,
-      a.apart_name as apartName,
-      DATE_FORMAT(t.deal_date, '%Y%m') as month,
+      apart_id as apartId,
+      apart_name as apartName,
+      month,
       COUNT(*) as count,
-      AVG(t.deal_amount) as averageAmount
-    FROM transactions t
-    LEFT JOIN apartments a ON t.apart_id = a.id
-    WHERE ${whereConditions.join(' AND ')}
-    GROUP BY t.apart_id, a.apart_name, DATE_FORMAT(t.deal_date, '%Y%m')
-    ORDER BY month DESC, t.apart_id ASC
+      AVG(deal_amount) as averageAmount,
+      MAX(CASE WHEN rn = 1 THEN deal_date END) as latestDealDate,
+      MAX(CASE WHEN rn = 1 THEN deal_amount END) as latestDealAmount,
+      MAX(CASE WHEN rn = 1 THEN floor END) as latestFloor,
+      MAX(CASE WHEN rn = 1 THEN exclusive_area END) as latestSize
+    FROM ranked
+    GROUP BY apart_id, apart_name, month
+    ORDER BY month DESC, apart_id ASC
   `;
 
   const rows = await query<DbMonthlyTransactionByIdsRow[]>(sql, queryParams);
