@@ -28,7 +28,6 @@ export function ApartSearch({
 }: ApartSearchProps) {
   return (
     <PageContainer className="flex flex-col gap-y-2">
-      <span className="text-sm text-gray-500">아파트 검색</span>
       <div className="flex flex-col gap-y-5">
         <SearchInput
           apartNameValue={apartNameValue}

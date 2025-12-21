@@ -1,6 +1,6 @@
 'use client';
 
-import { MonthlyTransactionsByApartsItem } from '@/entities/transaction';
+import { ApartTransactionSummary } from '@/entities/transaction';
 
 import { useMemo } from 'react';
 
@@ -9,7 +9,7 @@ import { CompareChartData } from '../types';
 
 interface Props {
   selectedApartIds: number[];
-  monthlyData: MonthlyTransactionsByApartsItem[];
+  monthlyData: ApartTransactionSummary[];
 }
 
 export const useCompareChartData = ({
@@ -30,20 +30,20 @@ export const useCompareChartData = ({
 
     const result: CompareChartData[] = [];
 
-    monthlyData.forEach(monthItem => {
-      const monthStr = monthItem.month.toString();
-      const year = monthStr.slice(0, 4);
-      const month = monthStr.slice(4, 6);
-      const date = new Date(`${year}-${month}-01`);
+    monthlyData.forEach(apartData => {
+      const color = apartColorMap.get(apartData.apartId) || '#3b82f6';
 
-      monthItem.transactions.forEach(transaction => {
-        const color = apartColorMap.get(transaction.id) || '#3b82f6';
+      apartData.transactions.forEach(monthTransaction => {
+        const monthStr = monthTransaction.month.toString();
+        const year = monthStr.slice(0, 4);
+        const month = monthStr.slice(4, 6);
+        const date = new Date(`${year}-${month}-01`);
 
         result.push({
           date: date,
-          apartId: transaction.id,
-          apartName: transaction.apartName,
-          averagePrice: transaction.averageAmount,
+          apartId: apartData.apartId,
+          apartName: apartData.apartName,
+          averagePrice: monthTransaction.averageAmount,
           color: color,
         });
       });

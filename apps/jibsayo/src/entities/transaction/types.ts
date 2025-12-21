@@ -43,15 +43,24 @@ export interface FetchTransactionListResponse {
   transactions: TransactionItem[];
 }
 
-export interface MonthlyTransactionByApart {
-  id: number;
-  apartName: string;
+export interface RecentTransaction {
+  dealDate: string;
+  dealAmount: number;
+  floor: number;
+  size: number;
+}
+
+export interface MonthlyTransaction {
+  month: number;
+  count: number;
   averageAmount: number;
 }
 
-export interface MonthlyTransactionsByApartsItem {
-  month: number;
-  transactions: MonthlyTransactionByApart[];
+export interface ApartTransactionSummary {
+  apartId: number;
+  apartName: string;
+  recentTransaction: RecentTransaction | null;
+  transactions: MonthlyTransaction[];
 }
 
 export interface FetchMonthlyTransactionsByApartsRequest {
@@ -60,4 +69,4 @@ export interface FetchMonthlyTransactionsByApartsRequest {
 }
 
 export type FetchMonthlyTransactionsByApartsResponse =
-  MonthlyTransactionsByApartsItem[];
+  ApartTransactionSummary[];

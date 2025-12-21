@@ -1,42 +1,66 @@
 import {
+  ApartTransactionSummary,
   DbMonthlyTransactionByIdsRow,
-  MonthlyTransactionByIdsItem,
-  TransactionByIdSummary,
 } from '../types';
 
 export const convertToMonthlyTransactionsByIds = (
   dbRows: DbMonthlyTransactionByIdsRow[]
-): MonthlyTransactionByIdsItem[] => {
-  const monthlyMap = new Map<number, TransactionByIdSummary[]>();
+): ApartTransactionSummary[] => {
+  // apartId별로 그룹화
+  const apartMap = new Map<
+    number,
+    {
+      apartName: string;
+      rows: DbMonthlyTransactionByIdsRow[];
+    }
+  >();
 
   dbRows.forEach(row => {
-    const month = parseInt(row.month, 10);
-    const apartId = row.apartId;
-    const apartName = row.apartName;
-    const averageAmount = row.averageAmount;
-
-    if (!monthlyMap.has(month)) {
-      monthlyMap.set(month, []);
+    if (!apartMap.has(row.apartId)) {
+      apartMap.set(row.apartId, {
+        apartName: row.apartName,
+        rows: [],
+      });
     }
-
-    const monthData = monthlyMap.get(month)!;
-    monthData.push({
-      id: apartId,
-      apartName,
-      averageAmount: Math.round(averageAmount * 10000),
-      latestDealDate: row.latestDealDate,
-      latestDealAmount: row.latestDealAmount
-        ? Math.round(row.latestDealAmount * 10000)
-        : null,
-      latestFloor: row.latestFloor,
-      latestSize: row.latestSize,
-    });
+    apartMap.get(row.apartId)!.rows.push(row);
   });
 
-  return Array.from(monthlyMap.entries())
-    .map(([month, transactions]) => ({
-      month,
-      transactions: transactions.sort((a, b) => a.id - b.id),
-    }))
-    .sort((a, b) => b.month - a.month);
+  // 각 아파트별로 데이터 변환
+  return Array.from(apartMap.entries())
+    .map(([apartId, data]) => {
+      // 월 기준 내림차순 정렬 (최근 월이 먼저)
+      const sortedRows = data.rows.sort(
+        (a, b) => parseInt(b.month, 10) - parseInt(a.month, 10)
+      );
+
+      // 최근 거래 정보 (가장 최근 월의 데이터)
+      const latestRow = sortedRows[0];
+      const recentTransaction =
+        latestRow.latestDealDate &&
+        latestRow.latestDealAmount !== null &&
+        latestRow.latestFloor !== null &&
+        latestRow.latestSize !== null
+          ? {
+              dealDate: latestRow.latestDealDate,
+              dealAmount: Math.round(latestRow.latestDealAmount * 10000),
+              floor: latestRow.latestFloor,
+              size: latestRow.latestSize,
+            }
+          : null;
+
+      // 월별 거래 정보
+      const transactions = sortedRows.map(row => ({
+        month: parseInt(row.month, 10),
+        count: row.count,
+        averageAmount: Math.round(row.averageAmount * 10000),
+      }));
+
+      return {
+        apartId,
+        apartName: data.apartName,
+        recentTransaction,
+        transactions,
+      };
+    })
+    .sort((a, b) => a.apartId - b.apartId);
 };

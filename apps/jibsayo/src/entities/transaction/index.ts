@@ -3,8 +3,9 @@ export {
   type TransactionItem,
   type FetchMonthlyTransactionsByApartsRequest,
   type FetchMonthlyTransactionsByApartsResponse,
-  type MonthlyTransactionsByApartsItem,
-  type MonthlyTransactionByApart,
+  type ApartTransactionSummary,
+  type RecentTransaction,
+  type MonthlyTransaction,
 } from './types';
 
 export { SEARCH_PARAM_CONFIGS } from './consts/rule';

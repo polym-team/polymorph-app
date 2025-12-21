@@ -28,7 +28,7 @@ export function CompareChart({ selectedApartIds, onRemoveApartId }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-y-5">
+    <div className="flex flex-col gap-y-3">
       <CompareChartLegend
         legendData={legendData}
         onRemoveApartId={onRemoveApartId}

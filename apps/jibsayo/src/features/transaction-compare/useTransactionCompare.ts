@@ -11,6 +11,7 @@ interface Return {
   showsItems: boolean;
   items: SearchedApartmentItem[];
   selectedApartIds: number[];
+  selectedAparts: SearchedApartmentItem[];
   apartNameValue: string;
   focusSearchInput: () => void;
   blurSearchInput: () => void;
@@ -21,6 +22,9 @@ interface Return {
 export const useTransactionCompare = (): Return => {
   const [activedInput, setActivedInput] = useState<boolean>(false);
   const [selectedApartIds, setSelectedApartIds] = useState<number[]>([]);
+  const [selectedAparts, setSelectedAparts] = useState<SearchedApartmentItem[]>(
+    []
+  );
   const [apartNameValue, setApartNameValue] = useState<string>('');
   const [apartNameParam, setApartNameParam] = useState<string>('');
 
@@ -66,6 +70,7 @@ export const useTransactionCompare = (): Return => {
   const clickApartItem = (item: SearchedApartmentItem) => {
     if (selectedApartIds.includes(item.id)) {
       setSelectedApartIds(prev => prev.filter(id => id !== item.id));
+      setSelectedAparts(prev => prev.filter(apart => apart.id !== item.id));
       return;
     }
 
@@ -75,6 +80,7 @@ export const useTransactionCompare = (): Return => {
     }
 
     setSelectedApartIds(prev => [...prev, item.id]);
+    setSelectedAparts(prev => [...prev, item]);
   };
 
   return {
@@ -82,6 +88,7 @@ export const useTransactionCompare = (): Return => {
     showsItems,
     items,
     selectedApartIds,
+    selectedAparts,
     apartNameValue,
     focusSearchInput,
     blurSearchInput,

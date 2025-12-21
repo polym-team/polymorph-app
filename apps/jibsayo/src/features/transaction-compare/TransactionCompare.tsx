@@ -1,5 +1,6 @@
 'use client';
 
+import { CompareAparts } from './sub-features/compare-aparts';
 import { CompareChart } from './sub-features/compare-chart';
 import { ApartSearch } from './ui/ApartSearch';
 import { NotSearched } from './ui/NotSearched';
@@ -11,6 +12,7 @@ export function TransactionCompare() {
     showsItems,
     items,
     selectedApartIds,
+    selectedAparts,
     apartNameValue,
     focusSearchInput,
     blurSearchInput,
@@ -19,7 +21,7 @@ export function TransactionCompare() {
   } = useTransactionCompare();
 
   return (
-    <div className="flex flex-col gap-y-6">
+    <div className="flex flex-col gap-y-3">
       <ApartSearch
         isFetching={isFetching}
         showsItems={showsItems}
@@ -33,12 +35,20 @@ export function TransactionCompare() {
       />
       {selectedApartIds.length === 0 && <NotSearched />}
       {selectedApartIds.length > 0 && (
-        <CompareChart
-          selectedApartIds={selectedApartIds}
-          onRemoveApartId={apartId => {
-            clickApartItem(items.find(item => item.id === apartId)!);
-          }}
-        />
+        <>
+          <CompareChart
+            selectedApartIds={selectedApartIds}
+            onRemoveApartId={apartId => {
+              clickApartItem(
+                selectedAparts.find(item => item.id === apartId)!
+              );
+            }}
+          />
+          <CompareAparts
+            selectedApartIds={selectedApartIds}
+            items={selectedAparts}
+          />
+        </>
       )}
     </div>
   );

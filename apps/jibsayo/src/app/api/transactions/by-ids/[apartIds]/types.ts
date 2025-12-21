@@ -10,19 +10,24 @@ export interface DbMonthlyTransactionByIdsRow {
   latestSize: number | null;
 }
 
-export interface TransactionByIdSummary {
-  id: number;
-  apartName: string;
-  averageAmount: number;
-  latestDealDate: string | null;
-  latestDealAmount: number | null;
-  latestFloor: number | null;
-  latestSize: number | null;
+export interface RecentTransaction {
+  dealDate: string;
+  dealAmount: number;
+  floor: number;
+  size: number;
 }
 
-export interface MonthlyTransactionByIdsItem {
+export interface MonthlyTransaction {
   month: number;
-  transactions: TransactionByIdSummary[];
+  count: number;
+  averageAmount: number;
 }
 
-export type MonthlyTransactionsByIdsResponse = MonthlyTransactionByIdsItem[];
+export interface ApartTransactionSummary {
+  apartId: number;
+  apartName: string;
+  recentTransaction: RecentTransaction | null;
+  transactions: MonthlyTransaction[];
+}
+
+export type MonthlyTransactionsByIdsResponse = ApartTransactionSummary[];
