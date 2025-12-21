@@ -58,7 +58,7 @@ export const useApartSearch = (): Return => {
     return convertToApartSearchViewModel(data, favoriteApartIdSet);
   }, [data, favoriteApartIdSet]);
 
-  const isEmpty = !!data && data.length === 0;
+  const isEmpty = !data;
 
   const changeApartName = (value: string) => {
     const trimmedValue = value.trim();
