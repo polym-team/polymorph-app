@@ -1,6 +1,6 @@
 export function Skeleton() {
   return (
-    <div className="-mx-3 flex w-full flex-col gap-y-3 pb-10 lg:mx-0">
+    <div className="-mx-3 flex w-full flex-col gap-y-3 lg:mx-0">
       {[1, 2, 3].map(index => (
         <div key={index}>
           {/* 지역명 헤더 스켈레톤 */}

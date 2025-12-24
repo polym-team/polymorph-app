@@ -18,7 +18,7 @@ export function FavoriteApartList() {
   }
 
   return (
-    <div className="flex w-full flex-col gap-y-3 pb-10">
+    <div className="flex w-full flex-col gap-y-3">
       {regionItems.map(item => (
         <RegionItem
           key={item.code}

@@ -3,12 +3,48 @@ import { ROUTE_PATH, ROUTE_PATH_LABEL } from '@/shared/consts/route';
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 
 import { Button } from '@package/ui';
 
 export function WebNavigation() {
   const router = useRouter();
   const pathname = usePathname();
+  const navRef = useRef<HTMLDivElement>(null);
+  const buttonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+
+  const MENU_KEYS = [
+    'TRANSACTIONS' as const,
+    'TRANSACTION_COMPARE' as const,
+    'FAVORITES' as const,
+    'SEARCH' as const,
+  ];
+
+  const scrollToCenter = (key: string) => {
+    const nav = navRef.current;
+    const button = buttonRefs.current[key];
+
+    if (nav && button) {
+      const navWidth = nav.offsetWidth;
+      const buttonLeft = button.offsetLeft;
+      const buttonWidth = button.offsetWidth;
+
+      const scrollLeft = buttonLeft - navWidth / 2 + buttonWidth / 2;
+      nav.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    const activeKey = MENU_KEYS.find(key =>
+      pathname.startsWith(ROUTE_PATH[key])
+    );
+
+    if (activeKey) {
+      setTimeout(() => {
+        scrollToCenter(activeKey);
+      }, 100);
+    }
+  }, [pathname]);
 
   const handleNavigationClick = (key: keyof typeof ROUTE_PATH) => {
     router.push(ROUTE_PATH[key]);
@@ -28,16 +64,17 @@ export function WebNavigation() {
         </Link>
 
         <div className="relative min-w-0 flex-1">
-          <nav className="scrollbar-hide flex items-center justify-end overflow-x-auto lg:gap-x-3">
-            <div className="flex flex-shrink-0 items-center gap-x-1 lg:gap-x-3">
-              {[
-                'TRANSACTIONS' as const,
-                'TRANSACTION_COMPARE' as const,
-                'FAVORITES' as const,
-                'SEARCH' as const,
-              ].map(key => (
+          <nav
+            ref={navRef}
+            className="scrollbar-hide overflow-x-auto"
+          >
+            <div className="inline-flex items-center gap-x-1 lg:gap-x-3">
+              {MENU_KEYS.map(key => (
                 <Button
                   key={key}
+                  ref={el => {
+                    buttonRefs.current[key] = el;
+                  }}
                   size="sm"
                   className="flex-shrink-0 whitespace-nowrap text-xs lg:text-sm"
                   variant={

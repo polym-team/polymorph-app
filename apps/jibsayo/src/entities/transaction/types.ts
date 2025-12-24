@@ -27,7 +27,7 @@ export interface TransactionItem {
   size: number;
   floor: number;
   isNewTransaction: boolean;
-  apartId: number | null;
+  apartId: number;
   fallbackToken: string | null;
   buildedYear: number | null;
   householdCount: number | null;

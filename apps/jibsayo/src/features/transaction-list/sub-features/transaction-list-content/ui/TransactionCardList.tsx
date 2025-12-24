@@ -5,7 +5,6 @@ import {
   formatDealDate,
   formatFloorText,
   formatKoreanAmountText,
-  formatNumber,
   formatPyeongText,
   formatSizeText,
 } from '@/shared/utils/formatter';
@@ -17,6 +16,7 @@ import { cn } from '@package/utils';
 
 import { TRANSACTION_LIST_PAGE_SIZE } from '../../../consts';
 import { TransactionItemViewModel } from '../../../types';
+import { calculateTransactionDetailInfo } from '../services';
 
 interface TransactionCardListProps {
   isFetching: boolean;
@@ -82,21 +82,21 @@ export function TransactionCardList({
               onClick={() => onRowClick(item)}
             >
               <Card.Content className="pb-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex flex-col gap-y-0.5">
-                    <div className="relative flex flex-wrap items-center gap-2">
+                <div className="flex flex-col">
+                  <div className="flex items-center">
+                    <div className="flex min-w-0 flex-1 items-center gap-x-1.5">
                       {item.isNewTransaction && (
                         <span className="absolute -top-5 left-0">
                           <NewTransactionIcon />
                         </span>
                       )}
-                      <span className="inline-block font-semibold leading-5">
+                      <span className="truncate font-semibold leading-5">
                         {item.apartName}
                       </span>
                       {item.apartId && (
                         <button
                           type="button"
-                          className="-translate-y-[0.5px]"
+                          className="flex-shrink-0 -translate-y-[0.5px]"
                           onClick={e => {
                             e.stopPropagation();
                             e.preventDefault();
@@ -115,26 +115,20 @@ export function TransactionCardList({
                         </button>
                       )}
                     </div>
-                    {item.householdCount || item.buildedYear ? (
-                      <div>
-                        <span className="-translate-y-[1px] text-sm text-gray-500">
-                          {!!item.householdCount &&
-                            `${formatNumber(item.householdCount)}세대`}
-                          {!!item.householdCount &&
-                            !!item.completionYear &&
-                            ' · '}
-                          {!!item.completionYear &&
-                            `${item.completionYear}년식`}
-                        </span>
-                      </div>
-                    ) : null}
+                    <div className="w-24 text-right">
+                      <span className="text-primary whitespace-nowrap font-bold">
+                        {formatKoreanAmountText(item.dealAmount)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-col items-end gap-y-0.5">
-                    <strong className="text-primary whitespace-nowrap font-bold">
-                      {formatKoreanAmountText(item.dealAmount)}
-                    </strong>
+                  <div className="mt-0.5 flex items-center justify-between">
+                    <div className="w-40">
+                      <span className="text-sm text-gray-500">
+                        {calculateTransactionDetailInfo(item).join(' · ')}
+                      </span>
+                    </div>
                     {item.highestTransaction && item.lowestTransaction && (
-                      <div className="flex justify-end gap-x-2">
+                      <div className="flex flex-1 flex-wrap justify-end gap-x-2">
                         <span
                           className="flex items-center gap-x-[1px] text-sm text-red-600"
                           onClick={e => e.stopPropagation()}
@@ -152,28 +146,27 @@ export function TransactionCardList({
                           {formatKoreanAmountText(
                             item.lowestTransaction.dealAmount
                           ).replace('원', '')}{' '}
-                          (직전 5년)
+                          (최근 5년)
                         </span>
                       </div>
                     )}
                   </div>
-                </div>
-              </Card.Content>
-              <hr className="border-gray-100" />
-              <Card.Content className="py-2 pl-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-x-1">
-                    {item.floor && (
-                      <Button size="xs">{formatFloorText(item.floor)}</Button>
-                    )}
-                    <Button size="xs">
-                      {formatPyeongText(calculateAreaPyeong(item.size))} (
-                      {formatSizeText(Number(item.size))})
-                    </Button>
+                  <div className="mt-3 flex items-center justify-between">
+                    <div className="flex gap-x-1">
+                      {item.floor && (
+                        <Button size="xs">{formatFloorText(item.floor)}</Button>
+                      )}
+                      <Button size="xs">
+                        {formatPyeongText(calculateAreaPyeong(item.size))} (
+                        {formatSizeText(Number(item.size))})
+                      </Button>
+                    </div>
+                    <div>
+                      <time className="text-xs text-gray-400">
+                        {formatDealDate(item.dealDate)}
+                      </time>
+                    </div>
                   </div>
-                  <time className="text-xs text-gray-400">
-                    {formatDealDate(item.dealDate)}
-                  </time>
                 </div>
               </Card.Content>
             </Card>
