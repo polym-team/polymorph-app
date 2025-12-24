@@ -66,7 +66,7 @@ export function WebNavigation() {
         <div className="relative min-w-0 flex-1">
           <nav
             ref={navRef}
-            className="scrollbar-hide overflow-x-auto"
+            className="scrollbar-hide overflow-x-auto text-right"
           >
             <div className="inline-flex items-center gap-x-1 lg:gap-x-3">
               {MENU_KEYS.map(key => (
