@@ -62,18 +62,18 @@ export function FilterForm({ form, onFormChange }: FilterFormProps) {
               <span className="text-primary">{selectedTempFilterCount}</span>
             </span>
             <div className="mt-2 flex gap-2 overflow-x-auto">
-              {hasFilters.favoriteOnly && (
-                <FilterButton
-                  onRemove={() => changeFilter({ favoriteOnly: false })}
-                >
-                  저장된 아파트만 보기
-                </FilterButton>
-              )}
               {hasFilters.newTransactionOnly && (
                 <FilterButton
                   onRemove={() => changeFilter({ newTransactionOnly: false })}
                 >
                   신규 거래만 보기
+                </FilterButton>
+              )}
+              {hasFilters.favoriteOnly && (
+                <FilterButton
+                  onRemove={() => changeFilter({ favoriteOnly: false })}
+                >
+                  저장된 아파트만 보기
                 </FilterButton>
               )}
               {hasFilters.apartName && (
@@ -147,20 +147,6 @@ export function FilterForm({ form, onFormChange }: FilterFormProps) {
                   size="sm"
                   rounded
                   variant={
-                    tempFilter.favoriteOnly ? 'primary-light' : 'outline'
-                  }
-                  onClick={() =>
-                    changeFilter({
-                      favoriteOnly: !tempFilter.favoriteOnly,
-                    })
-                  }
-                >
-                  저장된 아파트만 보기
-                </Button>
-                <Button
-                  size="sm"
-                  rounded
-                  variant={
                     tempFilter.newTransactionOnly ? 'primary-light' : 'outline'
                   }
                   onClick={() =>
@@ -170,6 +156,20 @@ export function FilterForm({ form, onFormChange }: FilterFormProps) {
                   }
                 >
                   신규 거래만 보기
+                </Button>
+                <Button
+                  size="sm"
+                  rounded
+                  variant={
+                    tempFilter.favoriteOnly ? 'primary-light' : 'outline'
+                  }
+                  onClick={() =>
+                    changeFilter({
+                      favoriteOnly: !tempFilter.favoriteOnly,
+                    })
+                  }
+                >
+                  저장된 아파트만 보기
                 </Button>
               </div>
             </div>
