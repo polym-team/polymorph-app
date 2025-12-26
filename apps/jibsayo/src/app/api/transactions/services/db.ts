@@ -181,7 +181,13 @@ const fetchTransactions = async (
 
   const rows = await query<
     Array<
-      Omit<DbTransactionRow, 'fallbackToken' | 'isNewTransaction' | 'highestTransaction' | 'lowestTransaction'> & {
+      Omit<
+        DbTransactionRow,
+        | 'fallbackToken'
+        | 'isNewTransaction'
+        | 'highestTransaction'
+        | 'lowestTransaction'
+      > & {
         isNewTransaction: number;
         highestDealAmount: number | null;
         highestDealDate: string | null;
@@ -195,7 +201,7 @@ const fetchTransactions = async (
     >
   >(dataSql, dataParams);
 
-  return rows.map(row => {
+  const mappedRows: DbTransactionRow[] = rows.map(row => {
     const {
       highestDealAmount,
       highestDealDate,
@@ -216,20 +222,33 @@ const fetchTransactions = async (
         regionCode: row.regionCode,
         apartName: row.apartName,
       }),
-      highestTransaction: highestDealAmount !== null ? {
-        dealAmount: highestDealAmount * 10000,
-        dealDate: highestDealDate!,
-        size: highestDealSize!,
-        floor: highestDealFloor!,
-      } : null,
-      lowestTransaction: lowestDealAmount !== null ? {
-        dealAmount: lowestDealAmount * 10000,
-        dealDate: lowestDealDate!,
-        size: lowestDealSize!,
-        floor: lowestDealFloor!,
-      } : null,
+      highestTransaction:
+        highestDealAmount !== null
+          ? {
+              dealAmount: highestDealAmount * 10000,
+              dealDate: highestDealDate!,
+              size: highestDealSize!,
+              floor: highestDealFloor!,
+            }
+          : null,
+      lowestTransaction:
+        lowestDealAmount !== null
+          ? {
+              dealAmount: lowestDealAmount * 10000,
+              dealDate: lowestDealDate!,
+              size: lowestDealSize!,
+              floor: lowestDealFloor!,
+            }
+          : null,
     };
   });
+
+  // id로 중복 제거 (같은 id의 첫 번째 거래만 유지)
+  const uniqueTransactions = Array.from(
+    new Map(mappedRows.map(t => [t.id, t])).values()
+  ) as DbTransactionRow[];
+
+  return uniqueTransactions;
 };
 
 const fetchAveragePricePerPyeong = async (

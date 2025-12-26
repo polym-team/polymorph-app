@@ -21,7 +21,7 @@ export function CompareChartFilter({
             key={p.value}
             size="sm"
             className="flex-1 px-0 lg:px-3"
-            variant={selectedPeriod === p.value ? 'primary-light' : 'ghost'}
+            variant={selectedPeriod === p.value ? 'primary' : 'ghost'}
             onClick={() => onChangePeriod(p.value as PeriodValue)}
           >
             {p.label}

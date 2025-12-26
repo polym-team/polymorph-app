@@ -22,7 +22,7 @@ export function TransactionFilter({
   onChangeSizes,
 }: TransactionFilterProps) {
   return (
-    <div className="flex flex-col flex-wrap justify-between gap-x-6 gap-y-3 rounded bg-gray-100 p-2 lg:flex-row lg:items-center">
+    <div className="flex flex-col flex-wrap justify-between gap-x-6 gap-y-2 rounded bg-gray-100 p-2 lg:flex-row lg:items-center">
       <div className="rounded bg-white p-1 shadow-sm">
         <div className="flex gap-x-1">
           {PERIODS.map(p => (

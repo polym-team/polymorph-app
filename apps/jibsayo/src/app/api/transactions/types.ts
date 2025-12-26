@@ -6,6 +6,7 @@ export interface PriceHistoryDeal {
 }
 
 export interface DbTransactionRow {
+  id: number;
   regionCode: string;
   apartName: string;
   dealDate: string;

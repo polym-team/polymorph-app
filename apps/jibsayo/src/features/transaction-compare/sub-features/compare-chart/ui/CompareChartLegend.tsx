@@ -20,7 +20,7 @@ export function CompareChartLegend({
   return (
     <PageContainer className="flex flex-col gap-y-2">
       <span className="text-sm text-gray-500">비교중 아파트</span>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1">
         {legendData.map(item => (
           <Button
             key={item.apartId}
