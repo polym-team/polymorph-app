@@ -6,6 +6,7 @@ import {
   formatFloorText,
   formatKoreanAmountText,
   formatPyeongText,
+  formatSizeText,
 } from '@/shared/utils/formatter';
 
 import {
@@ -105,8 +106,8 @@ export function TransactionListTable({
         <Table>
           <colgroup>
             <col width={90} />
-            <col width={120} />
             <col width="*" />
+            <col width={200} />
           </colgroup>
           <TableHeader>
             <TableRow>
@@ -218,12 +219,17 @@ export function TransactionListTable({
                       <TableCell>
                         <span
                           className={cn(
-                            'flex gap-x-1 text-sm text-gray-600 lg:text-base',
+                            'flex flex-wrap gap-x-1 text-sm text-gray-600 lg:text-base',
                             item.cancellationDate && 'line-through'
                           )}
                         >
                           {formatFloorText(item.floor)} /{' '}
-                          {formatPyeongText(calculateAreaPyeong(item.size))}
+                          <span className="inline-flex items-center gap-x-1">
+                            {formatPyeongText(calculateAreaPyeong(item.size))}
+                            <span className="hidden -translate-y-[1.5px] text-sm text-gray-500 lg:inline">
+                              ({formatSizeText(item.size)})
+                            </span>
+                          </span>
                         </span>
                       </TableCell>
                       <TableCell className="text-right">

@@ -46,21 +46,19 @@ export function CardView({ items }: CardViewProps) {
                       최근 거래
                     </span>
                   </div>
-                  <div className="text-right">
+                  <div className="flex flex-1 flex-col items-end">
                     <span className="text-primary font-semibold">
                       {formatKoreanAmountText(
                         item.recentTransaction.dealAmount
                       )}
                     </span>
-                    <div>
+                    <div className="flex flex-wrap items-center justify-end gap-x-1">
                       <span className="text-xs text-gray-500">
-                        {formatDealDate(item.recentTransaction.dealDate)}
+                        {formatDealDate(item.recentTransaction.dealDate)} ·
                       </span>
-                      {' · '}
                       <span className="text-xs text-gray-500">
-                        {formatFloorText(item.recentTransaction.floor)}
+                        {formatFloorText(item.recentTransaction.floor)} ·
                       </span>
-                      {' · '}
                       <span className="text-xs text-gray-500">
                         {formatPyeongText(
                           calculateAreaPyeong(item.recentTransaction.size)
