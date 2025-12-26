@@ -5,7 +5,6 @@ import {
   formatKoreanAmountText,
   formatNumber,
   formatPyeongText,
-  formatSizeText,
 } from '@/shared/utils/formatter';
 
 import { useMemo } from 'react';
@@ -27,7 +26,7 @@ export function TableView({ items }: TableViewProps) {
         cell: ({ row }) => (
           <span className="font-semibold">{row.original.apartName}</span>
         ),
-        size: 200,
+        size: 250,
       },
       {
         accessorKey: 'region',
@@ -35,7 +34,7 @@ export function TableView({ items }: TableViewProps) {
         cell: ({ row }) => (
           <span className="text-gray-600">{row.original.region}</span>
         ),
-        size: 200,
+        size: 250,
       },
       {
         accessorKey: 'householdCount',
@@ -44,13 +43,13 @@ export function TableView({ items }: TableViewProps) {
           row.original.householdCount
             ? `${formatNumber(row.original.householdCount)}세대`
             : '-',
-        size: 100,
+        size: 120,
       },
       {
         accessorKey: 'completionYear',
         header: '연식',
         cell: ({ row }) => `${row.original.completionYear}년식`,
-        size: 100,
+        size: 120,
       },
       {
         accessorKey: 'recentTransaction',
@@ -63,26 +62,29 @@ export function TableView({ items }: TableViewProps) {
           return (
             <div className="flex flex-col items-end gap-y-1">
               <div className="flex items-center gap-x-2">
-                <span className="text-sm text-gray-500">
-                  {formatDealDate(recentTransaction.dealDate)}
-                </span>
                 <span className="text-primary font-semibold">
                   {formatKoreanAmountText(recentTransaction.dealAmount)}
                 </span>
               </div>
-              <div className="flex items-center gap-x-2 text-sm text-gray-600">
-                <span>{formatFloorText(recentTransaction.floor)}</span>
-                <span>
+              <div className="flex items-center gap-x-0.5">
+                <span className="text-sm text-gray-600">
+                  {formatDealDate(recentTransaction.dealDate)}
+                </span>
+                ·
+                <span className="text-sm text-gray-600">
+                  {formatFloorText(recentTransaction.floor)}
+                </span>
+                ·
+                <span className="text-sm text-gray-600">
                   {formatPyeongText(
                     calculateAreaPyeong(recentTransaction.size)
-                  )}{' '}
-                  ({formatSizeText(recentTransaction.size)})
+                  )}
                 </span>
               </div>
             </div>
           );
         },
-        size: 250,
+        size: Infinity,
       },
     ],
     []

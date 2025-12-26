@@ -5,31 +5,48 @@ import {
 } from '@/entities/region';
 import { formatNumber } from '@/shared/utils/formatter';
 
+import { Loader2 } from 'lucide-react';
+import { Fragment } from 'react';
+
 import { Button, Card } from '@package/ui';
 import { cn } from '@package/utils';
 
 import { calculateHighlightSegments } from '../services';
 
 interface SearchResultProps {
+  isFetching: boolean;
   items: SearchedApartmentItem[];
   selectedApartIds: number[];
-  apartNameValue: string;
+  apartName: string;
   onSelect: (item: SearchedApartmentItem) => void;
 }
 
 export function SearchResult({
+  isFetching,
   items,
   selectedApartIds,
-  apartNameValue,
+  apartName,
   onSelect,
 }: SearchResultProps) {
+  if (isFetching) {
+    return (
+      <div className="flex justify-center py-10">
+        <Loader2 className="text-primary animate-spin" />
+      </div>
+    );
+  }
+
+  if (!apartName) {
+    return null;
+  }
+
   return (
     <div className="flex flex-col gap-y-2">
       <div>
         <span className="text-primary font-semibold">
-          &#34;{apartNameValue}&#34;
+          &#34;{apartName}&#34;
         </span>{' '}
-        검색 결과 <span className="text-primary">{items.length}</span>건
+        검색 결과
       </div>
       {items.length > 0 && (
         <Card className="overflow-hidden">
@@ -37,11 +54,11 @@ export function SearchResult({
             const isSelected = selectedApartIds.includes(item.id);
 
             return (
-              <>
+              <Fragment key={item.id}>
                 {index > 0 && <Card.Divider />}
                 <Card.Content
-                  key={item.id}
                   className={cn(
+                    'lg:p-2 lg:pl-4',
                     isSelected && 'bg-primary/10 hover:bg-primary/20',
                     !isSelected && 'hover:bg-gray-100'
                   )}
@@ -54,7 +71,7 @@ export function SearchResult({
                       <div>
                         {calculateHighlightSegments(
                           item.apartName,
-                          apartNameValue
+                          apartName
                         ).map(
                           (
                             segment: {
@@ -91,7 +108,7 @@ export function SearchResult({
                     </div>
                   </div>
                 </Card.Content>
-              </>
+              </Fragment>
             );
           })}
         </Card>

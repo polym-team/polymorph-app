@@ -13,6 +13,7 @@ interface Return {
   selectedApartIds: number[];
   selectedAparts: SearchedApartmentItem[];
   apartNameValue: string;
+  apartNameParam: string;
   focusSearchInput: () => void;
   blurSearchInput: () => void;
   changeApartName: (value: string) => void;
@@ -90,6 +91,7 @@ export const useTransactionCompare = (): Return => {
     selectedApartIds,
     selectedAparts,
     apartNameValue,
+    apartNameParam,
     focusSearchInput,
     blurSearchInput,
     changeApartName,

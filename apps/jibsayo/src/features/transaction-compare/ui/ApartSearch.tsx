@@ -10,6 +10,7 @@ interface ApartSearchProps {
   items: SearchedApartmentItem[];
   selectedApartIds: number[];
   apartNameValue: string;
+  apartNameParam: string;
   onChange: (value: string) => void;
   onSelect: (item: SearchedApartmentItem) => void;
   onFocus: () => void;
@@ -17,10 +18,12 @@ interface ApartSearchProps {
 }
 
 export function ApartSearch({
+  isFetching,
   showsItems,
   items,
   selectedApartIds,
   apartNameValue,
+  apartNameParam,
   onChange,
   onSelect,
   onFocus,
@@ -37,9 +40,10 @@ export function ApartSearch({
         />
         {showsItems && (
           <SearchResult
+            isFetching={isFetching}
             items={items}
             selectedApartIds={selectedApartIds}
-            apartNameValue={apartNameValue}
+            apartName={apartNameParam}
             onSelect={onSelect}
           />
         )}

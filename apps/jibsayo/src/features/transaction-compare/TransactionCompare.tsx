@@ -14,6 +14,7 @@ export function TransactionCompare() {
     selectedApartIds,
     selectedAparts,
     apartNameValue,
+    apartNameParam,
     focusSearchInput,
     blurSearchInput,
     changeApartName,
@@ -28,20 +29,19 @@ export function TransactionCompare() {
         items={items}
         selectedApartIds={selectedApartIds}
         apartNameValue={apartNameValue}
+        apartNameParam={apartNameParam}
         onChange={changeApartName}
         onSelect={clickApartItem}
         onFocus={focusSearchInput}
         onBlur={blurSearchInput}
       />
-      {selectedApartIds.length === 0 && <NotSearched />}
+      {selectedApartIds.length === 0 && !isFetching && <NotSearched />}
       {selectedApartIds.length > 0 && (
         <>
           <CompareChart
             selectedApartIds={selectedApartIds}
             onRemoveApartId={apartId => {
-              clickApartItem(
-                selectedAparts.find(item => item.id === apartId)!
-              );
+              clickApartItem(selectedAparts.find(item => item.id === apartId)!);
             }}
           />
           <CompareAparts
