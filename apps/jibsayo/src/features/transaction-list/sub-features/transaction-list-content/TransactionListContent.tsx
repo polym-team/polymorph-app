@@ -4,8 +4,8 @@ import {
   SortingState,
   TransactionState,
 } from '../../types';
-import { TransactionCardList } from './ui/TransactionCardList';
-import { TransactionTableList } from './ui/TransactionTableList';
+import { CardView } from './ui/CardView';
+import { TableView } from './ui/TableView';
 
 interface TransactionListContentProps {
   sorting: SortingState;
@@ -23,7 +23,7 @@ export function TransactionListContent({
   return (
     <>
       <div className="hidden lg:block">
-        <TransactionTableList
+        <TableView
           isFetching={transaction.fetchStatus === 'LOADING'}
           sorting={sorting.state}
           pageIndex={pageIndex.state}
@@ -36,7 +36,7 @@ export function TransactionListContent({
         />
       </div>
       <div className="lg:hidden">
-        <TransactionCardList
+        <CardView
           isFetching={transaction.fetchStatus === 'LOADING'}
           pageIndex={pageIndex.state}
           totalCount={transaction.totalCount}

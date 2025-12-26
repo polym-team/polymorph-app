@@ -26,7 +26,7 @@ import { cn } from '@package/utils';
 import { TRANSACTION_LIST_PAGE_SIZE } from '../../../consts';
 import { Sorting, TransactionItemViewModel } from '../../../types';
 
-interface TransactionTableListProps {
+interface TableViewProps {
   isFetching: boolean;
   sorting: Sorting;
   pageIndex: number;
@@ -38,7 +38,7 @@ interface TransactionTableListProps {
   onRowClick: (item: TransactionItemViewModel) => void;
 }
 
-export function TransactionTableList({
+export function TableView({
   isFetching,
   sorting,
   pageIndex,
@@ -48,7 +48,7 @@ export function TransactionTableList({
   onPageIndexChange,
   onFavoriteToggle,
   onRowClick,
-}: TransactionTableListProps) {
+}: TableViewProps) {
   const columns: ColumnDef<TransactionItemViewModel>[] = useMemo(
     () => [
       {

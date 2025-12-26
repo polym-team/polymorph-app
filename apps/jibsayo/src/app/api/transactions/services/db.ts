@@ -17,7 +17,7 @@ const buildWhereConditions = (
     't.region_code = ?',
     't.deal_date >= ?',
     't.deal_date < ?',
-    "t.cancellation_type != 'CANCELED'",
+    // "t.cancellation_type != 'CANCELED'",
   ];
   const params: (string | number)[] = [regionCode, startDate, endDate];
 
@@ -26,7 +26,11 @@ const buildWhereConditions = (
     params.push(`%${filter.apartName}%`);
   }
 
-  if (filter.minDealAmount !== undefined && isFinite(filter.minDealAmount)) {
+  if (
+    filter.minDealAmount !== undefined &&
+    isFinite(filter.minDealAmount) &&
+    filter.minDealAmount > 0
+  ) {
     conditions.push('t.deal_amount >= ?');
     params.push(filter.minDealAmount / 10000);
   }
@@ -36,17 +40,28 @@ const buildWhereConditions = (
     params.push(filter.maxDealAmount / 10000);
   }
 
-  if (filter.minHouseholdCount !== undefined && isFinite(filter.minHouseholdCount)) {
+  if (
+    filter.minHouseholdCount !== undefined &&
+    isFinite(filter.minHouseholdCount) &&
+    filter.minHouseholdCount > 0
+  ) {
     conditions.push('a.total_household_count >= ?');
     params.push(filter.minHouseholdCount);
   }
 
-  if (filter.maxHouseholdCount !== undefined && isFinite(filter.maxHouseholdCount)) {
+  if (
+    filter.maxHouseholdCount !== undefined &&
+    isFinite(filter.maxHouseholdCount)
+  ) {
     conditions.push('a.total_household_count <= ?');
     params.push(filter.maxHouseholdCount);
   }
 
-  if (filter.minSize !== undefined && isFinite(filter.minSize)) {
+  if (
+    filter.minSize !== undefined &&
+    isFinite(filter.minSize) &&
+    filter.minSize > 0
+  ) {
     conditions.push('t.exclusive_area >= ?');
     params.push(filter.minSize);
   }
@@ -115,6 +130,146 @@ const fetchTotalCount = async (
   return countResult[0]?.totalCount || 0;
 };
 
+const fetchHighestTransactions = async (
+  apartIds: number[]
+): Promise<
+  Map<
+    string,
+    {
+      dealAmount: number;
+      dealDate: string;
+      size: number;
+      floor: number;
+    }
+  >
+> => {
+  if (apartIds.length === 0) return new Map();
+
+  const sql = `
+    SELECT
+      t1.apart_id as apartId,
+      t1.exclusive_area as exclusiveArea,
+      t1.deal_amount as dealAmount,
+      t1.deal_date as dealDate,
+      t1.floor
+    FROM transactions t1
+    INNER JOIN (
+      SELECT
+        apart_id,
+        exclusive_area,
+        MAX(deal_amount) as max_amount
+      FROM transactions
+      WHERE cancellation_type != 'CANCELED'
+        AND apart_id IN (${apartIds.map(() => '?').join(',')})
+      GROUP BY apart_id, exclusive_area
+    ) t2 ON t1.apart_id = t2.apart_id
+      AND t1.exclusive_area = t2.exclusive_area
+      AND t1.deal_amount = t2.max_amount
+    WHERE t1.cancellation_type != 'CANCELED'
+    ORDER BY t1.deal_date DESC
+  `;
+
+  const rows = await query<
+    Array<{
+      apartId: number;
+      exclusiveArea: number;
+      dealAmount: number;
+      dealDate: string;
+      floor: number;
+    }>
+  >(sql, apartIds);
+
+  const map = new Map<
+    string,
+    { dealAmount: number; dealDate: string; size: number; floor: number }
+  >();
+
+  for (const row of rows) {
+    const key = `${row.apartId}-${row.exclusiveArea}`;
+    if (!map.has(key)) {
+      map.set(key, {
+        dealAmount: row.dealAmount * 10000,
+        dealDate: row.dealDate,
+        size: row.exclusiveArea,
+        floor: row.floor,
+      });
+    }
+  }
+
+  return map;
+};
+
+const fetchLowestTransactions = async (
+  apartIds: number[]
+): Promise<
+  Map<
+    string,
+    {
+      dealAmount: number;
+      dealDate: string;
+      size: number;
+      floor: number;
+    }
+  >
+> => {
+  if (apartIds.length === 0) return new Map();
+
+  const sql = `
+    SELECT
+      t1.apart_id as apartId,
+      t1.exclusive_area as exclusiveArea,
+      t1.deal_amount as dealAmount,
+      t1.deal_date as dealDate,
+      t1.floor
+    FROM transactions t1
+    INNER JOIN (
+      SELECT
+        apart_id,
+        exclusive_area,
+        MIN(deal_amount) as min_amount
+      FROM transactions
+      WHERE cancellation_type != 'CANCELED'
+        AND deal_date >= DATE_SUB(CURDATE(), INTERVAL 5 YEAR)
+        AND apart_id IN (${apartIds.map(() => '?').join(',')})
+      GROUP BY apart_id, exclusive_area
+    ) t2 ON t1.apart_id = t2.apart_id
+      AND t1.exclusive_area = t2.exclusive_area
+      AND t1.deal_amount = t2.min_amount
+    WHERE t1.cancellation_type != 'CANCELED'
+      AND t1.deal_date >= DATE_SUB(CURDATE(), INTERVAL 5 YEAR)
+    ORDER BY t1.deal_date DESC
+  `;
+
+  const rows = await query<
+    Array<{
+      apartId: number;
+      exclusiveArea: number;
+      dealAmount: number;
+      dealDate: string;
+      floor: number;
+    }>
+  >(sql, apartIds);
+
+  const map = new Map<
+    string,
+    { dealAmount: number; dealDate: string; size: number; floor: number }
+  >();
+
+  for (const row of rows) {
+    const key = `${row.apartId}-${row.exclusiveArea}`;
+    if (!map.has(key)) {
+      map.set(key, {
+        dealAmount: row.dealAmount * 10000,
+        dealDate: row.dealDate,
+        size: row.exclusiveArea,
+        floor: row.floor,
+      });
+    }
+  }
+
+  return map;
+};
+
 const fetchTransactions = async (
   whereConditions: string[],
   queryParams: (string | number)[],
@@ -137,63 +292,10 @@ const fetchTransactions = async (
       a.completion_year as buildedYear,
       a.total_household_count as householdCount,
       a.completion_year as completionYear,
-      DATE(t.created_at) = CURDATE() as isNewTransaction,
-      highest.deal_amount as highestDealAmount,
-      highest.deal_date as highestDealDate,
-      highest.exclusive_area as highestDealSize,
-      highest.floor as highestDealFloor,
-      lowest.deal_amount as lowestDealAmount,
-      lowest.deal_date as lowestDealDate,
-      lowest.exclusive_area as lowestDealSize,
-      lowest.floor as lowestDealFloor
+      DATE(t.created_at) = CURDATE() as isNewTransaction
     FROM transactions t
     LEFT JOIN apartments a ON t.apart_id = a.id
-    LEFT JOIN (
-      SELECT
-        t1.apart_id,
-        t1.exclusive_area,
-        t1.deal_amount,
-        t1.deal_date,
-        t1.floor
-      FROM transactions t1
-      INNER JOIN (
-        SELECT
-          apart_id,
-          exclusive_area,
-          MAX(deal_amount) as max_amount
-        FROM transactions
-        WHERE cancellation_type != 'CANCELED'
-        GROUP BY apart_id, exclusive_area
-      ) t2 ON t1.apart_id = t2.apart_id
-        AND t1.exclusive_area = t2.exclusive_area
-        AND t1.deal_amount = t2.max_amount
-      WHERE t1.cancellation_type != 'CANCELED'
-    ) highest ON t.apart_id = highest.apart_id AND t.exclusive_area = highest.exclusive_area
-    LEFT JOIN (
-      SELECT
-        t1.apart_id,
-        t1.exclusive_area,
-        t1.deal_amount,
-        t1.deal_date,
-        t1.floor
-      FROM transactions t1
-      INNER JOIN (
-        SELECT
-          apart_id,
-          exclusive_area,
-          MIN(deal_amount) as min_amount
-        FROM transactions
-        WHERE cancellation_type != 'CANCELED'
-          AND deal_date >= DATE_SUB(CURDATE(), INTERVAL 5 YEAR)
-        GROUP BY apart_id, exclusive_area
-      ) t2 ON t1.apart_id = t2.apart_id
-        AND t1.exclusive_area = t2.exclusive_area
-        AND t1.deal_amount = t2.min_amount
-      WHERE t1.cancellation_type != 'CANCELED'
-        AND t1.deal_date >= DATE_SUB(CURDATE(), INTERVAL 5 YEAR)
-    ) lowest ON t.apart_id = lowest.apart_id AND t.exclusive_area = lowest.exclusive_area
     WHERE ${whereConditions.join(' AND ')}
-    GROUP BY t.id
     ${orderByClause}
     LIMIT ? OFFSET ?
   `;
@@ -210,57 +312,36 @@ const fetchTransactions = async (
         | 'lowestTransaction'
       > & {
         isNewTransaction: number;
-        highestDealAmount: number | null;
-        highestDealDate: string | null;
-        highestDealSize: number | null;
-        highestDealFloor: number | null;
-        lowestDealAmount: number | null;
-        lowestDealDate: string | null;
-        lowestDealSize: number | null;
-        lowestDealFloor: number | null;
       }
     >
   >(dataSql, dataParams);
 
+  // 고유한 apartId 추출 (null 제외)
+  const apartIds = [
+    ...new Set(rows.map(row => row.apartId).filter((id): id is number => id !== null)),
+  ];
+
+  // highest/lowest 정보 별도 조회
+  const [highestMap, lowestMap] = await Promise.all([
+    fetchHighestTransactions(apartIds),
+    fetchLowestTransactions(apartIds),
+  ]);
+
   return rows.map(row => {
-    const {
-      highestDealAmount,
-      highestDealDate,
-      highestDealSize,
-      highestDealFloor,
-      lowestDealAmount,
-      lowestDealDate,
-      lowestDealSize,
-      lowestDealFloor,
-      ...rest
-    } = row;
+    const key = `${row.apartId}-${row.size}`;
+    const highest = highestMap.get(key);
+    const lowest = lowestMap.get(key);
 
     return {
-      ...rest,
+      ...row,
       isNewTransaction: Boolean(row.isNewTransaction),
       dealAmount: row.dealAmount * 10000,
       fallbackToken: createFallbackToken({
         regionCode: row.regionCode,
         apartName: row.apartName,
       }),
-      highestTransaction:
-        highestDealAmount !== null
-          ? {
-              dealAmount: highestDealAmount * 10000,
-              dealDate: highestDealDate!,
-              size: highestDealSize!,
-              floor: highestDealFloor!,
-            }
-          : null,
-      lowestTransaction:
-        lowestDealAmount !== null
-          ? {
-              dealAmount: lowestDealAmount * 10000,
-              dealDate: lowestDealDate!,
-              size: lowestDealSize!,
-              floor: lowestDealFloor!,
-            }
-          : null,
+      highestTransaction: highest || null,
+      lowestTransaction: lowest || null,
     };
   });
 };

@@ -18,7 +18,7 @@ import { TRANSACTION_LIST_PAGE_SIZE } from '../../../consts';
 import { TransactionItemViewModel } from '../../../types';
 import { calculateTransactionDetailInfo } from '../services';
 
-interface TransactionCardListProps {
+interface CardViewProps {
   isFetching: boolean;
   totalCount: number;
   pageIndex: number;
@@ -28,7 +28,7 @@ interface TransactionCardListProps {
   onRowClick: (item: TransactionItemViewModel) => void;
 }
 
-export function TransactionCardList({
+export function CardView({
   isFetching,
   totalCount,
   pageIndex,
@@ -36,7 +36,7 @@ export function TransactionCardList({
   onPageIndexChange,
   onFavoriteToggle,
   onRowClick,
-}: TransactionCardListProps) {
+}: CardViewProps) {
   return (
     <div>
       <div className="flex flex-col gap-y-2">
