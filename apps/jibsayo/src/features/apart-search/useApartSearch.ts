@@ -21,12 +21,15 @@ import { ApartSearchItemViewModel } from './types';
 interface Return {
   isFetching: boolean;
   isEmpty: boolean;
+  isShowItems: boolean;
   items: ApartSearchItemViewModel[];
-  apartName: string;
+  apartNameValue: string;
+  apartNameParam: string;
   recentSearchedApartNames: string[];
   changeApartName: (value: string) => void;
   toggleFavorite: (item: ApartSearchItemViewModel) => void;
   clickApartItem: (item: ApartSearchItemViewModel) => void;
+  addRecentSearchedApartName: (apartName: string) => void;
   removeRecentSearchedApartName: (apartName: string) => void;
 }
 
@@ -34,19 +37,25 @@ export const useApartSearch = (): Return => {
   const router = useRouter();
   const location = new URL(window.location.href);
 
-  const [apartName, setApartName] = useState(
+  const [apartNameValue, setApartNameValue] = useState(
     location.searchParams.get('apartName') ?? ''
   );
+  const [apartNameParam, setApartNameParam] = useState(apartNameValue);
   const [recentSearchedApartNames, setRecentSearchedApartNames] = useState(
     getItem<string[]>(STORAGE_KEY.RECENT_SEARCHED_APART_LIST) ?? []
   );
   const timerRef = useRef(0);
 
-  const { isFetching, data } = useApartSearchQuery({ apartName });
+  const { isFetching, data } = useApartSearchQuery({
+    apartName: apartNameParam,
+  });
   const { data: favoriteApartListData } = useFavoriteApartListQuery();
   const { mutate: addFavoriteApart } = useAddFavoriteApartMutation();
   const { mutate: removeFavoriteApart } = useRemoveFavoriteApartMutation();
   const { navigate } = useNavigate();
+
+  const isEmpty = !isFetching && (!data || !apartNameValue);
+  const isShowItems = isFetching || !isEmpty;
 
   const favoriteApartIdSet = useMemo(
     () => convertToFavoriteApartIdSet(favoriteApartListData ?? []),
@@ -58,32 +67,24 @@ export const useApartSearch = (): Return => {
     return convertToApartSearchViewModel(data, favoriteApartIdSet);
   }, [data, favoriteApartIdSet]);
 
-  const isEmpty = !data;
-
   const changeApartName = (value: string) => {
     const trimmedValue = value.trim();
-    if (trimmedValue === '') {
-      setApartName('');
-      return;
-    }
 
     if (timerRef.current) {
       window.clearTimeout(timerRef.current);
     }
 
-    timerRef.current = window.setTimeout(() => {
-      router.push(`${ROUTE_PATH.SEARCH}?apartName=${trimmedValue}`);
-      setApartName(trimmedValue);
+    if (trimmedValue === '') {
+      setApartNameValue('');
+      setApartNameParam('');
+      return;
+    }
 
-      if (!recentSearchedApartNames.includes(trimmedValue)) {
-        setTimeout(() => {
-          setRecentSearchedApartNames(prev => {
-            const nextValue = [trimmedValue, ...prev].slice(0, 10);
-            setItem(STORAGE_KEY.RECENT_SEARCHED_APART_LIST, nextValue);
-            return nextValue;
-          });
-        }, 300);
-      }
+    setApartNameValue(value);
+
+    timerRef.current = window.setTimeout(() => {
+      setApartNameParam(trimmedValue);
+      router.push(`${ROUTE_PATH.SEARCH}?apartName=${trimmedValue}`);
     }, 300);
   };
 
@@ -104,7 +105,18 @@ export const useApartSearch = (): Return => {
   };
 
   const clickApartItem = (item: ApartSearchItemViewModel) => {
+    addRecentSearchedApartName(item.apartName);
     navigate(`${ROUTE_PATH.APART}/${item.id}`);
+  };
+
+  const addRecentSearchedApartName = (apartName: string) => {
+    if (recentSearchedApartNames.includes(apartName)) return;
+
+    setRecentSearchedApartNames(prev => {
+      const nextValue = [apartName, ...prev].slice(0, 10);
+      setItem(STORAGE_KEY.RECENT_SEARCHED_APART_LIST, nextValue);
+      return nextValue;
+    });
   };
 
   const removeRecentSearchedApartName = (apartName: string) => {
@@ -118,12 +130,15 @@ export const useApartSearch = (): Return => {
   return {
     isFetching,
     isEmpty,
+    isShowItems,
     items,
-    apartName,
+    apartNameValue,
+    apartNameParam,
     recentSearchedApartNames,
     changeApartName,
     toggleFavorite,
     clickApartItem,
+    addRecentSearchedApartName,
     removeRecentSearchedApartName,
   };
 };
