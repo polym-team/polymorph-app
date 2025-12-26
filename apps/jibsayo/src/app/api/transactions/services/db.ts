@@ -173,6 +173,7 @@ const fetchTransactions = async (
         AND t1.deal_date >= DATE_SUB(CURDATE(), INTERVAL 5 YEAR)
     ) lowest ON t.apart_id = lowest.apart_id AND t.exclusive_area = lowest.exclusive_area
     WHERE ${whereConditions.join(' AND ')}
+    GROUP BY t.id
     ${orderByClause}
     LIMIT ? OFFSET ?
   `;
@@ -201,7 +202,7 @@ const fetchTransactions = async (
     >
   >(dataSql, dataParams);
 
-  const mappedRows: DbTransactionRow[] = rows.map(row => {
+  return rows.map(row => {
     const {
       highestDealAmount,
       highestDealDate,
@@ -242,13 +243,6 @@ const fetchTransactions = async (
           : null,
     };
   });
-
-  // id로 중복 제거 (같은 id의 첫 번째 거래만 유지)
-  const uniqueTransactions = Array.from(
-    new Map(mappedRows.map(t => [t.id, t])).values()
-  ) as DbTransactionRow[];
-
-  return uniqueTransactions;
 };
 
 const fetchAveragePricePerPyeong = async (
