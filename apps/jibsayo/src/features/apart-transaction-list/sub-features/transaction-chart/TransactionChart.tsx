@@ -2,6 +2,7 @@
 
 import { PeriodValue, SizesValue } from '../../types';
 import { useTransactionChart } from './ hooks/useTransactionChart';
+import { CHART_HEIGHT } from './consts';
 
 interface Props {
   apartId: number;
@@ -9,8 +10,6 @@ interface Props {
   selectedSizes: SizesValue;
   selectedPeriod: PeriodValue;
 }
-
-const CHART_HEIGHT = 300;
 
 export function TransactionChart({
   apartId,

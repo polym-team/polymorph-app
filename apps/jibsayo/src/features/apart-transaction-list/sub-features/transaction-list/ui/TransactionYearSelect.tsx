@@ -18,11 +18,11 @@ export function TrasactionYearSelect({
           <Button
             key={year}
             size="xs"
-            className="lg:h-auto lg:py-2 lg:text-sm"
+            className="gap-x-1 lg:h-auto lg:py-2 lg:text-sm"
             onClick={() => onPageIndexChange(index)}
           >
             <span>{year}년</span>
-            <span className="text-primary">({count})</span>
+            <span className="text-primary -translate-y-[1px]">({count})</span>
           </Button>
         ))}
       </div>

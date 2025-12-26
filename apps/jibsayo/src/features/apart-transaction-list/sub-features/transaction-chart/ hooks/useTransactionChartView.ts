@@ -48,8 +48,8 @@ export const useTransactionChartView = ({
   const chartWidth = Math.max(containerWidth - MARGIN.left - MARGIN.right, 0);
   const totalHeight = height - MARGIN.top - MARGIN.bottom;
   const chartGap = 20; // 상하 차트 사이 간격
-  const priceChartHeight = Math.floor(((totalHeight - chartGap) * 3) / 4);
-  const countChartHeight = Math.floor(((totalHeight - chartGap) * 1) / 4);
+  const priceChartHeight = Math.floor(((totalHeight - chartGap) * 2) / 3);
+  const countChartHeight = Math.floor(((totalHeight - chartGap) * 1) / 3);
 
   // 스케일 계산
   const xScale = useMemo(() => {

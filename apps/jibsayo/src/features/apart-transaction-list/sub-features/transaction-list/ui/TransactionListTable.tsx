@@ -143,7 +143,7 @@ export function TransactionListTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {totalCount === 0 && (
+            {!isFetching && totalCount === 0 && (
               <TableRow>
                 <TableCell
                   colSpan={3}
