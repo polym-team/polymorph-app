@@ -16,7 +16,7 @@ export function FilterButton({ children, onRemove }: FilterButtonProps) {
   return (
     <Button
       size="sm"
-      variant="primary-light"
+      variant="primary"
       rounded
       className="pr-2"
       onClick={handleClick}

@@ -61,7 +61,7 @@ export function FilterForm({ form, onFormChange }: FilterFormProps) {
               선택된 필터{' '}
               <span className="text-primary">{selectedTempFilterCount}</span>
             </span>
-            <div className="mt-2 flex gap-1 overflow-x-auto">
+            <div className="mt-2 flex gap-2 overflow-x-auto">
               {hasFilters.favoriteOnly && (
                 <FilterButton
                   onRemove={() => changeFilter({ favoriteOnly: false })}
@@ -136,7 +136,7 @@ export function FilterForm({ form, onFormChange }: FilterFormProps) {
             </div>
           </BottomSheet.Body>
         )}
-        <BottomSheet.Body>
+        <BottomSheet.Body className="h-[60vh]">
           <div className="flex flex-col gap-y-5">
             <div>
               <span className="mb-2 block text-sm text-gray-500 lg:text-base">
@@ -146,7 +146,9 @@ export function FilterForm({ form, onFormChange }: FilterFormProps) {
                 <Button
                   size="sm"
                   rounded
-                  variant={tempFilter.favoriteOnly ? 'primary' : 'outline'}
+                  variant={
+                    tempFilter.favoriteOnly ? 'primary-light' : 'outline'
+                  }
                   onClick={() =>
                     changeFilter({
                       favoriteOnly: !tempFilter.favoriteOnly,
@@ -159,7 +161,7 @@ export function FilterForm({ form, onFormChange }: FilterFormProps) {
                   size="sm"
                   rounded
                   variant={
-                    tempFilter.newTransactionOnly ? 'primary' : 'outline'
+                    tempFilter.newTransactionOnly ? 'primary-light' : 'outline'
                   }
                   onClick={() =>
                     changeFilter({

@@ -251,7 +251,7 @@ export function RangeSelector({
               onTouchStart={handleSliderClick}
             >
               <div
-                className="bg-primary absolute rounded-full shadow-md"
+                className="bg-primary/80 absolute rounded-full"
                 style={{
                   left: minPosition - HANDLE_RADIUS,
                   width: maxPosition - minPosition + HANDLE_RADIUS * 2,
@@ -261,7 +261,7 @@ export function RangeSelector({
             </div>
 
             <div
-              className={`border-primary absolute top-1/2 h-[24px] w-[24px] -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full border-[3px] bg-white shadow-md transition-transform duration-200 ease-in-out ${
+              className={`border-primary/80 absolute top-1/2 h-[24px] w-[24px] -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full border-[3px] bg-white shadow-md transition-transform duration-200 ease-in-out ${
                 dragging === 'max' ? 'scale-110 cursor-grabbing' : ''
               }`}
               style={{
@@ -273,7 +273,7 @@ export function RangeSelector({
             />
 
             <div
-              className={`border-primary absolute top-1/2 h-[24px] w-[24px] -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full border-[3px] bg-white shadow-md transition-transform duration-200 ease-in-out ${
+              className={`border-primary/80 absolute top-1/2 h-[24px] w-[24px] -translate-x-1/2 -translate-y-1/2 transform cursor-grab select-none rounded-full border-[3px] bg-white shadow-md transition-transform duration-200 ease-in-out ${
                 dragging === 'min' ? 'scale-110 cursor-grabbing' : ''
               }`}
               style={{
@@ -297,7 +297,7 @@ export function RangeSelector({
                 rounded
                 variant={
                   localMin === button.min && localMax === button.max
-                    ? 'primary'
+                    ? 'primary-light'
                     : 'outline'
                 }
                 className="whitespace-nowrap"
