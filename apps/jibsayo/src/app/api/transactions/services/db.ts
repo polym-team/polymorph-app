@@ -101,6 +101,9 @@ const buildOrderByClause = (
     if (sort.orderBy === 'apartName') {
       return 'a.apart_name';
     }
+    if (sort.orderBy === 'dong') {
+      return 'a.dong';
+    }
     const _exhaustiveCheck: never = sort.orderBy;
     return _exhaustiveCheck;
   };

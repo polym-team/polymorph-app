@@ -84,7 +84,7 @@ export function TableView({
         },
       },
       {
-        size: 120,
+        size: 100,
         accessorKey: 'dealDate',
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="거래일" />
@@ -107,6 +107,28 @@ export function TableView({
               <span className="text-sm text-gray-600">
                 {formatDealDate(row.original.dealDate)}
               </span>
+            </span>
+          );
+        },
+      },
+      {
+        size: 100,
+        accessorKey: 'dong',
+        enableSorting: true,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="주소" />
+        ),
+        cell: ({ row }) => {
+          if (isFetching) {
+            return (
+              <div className="py-2">
+                <div className="h-4 w-16 animate-pulse rounded bg-gray-200" />
+              </div>
+            );
+          }
+          return (
+            <span className="text-sm text-gray-600">
+              {row.original.dong || '-'}
             </span>
           );
         },

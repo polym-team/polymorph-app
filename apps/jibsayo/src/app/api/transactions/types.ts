@@ -41,7 +41,7 @@ export interface FetchTransactionListParams {
     newTransactionOnly?: boolean;
   };
   sort: {
-    orderBy?: 'dealDate' | 'dealAmount' | 'apartName' | 'floor' | 'size';
+    orderBy?: 'dealDate' | 'dealAmount' | 'apartName' | 'floor' | 'size' | 'dong';
     orderDirection?: 'asc' | 'desc';
   };
 }
