@@ -50,21 +50,20 @@ export const useTransactionCompare = (): Return => {
   };
 
   const changeApartName = (value: string) => {
-    const trimmedValue = value.trim();
-    if (trimmedValue === '') {
+    if (!value) {
       setApartNameValue('');
       setApartNameParam('');
       return;
     }
 
-    setApartNameValue(trimmedValue);
-
     if (inputTimerRef.current) {
       window.clearTimeout(inputTimerRef.current);
     }
 
+    setApartNameValue(value);
+
     inputTimerRef.current = window.setTimeout(() => {
-      setApartNameParam(trimmedValue);
+      setApartNameParam(value.trim());
     }, 300);
   };
 

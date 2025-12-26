@@ -1,4 +1,4 @@
-import { formatKoreanAmountText } from '@/shared/utils/formatter';
+import { formatKoreanAmountText, formatNumber } from '@/shared/utils/formatter';
 
 import * as d3 from 'd3';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -7,6 +7,7 @@ import { CompareChartData } from '../types';
 
 interface UseCompareChartViewProps {
   chartData: CompareChartData[];
+  apartStatsMap: Map<number, { totalCount: number; averageAmount: number }>;
   height: number;
 }
 
@@ -14,6 +15,7 @@ const MARGIN = { top: 20, right: 0, bottom: 30, left: 30 };
 
 export const useCompareChartView = ({
   chartData,
+  apartStatsMap,
   height,
 }: UseCompareChartViewProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -243,6 +245,7 @@ export const useCompareChartView = ({
 
         point.transition().duration(300).delay(300).attr('opacity', 1);
       });
+
     });
 
     const verticalLineGroup = svg
@@ -313,10 +316,11 @@ export const useCompareChartView = ({
             /(\d+)/g,
             '<span class="text-primary">$1</span>'
           );
+          const countText = `총 <span class="text-primary">${formatNumber(d.count)}</span>건 · `;
           return `
             <p class="text-sm lg:text-base mt-1 whitespace-nowrap text-gray-900">
               <span class="block h-2 w-2 rounded-sm inline-block mr-1" style="background-color: ${d.color}"></span>
-              ${d.apartName}: 평균 ${priceWithHighlight}
+              <span class="font-semibold">${d.apartName}</span>: ${countText}평균 ${priceWithHighlight}
             </p>
           `;
         })
@@ -455,6 +459,7 @@ export const useCompareChartView = ({
     };
   }, [
     chartData,
+    apartStatsMap,
     chartWidth,
     chartHeight,
     xScale,

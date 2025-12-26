@@ -25,13 +25,14 @@ export const useCompareChart = ({
     period: selectedPeriod || undefined,
   });
 
-  const { chartData, legendData } = useCompareChartData({
+  const { chartData, legendData, apartStatsMap } = useCompareChartData({
     selectedApartIds,
     monthlyData: data || [],
   });
 
   const { svgRef, isLoading } = useCompareChartView({
     chartData,
+    apartStatsMap,
     height: CHART_HEIGHT,
   });
 

@@ -44,6 +44,7 @@ export const useCompareChartData = ({
           apartId: apartData.apartId,
           apartName: apartData.apartName,
           averagePrice: monthTransaction.averageAmount,
+          count: monthTransaction.count,
           color: color,
         });
       });
@@ -53,26 +54,73 @@ export const useCompareChartData = ({
   }, [monthlyData, apartColorMap]);
 
   const legendData = useMemo(() => {
-    if (!selectedApartIds.length || !chartData.length) return [];
+    if (!selectedApartIds.length || !monthlyData.length) return [];
 
-    const apartMap = new Map<number, string>();
-    chartData.forEach(d => {
-      if (!apartMap.has(d.apartId)) {
-        apartMap.set(d.apartId, d.apartName);
+    const apartMap = new Map<
+      number,
+      { apartName: string; totalCount: number; totalAmount: number; count: number }
+    >();
+
+    monthlyData.forEach(apartData => {
+      if (!apartMap.has(apartData.apartId)) {
+        apartMap.set(apartData.apartId, {
+          apartName: apartData.apartName,
+          totalCount: 0,
+          totalAmount: 0,
+          count: 0,
+        });
       }
+
+      const data = apartMap.get(apartData.apartId)!;
+      apartData.transactions.forEach(monthTransaction => {
+        data.totalCount += monthTransaction.count;
+        data.totalAmount += monthTransaction.averageAmount * monthTransaction.count;
+        data.count += monthTransaction.count;
+      });
     });
 
     return selectedApartIds
-      .map((apartId, index) => ({
-        apartId,
-        apartName: apartMap.get(apartId) || '',
-        color: CHART_COLORS[index % CHART_COLORS.length],
-      }))
-      .filter(item => item.apartName);
-  }, [selectedApartIds, chartData]);
+      .map((apartId, index) => {
+        const data = apartMap.get(apartId);
+        if (!data) return null;
+
+        return {
+          apartId,
+          apartName: data.apartName,
+          color: CHART_COLORS[index % CHART_COLORS.length],
+          totalCount: data.totalCount,
+          averageAmount: data.count > 0 ? Math.round(data.totalAmount / data.count) : 0,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+  }, [selectedApartIds, monthlyData]);
+
+  const apartStatsMap = useMemo(() => {
+    const map = new Map<number, { totalCount: number; averageAmount: number }>();
+
+    monthlyData.forEach(apartData => {
+      let totalCount = 0;
+      let totalAmount = 0;
+      let count = 0;
+
+      apartData.transactions.forEach(monthTransaction => {
+        totalCount += monthTransaction.count;
+        totalAmount += monthTransaction.averageAmount * monthTransaction.count;
+        count += monthTransaction.count;
+      });
+
+      map.set(apartData.apartId, {
+        totalCount,
+        averageAmount: count > 0 ? Math.round(totalAmount / count) : 0,
+      });
+    });
+
+    return map;
+  }, [monthlyData]);
 
   return {
     chartData,
     legendData,
+    apartStatsMap,
   };
 };
