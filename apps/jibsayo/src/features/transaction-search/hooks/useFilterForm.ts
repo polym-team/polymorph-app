@@ -12,6 +12,10 @@ export const useFilterForm = (): Return => {
 
   const filterForm: FilterForm = {
     apartName: searchParams.apartName,
+    minDealAmount: searchParams.minDealAmount,
+    maxDealAmount: searchParams.maxDealAmount,
+    minHouseholdCount: searchParams.minHouseholdCount,
+    maxHouseholdCount: searchParams.maxHouseholdCount,
     minSize: searchParams.minSize,
     maxSize: searchParams.maxSize,
     favoriteOnly: searchParams.favoriteOnly,

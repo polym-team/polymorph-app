@@ -19,30 +19,26 @@ export function QueryParamProvider({ children }: QueryParamProviderProps) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    const isEmpty = !searchParams.regionCode || !searchParams.tradeDate;
-    if (isEmpty) return;
+    if (!isInitialized) return;
 
     setItem(STORAGE_KEY.TRANSACTION_QUERY_PARAMS, searchParams);
-  }, [searchParams]);
-
-  useOnceEffect(!!searchParams.regionCode && !!searchParams.tradeDate, () => {
-    setIsInitialized(true);
-  });
+  }, [isInitialized, searchParams]);
 
   useOnceEffect(true, () => {
     const savedSearchParams = getItem<SearchParams>(
       STORAGE_KEY.TRANSACTION_QUERY_PARAMS
     );
 
-    if (!savedSearchParams) {
-      setIsInitialized(true);
-      return;
+    if (savedSearchParams) {
+      setSearchParams({
+        ...savedSearchParams,
+        maxDealAmount: savedSearchParams.maxDealAmount ?? Infinity,
+        maxHouseholdCount: savedSearchParams.maxHouseholdCount ?? Infinity,
+        maxSize: savedSearchParams.maxSize ?? Infinity,
+      });
     }
 
-    setSearchParams({
-      ...savedSearchParams,
-      maxSize: savedSearchParams.maxSize ?? Infinity,
-    });
+    setIsInitialized(true);
   });
 
   if (!isInitialized) return null;

@@ -47,6 +47,18 @@ export const useTransactionPageSearchParams = (): Return => {
     ? Number(navigationSearchParams.get('pageIndex'))
     : 0;
   const apartName = navigationSearchParams.get('apartName') ?? '';
+  const minDealAmount = navigationSearchParams.get('minDealAmount')
+    ? Number(navigationSearchParams.get('minDealAmount'))
+    : SEARCH_PARAM_CONFIGS.SEARCH_MIN_DEAL_AMOUNT;
+  const maxDealAmount = navigationSearchParams.get('maxDealAmount')
+    ? Number(navigationSearchParams.get('maxDealAmount'))
+    : Infinity;
+  const minHouseholdCount = navigationSearchParams.get('minHouseholdCount')
+    ? Number(navigationSearchParams.get('minHouseholdCount'))
+    : SEARCH_PARAM_CONFIGS.SEARCH_MIN_HOUSEHOLD_COUNT;
+  const maxHouseholdCount = navigationSearchParams.get('maxHouseholdCount')
+    ? Number(navigationSearchParams.get('maxHouseholdCount'))
+    : Infinity;
   const minSize = navigationSearchParams.get('minSize')
     ? Number(navigationSearchParams.get('minSize'))
     : SEARCH_PARAM_CONFIGS.SEARCH_MIN_SIZE;
@@ -68,6 +80,10 @@ export const useTransactionPageSearchParams = (): Return => {
       tradeDate,
       pageIndex,
       apartName,
+      minDealAmount,
+      maxDealAmount,
+      minHouseholdCount,
+      maxHouseholdCount,
       minSize,
       maxSize,
       favoriteOnly,
@@ -80,6 +96,10 @@ export const useTransactionPageSearchParams = (): Return => {
       tradeDate,
       pageIndex,
       apartName,
+      minDealAmount,
+      maxDealAmount,
+      minHouseholdCount,
+      maxHouseholdCount,
       minSize,
       maxSize,
       favoriteOnly,

@@ -5,24 +5,41 @@ import { FilterForm } from '../../types';
 export const selectedFilters = (
   filter: FilterForm
 ): {
+  dealAmount: boolean;
+  householdCount: boolean;
   size: boolean;
   apartName: boolean;
   favoriteOnly: boolean;
   newTransactionOnly: boolean;
 } => {
+  const dealAmount =
+    filter.minDealAmount !== SEARCH_PARAM_CONFIGS.SEARCH_MIN_DEAL_AMOUNT ||
+    filter.maxDealAmount !== Infinity;
+  const householdCount =
+    filter.minHouseholdCount !==
+      SEARCH_PARAM_CONFIGS.SEARCH_MIN_HOUSEHOLD_COUNT ||
+    filter.maxHouseholdCount !== Infinity;
   const size =
-    !(filter.minSize === 0 && filter.maxSize === Infinity) &&
-    (filter.minSize !== SEARCH_PARAM_CONFIGS.SEARCH_MIN_SIZE ||
-      filter.maxSize !== SEARCH_PARAM_CONFIGS.SEARCH_MAX_SIZE);
+    filter.minSize !== SEARCH_PARAM_CONFIGS.SEARCH_MIN_SIZE ||
+    filter.maxSize !== Infinity;
   const apartName = !!filter.apartName;
   const favoriteOnly = filter.favoriteOnly;
   const newTransactionOnly = filter.newTransactionOnly;
 
-  return { size, apartName, favoriteOnly, newTransactionOnly };
+  return {
+    dealAmount,
+    householdCount,
+    size,
+    apartName,
+    favoriteOnly,
+    newTransactionOnly,
+  };
 };
 
 export const calculateSelectedFilterCount = (filter: FilterForm): number => {
   const {
+    dealAmount: hasDealAmountFilter,
+    householdCount: hasHouseholdCountFilter,
     size: hasSizeFilter,
     apartName: hasApartNameFilter,
     favoriteOnly: hasFavoriteOnlyFilter,
@@ -30,6 +47,8 @@ export const calculateSelectedFilterCount = (filter: FilterForm): number => {
   } = selectedFilters(filter);
 
   return [
+    hasDealAmountFilter,
+    hasHouseholdCountFilter,
     hasSizeFilter,
     hasApartNameFilter,
     hasFavoriteOnlyFilter,

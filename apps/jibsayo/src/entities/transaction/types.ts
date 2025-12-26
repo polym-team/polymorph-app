@@ -10,6 +10,10 @@ export interface SearchParams {
   tradeDate: string;
   pageIndex: number;
   apartName: string;
+  minDealAmount: number;
+  maxDealAmount: number;
+  minHouseholdCount: number;
+  maxHouseholdCount: number;
   minSize: number;
   maxSize: number;
   favoriteOnly: boolean;

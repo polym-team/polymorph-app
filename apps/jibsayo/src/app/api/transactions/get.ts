@@ -24,6 +24,22 @@ export async function GET(request: Request): Promise<Response> {
       pageSize: parseInt(pageSize, 10),
       filter: {
         apartName: searchParams.get('apartName') || undefined,
+        minDealAmount: searchParams.get('minDealAmount')
+          ? parseFloat(searchParams.get('minDealAmount') as string)
+          : undefined,
+        maxDealAmount: searchParams.get('maxDealAmount')
+          ? searchParams.get('maxDealAmount') === 'Infinity'
+            ? Infinity
+            : parseFloat(searchParams.get('maxDealAmount') as string)
+          : undefined,
+        minHouseholdCount: searchParams.get('minHouseholdCount')
+          ? parseInt(searchParams.get('minHouseholdCount') as string, 10)
+          : undefined,
+        maxHouseholdCount: searchParams.get('maxHouseholdCount')
+          ? searchParams.get('maxHouseholdCount') === 'Infinity'
+            ? Infinity
+            : parseInt(searchParams.get('maxHouseholdCount') as string, 10)
+          : undefined,
         minSize: searchParams.get('minSize')
           ? parseFloat(searchParams.get('minSize') as string)
           : undefined,

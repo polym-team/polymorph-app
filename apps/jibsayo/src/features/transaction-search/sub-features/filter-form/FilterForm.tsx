@@ -6,7 +6,9 @@ import { useRef } from 'react';
 import { BottomSheet, Button, Input } from '@package/ui';
 
 import { FilterForm as FilterFormType } from '../../types';
+import { DealAmountRangeSelector } from './ui/DealAmountRangeSelector';
 import { FilterButton } from './ui/FilterButton';
+import { HouseholdCountRangeSelector } from './ui/HouseholdCountRangeSelector';
 import { SizeRangeSelector } from './ui/SizeRangeSelector';
 import { useFilterForm } from './useFilterForm';
 
@@ -53,72 +55,121 @@ export function FilterForm({ form, onFormChange }: FilterFormProps) {
 
       <BottomSheet isOpen={isOpened} size="sm" onClose={closeBottomSheet}>
         <BottomSheet.Header>세부 필터</BottomSheet.Header>
+        {selectedTempFilterCount > 0 && (
+          <BottomSheet.Body className="border-b border-gray-100">
+            <span className="mb-2 block text-sm text-gray-600 lg:text-base">
+              선택된 필터{' '}
+              <span className="text-primary">{selectedTempFilterCount}</span>
+            </span>
+            <div className="mt-2 flex gap-1 overflow-x-auto">
+              {hasFilters.favoriteOnly && (
+                <FilterButton
+                  onRemove={() => changeFilter({ favoriteOnly: false })}
+                >
+                  저장된 아파트만 보기
+                </FilterButton>
+              )}
+              {hasFilters.newTransactionOnly && (
+                <FilterButton
+                  onRemove={() => changeFilter({ newTransactionOnly: false })}
+                >
+                  신규 거래만 보기
+                </FilterButton>
+              )}
+              {hasFilters.apartName && (
+                <FilterButton
+                  onRemove={() => {
+                    changeFilter({ apartName: '' });
+
+                    if (apartNameInputRef.current) {
+                      apartNameInputRef.current.value = '';
+                    }
+                  }}
+                >
+                  {tempFilter.apartName}
+                </FilterButton>
+              )}
+              {hasFilters.dealAmount && (
+                <FilterButton
+                  onRemove={() =>
+                    changeFilter({
+                      minDealAmount:
+                        SEARCH_PARAM_CONFIGS.SEARCH_MIN_DEAL_AMOUNT,
+                      maxDealAmount: Infinity,
+                    })
+                  }
+                >
+                  {tempFilter.maxDealAmount === Infinity
+                    ? `${tempFilter.minDealAmount}억원 이상`
+                    : `${tempFilter.minDealAmount}억원~${tempFilter.maxDealAmount}억원`}
+                </FilterButton>
+              )}
+              {hasFilters.householdCount && (
+                <FilterButton
+                  onRemove={() =>
+                    changeFilter({
+                      minHouseholdCount:
+                        SEARCH_PARAM_CONFIGS.SEARCH_MIN_HOUSEHOLD_COUNT,
+                      maxHouseholdCount: Infinity,
+                    })
+                  }
+                >
+                  {tempFilter.maxHouseholdCount === Infinity
+                    ? `${tempFilter.minHouseholdCount}세대 이상`
+                    : `${tempFilter.minHouseholdCount}~${tempFilter.maxHouseholdCount}세대`}
+                </FilterButton>
+              )}
+              {hasFilters.size && (
+                <FilterButton
+                  onRemove={() =>
+                    changeFilter({
+                      minSize: SEARCH_PARAM_CONFIGS.SEARCH_MIN_SIZE,
+                      maxSize: Infinity,
+                    })
+                  }
+                >
+                  {tempFilter.maxSize === Infinity
+                    ? `${formatPyeongText(tempFilter.minSize)} 이상`
+                    : `${formatPyeongText(tempFilter.minSize)}~${formatPyeongText(tempFilter.maxSize)}`}
+                </FilterButton>
+              )}
+            </div>
+          </BottomSheet.Body>
+        )}
         <BottomSheet.Body>
-          <div className="flex flex-col gap-y-6">
-            {selectedTempFilterCount > 0 && (
-              <div>
-                <span className="mb-2 block text-sm text-gray-500 lg:text-base">
-                  선택된 필터{' '}
-                  <span className="text-primary">
-                    {selectedTempFilterCount}
-                  </span>
-                </span>
-                <div className="mt-2 flex gap-1 overflow-x-auto">
-                  {hasFilters.size && (
-                    <FilterButton
-                      onRemove={() =>
-                        changeFilter({
-                          minSize: SEARCH_PARAM_CONFIGS.SEARCH_MIN_SIZE,
-                          maxSize: SEARCH_PARAM_CONFIGS.SEARCH_MAX_SIZE,
-                        })
-                      }
-                    >
-                      {tempFilter.maxSize === Infinity
-                        ? `${formatPyeongText(tempFilter.minSize)} 이상`
-                        : `${formatPyeongText(tempFilter.minSize)}~${formatPyeongText(tempFilter.maxSize)}`}
-                    </FilterButton>
-                  )}
-                  {hasFilters.apartName && (
-                    <FilterButton
-                      onRemove={() => {
-                        changeFilter({ apartName: '' });
-
-                        if (apartNameInputRef.current) {
-                          apartNameInputRef.current.value = '';
-                        }
-                      }}
-                    >
-                      {tempFilter.apartName}
-                    </FilterButton>
-                  )}
-                  {hasFilters.favoriteOnly && (
-                    <FilterButton
-                      onRemove={() => changeFilter({ favoriteOnly: false })}
-                    >
-                      저장된 아파트
-                    </FilterButton>
-                  )}
-                  {hasFilters.newTransactionOnly && (
-                    <FilterButton
-                      onRemove={() =>
-                        changeFilter({ newTransactionOnly: false })
-                      }
-                    >
-                      신규 거래
-                    </FilterButton>
-                  )}
-                </div>
-              </div>
-            )}
-
+          <div className="flex flex-col gap-y-5">
             <div>
-              <SizeRangeSelector
-                minSize={tempFilter.minSize}
-                maxSize={tempFilter.maxSize}
-                onRangeChange={(minSize, maxSize) =>
-                  changeFilter({ minSize, maxSize })
-                }
-              />
+              <span className="mb-2 block text-sm text-gray-500 lg:text-base">
+                보기 옵션
+              </span>
+              <div className="flex gap-x-1">
+                <Button
+                  size="sm"
+                  rounded
+                  variant={tempFilter.favoriteOnly ? 'primary' : 'outline'}
+                  onClick={() =>
+                    changeFilter({
+                      favoriteOnly: !tempFilter.favoriteOnly,
+                    })
+                  }
+                >
+                  저장된 아파트만 보기
+                </Button>
+                <Button
+                  size="sm"
+                  rounded
+                  variant={
+                    tempFilter.newTransactionOnly ? 'primary' : 'outline'
+                  }
+                  onClick={() =>
+                    changeFilter({
+                      newTransactionOnly: !tempFilter.newTransactionOnly,
+                    })
+                  }
+                >
+                  신규 거래만 보기
+                </Button>
+              </div>
             </div>
 
             <div>
@@ -134,37 +185,33 @@ export function FilterForm({ form, onFormChange }: FilterFormProps) {
             </div>
 
             <div>
-              <span className="mb-2 block text-sm text-gray-500 lg:text-base">
-                추가 필터
-              </span>
-              <div className="flex gap-1">
-                <Button
-                  size="sm"
-                  rounded
-                  variant={tempFilter.favoriteOnly ? 'primary' : 'outline'}
-                  onClick={() =>
-                    changeFilter({
-                      favoriteOnly: !tempFilter.favoriteOnly,
-                    })
-                  }
-                >
-                  저장된 아파트
-                </Button>
-                <Button
-                  size="sm"
-                  rounded
-                  variant={
-                    tempFilter.newTransactionOnly ? 'primary' : 'outline'
-                  }
-                  onClick={() =>
-                    changeFilter({
-                      newTransactionOnly: !tempFilter.newTransactionOnly,
-                    })
-                  }
-                >
-                  신규 거래
-                </Button>
-              </div>
+              <DealAmountRangeSelector
+                minDealAmount={tempFilter.minDealAmount}
+                maxDealAmount={tempFilter.maxDealAmount}
+                onRangeChange={(minDealAmount, maxDealAmount) =>
+                  changeFilter({ minDealAmount, maxDealAmount })
+                }
+              />
+            </div>
+
+            <div>
+              <HouseholdCountRangeSelector
+                minHouseholdCount={tempFilter.minHouseholdCount}
+                maxHouseholdCount={tempFilter.maxHouseholdCount}
+                onRangeChange={(minHouseholdCount, maxHouseholdCount) =>
+                  changeFilter({ minHouseholdCount, maxHouseholdCount })
+                }
+              />
+            </div>
+
+            <div>
+              <SizeRangeSelector
+                minSize={tempFilter.minSize}
+                maxSize={tempFilter.maxSize}
+                onRangeChange={(minSize, maxSize) =>
+                  changeFilter({ minSize, maxSize })
+                }
+              />
             </div>
           </div>
         </BottomSheet.Body>
@@ -175,7 +222,7 @@ export function FilterForm({ form, onFormChange }: FilterFormProps) {
               variant="outline"
               className="w-1/2 lg:w-auto"
             >
-              초기화
+              필터 삭제
             </Button>
             <Button
               onClick={applyFilter}

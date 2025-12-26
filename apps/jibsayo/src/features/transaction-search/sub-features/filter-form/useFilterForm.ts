@@ -17,6 +17,8 @@ interface Return {
   selectedTempFilterCount: number;
   selectedAppliedFilterCount: number;
   hasFilters: {
+    dealAmount: boolean;
+    householdCount: boolean;
     size: boolean;
     apartName: boolean;
     favoriteOnly: boolean;
@@ -53,6 +55,10 @@ export const useFilterForm = ({ form, onFormChange }: Params): Return => {
 
   const clearFilter = () => {
     onFormChange({
+      minDealAmount: SEARCH_PARAM_CONFIGS.SEARCH_MIN_DEAL_AMOUNT,
+      maxDealAmount: Infinity,
+      minHouseholdCount: SEARCH_PARAM_CONFIGS.SEARCH_MIN_HOUSEHOLD_COUNT,
+      maxHouseholdCount: Infinity,
       minSize: SEARCH_PARAM_CONFIGS.SEARCH_MIN_SIZE,
       maxSize: Infinity,
       apartName: '',

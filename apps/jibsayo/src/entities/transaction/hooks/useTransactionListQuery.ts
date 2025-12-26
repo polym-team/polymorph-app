@@ -21,16 +21,28 @@ export const useTransactionListQuery = (): UseQueryResult<
   urlSearchParams.append('pageSize', '15');
   urlSearchParams.append('apartName', searchParams.apartName);
   urlSearchParams.append(
+    'minDealAmount',
+    (searchParams.minDealAmount * 100000000).toString()
+  );
+  urlSearchParams.append(
+    'maxDealAmount',
+    (searchParams.maxDealAmount * 100000000).toString()
+  );
+  urlSearchParams.append(
+    'minHouseholdCount',
+    searchParams.minHouseholdCount.toString()
+  );
+  urlSearchParams.append(
+    'maxHouseholdCount',
+    searchParams.maxHouseholdCount.toString()
+  );
+  urlSearchParams.append(
     'minSize',
     calculateExclusiveAreaSquareMeters(searchParams.minSize, 'min').toString()
   );
   urlSearchParams.append(
     'maxSize',
     calculateExclusiveAreaSquareMeters(searchParams.maxSize, 'max').toString()
-  );
-  urlSearchParams.append(
-    'newTransactionOnly',
-    searchParams.newTransactionOnly.toString()
   );
   urlSearchParams.append(
     'newTransactionOnly',
@@ -47,6 +59,10 @@ export const useTransactionListQuery = (): UseQueryResult<
         searchParams.tradeDate,
         searchParams.pageIndex,
         searchParams.apartName,
+        searchParams.minDealAmount,
+        searchParams.maxDealAmount,
+        searchParams.minHouseholdCount,
+        searchParams.maxHouseholdCount,
         searchParams.minSize,
         searchParams.maxSize,
         searchParams.newTransactionOnly,

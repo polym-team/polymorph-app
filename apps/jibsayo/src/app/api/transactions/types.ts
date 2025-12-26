@@ -32,6 +32,10 @@ export interface FetchTransactionListParams {
   pageSize: number;
   filter: {
     apartName?: string;
+    minDealAmount?: number;
+    maxDealAmount?: number;
+    minHouseholdCount?: number;
+    maxHouseholdCount?: number;
     minSize?: number;
     maxSize?: number;
     newTransactionOnly?: boolean;

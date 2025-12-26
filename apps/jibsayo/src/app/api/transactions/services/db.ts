@@ -26,6 +26,26 @@ const buildWhereConditions = (
     params.push(`%${filter.apartName}%`);
   }
 
+  if (filter.minDealAmount !== undefined && isFinite(filter.minDealAmount)) {
+    conditions.push('t.deal_amount >= ?');
+    params.push(filter.minDealAmount / 10000);
+  }
+
+  if (filter.maxDealAmount !== undefined && isFinite(filter.maxDealAmount)) {
+    conditions.push('t.deal_amount <= ?');
+    params.push(filter.maxDealAmount / 10000);
+  }
+
+  if (filter.minHouseholdCount !== undefined && isFinite(filter.minHouseholdCount)) {
+    conditions.push('a.total_household_count >= ?');
+    params.push(filter.minHouseholdCount);
+  }
+
+  if (filter.maxHouseholdCount !== undefined && isFinite(filter.maxHouseholdCount)) {
+    conditions.push('a.total_household_count <= ?');
+    params.push(filter.maxHouseholdCount);
+  }
+
   if (filter.minSize !== undefined && isFinite(filter.minSize)) {
     conditions.push('t.exclusive_area >= ?');
     params.push(filter.minSize);

@@ -30,12 +30,18 @@ function Header({ children }: HeaderProps) {
 }
 
 interface BodyProps {
+  className?: string;
   children: React.ReactNode;
 }
 
-function Body({ children }: BodyProps) {
+function Body({ className, children }: BodyProps) {
   return (
-    <div className="scrollbar-hide max-h-[75vh] overflow-y-auto p-4">
+    <div
+      className={cn(
+        'scrollbar-hide max-h-[75vh] overflow-y-auto p-4',
+        className
+      )}
+    >
       {children}
     </div>
   );
