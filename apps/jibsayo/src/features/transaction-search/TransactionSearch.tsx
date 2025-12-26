@@ -29,10 +29,10 @@ export function TransactionSearch() {
         }}
       >
         <div className="lg:w-52">
-          <RegionSelect form={searchForm} onFormChange={updateSearchForm} />
+          <MonthSelect form={searchForm} onFormChange={updateSearchForm} />
         </div>
         <div className="lg:w-52">
-          <MonthSelect form={searchForm} onFormChange={updateSearchForm} />
+          <RegionSelect form={searchForm} onFormChange={updateSearchForm} />
         </div>
         <div className="lg:w-60">
           <FilterForm form={filterForm} onFormChange={updateFilterForm} />

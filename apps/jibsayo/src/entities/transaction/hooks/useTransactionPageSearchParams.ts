@@ -1,3 +1,4 @@
+import { firstRegionCode } from '@/entities/region';
 import { ROUTE_PATH } from '@/shared/consts/route';
 import { useNavigate } from '@/shared/hooks/useNavigate';
 
@@ -12,6 +13,21 @@ interface Return {
   setSearchParams: (params: Partial<SearchParams>) => void;
 }
 
+const getDetaulRegionCode = (): string => {
+  return firstRegionCode;
+};
+
+const getDefaultDate = (): string => {
+  const today = new Date();
+  const dayOfMonth = today.getDate();
+  const date =
+    dayOfMonth < 10
+      ? new Date(today.getFullYear(), today.getMonth() - 1, 1)
+      : new Date(today.getFullYear(), today.getMonth(), 1);
+
+  return `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+};
+
 const parseSearchParam = (value: string | number | boolean) => {
   if (typeof value === 'boolean' || typeof value === 'number') {
     return value.toString();
@@ -24,8 +40,9 @@ export const useTransactionPageSearchParams = (): Return => {
   const navigationSearchParams = useNavigationSearchParams();
   const { navigate } = useNavigate();
 
-  const regionCode = navigationSearchParams.get('regionCode') ?? '';
-  const tradeDate = navigationSearchParams.get('tradeDate') ?? '';
+  const regionCode =
+    navigationSearchParams.get('regionCode') ?? getDetaulRegionCode();
+  const tradeDate = navigationSearchParams.get('tradeDate') ?? getDefaultDate();
   const pageIndex = navigationSearchParams.get('pageIndex')
     ? Number(navigationSearchParams.get('pageIndex'))
     : 0;

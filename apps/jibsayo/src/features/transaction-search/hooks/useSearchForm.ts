@@ -1,9 +1,8 @@
 import { getCityNameWithRegionCode } from '@/entities/region';
 import { useTransactionPageSearchParams } from '@/entities/transaction';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { getDefaultDate, getDefaultRegionCode } from '../services';
 import { SearchForm } from '../types';
 
 interface Return {
@@ -14,21 +13,26 @@ interface Return {
 export const useSearchForm = (): Return => {
   const { searchParams } = useTransactionPageSearchParams();
 
-  const [searchForm, setSearchForm] = useState<SearchForm>(() => {
-    const defaultRegionCode = getDefaultRegionCode(searchParams);
-    const defaultTradeDate = getDefaultDate(searchParams);
-    const defaultCityName = getCityNameWithRegionCode(defaultRegionCode);
-
-    return {
-      cityName: defaultCityName,
-      regionCode: defaultRegionCode,
-      tradeDate: defaultTradeDate,
-    };
+  const [searchForm, setSearchForm] = useState<SearchForm>({
+    cityName: '',
+    regionCode: '',
+    tradeDate: new Date(),
   });
 
   const updateSearchForm = (value: Partial<SearchForm>) => {
     setSearchForm({ ...searchForm, ...value });
   };
+
+  useEffect(() => {
+    setSearchForm({
+      cityName: getCityNameWithRegionCode(searchParams.regionCode),
+      regionCode: searchParams.regionCode,
+      tradeDate: new Date(
+        Number(searchParams.tradeDate.slice(0, 4)),
+        Number(searchParams.tradeDate.slice(4, 6)) - 1
+      ),
+    });
+  }, [searchParams.regionCode, searchParams.tradeDate]);
 
   return { searchForm, updateSearchForm };
 };
