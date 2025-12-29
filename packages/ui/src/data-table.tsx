@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
+import { cn } from '@package/utils';
+
 import { Button } from './button';
 import {
   Select,
@@ -227,18 +229,16 @@ export function DataTable<TData, TValue>({
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header, index) => {
+                  const isFirstColumn = index === 0;
                   const isLastColumn = index === headerGroup.headers.length - 1;
-                  const isSortable = header.column.getCanSort();
                   return (
                     <TableHead key={header.id} className="overflow-hidden">
                       <div
-                        className={
-                          isLastColumn && isSortable
-                            ? 'flex translate-x-2 justify-end'
-                            : isLastColumn
-                              ? 'flex justify-end'
-                              : ''
-                        }
+                        className={cn(
+                          'flex',
+                          isFirstColumn && 'pl-5',
+                          isLastColumn && 'justify-end pr-5'
+                        )}
                       >
                         {flexRender(
                           header.column.columnDef.header,
@@ -277,12 +277,16 @@ export function DataTable<TData, TValue>({
                   onClick={() => onRowClick?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell, index) => {
+                    const isFirstColumn = index === 0;
                     const isLastColumn =
                       index === row.getVisibleCells().length - 1;
                     return (
                       <TableCell
                         key={cell.id}
-                        className={isLastColumn ? 'text-right' : ''}
+                        className={cn(
+                          isFirstColumn && 'pl-5',
+                          isLastColumn && 'pr-5 text-right'
+                        )}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,

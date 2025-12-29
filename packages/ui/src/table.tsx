@@ -74,7 +74,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      'text-muted-foreground h-12 px-3 text-left align-middle font-medium lg:px-6 [&:has([role=checkbox])]:pr-0',
+      'text-muted-foreground h-12 text-left align-middle font-medium',
       className
     )}
     {...props}
@@ -86,14 +86,7 @@ const TableCell = React.forwardRef<
   HTMLTableCellElement,
   React.TdHTMLAttributes<HTMLTableCellElement>
 >(({ className, ...props }, ref) => (
-  <td
-    ref={ref}
-    className={cn(
-      'px-3 py-3 align-middle lg:px-6 [&:has([role=checkbox])]:pr-0',
-      className
-    )}
-    {...props}
-  />
+  <td ref={ref} className={cn('py-3 align-middle', className)} {...props} />
 ));
 TableCell.displayName = 'TableCell';
 

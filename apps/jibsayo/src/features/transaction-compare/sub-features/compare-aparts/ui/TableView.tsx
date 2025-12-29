@@ -53,8 +53,7 @@ export function TableView({ items }: TableViewProps) {
       },
       {
         accessorKey: 'recentTransaction',
-        // @ts-ignore
-        header: <span className="pr-2">최근 거래</span>,
+        header: '최근 거래',
         cell: ({ row }) => {
           const recentTransaction = row.original.recentTransaction;
           if (!recentTransaction) return null;

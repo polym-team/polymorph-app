@@ -98,21 +98,21 @@ export function TableView({
             );
           }
           return (
-            <span className="relative">
+            <div className="flex flex-col items-start gap-y-1">
               {row.original.isNewTransaction && (
-                <span className="absolute -top-5 left-0">
+                <span>
                   <NewTransactionIcon />
                 </span>
               )}
               <span className="text-sm text-gray-600">
                 {formatDealDate(row.original.dealDate)}
               </span>
-            </span>
+            </div>
           );
         },
       },
       {
-        size: 100,
+        size: 120,
         accessorKey: 'dong',
         enableSorting: true,
         header: ({ column }) => (
@@ -167,7 +167,7 @@ export function TableView({
         },
       },
       {
-        size: 120,
+        size: 100,
         accessorKey: 'floor',
         enableSorting: true,
         header: ({ column }) => (
@@ -189,7 +189,7 @@ export function TableView({
         },
       },
       {
-        size: 180,
+        size: 120,
         accessorKey: 'size',
         enableSorting: true,
         header: ({ column }) => (
@@ -217,7 +217,7 @@ export function TableView({
         },
       },
       {
-        size: 200,
+        size: 170,
         accessorKey: 'dealAmount',
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="거래가격" />

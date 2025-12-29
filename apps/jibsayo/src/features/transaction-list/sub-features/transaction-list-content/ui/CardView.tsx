@@ -84,9 +84,9 @@ export function CardView({
               <Card.Content className="pb-3">
                 <div className="flex flex-col">
                   <div className="flex items-center">
-                    <div className="flex min-w-0 flex-1 items-center gap-x-1.5">
+                    <div className="relative flex min-w-0 flex-1 items-center gap-x-1.5">
                       {item.isNewTransaction && (
-                        <span className="absolute -top-5 left-0">
+                        <span>
                           <NewTransactionIcon />
                         </span>
                       )}
@@ -106,7 +106,6 @@ export function CardView({
                           <Star
                             size={18}
                             className={cn(
-                              '-translate-y-[1px]',
                               item.isFavorite &&
                                 'fill-yellow-400 text-yellow-400',
                               !item.isFavorite && 'fill-gray-300 text-gray-300'

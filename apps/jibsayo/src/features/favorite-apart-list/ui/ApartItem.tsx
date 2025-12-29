@@ -26,7 +26,7 @@ export function ApartItem({ item, onToggle, onClick }: ApartItemProps) {
     >
       <span className="leading-1 relative flex items-center gap-x-1">
         {item.hasNewTransaction && (
-          <span className="absolute -top-5">
+          <span>
             <NewTransactionIcon />
           </span>
         )}

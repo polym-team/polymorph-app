@@ -112,7 +112,7 @@ export function TransactionListTable({
           <TableHeader>
             <TableRow>
               <TableHead className="overflow-hidden">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 pl-5">
                   <Button
                     size="sm"
                     variant="ghost"
@@ -128,7 +128,7 @@ export function TransactionListTable({
                 <span className="text-sm">층 / 평수</span>
               </TableHead>
               <TableHead className="overflow-hidden">
-                <div className="flex translate-x-2 items-center justify-end gap-2">
+                <div className="flex items-center justify-end gap-2 pr-5">
                   <Button
                     size="sm"
                     variant="ghost"
@@ -161,13 +161,13 @@ export function TransactionListTable({
                 (_, index) => (
                   <TableRow key={`skeleton-${index}`}>
                     <TableCell>
-                      <div className="h-6 w-16 animate-pulse rounded bg-gray-200" />
+                      <div className="h-6 w-16 animate-pulse rounded bg-gray-200 pl-5" />
                     </TableCell>
                     <TableCell>
                       <div className="h-6 w-20 animate-pulse rounded bg-gray-200" />
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="ml-auto h-6 w-24 animate-pulse rounded bg-gray-200" />
+                      <div className="ml-auto h-6 w-24 animate-pulse rounded bg-gray-200 pr-5" />
                     </TableCell>
                   </TableRow>
                 )
@@ -200,9 +200,9 @@ export function TransactionListTable({
                     )}
                     <TableRow>
                       <TableCell>
-                        <div className="relative">
+                        <div className="flex flex-col items-start gap-y-1 pl-5">
                           {item.isNewTransaction && !item.cancellationDate && (
-                            <span className="absolute left-0 top-[-16px]">
+                            <span className="">
                               <NewTransactionIcon />
                             </span>
                           )}
@@ -233,7 +233,7 @@ export function TransactionListTable({
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1">
+                        <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1 pr-5">
                           {item.changeRate !== 0 &&
                             item.prevTransaction &&
                             !item.cancellationDate && (
