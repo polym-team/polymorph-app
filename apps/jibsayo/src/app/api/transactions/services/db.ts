@@ -17,7 +17,7 @@ const buildWhereConditions = (
     't.region_code = ?',
     't.deal_date >= ?',
     't.deal_date < ?',
-    // "t.cancellation_type != 'CANCELED'",
+    "t.cancellation_type != 'CANCELED'",
   ];
   const params: (string | number)[] = [regionCode, startDate, endDate];
 
@@ -321,7 +321,9 @@ const fetchTransactions = async (
 
   // 고유한 apartId 추출 (null 제외)
   const apartIds = [
-    ...new Set(rows.map(row => row.apartId).filter((id): id is number => id !== null)),
+    ...new Set(
+      rows.map(row => row.apartId).filter((id): id is number => id !== null)
+    ),
   ];
 
   // highest/lowest 정보 별도 조회

@@ -669,6 +669,7 @@ async function fetchApiForRecentMonths(
   apartmentsMap: Map<string, number>
 ): Promise<TransactionDbRow[]> {
   const allRows: TransactionDbRow[] = [];
+  const errors: string[] = [];
 
   for (let i = 0; i < monthCount; i++) {
     const date = new Date(baseDate.getFullYear(), baseDate.getMonth() - i, 1);
@@ -685,12 +686,20 @@ async function fetchApiForRecentMonths(
       );
       allRows.push(...rows);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       console.error(
         `[${regionCode}] ${yearMonth} API 조회 실패:`,
-        error instanceof Error ? error.message : error
+        errorMessage
       );
-      // 실패해도 계속 진행
+      errors.push(`${yearMonth}: ${errorMessage}`);
     }
+  }
+
+  // API 조회가 하나라도 실패하면 에러 throw하여 해당 지역 처리 중단
+  if (errors.length > 0) {
+    throw new Error(
+      `API 조회 실패 (${errors.length}/${monthCount}개월): ${errors.join(', ')}`
+    );
   }
 
   return allRows;
