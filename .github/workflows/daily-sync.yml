@@ -11,6 +11,7 @@ on:
 jobs:
   sync-transactions:
     runs-on: ubuntu-latest
+    environment: Production  # Environment secrets 사용을 위해 추가
 
     steps:
       - name: Checkout code
@@ -29,6 +30,16 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Test DB connection
+        env:
+          MARIA_DB_HOST: ${{ secrets.MARIA_DB_HOST }}
+          MARIA_DB_PORT: ${{ secrets.MARIA_DB_PORT }}
+          MARIA_DB_ID: ${{ secrets.MARIA_DB_ID }}
+          MARIA_DB_PW: ${{ secrets.MARIA_DB_PW }}
+        run: |
+          echo "Testing connection to $MARIA_DB_HOST:$MARIA_DB_PORT"
+          nc -zv $MARIA_DB_HOST $MARIA_DB_PORT || echo "Connection failed"
 
       - name: Run daily sync
         env:
