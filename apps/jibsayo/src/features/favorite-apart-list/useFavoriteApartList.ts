@@ -99,8 +99,6 @@ export const useFavoriteApartList = (): Return => {
 
     navigate(`${ROUTE_PATH.APART}/${apartItem.apartId}`);
   };
-  console.log('transactionsMap: ', transactionsMap);
-  console.log('regionItems: ', regionItems);
   return {
     isLoading,
     regionItems,
