@@ -5,6 +5,7 @@ import {
 } from '@tanstack/react-query';
 
 import { calculateExclusiveAreaSquareMeters } from '../services/calculator';
+import { hasRequiredUrlParams } from '../services/validator';
 import { FetchTransactionListResponse } from '../types';
 import { useTransactionPageSearchParams } from './useTransactionPageSearchParams';
 
@@ -72,7 +73,7 @@ export const useTransactionListQuery = (): UseQueryResult<
     ],
     staleTime: 1000 * 60 * 60,
     gcTime: 1000 * 60 * 60,
-    enabled: !!searchParams.regionCode && !!searchParams.tradeDate,
+    enabled: hasRequiredUrlParams(),
     placeholderData: keepPreviousData,
     queryFn: async () => {
       const MIN_DELAY = 300;

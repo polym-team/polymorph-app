@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  hasRequiredUrlParams,
   SearchParams,
   useTransactionPageSearchParams,
 } from '@/entities/transaction';
@@ -44,8 +45,9 @@ export function QueryParamProvider({ children }: QueryParamProviderProps) {
     const savedSearchParams = getItem<SearchParams>(
       STORAGE_KEY.TRANSACTION_QUERY_PARAMS
     );
+    const hasSearchParams = hasRequiredUrlParams();
 
-    if (savedSearchParams) {
+    if (savedSearchParams && !hasSearchParams) {
       savedParamsRef.current = savedSearchParams;
       setSearchParams({
         ...savedSearchParams,
