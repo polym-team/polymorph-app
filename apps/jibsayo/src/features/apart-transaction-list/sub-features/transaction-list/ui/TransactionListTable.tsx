@@ -245,8 +245,8 @@ export function TransactionListTable({
                               </span>
                             )}
                           {item.cancellationDate && (
-                            <span className="rounded-[6px] bg-gray-200 px-2 py-1 text-sm">
-                              거래 취소
+                            <span className="rounded-[6px] bg-gray-200 px-2 py-[4px] text-xs">
+                              거래취소
                             </span>
                           )}
                           <span
