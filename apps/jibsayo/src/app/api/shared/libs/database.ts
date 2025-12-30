@@ -16,6 +16,7 @@ export const getDbPool = () => {
       connectionLimit: 10,
       queueLimit: 0,
       dateStrings: true,
+      timezone: '+09:00',
     });
   }
   return globalForDb.dbPool;
