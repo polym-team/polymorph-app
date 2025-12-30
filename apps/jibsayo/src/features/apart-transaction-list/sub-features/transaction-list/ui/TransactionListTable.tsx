@@ -161,13 +161,13 @@ export function TransactionListTable({
                 (_, index) => (
                   <TableRow key={`skeleton-${index}`}>
                     <TableCell>
-                      <div className="h-6 w-16 animate-pulse rounded bg-gray-200 pl-5" />
+                      <div className="mx-5 h-6 w-16 animate-pulse rounded bg-gray-200" />
                     </TableCell>
                     <TableCell>
-                      <div className="h-6 w-20 animate-pulse rounded bg-gray-200" />
+                      <div className="mx-5 h-6 w-20 animate-pulse rounded bg-gray-200" />
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="ml-auto h-6 w-24 animate-pulse rounded bg-gray-200 pr-5" />
+                      <div className="mx-5 ml-auto h-6 w-24 animate-pulse rounded bg-gray-200" />
                     </TableCell>
                   </TableRow>
                 )
