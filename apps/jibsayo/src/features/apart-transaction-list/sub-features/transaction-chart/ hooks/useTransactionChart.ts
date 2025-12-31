@@ -18,6 +18,7 @@ interface Props {
 interface Return {
   svgRef: React.RefObject<SVGSVGElement>;
   isLoading: boolean;
+  isEmpty: boolean;
 }
 
 export const useTransactionChart = ({
@@ -43,5 +44,7 @@ export const useTransactionChart = ({
     height: CHART_HEIGHT,
   });
 
-  return { svgRef, isLoading: isLoading || isFetching };
+  const isEmpty = !isFetching && (!data || data.length === 0);
+
+  return { svgRef, isLoading: isLoading || isFetching, isEmpty };
 };

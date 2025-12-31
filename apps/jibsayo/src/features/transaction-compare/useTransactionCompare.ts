@@ -1,4 +1,8 @@
-import { SearchedApartmentItem, useApartSearchQuery } from '@/entities/apart';
+import {
+  SearchedApartmentItem,
+  useApartSearchQuery,
+  useFavoriteApartListQuery,
+} from '@/entities/apart';
 
 import { useRef, useState } from 'react';
 
@@ -16,10 +20,12 @@ interface Return {
   availableSizesByApart: Map<number, [number, number][]>;
   apartNameValue: string;
   apartNameParam: string;
+  favoriteAparts: { apartId: number; apartName: string }[];
   focusSearchInput: () => void;
   blurSearchInput: () => void;
   changeApartName: (value: string) => void;
   clickApartItem: (item: SearchedApartmentItem) => void;
+  clickFavoriteApart: (apartId: number, apartName: string) => void;
   toggleApartSize: (apartId: number, sizeRange: [number, number]) => void;
   setAvailableSizesByApart: React.Dispatch<
     React.SetStateAction<Map<number, [number, number][]>>
@@ -50,9 +56,14 @@ export const useTransactionCompare = (): Return => {
   const { isFetching, data } = useApartSearchQuery({
     apartName: apartNameParam,
   });
+  const { data: favoriteApartsData = [] } = useFavoriteApartListQuery();
 
   const items = data ?? [];
   const showsItems = !!apartNameValue && activedInput;
+  const favoriteAparts = favoriteApartsData.map(item => ({
+    apartId: item.apartId,
+    apartName: item.apartName,
+  }));
 
   const focusSearchInput = () => {
     setActivedInput(true);
@@ -111,6 +122,25 @@ export const useTransactionCompare = (): Return => {
     setSelectedAparts(prev => [...prev, item]);
   };
 
+  const clickFavoriteApart = (apartId: number) => {
+    const favoriteApartData = favoriteApartsData.find(
+      item => item.apartId === apartId
+    );
+
+    if (!favoriteApartData) return;
+
+    const searchedItem: SearchedApartmentItem = {
+      id: favoriteApartData.apartId,
+      apartName: favoriteApartData.apartName,
+      regionCode: favoriteApartData.regionCode,
+      householdCount: null,
+      completionYear: 0,
+      dong: '',
+    };
+
+    clickApartItem(searchedItem);
+  };
+
   const toggleApartSize = (apartId: number, sizeRange: [number, number]) => {
     setSelectedSizesByApart(prev => {
       const newMap = new Map(prev);
@@ -149,10 +179,12 @@ export const useTransactionCompare = (): Return => {
     availableSizesByApart,
     apartNameValue,
     apartNameParam,
+    favoriteAparts,
     focusSearchInput,
     blurSearchInput,
     changeApartName,
     clickApartItem,
+    clickFavoriteApart,
     toggleApartSize,
     setAvailableSizesByApart,
     setSelectedSizesByApart,

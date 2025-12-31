@@ -17,10 +17,12 @@ export function TransactionCompare() {
     availableSizesByApart,
     apartNameValue,
     apartNameParam,
+    favoriteAparts,
     focusSearchInput,
     blurSearchInput,
     changeApartName,
     clickApartItem,
+    clickFavoriteApart,
     toggleApartSize,
     setAvailableSizesByApart,
     setSelectedSizesByApart,
@@ -35,10 +37,12 @@ export function TransactionCompare() {
         selectedApartIds={selectedApartIds}
         apartNameValue={apartNameValue}
         apartNameParam={apartNameParam}
+        favoriteAparts={favoriteAparts}
         onChange={changeApartName}
         onSelect={clickApartItem}
         onFocus={focusSearchInput}
         onBlur={blurSearchInput}
+        onClickFavoriteApart={clickFavoriteApart}
       />
       {selectedApartIds.length === 0 && !isFetching && <NotSearched />}
       {selectedApartIds.length > 0 && (

@@ -27,9 +27,14 @@ export function TransactionList({
     changePageIndex,
   } = useTransactionList({ apartId, allSizes, selectedSizes, selectedPeriod });
 
+  if (!items.length) {
+    return null;
+  }
+
   return (
     <div className="flex flex-col gap-y-3">
       <TrasactionYearSelect
+        isFetching={isFetching}
         pageIndexes={pageIndexes}
         onPageIndexChange={changePageIndex}
       />

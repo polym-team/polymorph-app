@@ -17,7 +17,7 @@ export function TransactionChart({
   selectedSizes,
   selectedPeriod,
 }: Props) {
-  const { svgRef, isLoading } = useTransactionChart({
+  const { svgRef, isLoading, isEmpty } = useTransactionChart({
     apartId,
     allSizes,
     selectedSizes,
@@ -39,14 +39,21 @@ export function TransactionChart({
             <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
           </div>
         )}
-        <svg
-          ref={svgRef}
-          style={{
-            width: '100%',
-            height: '100%',
-            touchAction: 'none',
-          }}
-        />
+        {isEmpty && !isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="text-gray-500">표시할 데이터가 없어요</p>
+          </div>
+        )}
+        {!isEmpty && (
+          <svg
+            ref={svgRef}
+            style={{
+              width: '100%',
+              height: '100%',
+              touchAction: 'none',
+            }}
+          />
+        )}
       </div>
     </div>
   );

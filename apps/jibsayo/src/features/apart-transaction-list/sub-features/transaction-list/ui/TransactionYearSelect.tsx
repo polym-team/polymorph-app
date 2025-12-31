@@ -3,14 +3,24 @@ import { PageIndexByYear } from '@/entities/apart-transaction/types';
 import { Button } from '@package/ui';
 
 interface TrasactionYearSelectProps {
+  isFetching: boolean;
   pageIndexes: PageIndexByYear[];
   onPageIndexChange: (year: number) => void;
 }
 
 export function TrasactionYearSelect({
+  isFetching,
   pageIndexes,
   onPageIndexChange,
 }: TrasactionYearSelectProps) {
+  if (isFetching) {
+    return <div className="h-[47.5px] rounded bg-gray-100" />;
+  }
+
+  if (!pageIndexes.length) {
+    return null;
+  }
+
   return (
     <div className="scrollbar-hide overflow-x-auto rounded bg-gray-100 p-2">
       <div className="flex gap-x-1">
