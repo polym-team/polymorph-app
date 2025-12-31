@@ -12,12 +12,21 @@ interface Return {
   items: SearchedApartmentItem[];
   selectedApartIds: number[];
   selectedAparts: SearchedApartmentItem[];
+  selectedSizesByApart: Map<number, [number, number][]>;
+  availableSizesByApart: Map<number, [number, number][]>;
   apartNameValue: string;
   apartNameParam: string;
   focusSearchInput: () => void;
   blurSearchInput: () => void;
   changeApartName: (value: string) => void;
   clickApartItem: (item: SearchedApartmentItem) => void;
+  toggleApartSize: (apartId: number, sizeRange: [number, number]) => void;
+  setAvailableSizesByApart: React.Dispatch<
+    React.SetStateAction<Map<number, [number, number][]>>
+  >;
+  setSelectedSizesByApart: React.Dispatch<
+    React.SetStateAction<Map<number, [number, number][]>>
+  >;
 }
 
 export const useTransactionCompare = (): Return => {
@@ -26,6 +35,12 @@ export const useTransactionCompare = (): Return => {
   const [selectedAparts, setSelectedAparts] = useState<SearchedApartmentItem[]>(
     []
   );
+  const [selectedSizesByApart, setSelectedSizesByApart] = useState<
+    Map<number, [number, number][]>
+  >(new Map());
+  const [availableSizesByApart, setAvailableSizesByApart] = useState<
+    Map<number, [number, number][]>
+  >(new Map());
   const [apartNameValue, setApartNameValue] = useState<string>('');
   const [apartNameParam, setApartNameParam] = useState<string>('');
 
@@ -71,6 +86,19 @@ export const useTransactionCompare = (): Return => {
     if (selectedApartIds.includes(item.id)) {
       setSelectedApartIds(prev => prev.filter(id => id !== item.id));
       setSelectedAparts(prev => prev.filter(apart => apart.id !== item.id));
+
+      setSelectedSizesByApart(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(item.id);
+        return newMap;
+      });
+
+      setAvailableSizesByApart(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(item.id);
+        return newMap;
+      });
+
       return;
     }
 
@@ -83,17 +111,50 @@ export const useTransactionCompare = (): Return => {
     setSelectedAparts(prev => [...prev, item]);
   };
 
+  const toggleApartSize = (apartId: number, sizeRange: [number, number]) => {
+    setSelectedSizesByApart(prev => {
+      const newMap = new Map(prev);
+      const currentSizes = newMap.get(apartId) || [];
+
+      const isSelected = currentSizes.some(
+        ([min, max]) => min === sizeRange[0] && max === sizeRange[1]
+      );
+
+      if (isSelected) {
+        const filtered = currentSizes.filter(
+          ([min, max]) => !(min === sizeRange[0] && max === sizeRange[1])
+        );
+
+        if (filtered.length === 0) {
+          toast.error('한 개 이상의 평형을 선택해 주세요');
+          return prev;
+        }
+
+        newMap.set(apartId, filtered);
+      } else {
+        newMap.set(apartId, [...currentSizes, sizeRange]);
+      }
+
+      return newMap;
+    });
+  };
+
   return {
     isFetching,
     showsItems,
     items,
     selectedApartIds,
     selectedAparts,
+    selectedSizesByApart,
+    availableSizesByApart,
     apartNameValue,
     apartNameParam,
     focusSearchInput,
     blurSearchInput,
     changeApartName,
     clickApartItem,
+    toggleApartSize,
+    setAvailableSizesByApart,
+    setSelectedSizesByApart,
   };
 };

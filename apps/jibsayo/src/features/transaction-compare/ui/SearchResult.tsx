@@ -49,7 +49,7 @@ export function SearchResult({
         검색 결과
       </div>
       {items.length > 0 && (
-        <Card className="overflow-hidden">
+        <Card className="hide-scrollbar max-h-[30vh] overflow-y-auto overflow-x-hidden">
           {items.map((item, index) => {
             const isSelected = selectedApartIds.includes(item.id);
 

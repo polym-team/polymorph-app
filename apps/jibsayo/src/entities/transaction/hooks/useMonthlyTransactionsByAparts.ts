@@ -13,6 +13,13 @@ export const useMonthlyTransactionsByAparts = (
 
   if (params.period) urlSearchParams.append('period', params.period.toString());
 
+  if (params.sizesByApart && Object.keys(params.sizesByApart).length > 0) {
+    urlSearchParams.append(
+      'sizes',
+      encodeURIComponent(JSON.stringify(params.sizesByApart))
+    );
+  }
+
   const searchParams = urlSearchParams.toString();
 
   return useQuery({

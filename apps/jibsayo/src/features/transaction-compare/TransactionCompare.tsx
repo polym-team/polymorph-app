@@ -13,12 +13,17 @@ export function TransactionCompare() {
     items,
     selectedApartIds,
     selectedAparts,
+    selectedSizesByApart,
+    availableSizesByApart,
     apartNameValue,
     apartNameParam,
     focusSearchInput,
     blurSearchInput,
     changeApartName,
     clickApartItem,
+    toggleApartSize,
+    setAvailableSizesByApart,
+    setSelectedSizesByApart,
   } = useTransactionCompare();
 
   return (
@@ -40,12 +45,19 @@ export function TransactionCompare() {
         <>
           <CompareChart
             selectedApartIds={selectedApartIds}
+            selectedAparts={selectedAparts}
+            selectedSizesByApart={selectedSizesByApart}
+            availableSizesByApart={availableSizesByApart}
+            setAvailableSizesByApart={setAvailableSizesByApart}
+            setSelectedSizesByApart={setSelectedSizesByApart}
             onRemoveApartId={apartId => {
               clickApartItem(selectedAparts.find(item => item.id === apartId)!);
             }}
+            onToggleSize={toggleApartSize}
           />
           <CompareAparts
             selectedApartIds={selectedApartIds}
+            selectedSizesByApart={selectedSizesByApart}
             items={selectedAparts}
           />
         </>

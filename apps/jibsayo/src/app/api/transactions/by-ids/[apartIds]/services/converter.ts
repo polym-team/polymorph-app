@@ -4,7 +4,8 @@ import {
 } from '../types';
 
 export const convertToMonthlyTransactionsByIds = (
-  dbRows: DbMonthlyTransactionByIdsRow[]
+  dbRows: DbMonthlyTransactionByIdsRow[],
+  availableSizesMap: Map<number, [number, number][]>
 ): ApartTransactionSummary[] => {
   // apartId별로 그룹화
   const apartMap = new Map<
@@ -58,6 +59,7 @@ export const convertToMonthlyTransactionsByIds = (
       return {
         apartId,
         apartName: data.apartName,
+        availableSizes: availableSizesMap.get(apartId) || [],
         recentTransaction,
         transactions,
       };

@@ -17,6 +17,7 @@ import { TableView } from './ui/TableView';
 
 interface CompareApartsProps {
   selectedApartIds: number[];
+  selectedSizesByApart: Map<number, [number, number][]>;
   items: SearchedApartmentItem[];
 }
 
@@ -29,10 +30,26 @@ interface CompareApartData {
   recentTransaction: RecentTransaction | null;
 }
 
-export function CompareAparts({ selectedApartIds, items }: CompareApartsProps) {
+export function CompareAparts({
+  selectedApartIds,
+  selectedSizesByApart,
+  items,
+}: CompareApartsProps) {
+  const sizesByApartRecord = useMemo(() => {
+    if (selectedSizesByApart.size === 0) return undefined;
+
+    const record: Record<number, [number, number][]> = {};
+    selectedSizesByApart.forEach((sizes, apartId) => {
+      record[apartId] = sizes;
+    });
+
+    return record;
+  }, [selectedSizesByApart]);
+
   const { data } = useMonthlyTransactionsByAparts({
     apartIds: selectedApartIds,
     period: 12,
+    sizesByApart: sizesByApartRecord,
   });
 
   const selectedItems = items.filter(item =>

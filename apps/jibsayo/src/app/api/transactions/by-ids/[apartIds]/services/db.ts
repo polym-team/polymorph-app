@@ -1,23 +1,84 @@
 import { query } from '@/app/api/shared/libs/database';
+import { groupSizesByPyeong } from '@/app/api/shared/services/transaction/service';
 
 import { DbMonthlyTransactionByIdsRow } from '../types';
+
+export const getAvailableSizesByApartIds = async (
+  apartIds: number[]
+): Promise<Map<number, [number, number][]>> => {
+  if (apartIds.length === 0) {
+    return new Map();
+  }
+
+  const sql = `
+    SELECT DISTINCT
+      apart_id as apartId,
+      exclusive_area
+    FROM transactions
+    WHERE apart_id IN (${apartIds.map(() => '?').join(', ')})
+      AND exclusive_area IS NOT NULL
+      AND cancellation_type != 'CANCELED'
+    ORDER BY apart_id, exclusive_area
+  `;
+
+  const rows = await query<{ apartId: number; exclusive_area: number }[]>(
+    sql,
+    apartIds
+  );
+
+  const sizeMap = new Map<number, number[]>();
+  rows.forEach(row => {
+    if (!sizeMap.has(row.apartId)) {
+      sizeMap.set(row.apartId, []);
+    }
+    sizeMap.get(row.apartId)!.push(row.exclusive_area);
+  });
+
+  const result = new Map<number, [number, number][]>();
+  sizeMap.forEach((sizes, apartId) => {
+    result.set(apartId, groupSizesByPyeong(sizes));
+  });
+
+  return result;
+};
 
 export const getMonthlyTransactionsByApartIds = async ({
   apartIds,
   period,
+  sizesByApart,
 }: {
   apartIds: number[];
   period?: number;
+  sizesByApart?: Map<number, [number, number][]>;
 }): Promise<DbMonthlyTransactionByIdsRow[]> => {
   if (apartIds.length === 0) {
     return [];
   }
 
-  const whereConditions = [
-    `t.apart_id IN (${apartIds.map(() => '?').join(', ')})`,
-    "t.cancellation_type != 'CANCELED'",
-  ];
-  const queryParams: (string | number)[] = [...apartIds];
+  const whereConditions: string[] = [];
+  const queryParams: (string | number)[] = [];
+
+  if (sizesByApart && sizesByApart.size > 0) {
+    const apartSizeConditions: string[] = [];
+    sizesByApart.forEach((sizeRanges, apartId) => {
+      const sizeConditions = sizeRanges
+        .map(() => 't.exclusive_area BETWEEN ? AND ?')
+        .join(' OR ');
+      apartSizeConditions.push(`(t.apart_id = ? AND (${sizeConditions}))`);
+      queryParams.push(apartId);
+      sizeRanges.forEach(([minSize, maxSize]) => {
+        queryParams.push(minSize, maxSize);
+      });
+    });
+    whereConditions.push(`(${apartSizeConditions.join(' OR ')})`);
+  } else {
+    whereConditions.push(
+      `t.apart_id IN (${apartIds.map(() => '?').join(', ')})`
+    );
+    queryParams.push(...apartIds);
+  }
+
+  whereConditions.push("t.cancellation_type != 'CANCELED'");
 
   if (period) {
     whereConditions.push('t.deal_date >= DATE_SUB(CURDATE(), INTERVAL ? MONTH)');

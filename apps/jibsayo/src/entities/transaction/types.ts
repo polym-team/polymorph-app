@@ -63,6 +63,7 @@ export interface MonthlyTransaction {
 export interface ApartTransactionSummary {
   apartId: number;
   apartName: string;
+  availableSizes: [number, number][];
   recentTransaction: RecentTransaction | null;
   transactions: MonthlyTransaction[];
 }
@@ -70,6 +71,7 @@ export interface ApartTransactionSummary {
 export interface FetchMonthlyTransactionsByApartsRequest {
   apartIds: number[];
   period?: number;
+  sizesByApart?: Record<number, [number, number][]>;
 }
 
 export type FetchMonthlyTransactionsByApartsResponse =

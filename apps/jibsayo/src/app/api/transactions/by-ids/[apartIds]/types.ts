@@ -26,6 +26,7 @@ export interface MonthlyTransaction {
 export interface ApartTransactionSummary {
   apartId: number;
   apartName: string;
+  availableSizes: [number, number][];
   recentTransaction: RecentTransaction | null;
   transactions: MonthlyTransaction[];
 }
