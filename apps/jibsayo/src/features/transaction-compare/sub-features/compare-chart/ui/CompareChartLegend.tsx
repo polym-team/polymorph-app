@@ -16,6 +16,7 @@ interface CompareChartLegendProps {
   selectedAparts: SearchedApartmentItem[];
   availableSizesByApart: Map<number, [number, number][]>;
   selectedSizesByApart: Map<number, [number, number][]>;
+  isLoadingSizes: boolean;
   onRemoveApartId: (apartId: number) => void;
   onToggleSize: (apartId: number, sizeRange: [number, number]) => void;
 }
@@ -25,6 +26,7 @@ export function CompareChartLegend({
   selectedAparts,
   availableSizesByApart,
   selectedSizesByApart,
+  isLoadingSizes,
   onRemoveApartId,
   onToggleSize,
 }: CompareChartLegendProps) {
@@ -62,7 +64,7 @@ export function CompareChartLegend({
                 />
                 <div className="flex flex-1 flex-col gap-y-1 lg:flex-row lg:items-center lg:gap-x-3">
                   <span>{item.apartName}</span>
-                  {availableSizes.length > 0 && (
+                  {availableSizes.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
                       {availableSizes.map(([minSize, maxSize]) => {
                         const isSelected = selectedSizes.some(
@@ -94,6 +96,12 @@ export function CompareChartLegend({
                         );
                       })}
                     </div>
+                  ) : (
+                    isLoadingSizes && (
+                      <div className="flex items-center">
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+                      </div>
+                    )
                   )}
                 </div>
               </div>

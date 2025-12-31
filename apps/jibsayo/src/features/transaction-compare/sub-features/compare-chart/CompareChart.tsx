@@ -45,7 +45,7 @@ export function CompareChart({
     selectedSizesByApart,
   });
 
-  const { data } = useMonthlyTransactionsByAparts({
+  const { data, isLoading: isLoadingSizes } = useMonthlyTransactionsByAparts({
     apartIds: selectedApartIds,
     period: selectedPeriod || undefined,
   });
@@ -91,6 +91,7 @@ export function CompareChart({
         selectedAparts={selectedAparts}
         availableSizesByApart={availableSizesByApart}
         selectedSizesByApart={selectedSizesByApart}
+        isLoadingSizes={isLoadingSizes}
         onRemoveApartId={onRemoveApartId}
         onToggleSize={onToggleSize}
       />
