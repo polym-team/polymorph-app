@@ -51,7 +51,7 @@ export function QueryParamProvider({ children }: QueryParamProviderProps) {
 
   // 복원 완료 감지
   useEffect(() => {
-    if (isRestoring && hasRequiredUrlParams()) {
+    if (isRestoring) {
       setIsInitialized(true);
       setIsRestoring(false);
     }
