@@ -1,8 +1,8 @@
 'use client';
 
 import { NotSearched } from './ui/NotSearched';
-import { SearchedList } from './ui/SearchedList';
 import { SearchInput } from './ui/SearchInput';
+import { SearchResult } from './ui/SearchResult';
 import { useApartSearch } from './useApartSearch';
 
 export function ApartSearch() {
@@ -30,7 +30,7 @@ export function ApartSearch() {
       />
       {isEmpty && <NotSearched />}
       {isShowItems && apartNameParam && (
-        <SearchedList
+        <SearchResult
           isFetching={isFetching}
           apartName={apartNameParam}
           items={items}

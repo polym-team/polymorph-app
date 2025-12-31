@@ -14,7 +14,7 @@ import { cn } from '@package/utils';
 import { calculateHighlightSegments } from '../services';
 import { ApartSearchItemViewModel } from '../types';
 
-interface SearchedListProps {
+interface SearchResultProps {
   isFetching: boolean;
   apartName: string;
   items: ApartSearchItemViewModel[];
@@ -22,13 +22,13 @@ interface SearchedListProps {
   onToggleFavorite: (item: ApartSearchItemViewModel) => void;
 }
 
-export function SearchedList({
+export function SearchResult({
   isFetching,
   apartName,
   items,
   onClickItem,
   onToggleFavorite,
-}: SearchedListProps) {
+}: SearchResultProps) {
   return (
     <PageContainer className="flex flex-col gap-y-2">
       <p className="text-sm lg:text-base">
@@ -73,6 +73,7 @@ export function SearchedList({
                     )}
                   </span>
                   <button
+                    className="lg:translate-y-[0.5px]"
                     onClick={e => {
                       e.stopPropagation();
                       e.preventDefault();

@@ -18,7 +18,6 @@ interface QueryParamProviderProps {
 export function QueryParamProvider({ children }: QueryParamProviderProps) {
   const { searchParams, setSearchParams } = useTransactionPageSearchParams();
   const [isInitialized, setIsInitialized] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(false);
 
   useOnceEffect(true, () => {
     const hasUrlParams = hasRequiredUrlParams();
@@ -35,27 +34,19 @@ export function QueryParamProvider({ children }: QueryParamProviderProps) {
 
     // 케이스 2: URL X + 스토리지 O -> 복원 후 렌더링
     if (savedParams) {
-      setIsRestoring(true);
       setSearchParams({
         ...savedParams,
         maxDealAmount: savedParams.maxDealAmount ?? Infinity,
         maxHouseholdCount: savedParams.maxHouseholdCount ?? Infinity,
         maxSize: savedParams.maxSize ?? Infinity,
       });
+      setTimeout(() => setIsInitialized(true), 50);
       return;
     }
 
     // 케이스 3: 둘 다 X -> 바로 렌더링
     setIsInitialized(true);
   });
-
-  // 복원 완료 감지
-  useEffect(() => {
-    if (isRestoring) {
-      setIsInitialized(true);
-      setIsRestoring(false);
-    }
-  }, [isRestoring, searchParams]);
 
   // 세션 스토리지에 저장
   useEffect(() => {

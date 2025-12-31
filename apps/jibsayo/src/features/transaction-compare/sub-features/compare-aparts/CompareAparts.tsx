@@ -1,17 +1,8 @@
 'use client';
 
 import { SearchedApartmentItem } from '@/entities/apart';
-import {
-  getCityNameWithRegionCode,
-  getRegionNameWithRegionCode,
-} from '@/entities/region';
-import {
-  RecentTransaction,
-  useMonthlyTransactionsByAparts,
-} from '@/entities/transaction';
 
-import { useMemo } from 'react';
-
+import { useCompareAparts } from './useCompareAparts';
 import { CardView } from './ui/CardView';
 import { TableView } from './ui/TableView';
 
@@ -21,54 +12,16 @@ interface CompareApartsProps {
   items: SearchedApartmentItem[];
 }
 
-interface CompareApartData {
-  id: number;
-  apartName: string;
-  region: string;
-  householdCount: number | null;
-  completionYear: number;
-  recentTransaction: RecentTransaction | null;
-}
-
 export function CompareAparts({
   selectedApartIds,
   selectedSizesByApart,
   items,
 }: CompareApartsProps) {
-  const sizesByApartRecord = useMemo(() => {
-    if (selectedSizesByApart.size === 0) return undefined;
-
-    const record: Record<number, [number, number][]> = {};
-    selectedSizesByApart.forEach((sizes, apartId) => {
-      record[apartId] = sizes;
-    });
-
-    return record;
-  }, [selectedSizesByApart]);
-
-  const { data } = useMonthlyTransactionsByAparts({
-    apartIds: selectedApartIds,
-    period: 12,
-    sizesByApart: sizesByApartRecord,
+  const { convertedItems, selectedItems } = useCompareAparts({
+    selectedApartIds,
+    selectedSizesByApart,
+    items,
   });
-
-  const selectedItems = items.filter(item =>
-    selectedApartIds.includes(item.id)
-  );
-
-  const convertedItems = useMemo<CompareApartData[]>(() => {
-    return selectedItems.map(item => {
-      const apartData = data?.find(apart => apart.apartId === item.id);
-      return {
-        id: item.id,
-        apartName: item.apartName,
-        region: `${getCityNameWithRegionCode(item.regionCode)} ${getRegionNameWithRegionCode(item.regionCode)} ${item.dong}`,
-        householdCount: item.householdCount,
-        completionYear: item.completionYear,
-        recentTransaction: apartData?.recentTransaction || null,
-      };
-    });
-  }, [selectedItems, data]);
 
   if (selectedItems.length === 0) return null;
 

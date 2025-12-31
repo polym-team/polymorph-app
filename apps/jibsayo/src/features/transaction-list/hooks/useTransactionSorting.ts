@@ -1,4 +1,5 @@
 import {
+  hasRequiredUrlParams,
   useTransactionListQuery,
   useTransactionPageSearchParams,
 } from '@/entities/transaction';
@@ -31,11 +32,12 @@ export const useTransactionSorting = (): SortingState => {
   };
 
   useOnceEffect(true, () => {
+    const hasUrlParams = hasRequiredUrlParams();
     const savedSettings = getItem<{ sorting: SortingState['state'] }>(
       STORAGE_KEY.TRANSACTION_LIST_VIEW_SETTINGS
     );
 
-    if (savedSettings?.sorting) {
+    if (hasUrlParams && savedSettings?.sorting) {
       setSearchParams({
         orderBy: savedSettings.sorting.id,
         orderDirection: savedSettings.sorting.desc ? 'desc' : 'asc',

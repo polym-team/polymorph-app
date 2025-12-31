@@ -7,6 +7,7 @@ import {
   formatPyeongText,
 } from '@/shared/utils/formatter';
 
+import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
 import { ColumnDef, DataTable } from '@package/ui';
@@ -18,6 +19,11 @@ interface TableViewProps {
 }
 
 export function TableView({ items }: TableViewProps) {
+  const router = useRouter();
+
+  const handleRowClick = (row: CompareApartData) => {
+    router.push(`/apart/${row.id}`);
+  };
   const columns = useMemo<ColumnDef<CompareApartData>[]>(
     () => [
       {
@@ -100,6 +106,7 @@ export function TableView({ items }: TableViewProps) {
       totalItems={items.length}
       onSortingChange={() => {}}
       onPageIndexChange={() => {}}
+      onRowClick={handleRowClick}
     />
   );
 }

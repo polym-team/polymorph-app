@@ -8,6 +8,8 @@ import {
   formatSizeText,
 } from '@/shared/utils/formatter';
 
+import { useRouter } from 'next/navigation';
+
 import { Card } from '@package/ui';
 
 import { CompareApartData } from '../types';
@@ -17,10 +19,20 @@ interface CardViewProps {
 }
 
 export function CardView({ items }: CardViewProps) {
+  const router = useRouter();
+
+  const handleCardClick = (apartId: number) => {
+    router.push(`/apart/${apartId}`);
+  };
+
   return (
     <div className="flex flex-col gap-y-2">
       {items.map(item => (
-        <Card key={item.id}>
+        <Card
+          key={item.id}
+          className="cursor-pointer transition-colors hover:bg-gray-50"
+          onClick={() => handleCardClick(item.id)}
+        >
           <Card.Content className="pb-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-col gap-y-1">
