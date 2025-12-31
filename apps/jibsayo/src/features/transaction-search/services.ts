@@ -9,7 +9,7 @@ export const getDefaultRegionCode = (searchParams: SearchParams): string => {
   return firstRegionCode;
 };
 
-export const getDefaultDate = (searchParams: SearchParams): Date => {
+export const getDefaultTradeDate = (searchParams: SearchParams): Date => {
   if (searchParams.tradeDate) {
     return new Date(
       Number(searchParams.tradeDate.slice(0, 4)),

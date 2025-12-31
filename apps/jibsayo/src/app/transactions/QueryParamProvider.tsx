@@ -20,7 +20,7 @@ export function QueryParamProvider({ children }: QueryParamProviderProps) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useOnceEffect(true, () => {
-    const hasUrlParams = hasRequiredUrlParams();
+    const hasUrlParams = hasRequiredUrlParams(searchParams);
 
     // 케이스 1: URL에 쿼리파라미터가 있는 경우 -> 바로 렌더링
     if (hasUrlParams) {

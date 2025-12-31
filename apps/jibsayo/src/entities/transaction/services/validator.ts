@@ -1,8 +1,5 @@
-export const hasRequiredUrlParams = (): boolean => {
-  if (typeof window === 'undefined') return false;
+import { SearchParams } from '../types';
 
-  const searchParams = new URLSearchParams(window.location.search);
-  return !!(
-    searchParams.get('regionCode') && searchParams.get('tradeDate')
-  );
+export const hasRequiredUrlParams = (searchParams: SearchParams): boolean => {
+  return !!searchParams.regionCode && !!searchParams.tradeDate;
 };

@@ -73,7 +73,7 @@ export const useTransactionListQuery = (): UseQueryResult<
     ],
     staleTime: 1000 * 60 * 60,
     gcTime: 1000 * 60 * 60,
-    enabled: hasRequiredUrlParams(),
+    enabled: hasRequiredUrlParams(searchParams),
     placeholderData: keepPreviousData,
     queryFn: async () => {
       const MIN_DELAY = 300;
