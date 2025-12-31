@@ -19,7 +19,7 @@ export function SearchInput({
   onRemoveRecentSearchedApartName,
 }: SearchInputProps) {
   return (
-    <PageContainer className="flex flex-col gap-y-3">
+    <PageContainer className="flex flex-col gap-y-4">
       <div className="relative">
         <Search
           className="absolute left-3 top-1/2 -translate-y-[10px] text-gray-300"
@@ -40,30 +40,33 @@ export function SearchInput({
         />
       </div>
       {recentSearchedApartNames.length > 0 && (
-        <div className="scrollbar-hide flex-1 overflow-y-auto">
-          <HorizontalScrollContainer className="gap-1">
-            {recentSearchedApartNames.map(item => (
-              <Button
-                key={item}
-                size="sm"
-                variant="outline"
-                rounded
-                onClick={() => onChangeValue(item)}
-              >
-                {item}
-                <span
-                  className="-translate-y-[1px]"
-                  onClick={e => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    onRemoveRecentSearchedApartName(item);
-                  }}
+        <div className="flex flex-col gap-x-3 gap-y-1">
+          <span className="text-sm text-gray-500">최근 검색</span>
+          <div className="scrollbar-hide flex-1 overflow-y-auto">
+            <HorizontalScrollContainer className="gap-1">
+              {recentSearchedApartNames.map(item => (
+                <Button
+                  key={item}
+                  size="sm"
+                  variant="outline"
+                  rounded
+                  onClick={() => onChangeValue(item)}
                 >
-                  <X />
-                </span>
-              </Button>
-            ))}
-          </HorizontalScrollContainer>
+                  {item}
+                  <span
+                    className="-translate-y-[1px]"
+                    onClick={e => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      onRemoveRecentSearchedApartName(item);
+                    }}
+                  >
+                    <X />
+                  </span>
+                </Button>
+              ))}
+            </HorizontalScrollContainer>
+          </div>
         </div>
       )}
     </PageContainer>
