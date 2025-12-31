@@ -10,7 +10,25 @@ interface ApartmentRow {
   completion_year: number;
   region_code: string;
   dong: string;
+  jibun_addr: string;
+  doro_addr: string;
 }
+
+const buildOrderByClause = (keywords: string[]): string => {
+  const allInApartName = keywords
+    .map(k => `apart_name LIKE '%${k}%'`)
+    .join(' AND ');
+
+  const scoreCalculation = `
+    CASE WHEN ${allInApartName} THEN 1000 ELSE 0 END +
+    ${keywords.map(k => `CASE WHEN apart_name LIKE '%${k}%' THEN 10 ELSE 0 END`).join(' + ')} +
+    ${keywords.map(k => `CASE WHEN dong LIKE '%${k}%' THEN 5 ELSE 0 END`).join(' + ')} +
+    ${keywords.map(k => `CASE WHEN jibun_addr LIKE '%${k}%' THEN 3 ELSE 0 END`).join(' + ')} +
+    ${keywords.map(k => `CASE WHEN doro_addr LIKE '%${k}%' THEN 3 ELSE 0 END`).join(' + ')}
+  `.trim();
+
+  return `ORDER BY (${scoreCalculation}) DESC, apart_name ASC`;
+};
 
 export const getApartmentsByName = async (
   apartName: string
@@ -34,8 +52,16 @@ export const getApartmentsByName = async (
       return [];
     }
 
-    const likeConditions = keywords.map(() => 'apart_name LIKE ?').join(' AND ');
-    const likeParams = keywords.map(keyword => `%${keyword}%`);
+    const likeConditions = keywords
+      .map(() => '(apart_name LIKE ? OR dong LIKE ? OR jibun_addr LIKE ? OR doro_addr LIKE ?)')
+      .join(' AND ');
+
+    const likeParams: string[] = [];
+    keywords.forEach(keyword => {
+      likeParams.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
+    });
+
+    const orderByClause = buildOrderByClause(keywords);
 
     const rows = await query<ApartmentRow[]>(
       `SELECT
@@ -44,10 +70,12 @@ export const getApartmentsByName = async (
         total_household_count,
         completion_year,
         region_code,
-        dong
+        dong,
+        jibun_addr,
+        doro_addr
        FROM apartments
        WHERE ${likeConditions}
-       ORDER BY apart_name
+       ${orderByClause}
        LIMIT 15`,
       likeParams
     );

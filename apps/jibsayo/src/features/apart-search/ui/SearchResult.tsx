@@ -91,9 +91,47 @@ export function SearchResult({
                   </button>
                 </div>
                 <div className="text-sm text-gray-500">
-                  {getCityNameWithRegionCode(item.regionCode)}{' '}
-                  {getRegionNameWithRegionCode(item.regionCode)} {item.dong} ·{' '}
-                  {item.completionYear}년식
+                  <span>
+                    {calculateHighlightSegments(
+                      getCityNameWithRegionCode(item.regionCode),
+                      apartName
+                    ).map((segment, idx) =>
+                      segment.highlighted ? (
+                        <span key={idx} className="text-primary">
+                          {segment.text}
+                        </span>
+                      ) : (
+                        <span key={idx}>{segment.text}</span>
+                      )
+                    )}
+                  </span>{' '}
+                  <span>
+                    {calculateHighlightSegments(
+                      getRegionNameWithRegionCode(item.regionCode),
+                      apartName
+                    ).map((segment, idx) =>
+                      segment.highlighted ? (
+                        <span key={idx} className="text-primary">
+                          {segment.text}
+                        </span>
+                      ) : (
+                        <span key={idx}>{segment.text}</span>
+                      )
+                    )}
+                  </span>{' '}
+                  <span>
+                    {calculateHighlightSegments(item.dong, apartName).map(
+                      (segment, idx) =>
+                        segment.highlighted ? (
+                          <span key={idx} className="text-primary">
+                            {segment.text}
+                          </span>
+                        ) : (
+                          <span key={idx}>{segment.text}</span>
+                        )
+                    )}
+                  </span>{' '}
+                  · {item.completionYear}년식
                   {!!item.householdCount &&
                     ` · ${formatNumber(item.householdCount)}세대`}
                 </div>
