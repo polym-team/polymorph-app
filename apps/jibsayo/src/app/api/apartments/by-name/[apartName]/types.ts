@@ -2,7 +2,7 @@ export interface ApartmentListItem {
   id: number;
   apartName: string;
   householdCount: number | null;
-  completionYear: number;
+  completionYear: number | null;
   regionCode: string;
   dong: string;
 }

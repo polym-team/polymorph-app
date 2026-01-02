@@ -1,7 +1,6 @@
 'use client';
 
 import { SearchedApartmentItem } from '@/entities/apart';
-import { useMonthlyTransactionsByAparts } from '@/entities/transaction';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
 import { useEffect, useState } from 'react';
@@ -39,15 +38,11 @@ export function CompareChart({
 }: Props) {
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodValue>(60);
 
-  const { svgRef, isLoading, legendData } = useCompareChart({
+  const { svgRef, isLoading, legendData, data } = useCompareChart({
     selectedApartIds,
     selectedPeriod,
     selectedSizesByApart,
-  });
-
-  const { data, isLoading: isLoadingSizes } = useMonthlyTransactionsByAparts({
-    apartIds: selectedApartIds,
-    period: selectedPeriod || undefined,
+    availableSizesByApart,
   });
 
   useEffect(() => {
@@ -68,15 +63,17 @@ export function CompareChart({
 
     setAvailableSizesByApart(newAvailableSizes);
 
-    setSelectedSizesByApart(prev => {
-      const merged = new Map(prev);
-      newSelectedSizes.forEach((sizes, apartId) => {
-        if (!merged.has(apartId)) {
-          merged.set(apartId, sizes);
-        }
+    if (newSelectedSizes.size > 0) {
+      setSelectedSizesByApart(prev => {
+        const merged = new Map(prev);
+        newSelectedSizes.forEach((sizes, apartId) => {
+          if (!merged.has(apartId)) {
+            merged.set(apartId, sizes);
+          }
+        });
+        return merged;
       });
-      return merged;
-    });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
@@ -91,7 +88,7 @@ export function CompareChart({
         selectedAparts={selectedAparts}
         availableSizesByApart={availableSizesByApart}
         selectedSizesByApart={selectedSizesByApart}
-        isLoadingSizes={isLoadingSizes}
+        isLoadingSizes={isLoading}
         onRemoveApartId={onRemoveApartId}
         onToggleSize={onToggleSize}
       />

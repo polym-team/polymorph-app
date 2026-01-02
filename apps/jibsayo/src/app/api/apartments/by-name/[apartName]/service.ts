@@ -7,7 +7,7 @@ interface ApartmentRow {
   id: number;
   apart_name: string;
   total_household_count: number | null;
-  completion_year: number;
+  completion_year: number | null;
   region_code: string;
   dong: string;
   jibun_addr: string;

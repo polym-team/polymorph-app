@@ -90,6 +90,9 @@ export const getMonthlyTransactionsByApartIds = async ({
       SELECT
         t.apart_id,
         a.apart_name,
+        a.total_household_count,
+        a.completion_year,
+        a.dong,
         DATE_FORMAT(t.deal_date, '%Y%m') as month,
         t.deal_date,
         t.deal_amount,
@@ -106,6 +109,9 @@ export const getMonthlyTransactionsByApartIds = async ({
     SELECT
       apart_id as apartId,
       apart_name as apartName,
+      total_household_count as householdCount,
+      completion_year as completionYear,
+      dong,
       month,
       COUNT(*) as count,
       AVG(deal_amount) as averageAmount,
@@ -114,7 +120,7 @@ export const getMonthlyTransactionsByApartIds = async ({
       MAX(CASE WHEN rn = 1 THEN floor END) as latestFloor,
       MAX(CASE WHEN rn = 1 THEN exclusive_area END) as latestSize
     FROM ranked
-    GROUP BY apart_id, apart_name, month
+    GROUP BY apart_id, apart_name, total_household_count, completion_year, dong, month
     ORDER BY month DESC, apart_id ASC
   `;
 

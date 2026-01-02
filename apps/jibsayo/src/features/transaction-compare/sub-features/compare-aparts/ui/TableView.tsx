@@ -16,9 +16,10 @@ import { CompareApartData } from '../types';
 
 interface TableViewProps {
   items: CompareApartData[];
+  loading?: boolean;
 }
 
-export function TableView({ items }: TableViewProps) {
+export function TableView({ items, loading = false }: TableViewProps) {
   const router = useRouter();
 
   const handleRowClick = (row: CompareApartData) => {
@@ -45,16 +46,31 @@ export function TableView({ items }: TableViewProps) {
       {
         accessorKey: 'householdCount',
         header: '세대수',
-        cell: ({ row }) =>
-          row.original.householdCount
+        cell: ({ row }) => {
+          if (loading && !row.original.householdCount) {
+            return (
+              <div className="h-5 w-20 animate-pulse rounded bg-gray-200" />
+            );
+          }
+          return row.original.householdCount
             ? `${formatNumber(row.original.householdCount)}세대`
-            : '-',
+            : '-';
+        },
         size: 120,
       },
       {
         accessorKey: 'completionYear',
         header: '연식',
-        cell: ({ row }) => `${row.original.completionYear}년식`,
+        cell: ({ row }) => {
+          if (loading && !row.original.completionYear) {
+            return (
+              <div className="h-5 w-20 animate-pulse rounded bg-gray-200" />
+            );
+          }
+          return row.original.completionYear
+            ? `${row.original.completionYear}년식`
+            : '-';
+        },
         size: 120,
       },
       {
@@ -92,7 +108,7 @@ export function TableView({ items }: TableViewProps) {
         size: Infinity,
       },
     ],
-    []
+    [loading]
   );
 
   return (

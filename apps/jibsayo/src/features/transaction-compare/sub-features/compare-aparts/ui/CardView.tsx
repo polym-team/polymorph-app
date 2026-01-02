@@ -16,9 +16,10 @@ import { CompareApartData } from '../types';
 
 interface CardViewProps {
   items: CompareApartData[];
+  loading?: boolean;
 }
 
-export function CardView({ items }: CardViewProps) {
+export function CardView({ items, loading = false }: CardViewProps) {
   const router = useRouter();
 
   const handleCardClick = (apartId: number) => {
@@ -40,14 +41,22 @@ export function CardView({ items }: CardViewProps) {
                 <span className="text-sm text-gray-600">{item.region}</span>
               </div>
               <div className="flex gap-x-1">
-                {item.householdCount && (
-                  <span className="text-sm text-gray-600">
-                    {formatNumber(item.householdCount)}세대 ·
-                  </span>
+                {loading && !item.householdCount && !item.completionYear ? (
+                  <div className="h-5 w-24 animate-pulse rounded bg-gray-200" />
+                ) : (
+                  <>
+                    {item.householdCount && (
+                      <span className="text-sm text-gray-600">
+                        {formatNumber(item.householdCount)}세대 ·
+                      </span>
+                    )}
+                    {item.completionYear && (
+                      <span className="text-sm text-gray-600">
+                        {item.completionYear}년식
+                      </span>
+                    )}
+                  </>
                 )}
-                <span className="text-sm text-gray-600">
-                  {item.completionYear}년식
-                </span>
               </div>
             </div>
             {item.recentTransaction && (

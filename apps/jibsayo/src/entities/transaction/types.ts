@@ -63,6 +63,9 @@ export interface MonthlyTransaction {
 export interface ApartTransactionSummary {
   apartId: number;
   apartName: string;
+  householdCount: number | null;
+  completionYear: number | null;
+  dong: string | null;
   availableSizes: [number, number][];
   recentTransaction: RecentTransaction | null;
   transactions: MonthlyTransaction[];

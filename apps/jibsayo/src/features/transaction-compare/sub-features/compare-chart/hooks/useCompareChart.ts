@@ -11,21 +11,41 @@ interface Props {
   selectedApartIds: number[];
   selectedPeriod: PeriodValue;
   selectedSizesByApart: Map<number, [number, number][]>;
+  availableSizesByApart: Map<number, [number, number][]>;
 }
 
 interface Return {
   svgRef: React.RefObject<SVGSVGElement>;
   isLoading: boolean;
   legendData: ChartLegendItem[];
+  data: ReturnType<typeof useMonthlyTransactionsByAparts>['data'];
 }
 
 export const useCompareChart = ({
   selectedApartIds,
   selectedPeriod,
   selectedSizesByApart,
+  availableSizesByApart,
 }: Props): Return => {
   const sizesByApartRecord = useMemo(() => {
     if (selectedSizesByApart.size === 0) return undefined;
+
+    // 모든 평형이 선택되었는지 확인
+    let allSizesSelected = true;
+    for (const apartId of selectedApartIds) {
+      const availableSizes = availableSizesByApart.get(apartId) || [];
+      const selectedSizes = selectedSizesByApart.get(apartId) || [];
+
+      if (availableSizes.length !== selectedSizes.length) {
+        allSizesSelected = false;
+        break;
+      }
+    }
+
+    // 모든 평형이 선택된 경우 sizes를 전달하지 않음 (전체 데이터 조회)
+    if (allSizesSelected) {
+      return undefined;
+    }
 
     const record: Record<number, [number, number][]> = {};
     selectedSizesByApart.forEach((sizes, apartId) => {
@@ -33,7 +53,7 @@ export const useCompareChart = ({
     });
 
     return record;
-  }, [selectedSizesByApart]);
+  }, [selectedSizesByApart, availableSizesByApart, selectedApartIds]);
 
   const { isFetching, data } = useMonthlyTransactionsByAparts({
     apartIds: selectedApartIds,
@@ -52,5 +72,5 @@ export const useCompareChart = ({
     height: CHART_HEIGHT,
   });
 
-  return { svgRef, isLoading: isLoading || isFetching, legendData };
+  return { svgRef, isLoading: isLoading || isFetching, legendData, data };
 };

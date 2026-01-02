@@ -12,6 +12,9 @@ export const convertToMonthlyTransactionsByIds = (
     number,
     {
       apartName: string;
+      householdCount: number | null;
+      completionYear: number | null;
+      dong: string | null;
       rows: DbMonthlyTransactionByIdsRow[];
     }
   >();
@@ -20,6 +23,9 @@ export const convertToMonthlyTransactionsByIds = (
     if (!apartMap.has(row.apartId)) {
       apartMap.set(row.apartId, {
         apartName: row.apartName,
+        householdCount: row.householdCount,
+        completionYear: row.completionYear,
+        dong: row.dong,
         rows: [],
       });
     }
@@ -59,6 +65,9 @@ export const convertToMonthlyTransactionsByIds = (
       return {
         apartId,
         apartName: data.apartName,
+        householdCount: data.householdCount,
+        completionYear: data.completionYear,
+        dong: data.dong,
         availableSizes: availableSizesMap.get(apartId) || [],
         recentTransaction,
         transactions,

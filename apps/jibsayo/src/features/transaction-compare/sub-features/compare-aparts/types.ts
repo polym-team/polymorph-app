@@ -5,6 +5,6 @@ export interface CompareApartData {
   apartName: string;
   region: string;
   householdCount: number | null;
-  completionYear: number;
+  completionYear: number | null;
   recentTransaction: RecentTransaction | null;
 }

@@ -2,25 +2,25 @@
 
 import { SearchedApartmentItem } from '@/entities/apart';
 
-import { useCompareAparts } from './useCompareAparts';
 import { CardView } from './ui/CardView';
 import { TableView } from './ui/TableView';
+import { useCompareAparts } from './useCompareAparts';
 
 interface CompareApartsProps {
   selectedApartIds: number[];
-  selectedSizesByApart: Map<number, [number, number][]>;
   items: SearchedApartmentItem[];
+  selectedPeriod: number;
 }
 
 export function CompareAparts({
   selectedApartIds,
-  selectedSizesByApart,
   items,
+  selectedPeriod,
 }: CompareApartsProps) {
-  const { convertedItems, selectedItems } = useCompareAparts({
+  const { convertedItems, selectedItems, isFetching } = useCompareAparts({
     selectedApartIds,
-    selectedSizesByApart,
     items,
+    selectedPeriod,
   });
 
   if (selectedItems.length === 0) return null;
@@ -29,12 +29,12 @@ export function CompareAparts({
     <>
       {/* 모바일 카드 뷰 */}
       <div className="lg:hidden">
-        <CardView items={convertedItems} />
+        <CardView items={convertedItems} loading={isFetching} />
       </div>
 
       {/* 데스크톱 테이블 뷰 */}
       <div className="hidden lg:block">
-        <TableView items={convertedItems} />
+        <TableView items={convertedItems} loading={isFetching} />
       </div>
     </>
   );

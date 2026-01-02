@@ -11,30 +11,18 @@ import { CompareApartData } from './types';
 
 interface UseCompareApartsParams {
   selectedApartIds: number[];
-  selectedSizesByApart: Map<number, [number, number][]>;
   items: SearchedApartmentItem[];
+  selectedPeriod: number;
 }
 
 export function useCompareAparts({
   selectedApartIds,
-  selectedSizesByApart,
   items,
+  selectedPeriod,
 }: UseCompareApartsParams) {
-  const sizesByApartRecord = useMemo(() => {
-    if (selectedSizesByApart.size === 0) return undefined;
-
-    const record: Record<number, [number, number][]> = {};
-    selectedSizesByApart.forEach((sizes, apartId) => {
-      record[apartId] = sizes;
-    });
-
-    return record;
-  }, [selectedSizesByApart]);
-
-  const { data } = useMonthlyTransactionsByAparts({
+  const { data, isFetching } = useMonthlyTransactionsByAparts({
     apartIds: selectedApartIds,
-    period: 12,
-    sizesByApart: sizesByApartRecord,
+    period: selectedPeriod,
   });
 
   const selectedItems = items.filter(item =>
@@ -47,13 +35,13 @@ export function useCompareAparts({
       return {
         id: item.id,
         apartName: item.apartName,
-        region: `${getCityNameWithRegionCode(item.regionCode)} ${getRegionNameWithRegionCode(item.regionCode)} ${item.dong}`,
-        householdCount: item.householdCount,
-        completionYear: item.completionYear,
+        region: `${getCityNameWithRegionCode(item.regionCode)} ${getRegionNameWithRegionCode(item.regionCode)} ${apartData?.dong || item.dong}`,
+        householdCount: apartData?.householdCount ?? item.householdCount,
+        completionYear: apartData?.completionYear ?? item.completionYear,
         recentTransaction: apartData?.recentTransaction || null,
       };
     });
   }, [selectedItems, data]);
 
-  return { convertedItems, selectedItems };
+  return { convertedItems, selectedItems, isFetching };
 }

@@ -98,9 +98,21 @@ export function CompareChartLegend({
                     </div>
                   ) : (
                     isLoadingSizes && (
-                      <div className="flex items-center">
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
-                      </div>
+                      <>
+                        {/* 모바일: 스켈레톤 */}
+                        <div className="flex flex-wrap gap-1 lg:hidden">
+                          {[1, 2].map(i => (
+                            <div
+                              key={i}
+                              className="h-[30px] w-[60px] animate-pulse rounded bg-gray-200"
+                            />
+                          ))}
+                        </div>
+                        {/* 데스크톱: 로딩 스피너 */}
+                        <div className="hidden h-[33.5px] items-center lg:flex">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+                        </div>
+                      </>
                     )
                   )}
                 </div>
