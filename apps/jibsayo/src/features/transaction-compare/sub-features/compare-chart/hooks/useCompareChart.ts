@@ -31,6 +31,16 @@ export const useCompareChart = ({
   const sizesByApartRecord = useMemo(() => {
     if (selectedSizesByApart.size === 0) return undefined;
 
+    // 모든 아파트의 availableSizes가 로드되었는지 확인
+    const allApartsHaveAvailableSizes = selectedApartIds.every(apartId =>
+      availableSizesByApart.has(apartId)
+    );
+
+    // availableSizes가 로드되지 않은 아파트가 있으면 sizes 필터링 없이 조회
+    if (!allApartsHaveAvailableSizes) {
+      return undefined;
+    }
+
     // 모든 평형이 선택되었는지 확인
     let allSizesSelected = true;
     for (const apartId of selectedApartIds) {
