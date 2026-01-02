@@ -9,14 +9,13 @@ import {
   formatSizeText,
 } from '@/shared/utils/formatter';
 
-import { ArrowDown, ArrowUp, Star } from 'lucide-react';
-
 import { Button, Card } from '@package/ui';
-import { cn } from '@package/utils';
 
 import { TRANSACTION_LIST_PAGE_SIZE } from '../../../consts';
 import { TransactionItemViewModel } from '../../../types';
 import { calculateTransactionDetailInfo } from '../services';
+import { FavoriteButton } from './FavoriteButton';
+import { PriceLabel } from './PriceLabel';
 
 interface CardViewProps {
   isFetching: boolean;
@@ -44,31 +43,32 @@ export function CardView({
           Array.from({ length: TRANSACTION_LIST_PAGE_SIZE }).map((_, index) => (
             <Card key={index}>
               <Card.Content className="pb-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex flex-col gap-y-0.5">
-                    <div className="flex items-center gap-2">
+                <div className="flex flex-col">
+                  <div className="flex items-center">
+                    <div className="flex min-w-0 flex-1 items-center gap-x-1.5">
                       <div className="h-5 w-32 animate-pulse rounded bg-gray-200"></div>
                       <div className="h-[18px] w-[18px] animate-pulse rounded-full bg-gray-200"></div>
                     </div>
-                    <div className="h-4 w-24 animate-pulse rounded bg-gray-200"></div>
-                  </div>
-                  <div className="flex flex-col items-end gap-y-0.5">
-                    <div className="h-5 w-20 animate-pulse rounded bg-gray-200"></div>
-                    <div className="flex gap-x-2">
-                      <div className="h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                      <div className="h-4 w-12 animate-pulse rounded bg-gray-200"></div>
+                    <div className="w-24 text-right">
+                      <div className="ml-auto h-5 w-20 animate-pulse rounded bg-gray-200"></div>
                     </div>
                   </div>
-                </div>
-              </Card.Content>
-              <hr className="border-gray-100" />
-              <Card.Content className="py-2 pl-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-x-1">
-                    <div className="h-6 w-12 animate-pulse rounded bg-gray-200"></div>
-                    <div className="h-6 w-24 animate-pulse rounded bg-gray-200"></div>
+                  <div className="mt-0.5 flex items-center justify-between">
+                    <div className="w-40">
+                      <div className="h-4 w-32 animate-pulse rounded bg-gray-200"></div>
+                    </div>
+                    <div className="flex flex-1 justify-end gap-x-2">
+                      <div className="h-4 w-16 animate-pulse rounded bg-gray-200"></div>
+                      <div className="h-4 w-20 animate-pulse rounded bg-gray-200"></div>
+                    </div>
                   </div>
-                  <div className="h-4 w-16 animate-pulse rounded bg-gray-200"></div>
+                  <div className="mt-3 flex items-center justify-between">
+                    <div className="flex gap-x-1">
+                      <div className="h-6 w-12 animate-pulse rounded bg-gray-200"></div>
+                      <div className="h-6 w-24 animate-pulse rounded bg-gray-200"></div>
+                    </div>
+                    <div className="h-4 w-16 animate-pulse rounded bg-gray-200"></div>
+                  </div>
                 </div>
               </Card.Content>
             </Card>
@@ -83,38 +83,33 @@ export function CardView({
             >
               <Card.Content className="pb-3">
                 <div className="flex flex-col">
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-x-5">
                     <div className="relative flex min-w-0 flex-1 items-center gap-x-1.5">
                       {item.isNewTransaction && (
                         <span>
                           <NewTransactionIcon />
                         </span>
                       )}
-                      <span className="truncate font-semibold leading-5">
+                      <span className="truncate font-semibold">
                         {item.apartName}
                       </span>
-                      {item.apartId && (
-                        <button
-                          type="button"
-                          className="flex-shrink-0 -translate-y-[0.5px]"
-                          onClick={e => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            onFavoriteToggle(item);
-                          }}
-                        >
-                          <Star
-                            size={18}
-                            className={cn(
-                              item.isFavorite &&
-                                'fill-yellow-400 text-yellow-400',
-                              !item.isFavorite && 'fill-gray-300 text-gray-300'
-                            )}
-                          />
-                        </button>
-                      )}
+                      <span className="-translate-y-[1px]">
+                        <FavoriteButton
+                          active={item.isFavorite}
+                          onClick={() => onFavoriteToggle(item)}
+                        />
+                      </span>
                     </div>
-                    <div className="w-24 text-right">
+                    <div className="flex items-center justify-end gap-x-1.5">
+                      {!!item.highestTransaction &&
+                        item.dealAmount >
+                          item.highestTransaction.dealAmount && (
+                          <span className="-translate-y-[1px]">
+                            <PriceLabel className="bg-red-600 text-white">
+                              신고가
+                            </PriceLabel>
+                          </span>
+                        )}
                       <span className="text-primary whitespace-nowrap font-bold">
                         {formatKoreanAmountText(item.dealAmount)}
                       </span>
@@ -127,26 +122,33 @@ export function CardView({
                       </span>
                     </div>
                     {item.highestTransaction && item.lowestTransaction && (
-                      <div className="flex flex-1 flex-wrap justify-end gap-x-2">
-                        <span
-                          className="flex items-center gap-x-[1px] text-sm text-red-600"
+                      <div className="flex flex-1 flex-wrap justify-end gap-x-2 gap-y-1">
+                        <div
+                          className="flex items-center gap-x-1"
                           onClick={e => e.stopPropagation()}
                         >
-                          <ArrowUp size={16} />
-                          {formatKoreanAmountText(
-                            item.highestTransaction.dealAmount
-                          ).replace('원', '')}
-                        </span>
-                        <span
-                          className="flex items-center gap-x-[1px] text-sm text-blue-600"
+                          <PriceLabel className="bg-red-100 text-red-600">
+                            최고
+                          </PriceLabel>
+                          <span className="text-sm text-red-600">
+                            {formatKoreanAmountText(
+                              item.highestTransaction.dealAmount
+                            ).replace('원', '')}
+                          </span>
+                        </div>
+                        <div
+                          className="flex items-center gap-x-1"
                           onClick={e => e.stopPropagation()}
                         >
-                          <ArrowDown size={16} />
-                          {formatKoreanAmountText(
-                            item.lowestTransaction.dealAmount
-                          ).replace('원', '')}{' '}
-                          (최근 5년)
-                        </span>
+                          <PriceLabel className="bg-blue-100 text-blue-600">
+                            5년 최저
+                          </PriceLabel>
+                          <span className="text-sm text-blue-600">
+                            {formatKoreanAmountText(
+                              item.lowestTransaction.dealAmount
+                            ).replace('원', '')}
+                          </span>
+                        </div>
                       </div>
                     )}
                   </div>

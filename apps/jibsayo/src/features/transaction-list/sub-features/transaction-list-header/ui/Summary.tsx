@@ -20,7 +20,7 @@ export function Summary({
           {cityName} {regionName}
         </strong>
       </div>
-      {totalCount > 0 && averageAmount > 0 && (
+      {totalCount > 0 && averageAmount > 0 ? (
         <div>
           <span className="text-sm text-gray-500 lg:text-base">
             총{' '}
@@ -34,6 +34,8 @@ export function Summary({
             </span>
           </span>
         </div>
+      ) : (
+        <div className="h-6" />
       )}
     </div>
   );
