@@ -9,7 +9,6 @@ import {
   formatSizeText,
 } from '@/shared/utils/formatter';
 
-import { ArrowDown, ArrowUp, Star } from 'lucide-react';
 import { useMemo } from 'react';
 
 import {
@@ -21,10 +20,12 @@ import {
   HoverCardTrigger,
   SortingState as OriginSortingState,
 } from '@package/ui';
-import { cn } from '@package/utils';
 
 import { TRANSACTION_LIST_PAGE_SIZE } from '../../../consts';
 import { Sorting, TransactionItemViewModel } from '../../../types';
+import { FavoriteButton } from './FavoriteButton';
+import { PriceLabel } from './PriceLabel';
+import { PriceTooltip } from './PriceTooltip';
 
 interface TableViewProps {
   isFetching: boolean;
@@ -51,38 +52,6 @@ export function TableView({
 }: TableViewProps) {
   const columns: ColumnDef<TransactionItemViewModel>[] = useMemo(
     () => [
-      {
-        size: 50,
-        accessorKey: 'favorite',
-        header: () => <></>,
-        cell: ({ row }) => {
-          if (isFetching) {
-            return (
-              <div className="py-2">
-                <div className="h-4 w-4 animate-pulse rounded-full bg-gray-200" />
-              </div>
-            );
-          }
-          return row.original.apartId ? (
-            <button
-              className="flex items-center"
-              onClick={e => {
-                e.stopPropagation();
-                e.preventDefault();
-                onFavoriteToggle(row.original);
-              }}
-            >
-              <Star
-                className={cn(
-                  'h-[16px] w-[16px]',
-                  row.original.isFavorite && 'fill-yellow-400 text-yellow-400',
-                  !row.original.isFavorite && 'fill-gray-300 text-gray-300'
-                )}
-              />
-            </button>
-          ) : null;
-        },
-      },
       {
         size: 100,
         accessorKey: 'dealDate',
@@ -149,8 +118,16 @@ export function TableView({
             );
           }
           return (
-            <div className="flex flex-col gap-y-1">
-              <span className="font-semibold">{row.original.apartName}</span>
+            <div className="flex flex-col gap-y-1 pr-5">
+              <div className="flex items-center gap-x-2">
+                <span className="min-w-0 truncate font-semibold">
+                  {row.original.apartName}
+                </span>
+                <FavoriteButton
+                  active={row.original.isFavorite}
+                  onClick={() => onFavoriteToggle(row.original)}
+                />
+              </div>
               {row.original.householdCount || row.original.completionYear ? (
                 <span className="-translate-y-[1px] text-sm text-gray-500">
                   {!!row.original.householdCount &&
@@ -217,7 +194,7 @@ export function TableView({
         },
       },
       {
-        size: 170,
+        size: 160,
         accessorKey: 'dealAmount',
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="거래가격" />
@@ -227,131 +204,82 @@ export function TableView({
             return (
               <div className="flex flex-col items-end gap-y-3">
                 <div className="h-5 w-20 animate-pulse rounded bg-gray-200" />
-                <div className="flex items-center gap-x-1">
-                  <div className="h-4 w-12 animate-pulse rounded bg-gray-200" />
-                  <div className="h-4 w-12 animate-pulse rounded bg-gray-200" />
+                <div className="flex items-center gap-x-2">
+                  <div className="h-5 w-16 animate-pulse rounded bg-gray-200" />
+                  <div className="h-5 w-16 animate-pulse rounded bg-gray-200" />
                 </div>
               </div>
             );
           }
           return (
-            <div className="flex flex-col items-end gap-y-1">
-              <span className="text-primary text-base font-bold">
-                {formatKoreanAmountText(row.original.dealAmount)}
-              </span>
+            <div className="flex flex-col gap-y-2">
+              <div className="flex items-center justify-end gap-x-1">
+                {!!row.original.highestTransaction &&
+                  row.original.dealAmount >
+                    row.original.highestTransaction.dealAmount && (
+                    <PriceLabel className="bg-red-600 text-white">
+                      신고가
+                    </PriceLabel>
+                  )}
+                <span className="text-primary text-base font-bold">
+                  {formatKoreanAmountText(row.original.dealAmount)}
+                </span>
+              </div>
               {row.original.highestTransaction &&
                 row.original.lowestTransaction && (
-                  <div className="flex items-center gap-x-1">
+                  <div className="flex justify-end gap-x-2">
                     <HoverCard openDelay={100}>
                       <HoverCardTrigger asChild>
-                        <span
-                          className="flex cursor-pointer items-center gap-x-[1px] text-sm text-red-600"
+                        <div
+                          className="flex cursor-pointer items-center gap-x-0.5"
                           onClick={e => e.stopPropagation()}
                         >
-                          <ArrowUp size={14} />
-                          {formatKoreanAmountText(
-                            row.original.highestTransaction.dealAmount
-                          ).replace('원', '')}
-                        </span>
+                          <PriceLabel className="bg-red-100 text-red-600">
+                            고
+                          </PriceLabel>
+                          <span className="text-sm text-red-600">
+                            {formatKoreanAmountText(
+                              row.original.highestTransaction.dealAmount
+                            ).replace('원', '')}
+                          </span>
+                        </div>
                       </HoverCardTrigger>
                       <HoverCardContent className="w-auto">
-                        <div className="w-32 space-y-2">
-                          <div className="text-left text-sm font-semibold text-red-600">
-                            역대 최고가
-                          </div>
-                          <div className="space-y-1 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">거래가격</span>
-                              <span>
-                                {formatKoreanAmountText(
-                                  row.original.highestTransaction.dealAmount
-                                )}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">거래일</span>
-                              <span>
-                                {formatDealDate(
-                                  row.original.highestTransaction.dealDate
-                                )}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">평형</span>
-                              <span>
-                                {formatPyeongText(
-                                  calculateAreaPyeong(
-                                    row.original.highestTransaction.size
-                                  )
-                                )}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">층</span>
-                              <span>
-                                {formatFloorText(
-                                  row.original.highestTransaction.floor
-                                )}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
+                        <PriceTooltip
+                          variant="highest"
+                          dealAmount={
+                            row.original.highestTransaction.dealAmount
+                          }
+                          dealDate={row.original.highestTransaction.dealDate}
+                          size={row.original.highestTransaction.size}
+                          floor={row.original.highestTransaction.floor}
+                        />
                       </HoverCardContent>
                     </HoverCard>
                     <HoverCard openDelay={100}>
                       <HoverCardTrigger asChild>
-                        <span
-                          className="flex cursor-pointer items-center gap-x-[1px] text-sm text-blue-600"
+                        <div
+                          className="flex cursor-pointer items-center gap-x-1"
                           onClick={e => e.stopPropagation()}
                         >
-                          <ArrowDown size={14} />
-                          {formatKoreanAmountText(
-                            row.original.lowestTransaction.dealAmount
-                          ).replace('원', '')}
-                        </span>
+                          <PriceLabel className="bg-blue-100 text-blue-600">
+                            저
+                          </PriceLabel>
+                          <span className="text-sm text-blue-600">
+                            {formatKoreanAmountText(
+                              row.original.lowestTransaction.dealAmount
+                            ).replace('원', '')}
+                          </span>
+                        </div>
                       </HoverCardTrigger>
                       <HoverCardContent className="w-auto">
-                        <div className="w-32 space-y-2">
-                          <div className="text-left text-sm font-semibold text-blue-600">
-                            최근 5년 최저가
-                          </div>
-                          <div className="space-y-1 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">거래가격</span>
-                              <span>
-                                {formatKoreanAmountText(
-                                  row.original.lowestTransaction.dealAmount
-                                )}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">거래일</span>
-                              <span>
-                                {formatDealDate(
-                                  row.original.lowestTransaction.dealDate
-                                )}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">평형</span>
-                              <span>
-                                {formatPyeongText(
-                                  calculateAreaPyeong(
-                                    row.original.lowestTransaction.size
-                                  )
-                                )}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">층</span>
-                              <span>
-                                {formatFloorText(
-                                  row.original.lowestTransaction.floor
-                                )}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
+                        <PriceTooltip
+                          variant="lowest"
+                          dealAmount={row.original.lowestTransaction.dealAmount}
+                          dealDate={row.original.lowestTransaction.dealDate}
+                          size={row.original.lowestTransaction.size}
+                          floor={row.original.lowestTransaction.floor}
+                        />
                       </HoverCardContent>
                     </HoverCard>
                   </div>

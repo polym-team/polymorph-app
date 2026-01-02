@@ -134,7 +134,8 @@ const fetchTotalCount = async (
 };
 
 const fetchHighestTransactions = async (
-  apartIds: number[]
+  apartIds: number[],
+  excludeTransactionIds: number[]
 ): Promise<
   Map<
     string,
@@ -147,6 +148,11 @@ const fetchHighestTransactions = async (
   >
 > => {
   if (apartIds.length === 0) return new Map();
+
+  const excludeCondition =
+    excludeTransactionIds.length > 0
+      ? `AND t1.id NOT IN (${excludeTransactionIds.map(() => '?').join(',')})`
+      : '';
 
   const sql = `
     SELECT
@@ -164,13 +170,20 @@ const fetchHighestTransactions = async (
       FROM transactions
       WHERE cancellation_type != 'CANCELED'
         AND apart_id IN (${apartIds.map(() => '?').join(',')})
+        ${excludeTransactionIds.length > 0 ? `AND id NOT IN (${excludeTransactionIds.map(() => '?').join(',')})` : ''}
       GROUP BY apart_id, exclusive_area
     ) t2 ON t1.apart_id = t2.apart_id
       AND t1.exclusive_area = t2.exclusive_area
       AND t1.deal_amount = t2.max_amount
     WHERE t1.cancellation_type != 'CANCELED'
+      ${excludeCondition}
     ORDER BY t1.deal_date DESC
   `;
+
+  const sqlParams =
+    excludeTransactionIds.length > 0
+      ? [...apartIds, ...excludeTransactionIds, ...excludeTransactionIds]
+      : apartIds;
 
   const rows = await query<
     Array<{
@@ -180,7 +193,7 @@ const fetchHighestTransactions = async (
       dealDate: string;
       floor: number;
     }>
-  >(sql, apartIds);
+  >(sql, sqlParams);
 
   const map = new Map<
     string,
@@ -203,7 +216,8 @@ const fetchHighestTransactions = async (
 };
 
 const fetchLowestTransactions = async (
-  apartIds: number[]
+  apartIds: number[],
+  excludeTransactionIds: number[]
 ): Promise<
   Map<
     string,
@@ -216,6 +230,11 @@ const fetchLowestTransactions = async (
   >
 > => {
   if (apartIds.length === 0) return new Map();
+
+  const excludeCondition =
+    excludeTransactionIds.length > 0
+      ? `AND t1.id NOT IN (${excludeTransactionIds.map(() => '?').join(',')})`
+      : '';
 
   const sql = `
     SELECT
@@ -234,14 +253,21 @@ const fetchLowestTransactions = async (
       WHERE cancellation_type != 'CANCELED'
         AND deal_date >= DATE_SUB(CURDATE(), INTERVAL 5 YEAR)
         AND apart_id IN (${apartIds.map(() => '?').join(',')})
+        ${excludeTransactionIds.length > 0 ? `AND id NOT IN (${excludeTransactionIds.map(() => '?').join(',')})` : ''}
       GROUP BY apart_id, exclusive_area
     ) t2 ON t1.apart_id = t2.apart_id
       AND t1.exclusive_area = t2.exclusive_area
       AND t1.deal_amount = t2.min_amount
     WHERE t1.cancellation_type != 'CANCELED'
       AND t1.deal_date >= DATE_SUB(CURDATE(), INTERVAL 5 YEAR)
+      ${excludeCondition}
     ORDER BY t1.deal_date DESC
   `;
+
+  const sqlParams =
+    excludeTransactionIds.length > 0
+      ? [...apartIds, ...excludeTransactionIds, ...excludeTransactionIds]
+      : apartIds;
 
   const rows = await query<
     Array<{
@@ -251,7 +277,7 @@ const fetchLowestTransactions = async (
       dealDate: string;
       floor: number;
     }>
-  >(sql, apartIds);
+  >(sql, sqlParams);
 
   const map = new Map<
     string,
@@ -326,10 +352,13 @@ const fetchTransactions = async (
     ),
   ];
 
+  // 현재 조회된 거래 ID 목록 (현재 거래 제외하고 최고/최저 조회하기 위함)
+  const transactionIds = rows.map(row => row.id);
+
   // highest/lowest 정보 별도 조회
   const [highestMap, lowestMap] = await Promise.all([
-    fetchHighestTransactions(apartIds),
-    fetchLowestTransactions(apartIds),
+    fetchHighestTransactions(apartIds, transactionIds),
+    fetchLowestTransactions(apartIds, transactionIds),
   ]);
 
   return rows.map(row => {
