@@ -1,4 +1,5 @@
 import { useMonthlyTransactionsByAparts } from '@/entities/transaction';
+import { useDebounce } from '@/shared/hooks/useDebounce';
 
 import { useMemo } from 'react';
 
@@ -55,10 +56,14 @@ export const useCompareChart = ({
     return record;
   }, [selectedSizesByApart, availableSizesByApart, selectedApartIds]);
 
+  // 파라미터를 debounce 처리 (500ms)
+  const debouncedPeriod = useDebounce(selectedPeriod, 500);
+  const debouncedSizesByApart = useDebounce(sizesByApartRecord, 500);
+
   const { isFetching, data } = useMonthlyTransactionsByAparts({
     apartIds: selectedApartIds,
-    period: selectedPeriod || undefined,
-    sizesByApart: sizesByApartRecord,
+    period: debouncedPeriod || undefined,
+    sizesByApart: debouncedSizesByApart,
   });
 
   const { chartData, legendData, apartStatsMap } = useCompareChartData({

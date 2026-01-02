@@ -4,6 +4,7 @@ import {
   getRegionNameWithRegionCode,
 } from '@/entities/region';
 import { useMonthlyTransactionsByAparts } from '@/entities/transaction';
+import { useDebounce } from '@/shared/hooks/useDebounce';
 
 import { useMemo } from 'react';
 
@@ -20,9 +21,12 @@ export function useCompareAparts({
   items,
   selectedPeriod,
 }: UseCompareApartsParams) {
+  // 파라미터를 debounce 처리 (500ms)
+  const debouncedPeriod = useDebounce(selectedPeriod, 500);
+
   const { data, isFetching } = useMonthlyTransactionsByAparts({
     apartIds: selectedApartIds,
-    period: selectedPeriod,
+    period: debouncedPeriod,
   });
 
   const selectedItems = items.filter(item =>
