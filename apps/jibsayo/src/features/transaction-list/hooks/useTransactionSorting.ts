@@ -1,6 +1,5 @@
 import {
   hasRequiredUrlParams,
-  useTransactionListQuery,
   useTransactionPageSearchParams,
 } from '@/entities/transaction';
 import { STORAGE_KEY } from '@/shared/consts/storageKey';
@@ -10,7 +9,6 @@ import { getItem, setItem } from '@/shared/lib/localStorage';
 import { SortingState } from '../types';
 
 export const useTransactionSorting = (): SortingState => {
-  const { isFetching } = useTransactionListQuery();
   const { searchParams, setSearchParams } = useTransactionPageSearchParams();
 
   const sorting = {
@@ -19,8 +17,6 @@ export const useTransactionSorting = (): SortingState => {
   };
 
   const updateSorting = (newSorting: SortingState['state']) => {
-    if (isFetching) return;
-
     setSearchParams({
       orderBy: newSorting.id,
       orderDirection: newSorting.desc ? 'desc' : 'asc',

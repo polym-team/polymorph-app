@@ -75,10 +75,10 @@ export const useTransactionListQuery = (): UseQueryResult<
     gcTime: 1000 * 60 * 60,
     enabled: hasRequiredUrlParams(searchParams),
     placeholderData: keepPreviousData,
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       const MIN_DELAY = 300;
       const [response] = await Promise.all([
-        fetch(`/api/transactions?${urlSearchParams.toString()}`),
+        fetch(`/api/transactions?${urlSearchParams.toString()}`, { signal }),
         new Promise(resolve => setTimeout(resolve, MIN_DELAY)),
       ]);
 
