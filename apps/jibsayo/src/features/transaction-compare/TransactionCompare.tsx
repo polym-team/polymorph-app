@@ -63,6 +63,8 @@ export function TransactionCompare() {
             selectedApartIds={selectedApartIds}
             items={selectedAparts}
             selectedPeriod={60}
+            selectedSizesByApart={selectedSizesByApart}
+            availableSizesByApart={availableSizesByApart}
           />
         </>
       )}

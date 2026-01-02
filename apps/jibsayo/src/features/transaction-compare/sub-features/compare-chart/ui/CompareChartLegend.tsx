@@ -58,7 +58,9 @@ export function CompareChartLegend({
               style={{ borderColor: item.color }}
             >
               <div className="flex flex-1 flex-col gap-y-1 lg:flex-row lg:items-center lg:justify-between lg:gap-x-3">
-                <span>{item.apartName}</span>
+                <div className="flex items-center gap-x-1.5">
+                  <span>{item.apartName}</span>
+                </div>
                 {availableSizes.length > 0 ? (
                   <div className="flex flex-wrap gap-1">
                     {availableSizes.map(([minSize, maxSize]) => {

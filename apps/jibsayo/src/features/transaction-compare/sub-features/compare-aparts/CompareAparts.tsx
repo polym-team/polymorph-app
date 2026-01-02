@@ -10,17 +10,23 @@ interface CompareApartsProps {
   selectedApartIds: number[];
   items: SearchedApartmentItem[];
   selectedPeriod: number;
+  selectedSizesByApart: Map<number, [number, number][]>;
+  availableSizesByApart: Map<number, [number, number][]>;
 }
 
 export function CompareAparts({
   selectedApartIds,
   items,
   selectedPeriod,
+  selectedSizesByApart,
+  availableSizesByApart,
 }: CompareApartsProps) {
   const { convertedItems, selectedItems, isFetching } = useCompareAparts({
     selectedApartIds,
     items,
     selectedPeriod,
+    selectedSizesByApart,
+    availableSizesByApart,
   });
 
   if (selectedItems.length === 0) return null;

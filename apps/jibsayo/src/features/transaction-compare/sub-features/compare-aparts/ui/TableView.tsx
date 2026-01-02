@@ -38,16 +38,21 @@ export function TableView({ items, loading = false }: TableViewProps) {
       {
         accessorKey: 'region',
         header: '지역',
-        cell: ({ row }) => (
-          <span className="text-gray-600">{row.original.region}</span>
-        ),
+        cell: ({ row }) => {
+          if (loading) {
+            return (
+              <div className="h-5 w-24 animate-pulse rounded bg-gray-200" />
+            );
+          }
+          return <span className="text-gray-600">{row.original.region}</span>;
+        },
         size: 250,
       },
       {
         accessorKey: 'householdCount',
         header: '세대수',
         cell: ({ row }) => {
-          if (loading && !row.original.householdCount) {
+          if (loading) {
             return (
               <div className="h-5 w-20 animate-pulse rounded bg-gray-200" />
             );
@@ -62,7 +67,7 @@ export function TableView({ items, loading = false }: TableViewProps) {
         accessorKey: 'completionYear',
         header: '연식',
         cell: ({ row }) => {
-          if (loading && !row.original.completionYear) {
+          if (loading) {
             return (
               <div className="h-5 w-20 animate-pulse rounded bg-gray-200" />
             );
@@ -78,10 +83,20 @@ export function TableView({ items, loading = false }: TableViewProps) {
         header: '최근 거래',
         cell: ({ row }) => {
           const recentTransaction = row.original.recentTransaction;
+
+          if (loading && !recentTransaction) {
+            return (
+              <div className="flex flex-col items-end gap-y-3">
+                <div className="h-5 w-20 animate-pulse rounded bg-gray-200" />
+                <div className="h-4 w-32 animate-pulse rounded bg-gray-200" />
+              </div>
+            );
+          }
+
           if (!recentTransaction) return null;
 
           return (
-            <div className="flex flex-col items-end gap-y-1">
+            <div className="flex flex-col items-end">
               <div className="flex items-center gap-x-2">
                 <span className="text-primary font-semibold">
                   {formatKoreanAmountText(recentTransaction.dealAmount)}
