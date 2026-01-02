@@ -42,7 +42,7 @@ export function CardView({
         {isFetching &&
           Array.from({ length: TRANSACTION_LIST_PAGE_SIZE }).map((_, index) => (
             <Card key={index}>
-              <Card.Content className="pb-3">
+              <Card.Content>
                 <div className="flex flex-col">
                   <div className="flex items-center">
                     <div className="flex min-w-0 flex-1 items-center gap-x-1.5">
@@ -53,7 +53,7 @@ export function CardView({
                       <div className="ml-auto h-5 w-20 animate-pulse rounded bg-gray-200"></div>
                     </div>
                   </div>
-                  <div className="mt-0.5 flex items-center justify-between">
+                  <div className="mt-3 flex items-center justify-between">
                     <div className="w-40">
                       <div className="h-4 w-32 animate-pulse rounded bg-gray-200"></div>
                     </div>
@@ -62,7 +62,7 @@ export function CardView({
                       <div className="h-4 w-20 animate-pulse rounded bg-gray-200"></div>
                     </div>
                   </div>
-                  <div className="mt-3 flex items-center justify-between">
+                  <div className="mt-4 flex items-center justify-between">
                     <div className="flex gap-x-1">
                       <div className="h-6 w-12 animate-pulse rounded bg-gray-200"></div>
                       <div className="h-6 w-24 animate-pulse rounded bg-gray-200"></div>
