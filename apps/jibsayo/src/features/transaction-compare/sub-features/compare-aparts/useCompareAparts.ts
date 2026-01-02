@@ -34,8 +34,9 @@ export function useCompareAparts({
   );
 
   const convertedItems = useMemo<CompareApartData[]>(() => {
+    const dataArray = Array.isArray(data) ? data : [];
     return selectedItems.map(item => {
-      const apartData = data?.find(apart => apart.apartId === item.id);
+      const apartData = dataArray.find(apart => apart.apartId === item.id);
       return {
         id: item.id,
         apartName: item.apartName,

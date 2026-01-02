@@ -78,7 +78,7 @@ export const useCompareChart = ({
 
   const { chartData, legendData, apartStatsMap } = useCompareChartData({
     selectedApartIds,
-    monthlyData: data || [],
+    monthlyData: Array.isArray(data) ? data : [],
   });
 
   const { svgRef, isLoading } = useCompareChartView({

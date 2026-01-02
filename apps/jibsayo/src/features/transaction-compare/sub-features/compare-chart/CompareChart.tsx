@@ -46,7 +46,7 @@ export function CompareChart({
   });
 
   useEffect(() => {
-    if (!data) return;
+    if (!Array.isArray(data)) return;
 
     const newAvailableSizes = new Map<number, [number, number][]>();
     const newSelectedSizes = new Map<number, [number, number][]>();
