@@ -30,6 +30,7 @@ export const convertToRegionItems = (
           isFavorite: favoriteApartIdsSet.has(item.apartId),
           hasNewTransaction: transactionSummary?.hasNewTransaction ?? false,
           latestTransaction: transactionSummary?.latestTransaction ?? null,
+          newTransaction: transactionSummary?.newTransaction ?? null,
           highestPriceTransaction:
             transactionSummary?.highestPriceTransaction ?? null,
           lowestPriceTransaction:

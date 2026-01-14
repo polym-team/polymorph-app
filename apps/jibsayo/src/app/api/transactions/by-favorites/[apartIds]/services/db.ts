@@ -91,3 +91,26 @@ export const hasNewTransactionByApartId = async (
 
   return (rows[0]?.count || 0) > 0;
 };
+
+export const getNewTransactionByApartId = async (
+  apartId: number
+): Promise<TransactionItem | null> => {
+  const sql = `
+    SELECT
+      id,
+      deal_date as dealDate,
+      exclusive_area as size,
+      floor,
+      deal_amount as dealAmount
+    FROM transactions
+    WHERE apart_id = ?
+      AND DATE(created_at) = CURDATE()
+      AND cancellation_type != 'CANCELED'
+    ORDER BY created_at DESC
+    LIMIT 1
+  `;
+
+  const rows = await query<DbTransactionRow[]>(sql, [apartId]);
+
+  return rows[0] || null;
+};

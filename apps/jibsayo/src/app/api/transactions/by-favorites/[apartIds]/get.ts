@@ -6,6 +6,7 @@ import {
   getHighestPriceTransactionByApartId,
   getLatestTransactionByApartId,
   getLowestPriceTransactionByApartId,
+  getNewTransactionByApartId,
   hasNewTransactionByApartId,
 } from './services/db';
 import {
@@ -43,9 +44,10 @@ export async function GET(
   try {
     const results: ApartmentTransactionSummary[] = await Promise.all(
       apartIds.map(async apartId => {
-        const [latestTransaction, highestPriceTransaction, lowestPriceTransaction, hasNewTransaction] =
+        const [latestTransaction, newTransaction, highestPriceTransaction, lowestPriceTransaction, hasNewTransaction] =
           await Promise.all([
             getLatestTransactionByApartId(apartId),
+            getNewTransactionByApartId(apartId),
             getHighestPriceTransactionByApartId(apartId),
             getLowestPriceTransactionByApartId(apartId),
             hasNewTransactionByApartId(apartId),
@@ -54,6 +56,7 @@ export async function GET(
         return {
           apartId,
           latestTransaction,
+          newTransaction,
           highestPriceTransaction,
           lowestPriceTransaction,
           hasNewTransaction,

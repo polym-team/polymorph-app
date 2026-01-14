@@ -9,6 +9,7 @@ export interface TransactionItem {
 export interface ApartmentTransactionSummary {
   apartId: number;
   latestTransaction: TransactionItem | null;
+  newTransaction: TransactionItem | null;
   highestPriceTransaction: TransactionItem | null;
   lowestPriceTransaction: TransactionItem | null;
   hasNewTransaction: boolean;

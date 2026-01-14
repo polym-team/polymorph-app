@@ -4,6 +4,7 @@ export interface FavoriteApartItemViewModel extends FavoriteApartItem {
   isFavorite: boolean;
   hasNewTransaction: boolean;
   latestTransaction: TransactionItem | null;
+  newTransaction: TransactionItem | null;
   highestPriceTransaction: TransactionItem | null;
   lowestPriceTransaction: TransactionItem | null;
 }

@@ -1,5 +1,4 @@
 import { calculateAreaPyeong } from '@/entities/transaction';
-import { NewTransactionIcon } from '@/shared/ui/NewTransactionIcon';
 import {
   formatDealDate,
   formatFloorText,
@@ -21,15 +20,10 @@ export function ApartItem({ item, onToggle, onClick }: ApartItemProps) {
   return (
     <div
       key={item.apartId}
-      className="flex flex-col items-start gap-1 border-b border-gray-100 bg-white p-3 transition-colors duration-200 last:border-b-0 active:bg-gray-100 md:cursor-pointer md:flex-row md:items-center md:justify-between md:px-5 md:py-4 md:first:rounded-t md:last:rounded-b md:hover:bg-gray-100"
+      className="flex flex-col items-start gap-1 border-b border-gray-100 bg-white p-3 transition-colors duration-200 last:border-b-0 active:bg-gray-100 md:cursor-pointer md:flex-row md:items-center md:justify-between md:pl-5 md:first:rounded-t md:last:rounded-b md:hover:bg-gray-100"
       onClick={() => onClick()}
     >
-      <span className="leading-1 relative flex items-center gap-x-1">
-        {item.hasNewTransaction && (
-          <span>
-            <NewTransactionIcon />
-          </span>
-        )}
+      <span className="leading-1 relative flex items-center gap-x-1 whitespace-nowrap">
         {item.apartName}
         <button
           onClick={e => {
@@ -49,32 +43,44 @@ export function ApartItem({ item, onToggle, onClick }: ApartItemProps) {
           />
         </button>
       </span>
-      <div className="gap-x flex flex-col gap-2 md:flex-row md:gap-x-5">
+      <div className="flex w-full flex-col gap-x-2 gap-y-1 md:flex-row md:flex-wrap md:justify-end md:gap-x-2">
+        {item.newTransaction && (
+          <div className="flex justify-between gap-x-2 rounded-sm bg-red-50 px-1.5 py-1">
+            <span className="rounded-sm px-1.5 py-0.5 text-sm text-red-600">
+              신규 거래
+            </span>
+            <div className="flex items-center gap-x-1 text-sm text-gray-600">
+              <span className="font-semibold">
+                {formatKoreanAmountText(item.newTransaction.dealAmount * 10000)}
+              </span>
+              ·<span>{formatDealDate(item.newTransaction.dealDate)}</span>·
+              <span>
+                {formatPyeongText(
+                  calculateAreaPyeong(item.newTransaction.size)
+                )}
+              </span>
+              ·<span>{formatFloorText(item.newTransaction.floor)}</span>
+            </div>
+          </div>
+        )}
         {item.latestTransaction && (
-          <div className="flex items-center gap-x-2">
-            <span className="bg-primary/5 text-primary rounded-sm px-1.5 py-0.5 text-sm">
+          <div className="flex justify-between gap-x-2 rounded-sm bg-blue-50 px-1.5 py-1">
+            <span className="text-primary rounded-sm px-1.5 py-0.5 text-sm">
               최근 거래
             </span>
-            <div className="flex items-center gap-x-1">
-              <span className="text-sm font-semibold">
+            <div className="flex items-center gap-x-1 text-sm text-gray-600">
+              <span className="font-semibold">
                 {formatKoreanAmountText(
                   item.latestTransaction.dealAmount * 10000
                 )}
               </span>
-              ·
-              <span className="text-sm">
-                {formatDealDate(item.latestTransaction.dealDate)}
-              </span>
-              ·
-              <span className="text-sm">
+              ·<span>{formatDealDate(item.latestTransaction.dealDate)}</span>·
+              <span>
                 {formatPyeongText(
                   calculateAreaPyeong(item.latestTransaction.size)
                 )}
               </span>
-              ·
-              <span className="text-sm">
-                {formatFloorText(item.latestTransaction.floor)}
-              </span>
+              ·<span>{formatFloorText(item.latestTransaction.floor)}</span>
             </div>
           </div>
         )}
