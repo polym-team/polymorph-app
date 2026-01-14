@@ -2,27 +2,37 @@
 
 import { EmptyList } from './ui/EmptyList';
 import { RegionItem } from './ui/RegionItem';
-import { Skeleton } from './ui/Skeleton';
+import { RegionTabs } from './ui/RegionTabs';
 import { useFavoriteApartList } from './useFavoriteApartList';
 
 export function FavoriteApartList() {
-  const { regionItems, toggleFavoriteApart, clickApartItem, isLoading } =
-    useFavoriteApartList();
+  const {
+    regionTabs,
+    selectedRegionCode,
+    regionItems,
+    toggleFavoriteApart,
+    clickApartItem,
+    isApartLoading,
+    setSelectedRegionCode,
+  } = useFavoriteApartList();
 
-  if (isLoading) {
-    return <Skeleton />;
-  }
-
-  if (!regionItems.length) {
+  if (!regionTabs.length) {
     return <EmptyList />;
   }
 
   return (
-    <div className="flex w-full flex-col gap-y-3">
+    <div className="flex w-full flex-col gap-y-3 py-2">
+      <RegionTabs
+        tabs={regionTabs}
+        activeTab={selectedRegionCode}
+        onTabChange={setSelectedRegionCode}
+      />
+
       {regionItems.map(item => (
         <RegionItem
           key={item.code}
           item={item}
+          isLoading={isApartLoading}
           onToggleFavorite={toggleFavoriteApart}
           onClickApart={clickApartItem}
         />

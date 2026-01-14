@@ -13,3 +13,9 @@ export interface RegionItemViewModel {
   name: string;
   apartItems: FavoriteApartItemViewModel[];
 }
+
+export interface RegionTab {
+  code: string;
+  name: string;
+  count: number;
+}
