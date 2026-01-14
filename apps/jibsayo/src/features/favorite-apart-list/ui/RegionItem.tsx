@@ -28,7 +28,7 @@ export function RegionItem({
       </span>
       <div className="mt-2">
         {isLoading ? (
-          <Skeleton />
+          <Skeleton count={item.apartItems.length} />
         ) : (
           <div className="-mx-3 flex flex-col md:mx-0 md:rounded md:border md:border-gray-100">
             {item.apartItems.map(item => (
