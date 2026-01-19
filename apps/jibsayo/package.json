@@ -29,13 +29,17 @@
     "zustand": "5.0.8"
   },
   "devDependencies": {
+    "@package/config": "workspace:*",
     "@testing-library/jest-dom": "6.6.3",
     "@testing-library/react": "14.3.1",
     "@testing-library/user-event": "14.6.1",
     "@types/jest": "29.5.14",
+    "autoprefixer": "10.4.20",
     "dotenv": "^17.2.3",
     "jest": "29.7.0",
     "jest-environment-jsdom": "29.7.0",
+    "postcss": "8.5.1",
+    "tailwindcss": "3.4.17",
     "tsx": "^4.7.0"
   }
 }

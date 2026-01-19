@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PushTokenResponse, UpdatePushTokenRequest } from '../types';
 import {
   findExistingToken,
-  firestoreClient,
+  firestoreClient as getFirestoreClient,
   validateDeviceId,
   validateToken,
 } from '../utils';
@@ -67,7 +67,7 @@ export async function PUT(
     }
 
     // 토큰 업데이트
-    const result = await firestoreClient.updateDocument(
+    const result = await getFirestoreClient().updateDocument(
       existingToken.id!,
       updateData
     );
@@ -124,7 +124,7 @@ export async function DELETE(
     }
 
     // 토큰 삭제
-    const result = await firestoreClient.deleteDocument(existingToken.id!);
+    const result = await getFirestoreClient().deleteDocument(existingToken.id!);
 
     if (result.success) {
       return NextResponse.json(
