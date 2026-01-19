@@ -1,0 +1,54 @@
+name: Deploy App A
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      # jibsayo와 관련된 코드가 바뀔 때만 실행
+      - "apps/jibsayo/**"
+      - "packages/**" # 공통 패키지 변경 시에도 재배포 필요
+      - ".github/workflows/jibsayo-deploy-polymorph-k8s-prd.yaml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+  # [추가] 수동 실행 버튼 활성화
+  workflow_dispatch:
+
+# [추가] 이 부분이 있어야 봇이 git push를 할 수 있습니다!
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # [핵심] 여기서 도커 이미지를 빌드하고 푸시합니다.
+      # 이 단계가 실행될 때 Dockerfile 내부의 'RUN turbo prune...'과 'RUN pnpm build...'가 작동합니다.
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: . # 프로젝트 루트 디렉토리를 컨텍스트로 지정 (중요!)
+          file: apps/jibsayo/Dockerfile # jibsayo의 Dockerfile 경로
+          push: true
+          tags: registry.polymorph.co.kr/jibsayo-nextjs:${{ github.sha }}
+          provenance: false
+          sbom: false
+
+      # polymorph-k8s 저장소의 이미지 태그 업데이트
+      # 나중에 저장소 폴리모프로 다시 옮기면 아래 PAT 는 시크릿으로 뺍니다.
+      - name: Update image tag in polymorph-k8s                                                                                                  
+        run: |                                                                                                                                   
+          git clone https://x-access-token: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@github.com/polym-team/polymorph-k8s.git                            
+          cd polymorph-k8s                                                                                                                     
+                                                                                                                                                
+          git config user.email "github-actions@github.com"                                                                                      
+          git config user.name "GitHub Actions"                                                                                                  
+                                                                                                                                                
+          # jibsayo 디렉토리의 deployment.yaml 이미지 태그 수정                                                                                    
+          sed -i "s|image: registry.polymorph.co.kr/jibsayo-nextjs:.*|image: registry.polymorph.co.kr/jibsayo-nextjs:${{ github.sha }}|g" manifests/jibsayo/deployment.yaml    
+
+          git add manifests/jibsayo/deployment.yaml                                                                                                          
+          git commit -m "chore(jibsayo): update image to ${{ github.sha }}"                                                                        
+          git push

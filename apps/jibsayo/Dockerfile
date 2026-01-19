@@ -1,0 +1,46 @@
+# 1. Base 단계
+FROM node:20-alpine AS base
+RUN apk update && apk add --no-cache libc6-compat
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+
+# 2. 의존성 설치 단계
+FROM base AS deps
+WORKDIR /app
+
+# pnpm fetch는 lockfile만으로 의존성을 다운로드
+COPY pnpm-lock.yaml ./
+RUN pnpm fetch
+
+# 소스 복사 후 오프라인 설치
+COPY . .
+RUN pnpm install --offline --frozen-lockfile
+
+# 3. 빌드 단계
+FROM base AS builder
+WORKDIR /app
+
+COPY --from=deps /app ./
+
+ENV IS_DOCKER_BUILD=true
+RUN pnpm --filter jibsayo build
+
+# 4. 실행 단계
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/apps/jibsayo/.next/standalone ./
+COPY --from=builder /app/apps/jibsayo/.next/static ./apps/jibsayo/.next/static
+COPY --from=builder /app/apps/jibsayo/public ./apps/jibsayo/public
+
+USER nextjs
+
+EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "apps/jibsayo/server.js"]
