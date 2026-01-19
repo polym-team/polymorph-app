@@ -1,4 +1,4 @@
-name: Deploy App A
+name: Deploy jibsayo to Polymorph K8s Production
 
 on:
   push:
