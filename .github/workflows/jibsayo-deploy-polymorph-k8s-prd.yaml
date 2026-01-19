@@ -24,13 +24,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 환경 변수 파일 생성 (GitHub Secrets에서)
-      - name: Create .env file
-        run: |
-          cat << 'EOF' > apps/jibsayo/.env
-          ${{ secrets.JIBSAYO_ENV }}
-          EOF
-
       # [핵심] 여기서 도커 이미지를 빌드하고 푸시합니다.
       # 이 단계가 실행될 때 Dockerfile 내부의 'RUN turbo prune...'과 'RUN pnpm build...'가 작동합니다.
       - name: Build and Push Docker Image
