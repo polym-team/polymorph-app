@@ -7,8 +7,10 @@ RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
 FROM base AS deps
 WORKDIR /app
 
-# pnpm fetch는 lockfile만으로 의존성을 다운로드
-COPY pnpm-lock.yaml ./
+# pnpm workspace 설정 파일들 복사
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
+
+# pnpm fetch로 의존성 다운로드
 RUN pnpm fetch
 
 # 소스 복사 후 오프라인 설치
