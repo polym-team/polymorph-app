@@ -23,7 +23,7 @@ export async function findExistingFavoriteApart(
   deviceId: string
 ): Promise<FavoriteApart | null> {
   try {
-    const documents = await firestoreClient().getDocuments({
+    const documents = await firestoreClient.getDocuments({
       where: [
         { field: 'deviceId', operator: '==', value: deviceId },
         { field: 'apartToken', operator: '==', value: apartToken },

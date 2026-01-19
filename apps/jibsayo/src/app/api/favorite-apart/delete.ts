@@ -56,7 +56,7 @@ export async function DELETE(
     }
 
     // 즐겨찾기 삭제
-    const result = await firestoreClient().deleteDocument(existingFavorite.id);
+    const result = await firestoreClient.deleteDocument(existingFavorite.id);
 
     if (result.success) {
       return NextResponse.json({ success: true }, { status: 200 });

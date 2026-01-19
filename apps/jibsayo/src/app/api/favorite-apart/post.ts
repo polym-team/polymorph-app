@@ -58,7 +58,7 @@ export async function POST(
       apartName,
     });
 
-    const result = await firestoreClient().createDocument(favoriteApartData);
+    const result = await firestoreClient.createDocument(favoriteApartData);
 
     if (result.success) {
       const newFavoriteApart: FavoriteApart = {

@@ -7,7 +7,7 @@ import {
 } from './types';
 import {
   findExistingToken,
-  firestoreClient as getFirestoreClient,
+  firestoreClient,
   mapFirestoreToPushToken,
   mapPushTokenToFirestore,
   validateDeviceId,
@@ -34,7 +34,7 @@ export async function GET(
     }
 
     // 디바이스의 푸시토큰 조회 (문서 ID로 직접 조회)
-    const document = await getFirestoreClient().getDocument(deviceId);
+    const document = await firestoreClient.getDocument(deviceId);
 
     if (document) {
       const token = mapFirestoreToPushToken(document);
@@ -81,7 +81,7 @@ export async function DELETE(
     }
 
     // 토큰 삭제 (문서 ID로 삭제)
-    const result = await getFirestoreClient().deleteDocument(deviceId);
+    const result = await firestoreClient.deleteDocument(deviceId);
 
     if (result.success) {
       return NextResponse.json({ success: true }, { status: 200 });
@@ -143,7 +143,7 @@ export async function POST(
         updatedAt: new Date(),
       };
 
-      const result = await getFirestoreClient().updateDocument(
+      const result = await firestoreClient.updateDocument(
         deviceId, // deviceId를 문서 ID로 사용
         updateData
       );
@@ -180,7 +180,7 @@ export async function POST(
         notificationsEnabled: true,
       });
 
-      const result = await getFirestoreClient().createDocumentWithId(
+      const result = await firestoreClient.createDocumentWithId(
         deviceId, // deviceId를 문서 ID로 사용
         tokenData
       );

@@ -22,7 +22,7 @@ export async function GET(
     }
 
     // 디바이스의 모든 즐겨찾기 아파트 조회
-    const documents = await firestoreClient().getDocuments({
+    const documents = await firestoreClient.getDocuments({
       where: [{ field: 'deviceId', operator: '==', value: deviceId }],
     });
 
