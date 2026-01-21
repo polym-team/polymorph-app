@@ -24,6 +24,7 @@ WORKDIR /app
 COPY --from=deps /app ./
 
 ENV IS_DOCKER_BUILD=true
+RUN pnpm --filter bookmark-share db:generate
 RUN pnpm --filter bookmark-share build
 
 # 4. 실행 단계
