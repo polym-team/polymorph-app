@@ -39,6 +39,10 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/apps/bookmark-share/.next/standalone ./
 COPY --from=builder /app/apps/bookmark-share/.next/static ./apps/bookmark-share/.next/static
 
+# Create cache directory with proper permissions
+RUN mkdir -p /app/apps/bookmark-share/.next/cache
+RUN chown -R nextjs:nodejs /app/apps/bookmark-share/.next
+
 USER nextjs
 
 EXPOSE 3000
