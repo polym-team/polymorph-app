@@ -6,6 +6,7 @@
   "scripts": {
     "scaffolding": "pnpm --filter scaffolding",
     "jibsayo": "pnpm --filter jibsayo",
+    "bookmark-share": "pnpm --filter bookmark-share",
     "prepare": "husky"
   },
   "engines": {
