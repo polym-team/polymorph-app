@@ -1,0 +1,9 @@
+export { Header } from './Header';
+export { HeroSection } from './HeroSection';
+export { ValuesSection } from './ValuesSection';
+export { ServicesSection } from './ServicesSection';
+export { AppsSection } from './AppsSection';
+export { ProjectsSection } from './ProjectsSection';
+export { TeamSection } from './TeamSection';
+export { ContactSection } from './ContactSection';
+export { Footer } from './Footer';
