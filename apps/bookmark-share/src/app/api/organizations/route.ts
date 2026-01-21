@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 
 // GET /api/organizations - List user's organizations
 export async function GET(request: NextRequest) {
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+  const token = await (getToken as any)({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
   if (!token?.githubId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
