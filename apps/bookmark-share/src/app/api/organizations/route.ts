@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 export async function GET(request: NextRequest) {
   const secret = process.env.NEXTAUTH_SECRET;
   console.log('[GET /api/organizations] NEXTAUTH_SECRET exists:', !!secret);
+  console.log('[GET /api/organizations] Cookies:', request.cookies.getAll().map(c => c.name));
 
   const token = await (getToken as any)({ req: request, secret });
   console.log('[GET /api/organizations] Token:', token ? 'found' : 'not found', token?.githubId ? `githubId: ${token.githubId}` : '');
