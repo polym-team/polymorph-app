@@ -1,0 +1,46 @@
+name: Deploy bookmark-share to Polymorph K8s Production
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "apps/bookmark-share/**"
+      - "packages/**"
+      - ".github/workflows/bookmark-share-deploy-polymorph-k8s-prd.yaml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: apps/bookmark-share/Dockerfile
+          push: true
+          tags: registry.polymorph.co.kr/bookmark-share:${{ github.sha }}
+          provenance: false
+          sbom: false
+
+      - name: Update image tag in polymorph-k8s
+        run: |
+          git clone https://x-access-token:${{ secrets.POLYMORPH_GIT_PAT }}@github.com/polym-team/polymorph-k8s.git
+          cd polymorph-k8s
+
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+
+          sed -i "s|image: registry.polymorph.co.kr/bookmark-share:.*|image: registry.polymorph.co.kr/bookmark-share:${{ github.sha }}|g" manifests/bookmark-share/deployment.yaml
+
+          git add manifests/bookmark-share/deployment.yaml
+          git commit -m "chore(bookmark-share): update image to ${{ github.sha }}"
+          git push
