@@ -180,7 +180,27 @@ export default function OnboardingPage() {
 
           {/* Free Resources Grid */}
           <h3 className="font-semibold mb-4 text-center">무료로 제공되는 리소스</h3>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="p-4 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)] text-center">
+              <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-sky-500/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                </svg>
+              </div>
+              <h4 className="font-medium text-sm">Kubernetes</h4>
+              <p className="text-xs text-[var(--color-text-muted)] mt-1">컨테이너 오케스트레이션</p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)] text-center">
+              <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-rose-500/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </div>
+              <h4 className="font-medium text-sm">ArgoCD</h4>
+              <p className="text-xs text-[var(--color-text-muted)] mt-1">GitOps 배포 자동화</p>
+            </div>
+
             <div className="p-4 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)] text-center">
               <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-blue-500/10 flex items-center justify-center">
                 <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
