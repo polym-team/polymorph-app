@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bookmark, FolderOpen, Building2, ChevronDown } from 'lucide-react';
+import { Bookmark, FolderOpen, Building2, ChevronDown, RefreshCw } from 'lucide-react';
 import { cn } from '@package/utils';
 import { useOrg } from '@/lib/OrgContext';
 import type { OrganizationWithRole } from '@/types';
@@ -15,7 +15,7 @@ interface SidebarProps {
 
 export function Sidebar({ selectedOrg, onOrgChange }: SidebarProps) {
   const pathname = usePathname();
-  const { organizations } = useOrg();
+  const { organizations, syncing, syncOrganizations } = useOrg();
 
   const navItems = [
     { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
@@ -59,11 +59,22 @@ export function Sidebar({ selectedOrg, onOrgChange }: SidebarProps) {
           </div>
           <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
         </div>
-        {selectedOrg && (
-          <p className="mt-1 text-xs text-gray-500">
-            Role: <span className="font-medium">{selectedOrg.role}</span>
-          </p>
-        )}
+        <div className="mt-2 flex items-center justify-between">
+          {selectedOrg && (
+            <p className="text-xs text-gray-500">
+              Role: <span className="font-medium">{selectedOrg.role}</span>
+            </p>
+          )}
+          <button
+            onClick={syncOrganizations}
+            disabled={syncing}
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-50"
+            title="Sync organizations from GitHub"
+          >
+            <RefreshCw className={cn('h-3 w-3', syncing && 'animate-spin')} />
+            {syncing ? 'Syncing...' : 'Sync'}
+          </button>
+        </div>
       </div>
 
       {/* Navigation */}
