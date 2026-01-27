@@ -3,10 +3,11 @@ import { getToken } from 'next-auth/jwt';
 import { prisma } from './prisma';
 
 export async function getAuthUser(request: NextRequest) {
+  const isSecure = process.env.NEXTAUTH_URL?.startsWith('https');
   const token = await (getToken as any)({
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
-    secureCookie: true,
+    secureCookie: isSecure,
   });
 
   if (!token?.githubId) {

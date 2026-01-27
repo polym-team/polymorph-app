@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { signIn } from 'next-auth/react';
 import { Bookmark, FolderOpen, Building2, ChevronDown, RefreshCw, Plus } from 'lucide-react';
 import { cn } from '@package/utils';
 import { useOrg } from '@/lib/OrgContext';
@@ -68,9 +67,9 @@ export function Sidebar({ selectedOrg, onOrgChange }: SidebarProps) {
           )}
           <div className="flex items-center gap-1">
             <button
-              onClick={() => signIn('github', { callbackUrl: window.location.pathname })}
+              onClick={() => window.open('/api/auth/reauthorize', '_blank')}
               className="flex items-center gap-1 rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-              title="Add new organization permissions"
+              title="Manage organization permissions on GitHub"
             >
               <Plus className="h-3 w-3" />
               Add

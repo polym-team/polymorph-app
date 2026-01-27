@@ -8,10 +8,11 @@ export async function GET(request: NextRequest) {
   console.log('[GET /api/organizations] NEXTAUTH_SECRET exists:', !!secret);
   console.log('[GET /api/organizations] Cookies:', request.cookies.getAll().map(c => c.name));
 
+  const isSecure = process.env.NEXTAUTH_URL?.startsWith('https');
   const token = await (getToken as any)({
     req: request,
     secret,
-    secureCookie: true,
+    secureCookie: isSecure,
   });
   console.log('[GET /api/organizations] Token:', token ? 'found' : 'not found', token?.githubId ? `githubId: ${token.githubId}` : '');
 
