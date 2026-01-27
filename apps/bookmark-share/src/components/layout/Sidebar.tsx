@@ -3,7 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bookmark, FolderOpen, Building2, ChevronDown, RefreshCw } from 'lucide-react';
+import { signIn } from 'next-auth/react';
+import { Bookmark, FolderOpen, Building2, ChevronDown, RefreshCw, Plus } from 'lucide-react';
 import { cn } from '@package/utils';
 import { useOrg } from '@/lib/OrgContext';
 import type { OrganizationWithRole } from '@/types';
@@ -65,15 +66,25 @@ export function Sidebar({ selectedOrg, onOrgChange }: SidebarProps) {
               Role: <span className="font-medium">{selectedOrg.role}</span>
             </p>
           )}
-          <button
-            onClick={syncOrganizations}
-            disabled={syncing}
-            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-50"
-            title="Sync organizations from GitHub"
-          >
-            <RefreshCw className={cn('h-3 w-3', syncing && 'animate-spin')} />
-            {syncing ? 'Syncing...' : 'Sync'}
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => signIn('github', { callbackUrl: window.location.pathname })}
+              className="flex items-center gap-1 rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+              title="Add new organization permissions"
+            >
+              <Plus className="h-3 w-3" />
+              Add
+            </button>
+            <button
+              onClick={syncOrganizations}
+              disabled={syncing}
+              className="flex items-center gap-1 rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-50"
+              title="Sync organizations from GitHub"
+            >
+              <RefreshCw className={cn('h-3 w-3', syncing && 'animate-spin')} />
+              {syncing ? 'Syncing...' : 'Sync'}
+            </button>
+          </div>
         </div>
       </div>
 
