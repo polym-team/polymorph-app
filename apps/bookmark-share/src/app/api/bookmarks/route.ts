@@ -60,10 +60,10 @@ export async function GET(request: NextRequest) {
 
   if (search) {
     where.OR = [
-      { title: { contains: search, mode: 'insensitive' } },
-      { description: { contains: search, mode: 'insensitive' } },
-      { url: { contains: search, mode: 'insensitive' } },
-      { tags: { has: search } },
+      { title: { contains: search } },
+      { description: { contains: search } },
+      { url: { contains: search } },
+      { tags: { array_contains: search } },
     ];
   }
 
@@ -80,7 +80,11 @@ export async function GET(request: NextRequest) {
   }
 
   if (tags) {
-    where.tags = { hasEvery: tags.split(',') };
+    // MySQL Json doesn't support hasEvery, filter first tag only
+    const tagList = tags.split(',');
+    if (tagList.length > 0) {
+      where.tags = { array_contains: tagList[0] };
+    }
   }
 
   const bookmarks = await prisma.bookmark.findMany({

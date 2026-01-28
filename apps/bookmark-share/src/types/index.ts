@@ -2,7 +2,8 @@ import type { Bookmark, Category, Organization, User, Importance, MemberRole } f
 
 export type { Bookmark, Category, Organization, User, Importance, MemberRole };
 
-export interface BookmarkWithRelations extends Bookmark {
+export interface BookmarkWithRelations extends Omit<Bookmark, 'tags'> {
+  tags: string[];
   category?: Category | null;
   createdBy: User;
   organization: Organization;
