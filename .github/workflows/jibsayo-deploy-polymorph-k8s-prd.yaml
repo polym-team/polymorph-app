@@ -24,6 +24,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: registry.polymorph.co.kr
+          username: ${{ secrets.POLYMORPH_DOCKER_REG_ID }}
+          password: ${{ secrets.POLYMORPH_DOCKER_REG_PW }}
+
       # [핵심] 여기서 도커 이미지를 빌드하고 푸시합니다.
       # 이 단계가 실행될 때 Dockerfile 내부의 'RUN turbo prune...'과 'RUN pnpm build...'가 작동합니다.
       - name: Build and Push Docker Image
