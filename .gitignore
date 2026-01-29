@@ -12,6 +12,7 @@ apps/**/build/
 apps/**/dist/
 
 # Environment variables
+apps/*/.env
 .env.local
 .env.development.local
 .env.test.local
