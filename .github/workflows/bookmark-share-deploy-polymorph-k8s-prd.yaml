@@ -70,3 +70,31 @@ jobs:
           git add manifests/bookmark-share/deployment.yaml
           git commit -m "chore(bookmark-share): update image to ${{ github.sha }}"
           git push
+
+      - name: Notify Slack
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            COLOR="good"
+            STATUS="성공"
+            EMOJI=":white_check_mark:"
+          else
+            COLOR="danger"
+            STATUS="실패"
+            EMOJI=":x:"
+          fi
+
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-type: application/json' \
+            --data '{
+              "attachments": [{
+                "color": "'"$COLOR"'",
+                "title": "'"$EMOJI"' bookmark-share 배포 '"$STATUS"'",
+                "fields": [
+                  { "title": "브랜치", "value": "${{ github.ref_name }}", "short": true },
+                  { "title": "커밋", "value": "`${{ github.sha }}`", "short": true },
+                  { "title": "실행자", "value": "${{ github.actor }}", "short": true },
+                  { "title": "워크플로우", "value": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|상세 보기>", "short": true }
+                ]
+              }]
+            }'
