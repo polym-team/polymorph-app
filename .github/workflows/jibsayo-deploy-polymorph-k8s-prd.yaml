@@ -77,7 +77,20 @@ jobs:
 
           git add manifests/jibsayo/deployment.yaml
           git commit -m "chore(jibsayo): update image to ${{ github.sha }}"
-          git push
+
+          # Retry loop for concurrent push handling
+          max_attempts=5
+          for i in $(seq 1 $max_attempts); do
+            git push && break
+            if [ $i -lt $max_attempts ]; then
+              echo "Push failed, retrying... (attempt $i/$max_attempts)"
+              sleep $((i * 2))
+              git pull --rebase
+            else
+              echo "Push failed after $max_attempts attempts"
+              exit 1
+            fi
+          done
 
       - name: Notify Slack
         if: always()
