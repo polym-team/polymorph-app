@@ -65,7 +65,7 @@ jobs:
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
 
-          sed -i "s|image:.*|image: docker-registry.registry.svc.cluster.local:5000/bookmark-share:${{ github.sha }}|g" manifests/bookmark-share/deployment.yaml
+          sed -i "s|image:.*|image: registry.polymorph.co.kr/bookmark-share:${{ github.sha }}|g" manifests/bookmark-share/deployment.yaml
 
           git add manifests/bookmark-share/deployment.yaml
           git commit -m "chore(bookmark-share): update image to ${{ github.sha }}"

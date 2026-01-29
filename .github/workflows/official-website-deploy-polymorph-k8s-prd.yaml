@@ -51,7 +51,7 @@ jobs:
           git config user.name "GitHub Actions"
 
           # official-website 디렉토리의 deployment.yaml 이미지 태그 수정
-          sed -i "s|image:.*|image: docker-registry.registry.svc.cluster.local:5000/official-website:${{ github.sha }}|g" manifests/official-website/deployment.yaml
+          sed -i "s|image:.*|image: registry.polymorph.co.kr/official-website:${{ github.sha }}|g" manifests/official-website/deployment.yaml
 
           git add manifests/official-website/deployment.yaml
           git commit -m "chore(official-website): update image to ${{ github.sha }}"
