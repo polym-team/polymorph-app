@@ -73,7 +73,7 @@ jobs:
           git config user.name "GitHub Actions"
 
           # jibsayo 디렉토리의 deployment.yaml 이미지 태그 수정
-          sed -i "s|image: registry.polymorph.co.kr/jibsayo-nextjs:.*|image: registry.polymorph.co.kr/jibsayo-nextjs:${{ github.sha }}|g" manifests/jibsayo/deployment.yaml
+          sed -i "s|image:.*|image: docker-registry.registry.svc.cluster.local:5000/jibsayo-nextjs:${{ github.sha }}|g" manifests/jibsayo/deployment.yaml
 
           git add manifests/jibsayo/deployment.yaml
           git commit -m "chore(jibsayo): update image to ${{ github.sha }}"
