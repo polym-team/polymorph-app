@@ -5,6 +5,7 @@
     { "path": "./apps/scaffolding" },
     { "path": "./packages/ui" },
     { "path": "./packages/firebase" },
-    { "path": "./packages/config" }
+    { "path": "./packages/config" },
+    { "path": "./apps/okra" }
   ]
 }

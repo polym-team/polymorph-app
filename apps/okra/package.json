@@ -1,0 +1,31 @@
+{
+  "name": "okra",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3004",
+    "build": "next build",
+    "start": "next start -p 3004",
+    "lint": "next lint",
+    "tsc": "tsc --noEmit",
+    "clean": "rm -rf .next",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down"
+  },
+  "dependencies": {
+    "@package/ui": "workspace:*",
+    "@package/utils": "workspace:*",
+    "@prisma/client": "^6.2.1",
+    "next-auth": "5.0.0-beta.15",
+    "resend": "^6.9.2",
+    "zod": "^3.24.1",
+    "zustand": "5.0.8"
+  },
+  "devDependencies": {
+    "prisma": "^6.2.1"
+  }
+}
