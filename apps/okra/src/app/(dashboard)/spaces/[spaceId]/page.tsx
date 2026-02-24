@@ -4,6 +4,7 @@ import { getServerUser } from '@/shared/lib/server-auth';
 import { prisma } from '@/shared/lib/prisma';
 import { MemberList } from './_components/MemberList';
 import { InvitationSection } from './_components/InvitationSection';
+import { OKRSection } from './_components/OKRSection';
 
 export default async function SpaceDetailPage({
   params,
@@ -59,6 +60,8 @@ export default async function SpaceDetailPage({
       </div>
 
       <div className="mt-8 space-y-8">
+        <OKRSection spaceId={space.id} />
+
         <MemberList members={space.members} />
 
         {isAdmin && (
