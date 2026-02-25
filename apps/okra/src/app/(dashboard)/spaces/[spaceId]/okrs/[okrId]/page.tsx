@@ -4,8 +4,9 @@ import { getServerUser } from '@/shared/lib/server-auth';
 import { prisma } from '@/shared/lib/prisma';
 import { OKRDetailHeader } from './_components/OKRDetailHeader';
 import { OKROwnerSection } from './_components/OKROwnerSection';
-import { OKRIdeasOverview } from './_components/OKRIdeasOverview';
-import { OKRObjectivesOverview } from './_components/OKRObjectivesOverview';
+import { OKRIdeasSection } from './_components/OKRIdeasSection';
+import { OKRObjectivesSection } from './_components/OKRObjectivesSection';
+import type { OKRStatus } from './_components/types';
 
 export default async function OKRDetailPage({
   params,
@@ -95,9 +96,21 @@ export default async function OKRDetailPage({
           spaceMembers={spaceMembers}
         />
 
-        <OKRIdeasOverview ideas={okr.ideas} />
+        <OKRIdeasSection
+          ideas={okr.ideas}
+          okrStatus={okr.status as OKRStatus}
+          spaceId={spaceId}
+          okrId={okrId}
+        />
 
-        <OKRObjectivesOverview objectives={okr.objectives} />
+        <OKRObjectivesSection
+          objectives={okr.objectives}
+          okrStatus={okr.status as OKRStatus}
+          spaceId={spaceId}
+          okrId={okrId}
+          currentUserId={user.id}
+          spaceMembers={spaceMembers}
+        />
       </div>
     </div>
   );
