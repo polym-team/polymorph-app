@@ -43,17 +43,24 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   if (parsed.data.title !== undefined) data.title = parsed.data.title;
   if (parsed.data.description !== undefined) data.description = parsed.data.description;
 
+  if (parsed.data.assigneeIds !== undefined) {
+    await prisma.objectiveAssignee.deleteMany({ where: { objectiveId } });
+    if (parsed.data.assigneeIds.length > 0) {
+      await prisma.objectiveAssignee.createMany({
+        data: parsed.data.assigneeIds.map((userId) => ({ objectiveId, userId })),
+      });
+    }
+  }
+
   const updated = await prisma.objective.update({
     where: { id: objectiveId },
     data,
     include: {
       owner: { select: { id: true, name: true, avatarUrl: true } },
-      tasks: {
+      assignees: {
         include: {
-          assignee: { select: { id: true, name: true, avatarUrl: true } },
-          _count: { select: { progress: true } },
+          user: { select: { id: true, name: true, avatarUrl: true } },
         },
-        orderBy: { sortOrder: 'asc' },
       },
     },
   });

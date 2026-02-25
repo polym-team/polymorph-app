@@ -7,6 +7,7 @@ import { OKROwnerSection } from './_components/OKROwnerSection';
 import { OKRIdeasSection } from './_components/OKRIdeasSection';
 import { OKRObjectivesSection } from './_components/OKRObjectivesSection';
 import { OKRProgressSection } from './_components/OKRProgressSection';
+import { OKRReviewSection } from './_components/OKRReviewSection';
 import type { OKRStatus } from './_components/types';
 
 export default async function OKRDetailPage({
@@ -45,11 +46,10 @@ export default async function OKRDetailPage({
       objectives: {
         include: {
           owner: { select: { id: true, name: true, avatarUrl: true } },
-          tasks: {
+          assignees: {
             include: {
-              assignee: { select: { id: true, name: true, avatarUrl: true } },
+              user: { select: { id: true, name: true, avatarUrl: true } },
             },
-            orderBy: { sortOrder: 'asc' },
           },
         },
         orderBy: { sortOrder: 'asc' },
@@ -111,7 +111,6 @@ export default async function OKRDetailPage({
           okrStatus={okr.status as OKRStatus}
           spaceId={spaceId}
           okrId={okrId}
-          currentUserId={user.id}
           spaceMembers={spaceMembers}
         />
 
@@ -122,6 +121,15 @@ export default async function OKRDetailPage({
           initialContent={okr.progressContent as any}
           userName={user.name}
           userColor={userColor}
+        />
+
+        <OKRReviewSection
+          reviews={okr.reviews}
+          okrStatus={okr.status as OKRStatus}
+          spaceId={spaceId}
+          okrId={okrId}
+          currentUserId={user.id}
+          isOwner={isOwner}
         />
       </div>
     </div>

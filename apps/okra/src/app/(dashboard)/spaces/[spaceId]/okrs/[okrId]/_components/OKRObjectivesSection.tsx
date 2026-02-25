@@ -25,7 +25,6 @@ interface OKRObjectivesSectionProps {
   okrStatus: OKRStatus;
   spaceId: string;
   okrId: string;
-  currentUserId: string;
   spaceMembers: SpaceMember[];
 }
 
@@ -34,7 +33,6 @@ export function OKRObjectivesSection({
   okrStatus,
   spaceId,
   okrId,
-  currentUserId,
   spaceMembers,
 }: OKRObjectivesSectionProps) {
   const router = useRouter();
@@ -91,6 +89,7 @@ export function OKRObjectivesSection({
           <ObjectiveForm
             spaceId={spaceId}
             okrId={okrId}
+            spaceMembers={spaceMembers}
             onSave={() => {
               setIsAdding(false);
               handleMutate();
@@ -113,7 +112,6 @@ export function OKRObjectivesSection({
                   spaceId={spaceId}
                   okrId={okrId}
                   okrStatus={okrStatus}
-                  currentUserId={currentUserId}
                   spaceMembers={spaceMembers}
                   onMutate={handleMutate}
                 />

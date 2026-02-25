@@ -50,20 +50,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 
   if (okr.status === 'PLANNING' && newStatus === 'ACTIVE') {
-    const counts = await prisma.oKR.findFirst({
-      where: { id: okrId },
-      include: {
-        _count: { select: { objectives: true } },
-        objectives: { include: { _count: { select: { tasks: true } } }, take: 1 },
-      },
-    });
+    const objectiveCount = await prisma.objective.count({ where: { okrId } });
 
-    const hasObjective = (counts?._count.objectives ?? 0) > 0;
-    const hasTask = counts?.objectives.some((o) => o._count.tasks > 0) ?? false;
-
-    if (!hasObjective || !hasTask) {
+    if (objectiveCount === 0) {
       return NextResponse.json(
-        { error: 'ACTIVE 전환에는 최소 1개 Objective와 1개 Task가 필요합니다' },
+        { error: 'ACTIVE 전환에는 최소 1개 Objective가 필요합니다' },
         { status: 400 },
       );
     }

@@ -36,12 +36,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       objectives: {
         include: {
           owner: { select: { id: true, name: true, avatarUrl: true } },
-          tasks: {
+          assignees: {
             include: {
-              assignee: { select: { id: true, name: true, avatarUrl: true } },
-              _count: { select: { progress: true } },
+              user: { select: { id: true, name: true, avatarUrl: true } },
             },
-            orderBy: { sortOrder: 'asc' },
           },
         },
         orderBy: { sortOrder: 'asc' },
@@ -132,6 +130,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const okr = await prisma.oKR.findFirst({ where: { id: okrId, spaceId } });
   if (!okr) {
     return NextResponse.json({ error: 'OKR not found' }, { status: 404 });
+  }
+
+  if (okr.status !== 'PLANNING') {
+    return NextResponse.json(
+      { error: '목표수립(PLANNING) 단계에서만 삭제할 수 있습니다' },
+      { status: 400 },
+    );
   }
 
   await prisma.oKR.delete({ where: { id: okrId } });

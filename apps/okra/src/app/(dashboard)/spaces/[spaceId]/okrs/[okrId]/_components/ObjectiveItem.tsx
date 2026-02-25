@@ -6,14 +6,12 @@ import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@package/ui';
 import type { ObjectiveData, OKRStatus, SpaceMember } from './types';
 import { ObjectiveForm } from './ObjectiveForm';
-import { TaskList } from './TaskList';
 
 interface ObjectiveItemProps {
   objective: ObjectiveData;
   spaceId: string;
   okrId: string;
   okrStatus: OKRStatus;
-  currentUserId: string;
   spaceMembers: SpaceMember[];
   onMutate: () => void;
 }
@@ -23,7 +21,6 @@ export function ObjectiveItem({
   spaceId,
   okrId,
   okrStatus,
-  currentUserId,
   spaceMembers,
   onMutate,
 }: ObjectiveItemProps) {
@@ -48,7 +45,7 @@ export function ObjectiveItem({
   };
 
   const handleDelete = async () => {
-    if (!confirm('이 목표를 삭제하시겠습니까? 하위 작업도 모두 삭제됩니다.')) return;
+    if (!confirm('이 목표를 삭제하시겠습니까?')) return;
     setIsDeleting(true);
     try {
       const res = await fetch(`/api/spaces/${spaceId}/okrs/${okrId}/objectives/${objective.id}`, {
@@ -67,6 +64,7 @@ export function ObjectiveItem({
           objective={objective}
           spaceId={spaceId}
           okrId={okrId}
+          spaceMembers={spaceMembers}
           onSave={() => {
             setIsEditing(false);
             onMutate();
@@ -94,19 +92,26 @@ export function ObjectiveItem({
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-medium text-gray-900">{objective.title}</h3>
             <div className="flex shrink-0 items-center gap-1">
-              <div className="flex items-center gap-1.5">
-                {objective.owner.avatarUrl ? (
-                  <img
-                    src={objective.owner.avatarUrl}
-                    alt={objective.owner.name}
-                    className="h-5 w-5 rounded-full"
-                  />
-                ) : (
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 text-[9px] font-medium text-gray-600">
-                    {objective.owner.name.charAt(0)}
-                  </div>
+              <div className="flex items-center -space-x-1">
+                {objective.assignees.map((a) =>
+                  a.user.avatarUrl ? (
+                    <img
+                      key={a.user.id}
+                      src={a.user.avatarUrl}
+                      alt={a.user.name}
+                      title={a.user.name}
+                      className="h-5 w-5 rounded-full ring-2 ring-white"
+                    />
+                  ) : (
+                    <div
+                      key={a.user.id}
+                      title={a.user.name}
+                      className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 text-[9px] font-medium text-gray-600 ring-2 ring-white"
+                    >
+                      {a.user.name.charAt(0)}
+                    </div>
+                  ),
                 )}
-                <span className="text-xs text-gray-400">{objective.owner.name}</span>
               </div>
               {isPlanning && (
                 <>
@@ -125,16 +130,6 @@ export function ObjectiveItem({
           )}
         </div>
       </div>
-
-      <TaskList
-        tasks={objective.tasks}
-        spaceId={spaceId}
-        okrId={okrId}
-        objectiveId={objective.id}
-        okrStatus={okrStatus}
-        currentUserId={currentUserId}
-        spaceMembers={spaceMembers}
-      />
     </div>
   );
 }

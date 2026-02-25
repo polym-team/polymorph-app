@@ -39,6 +39,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     _max: { sortOrder: true },
   });
 
+  const assigneeIds = parsed.data.assigneeIds?.length
+    ? parsed.data.assigneeIds
+    : [user.id];
+
   const objective = await prisma.objective.create({
     data: {
       okrId,
@@ -46,15 +50,18 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       title: parsed.data.title,
       description: parsed.data.description,
       sortOrder: (maxOrder._max.sortOrder ?? -1) + 1,
+      assignees: {
+        createMany: {
+          data: assigneeIds.map((userId) => ({ userId })),
+        },
+      },
     },
     include: {
       owner: { select: { id: true, name: true, avatarUrl: true } },
-      tasks: {
+      assignees: {
         include: {
-          assignee: { select: { id: true, name: true, avatarUrl: true } },
-          _count: { select: { progress: true } },
+          user: { select: { id: true, name: true, avatarUrl: true } },
         },
-        orderBy: { sortOrder: 'asc' },
       },
     },
   });

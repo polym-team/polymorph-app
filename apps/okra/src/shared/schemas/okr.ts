@@ -39,35 +39,23 @@ export const updateIdeaSchema = z.object({
 export const createObjectiveSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(2000).optional(),
+  assigneeIds: z.array(z.string().min(1)).optional(),
 });
 
 export const updateObjectiveSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().max(2000).nullable().optional(),
-});
-
-// Task schemas
-export const createTaskSchema = z.object({
-  title: z.string().min(1).max(200),
-  description: z.string().max(2000).optional(),
-  assigneeMode: z.enum(['ANYONE', 'ASSIGNED']).optional(),
-  assigneeId: z.string().min(1).nullable().optional(),
-  dueDate: z.string().datetime({ offset: true }).nullable().optional(),
-});
-
-export const updateTaskSchema = z.object({
-  title: z.string().min(1).max(200).optional(),
-  description: z.string().max(2000).nullable().optional(),
-  assigneeMode: z.enum(['ANYONE', 'ASSIGNED']).optional(),
-  assigneeId: z.string().min(1).nullable().optional(),
-  dueDate: z.string().datetime({ offset: true }).nullable().optional(),
-  status: z.enum(['TODO', 'IN_PROGRESS', 'DONE', 'DISCARDED']).optional(),
+  assigneeIds: z.array(z.string().min(1)).optional(),
 });
 
 // OKR Progress schema
 export const updateOKRProgressSchema = z.object({
   content: z.any(),
 });
+
+// Review schemas
+export const createReviewSchema = z.object({ content: z.any() });
+export const updateReviewSchema = z.object({ content: z.any() });
 
 // Reorder schema (shared for ideas, objectives, tasks)
 export const reorderSchema = z.object({
