@@ -64,6 +64,11 @@ export const updateTaskSchema = z.object({
   status: z.enum(['TODO', 'IN_PROGRESS', 'DONE', 'DISCARDED']).optional(),
 });
 
+// OKR Progress schema
+export const updateOKRProgressSchema = z.object({
+  content: z.any(),
+});
+
 // Reorder schema (shared for ideas, objectives, tasks)
 export const reorderSchema = z.object({
   orderedIds: z.array(z.string().min(1)).min(1),

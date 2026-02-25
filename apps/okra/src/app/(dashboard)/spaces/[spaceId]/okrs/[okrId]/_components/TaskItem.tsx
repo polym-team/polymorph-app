@@ -137,9 +137,6 @@ export function TaskItem({
           {new Date(task.dueDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
         </span>
       )}
-      {task._count.progress > 0 && (
-        <span className="shrink-0 text-xs text-gray-400">기록 {task._count.progress}</span>
-      )}
       {isPlanning && (
         <>
           <Button variant="ghost" onClick={() => setIsEditing(true)}>

@@ -5,6 +5,24 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@package/ui';
 import { OKRStatusBadge } from '../../../_components/OKRStatusBadge';
 
+const NEXT_STATUS: Record<string, { value: string; label: string; confirm: string }> = {
+  PLANNING: {
+    value: 'ACTIVE',
+    label: '진행 시작',
+    confirm: '목표수립을 마치고 진행 단계로 전환하시겠습니까?\n전환 후에는 아이디어/목표를 수정할 수 없습니다.',
+  },
+  ACTIVE: {
+    value: 'REVIEW',
+    label: '회고 시작',
+    confirm: '진행을 마치고 회고 단계로 전환하시겠습니까?\n전환 후에는 진행 기록을 추가할 수 없습니다.',
+  },
+  REVIEW: {
+    value: 'ARCHIVED',
+    label: '아카이브',
+    confirm: '회고를 마치고 아카이브하시겠습니까?\n아카이브 후에는 모든 내용이 읽기 전용이 됩니다.',
+  },
+};
+
 interface OKRDetailHeaderProps {
   okr: {
     id: string;
@@ -29,6 +47,9 @@ function formatDate(date: Date) {
 export function OKRDetailHeader({ okr, spaceId, isOwner }: OKRDetailHeaderProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const nextStatus = NEXT_STATUS[okr.status];
 
   const handleDelete = async () => {
     if (!confirm('이 OKR을 삭제하시겠습니까? 하위 데이터가 모두 삭제됩니다.')) return;
@@ -44,6 +65,29 @@ export function OKRDetailHeader({ okr, spaceId, isOwner }: OKRDetailHeaderProps)
       }
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleStatusTransition = async () => {
+    if (!nextStatus) return;
+    if (!confirm(nextStatus.confirm)) return;
+
+    setIsTransitioning(true);
+    try {
+      const res = await fetch(`/api/spaces/${spaceId}/okrs/${okr.id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nextStatus.value }),
+      });
+
+      if (res.ok) {
+        router.refresh();
+      } else {
+        const data = await res.json();
+        alert(data.error ?? '상태 전환에 실패했습니다.');
+      }
+    } finally {
+      setIsTransitioning(false);
     }
   };
 
@@ -68,13 +112,23 @@ export function OKRDetailHeader({ okr, spaceId, isOwner }: OKRDetailHeaderProps)
         </div>
 
         {isOwner && (
-          <Button
-            variant="danger"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
-            {isDeleting ? '삭제 중...' : '삭제'}
-          </Button>
+          <div className="flex shrink-0 gap-2">
+            {nextStatus && (
+              <Button
+                onClick={handleStatusTransition}
+                disabled={isTransitioning}
+              >
+                {isTransitioning ? '전환 중...' : nextStatus.label}
+              </Button>
+            )}
+            <Button
+              variant="danger"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? '삭제 중...' : '삭제'}
+            </Button>
+          </div>
         )}
       </div>
     </div>

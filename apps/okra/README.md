@@ -17,7 +17,7 @@ Okra의 OKR 프로세스는 5단계로 구성된다:
 | **아이디어** | 팀원들이 작은 아이디어나 문제점을 자유롭게 제출. 비슷한 주제끼리 그룹핑 |
 | **목표** | 아이디어들을 해결하면 이룰 수 있는 목표(Objective)를 설정 |
 | **작업** | 목표 달성을 위한 구체적 작업(Task) 항목을 정의. 담당자와 기간 지정 가능 |
-| **진행 기록** | 각 작업의 상세 진행 내용을 에디터로 작성. 공동 편집 지원 |
+| **진행 기록** | OKR 1개당 하나의 단일 문서로 진행 내용을 에디터로 작성. 공동 편집 지원 |
 | **회고** | OKR 전체에 대한 최종 결과 및 회고를 에디터로 작성 |
 
 ---
@@ -30,7 +30,7 @@ Okra의 OKR 프로세스는 5단계로 구성된다:
 | **Idea (아이디어)** | 작은 아이디어/문제점. 비슷한 주제끼리 그룹핑 가능. 같은 OKR 안의 Objective와 암묵적으로 연결됨 (별도 매핑 없음) |
 | **Objective (목표)** | 아이디어들을 해결하면 이룰 수 있는 목표. Idea와의 연결은 OKR 컨테이너를 통해 암묵적으로 표현 |
 | **Task (작업)** | 목표 달성을 위한 구체적 작업 항목. 담당자 모드: ANYONE(기본, 누구나 수행 가능) 또는 ASSIGNED(특정 멤버 지정). 기간(옵션) |
-| **TaskProgress (진행 기록)** | 각 작업의 상세 진행 내용. Notion 스타일 에디터로 작성. 공동 편집 지원. 추가/수정/삭제 자유. Task가 폐기되면 함께 폐기 |
+| **진행 기록 (OKR.progressContent)** | OKR 1개당 하나의 Notion 스타일 단일 문서. 스페이스 멤버 누구나 공동 편집 가능. ACTIVE에서만 편집, REVIEW/ARCHIVED에서는 읽기 전용 |
 | **Review (회고)** | OKR 전체에 대한 최종 평가 및 회고. OKR Owner만 작성 가능 (Owner별 1개). Owner 자격이 박탈되어도 글은 남지만 수정/삭제 불가 |
 
 ### 모델 관계도
@@ -41,7 +41,7 @@ Space
       ├── Idea (여러 개)
       ├── Objective (여러 개)
       │    └── Task (여러 개)
-      │         └── TaskProgress (여러 개)
+      ├── progressContent (단일 문서, JSON)
       └── Review (여러 개)
 ```
 
@@ -59,7 +59,7 @@ PLANNING → ACTIVE → REVIEW → ARCHIVED
 | 상태 | 설명 | 허용되는 행위 |
 |---|---|---|
 | **PLANNING** | 목표수립 단계 | Idea 생성/수정/삭제, Objective 생성/수정/삭제, Task 생성/수정/삭제 |
-| **ACTIVE** | 진행 단계 | Task 추가/폐기, TaskProgress 추가/수정/삭제 |
+| **ACTIVE** | 진행 단계 | Task 추가/폐기, 진행 기록 편집 |
 | **REVIEW** | 회고 단계 | Review 작성/수정/삭제 (Owner만, Owner별 1개) |
 | **ARCHIVED** | 아카이빙 | 모든 내용 수정 불가 (읽기 전용) |
 
@@ -76,8 +76,8 @@ PLANNING → ACTIVE → REVIEW → ARCHIVED
   - ASSIGNED 모드: 해당 담당자만 폐기 가능
   - ANYONE 모드: 스페이스 멤버 누구나 폐기 가능
   - 폐기된 Task는 UI에서 명확히 표시 (취소선 등)
-  - Task가 폐기되면 하위 TaskProgress도 함께 폐기 상태로 표시
-- TaskProgress 추가/수정/삭제 자유 (실무자가 자유롭게 관리하는 컨셉)
+  - Task가 폐기되면 UI에서 폐기 상태로 표시
+- 진행 기록: OKR 단일 문서로 스페이스 멤버 누구나 편집 가능 (자동저장)
 
 **REVIEW (회고)**
 - Idea, Objective, Task 모두 수정 불가
@@ -120,7 +120,7 @@ PLANNING → ACTIVE → REVIEW → ARCHIVED
 | Task 추가 | 스페이스 멤버 누구나 | ACTIVE |
 | Task 폐기 | ASSIGNED: 담당자만 / ANYONE: 스페이스 멤버 누구나 | ACTIVE |
 | Task 담당자 모드/지정 | 스페이스 멤버 누구나 | PLANNING, ACTIVE |
-| TaskProgress 추가/수정/삭제 | 해당 Task의 담당자 (ANYONE이면 스페이스 멤버 누구나) | ACTIVE |
+| 진행 기록 편집 | 스페이스 멤버 누구나 | ACTIVE |
 | Review 작성/수정/삭제 | OKR Owner만 (본인 Review만, Owner별 1개) | REVIEW |
 | ARCHIVED 후 수정 | 불가 (모든 내용 읽기 전용) | ARCHIVED |
 
@@ -128,7 +128,7 @@ PLANNING → ACTIVE → REVIEW → ARCHIVED
 
 ## 5. 에디터 선택
 
-진행 기록(TaskProgress)과 회고(Review)에 Notion 스타일 블록 에디터가 필요하다.
+진행 기록(OKR.progressContent)과 회고(Review)에 Notion 스타일 블록 에디터가 필요하다.
 
 ### 추천: BlockNote
 
@@ -145,11 +145,11 @@ PLANNING → ACTIVE → REVIEW → ARCHIVED
 - **Plate**: 커스터마이징이 많이 필요한 경우. 설정이 복잡함
 - **Tiptap**: 전통적 에디터 스타일. 블록 에디터가 아님
 
-### 에디터 데이터 저장
+### 에디터 데이터 저장 (이중 저장)
 
-- 에디터 콘텐츠는 BlockNote의 JSON 포맷으로 저장
-- DB 컬럼 타입: `Json` (Prisma) / `json` (MySQL)
-- 공동 편집 시 Yjs document를 별도 동기화 서버로 관리 (Phase 5에서 구현)
+- **Yjs 바이너리**: `apps/collab` (Hocuspocus) 서버가 `YjsDocument` 테이블에 저장. 실시간 동기화의 소스 오브 트루스
+- **JSON**: `OKR.progressContent`에 BlockNote JSON 포맷으로 저장 (debounce 1초). REVIEW/ARCHIVED 읽기 전용 뷰에 사용
+- 공동 편집: Yjs CRDT + Hocuspocus WebSocket (`apps/collab`). 상세 설명은 `apps/collab/README.md` 참조
 
 ---
 
@@ -332,8 +332,9 @@ model Review {
 | **Phase 2** | Prisma 스키마 재설계 + 에디터 패키지 설치 | 완료 |
 | **Phase 3** | OKR CRUD (생성/목록/상세) | 완료 |
 | **Phase 4** | 아이디어 → 목표 → 작업 작성 플로우 | 완료 |
-| **Phase 5** | 진행 기록 (에디터 + 공동 편집) | **현재 단계** |
-| **Phase 6** | 회고 + 아카이빙 | 예정 |
+| **Phase 5** | 진행 기록 (에디터 + 자동저장) | 완료 |
+| **Phase 5b** | Yjs 실시간 공동 편집 (`apps/collab`) | 완료 |
+| **Phase 6** | 회고 + 아카이빙 | **현재 단계** |
 
 ### Phase별 상세
 
@@ -357,8 +358,14 @@ model Review {
 
 **Phase 5: 진행 기록**
 - BlockNote 에디터 통합
-- TaskProgress 작성/수정
-- Yjs 기반 실시간 공동 편집 (WebSocket 서버 필요)
+- OKR 단일 문서(progressContent)로 진행 기록 작성/자동저장
+
+**Phase 5b: Yjs 실시간 공동 편집**
+- `apps/collab`: Hocuspocus WebSocket 서버 (범용, 앱 비종속)
+- JWT 인증 + MySQL 바이너리 영속화 (별도 DB)
+- `CollaborativeEditor`: ACTIVE 상태에서 실시간 공동 편집 (커서 표시)
+- 이중 저장: Yjs 바이너리(실시간) + JSON(읽기 전용)
+- 기존 progressContent → Yjs 자동 마이그레이션
 
 **Phase 6: 회고 + 아카이빙**
 - Review 작성 (BlockNote 에디터, Owner별 1개)

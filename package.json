@@ -8,7 +8,8 @@
     "jibsayo": "pnpm --filter jibsayo",
     "bookmark-share": "pnpm --filter bookmark-share",
     "official-website": "pnpm --filter official-website",
-    "okra": "pnpm --filter okra",
+    "okra": "pnpm --parallel --filter okra --filter collab dev",
+    "collab": "pnpm --filter collab",
     "prepare": "husky"
   },
   "engines": {

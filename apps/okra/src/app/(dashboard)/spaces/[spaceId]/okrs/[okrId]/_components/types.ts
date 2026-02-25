@@ -35,7 +35,6 @@ export interface TaskData {
   assignee: { id: string; name: string; avatarUrl: string | null } | null;
   dueDate: Date | string | null;
   sortOrder: number;
-  _count: { progress: number };
 }
 
 export interface ObjectiveData {

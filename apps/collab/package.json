@@ -1,0 +1,26 @@
+{
+  "name": "collab",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down"
+  },
+  "dependencies": {
+    "@hocuspocus/extension-database": "^2.15.0",
+    "@hocuspocus/server": "^2.15.0",
+    "@prisma/client": "^6.2.1",
+    "dotenv": "^16.4.7",
+    "jose": "^6.0.11",
+    "yjs": "^13.6.24"
+  },
+  "devDependencies": {
+    "prisma": "^6.2.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

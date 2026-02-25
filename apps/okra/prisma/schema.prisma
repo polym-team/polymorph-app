@@ -110,6 +110,8 @@ model OKR {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  progressContent Json?
+
   space      Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   owners     OKROwner[]
   objectives Objective[]
@@ -194,6 +196,7 @@ model TaskProgress {
   authorId  String
   content   Json
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   author User @relation(fields: [authorId], references: [id], onDelete: Cascade)

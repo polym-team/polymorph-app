@@ -6,6 +6,7 @@ import { OKRDetailHeader } from './_components/OKRDetailHeader';
 import { OKROwnerSection } from './_components/OKROwnerSection';
 import { OKRIdeasSection } from './_components/OKRIdeasSection';
 import { OKRObjectivesSection } from './_components/OKRObjectivesSection';
+import { OKRProgressSection } from './_components/OKRProgressSection';
 import type { OKRStatus } from './_components/types';
 
 export default async function OKRDetailPage({
@@ -47,7 +48,6 @@ export default async function OKRDetailPage({
           tasks: {
             include: {
               assignee: { select: { id: true, name: true, avatarUrl: true } },
-              _count: { select: { progress: true } },
             },
             orderBy: { sortOrder: 'asc' },
           },
@@ -68,6 +68,9 @@ export default async function OKRDetailPage({
   }
 
   const isOwner = okr.owners.some((o) => o.user.id === user.id);
+
+  // Generate a deterministic color from user ID for collaboration cursors
+  const userColor = `hsl(${[...user.id].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360}, 70%, 50%)`;
 
   const spaceMembers = await prisma.spaceMember.findMany({
     where: { spaceId },
@@ -110,6 +113,15 @@ export default async function OKRDetailPage({
           okrId={okrId}
           currentUserId={user.id}
           spaceMembers={spaceMembers}
+        />
+
+        <OKRProgressSection
+          spaceId={spaceId}
+          okrId={okrId}
+          okrStatus={okr.status as OKRStatus}
+          initialContent={okr.progressContent as any}
+          userName={user.name}
+          userColor={userColor}
         />
       </div>
     </div>
