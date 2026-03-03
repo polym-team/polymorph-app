@@ -22,9 +22,9 @@ RUN cd apps/collab && npx tsc --noEmit false --outDir dist
 # 프로덕션 의존성만 추출
 RUN pnpm --filter collab deploy --prod /app/collab-deploy
 
-# Prisma CLI를 pnpm store에서 추출 (runner에서 npm install -g 방지)
-RUN PRISMA_DIR=$(find /app/node_modules/.pnpm -type d -name prisma -path "*/prisma@*/node_modules/prisma" | head -1) \
-    && mkdir -p /prisma-cli \
+# Prisma CLI를 추출 (runner에서 npm install -g 방지)
+RUN mkdir -p /prisma-cli \
+    && PRISMA_DIR=$(node -e "console.log(require('path').dirname(require.resolve('prisma/package.json', { paths: ['/app/apps/collab'] })))") \
     && cp -rL "$PRISMA_DIR/." /prisma-cli/
 
 # 3. 실행 단계 (pnpm 불필요 → 경량 base)
