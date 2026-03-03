@@ -41,7 +41,6 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/apps/okra/.next/standalone ./
 COPY --from=builder /app/apps/okra/.next/static ./apps/okra/.next/static
-COPY --from=builder /app/apps/okra/public ./apps/okra/public
 
 # 첫 배포 시 DB 스키마 자동 생성을 위한 prisma CLI + schema
 RUN npm install -g prisma@6.2.1
