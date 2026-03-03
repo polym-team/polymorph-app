@@ -22,6 +22,9 @@ RUN cd apps/collab && npx tsc --noEmit false --outDir dist
 # 프로덕션 의존성만 추출
 RUN pnpm --filter collab deploy --prod /app/collab-deploy
 
+# Prisma CLI를 deps 단계에서 추출 (runner에서 npm install -g 방지)
+RUN cp -rL $(node -e "console.log(require.resolve('prisma/package.json').replace('/package.json',''))") /prisma-cli
+
 # 3. 실행 단계 (pnpm 불필요 → 경량 base)
 FROM node:20-alpine AS runner
 WORKDIR /app
@@ -45,8 +48,9 @@ COPY --from=deps /app/apps/collab/src/generated ./dist/generated
 # Prisma schema (db push용)
 COPY --from=deps /app/apps/collab/prisma ./prisma
 
-# Prisma CLI (db push용) — 캐시 정리로 레이어 축소
-RUN npm install -g prisma@6.2.1 && rm -rf /root/.cache /root/.npm /tmp/*
+# Prisma CLI (deps에서 복사 — npm install -g 없이 레이어 경량화)
+COPY --from=deps /prisma-cli /usr/local/lib/node_modules/prisma
+RUN ln -s /usr/local/lib/node_modules/prisma/build/index.js /usr/local/bin/prisma && chmod +x /usr/local/bin/prisma
 
 USER appuser
 
