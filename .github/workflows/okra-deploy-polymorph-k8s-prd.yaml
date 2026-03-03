@@ -47,15 +47,30 @@ jobs:
           username: ${{ secrets.POLYMORPH_DOCKER_REG_ID }}
           password: ${{ secrets.POLYMORPH_DOCKER_REG_PW }}
 
-      - name: Build and Push Docker Image
+      - name: Build Docker Image
         uses: docker/build-push-action@v4
         with:
           context: .
           file: apps/okra/Dockerfile
-          push: true
+          load: true
           tags: registry.polymorph.co.kr/okra-nextjs:${{ github.sha }}
           provenance: false
           sbom: false
+
+      - name: Push Docker Image (with retry)
+        run: |
+          max_attempts=3
+          for i in $(seq 1 $max_attempts); do
+            echo "Push attempt $i/$max_attempts..."
+            docker push registry.polymorph.co.kr/okra-nextjs:${{ github.sha }} && break
+            if [ $i -lt $max_attempts ]; then
+              echo "Push failed, retrying in 10s..."
+              sleep 10
+            else
+              echo "Push failed after $max_attempts attempts"
+              exit 1
+            fi
+          done
 
       - name: Update image tag in polymorph-k8s
         run: |
