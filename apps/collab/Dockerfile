@@ -17,7 +17,10 @@ RUN pnpm fetch
 COPY . .
 RUN pnpm install --offline --frozen-lockfile
 
-# collab만 프로덕션 의존성으로 추출
+# Prisma client 생성 (devDep인 prisma CLI가 있는 이 단계에서 실행)
+RUN pnpm --filter collab db:generate
+
+# collab만 프로덕션 의존성으로 추출 (생성된 prisma client 포함)
 RUN pnpm --filter collab deploy --prod /app/collab-deploy
 
 # 3. 실행 단계
@@ -32,8 +35,7 @@ RUN adduser --system --uid 1001 appuser
 # pnpm deploy로 추출된 경량 패키지 복사
 COPY --from=deps /app/collab-deploy ./
 
-# Prisma client 생성 + 런타임 tsx 설치
-RUN npx prisma generate
+# 런타임: prisma db push용 CLI + tsx
 RUN npm install -g prisma@6.2.1 tsx
 
 USER appuser
