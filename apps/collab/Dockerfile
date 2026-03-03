@@ -23,7 +23,9 @@ RUN cd apps/collab && npx tsc --noEmit false --outDir dist
 RUN pnpm --filter collab deploy --prod /app/collab-deploy
 
 # Prisma CLI를 pnpm store에서 추출 (runner에서 npm install -g 방지)
-RUN cp -rL /app/node_modules/.pnpm/prisma@*/node_modules/prisma /prisma-cli
+RUN PRISMA_DIR=$(find /app/node_modules/.pnpm -type d -name prisma -path "*/prisma@*/node_modules/prisma" | head -1) \
+    && mkdir -p /prisma-cli \
+    && cp -rL "$PRISMA_DIR/." /prisma-cli/
 
 # 3. 실행 단계 (pnpm 불필요 → 경량 base)
 FROM node:20-alpine AS runner
