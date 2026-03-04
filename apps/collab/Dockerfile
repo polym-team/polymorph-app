@@ -47,7 +47,7 @@ COPY --from=deps /app/apps/collab/src/generated ./dist/generated
 COPY --from=deps /app/apps/collab/prisma ./prisma
 
 # Prisma CLI (db push용)
-RUN npm install -g prisma
+RUN npm install -g prisma@6.2.1
 
 USER appuser
 
