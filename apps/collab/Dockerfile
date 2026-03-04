@@ -17,7 +17,7 @@ RUN pnpm install --offline --frozen-lockfile
 RUN pnpm --filter collab db:generate
 
 # TypeScript → JavaScript 컴파일 (런타임에 tsx 불필요)
-RUN cd apps/collab && npx tsc --noEmit false --outDir dist
+RUN cd apps/collab && npx tsc --noEmit false --outDir dist --module commonjs --moduleResolution node
 
 # 프로덕션 의존성만 추출
 RUN pnpm --filter collab deploy --prod /app/collab-deploy
