@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 jobs:
   build-and-deploy:
@@ -27,12 +28,12 @@ jobs:
           token: ${{ secrets.POLYMORPH_GIT_PAT }}
           path: polymorph-k8s
 
-      - name: Login to Docker Registry
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: registry.polymorph.co.kr
-          username: ${{ secrets.POLYMORPH_DOCKER_REG_ID }}
-          password: ${{ secrets.POLYMORPH_DOCKER_REG_PW }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
@@ -40,7 +41,7 @@ jobs:
           context: .
           file: apps/collab/Dockerfile
           push: true
-          tags: registry.polymorph.co.kr/collab:${{ github.sha }}
+          tags: ghcr.io/${{ github.repository_owner }}/collab:${{ github.sha }}
           provenance: false
           sbom: false
 
@@ -51,7 +52,7 @@ jobs:
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
 
-          sed -i "s|image:.*|image: registry.polymorph.co.kr/collab:${{ github.sha }}|g" manifests/collab/deployment.yaml
+          sed -i "s|image:.*|image: ghcr.io/${{ github.repository_owner }}/collab:${{ github.sha }}|g" manifests/collab/deployment.yaml
 
           git add manifests/collab/deployment.yaml
           git commit -m "chore(collab): update image to ${{ github.sha }}"
