@@ -22,12 +22,6 @@ RUN cd apps/collab && npx tsc --noEmit false --outDir dist
 # 프로덕션 의존성만 추출
 RUN pnpm --filter collab deploy --prod /app/collab-deploy
 
-# Prisma CLI + 의존성 추출 (runner에서 npm install -g 방지)
-RUN mkdir -p /prisma-cli/prisma /prisma-cli/@prisma/engines \
-    && PRISMA_DIR=$(node -e "console.log(require('path').dirname(require.resolve('prisma/package.json', { paths: ['/app/apps/collab'] })))") \
-    && ENGINES_DIR=$(node -e "console.log(require('path').dirname(require.resolve('@prisma/engines/package.json', { paths: ['/app/apps/collab'] })))") \
-    && cp -rL "$PRISMA_DIR/." /prisma-cli/prisma/ \
-    && cp -rL "$ENGINES_DIR/." /prisma-cli/@prisma/engines/
 
 # 3. 실행 단계 (pnpm 불필요 → 경량 base)
 FROM node:20-alpine AS runner
@@ -52,10 +46,8 @@ COPY --from=deps /app/apps/collab/src/generated ./dist/generated
 # Prisma schema (db push용)
 COPY --from=deps /app/apps/collab/prisma ./prisma
 
-# Prisma CLI + 의존성 (deps에서 복사 — npm install -g 없이 레이어 경량화)
-COPY --from=deps /prisma-cli/prisma /usr/local/lib/node_modules/prisma
-COPY --from=deps /prisma-cli/@prisma/engines /usr/local/lib/node_modules/@prisma/engines
-RUN ln -s /usr/local/lib/node_modules/prisma/build/index.js /usr/local/bin/prisma && chmod +x /usr/local/bin/prisma
+# Prisma CLI (db push용)
+RUN npm install -g prisma
 
 USER appuser
 
