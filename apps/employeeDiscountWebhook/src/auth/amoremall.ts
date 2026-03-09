@@ -1,59 +1,60 @@
-import { chromium } from 'playwright';
+import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
 
 const PACIFIC_SHOP = 'https://www.amoremall.com/kr/ko/display/pacificShop';
 
+export interface AuthSession {
+  token: string;
+  browser: Browser;
+  context: BrowserContext;
+  page: Page;
+}
+
 /**
  * Playwright 헤드리스 브라우저로 아모레몰 로그인 후 Bearer 토큰 획득
- *
- * 1. 아모레몰 로그인 페이지 → IDP 리다이렉트
- * 2. ID/PW 입력 후 로그인
- * 3. 리다이렉트 완료 후 쿠키/localStorage에서 토큰 추출
+ * 브라우저 세션을 반환하여 이니스프리 등 다른 API에서 재활용 가능
  */
-export async function getAmoremallToken(id: string, pw: string): Promise<string> {
+export async function loginAndGetSession(id: string, pw: string): Promise<AuthSession> {
   const browser = await chromium.launch({ headless: true });
 
-  try {
-    const context = await browser.newContext({
-      userAgent:
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-    });
-    const page = await context.newPage();
+  const context = await browser.newContext({
+    userAgent:
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  });
+  const page = await context.newPage();
 
-    // 1. 임직원몰 페이지로 이동 → 미로그인 시 IDP 로그인 페이지로 자동 리다이렉트
-    console.log('   [auth] 임직원몰 페이지 접속 (로그인 리다이렉트 대기)...');
-    await page.goto(PACIFIC_SHOP, { waitUntil: 'networkidle', timeout: 30000 });
-    console.log(`   [auth] 현재 URL: ${page.url()}`);
+  // 1. 임직원몰 페이지로 이동 → 미로그인 시 IDP 로그인 페이지로 자동 리다이렉트
+  console.log('   [auth] 임직원몰 페이지 접속 (로그인 리다이렉트 대기)...');
+  await page.goto(PACIFIC_SHOP, { waitUntil: 'networkidle', timeout: 30000 });
+  console.log(`   [auth] 현재 URL: ${page.url()}`);
 
-    // 2. 팝업이 있으면 닫기
-    await dismissPopups(page);
+  // 2. 팝업이 있으면 닫기
+  await dismissPopups(page);
 
-    // 3. ID/PW 입력 (IDP 로그인 폼: #loginid, #loginpassword)
-    console.log('   [auth] 자격증명 입력...');
-    await page.locator('#loginid').fill(id);
-    await page.locator('#loginpassword').fill(pw);
+  // 3. ID/PW 입력 (IDP 로그인 폼: #loginid, #loginpassword)
+  console.log('   [auth] 자격증명 입력...');
+  await page.locator('#loginid').fill(id);
+  await page.locator('#loginpassword').fill(pw);
 
-    // 4. 로그인 버튼 클릭
-    console.log('   [auth] 로그인 제출...');
-    await page.locator('#dologin').click();
+  // 4. 로그인 버튼 클릭
+  console.log('   [auth] 로그인 제출...');
+  await page.locator('#dologin').click();
 
-    // 5. 임직원몰 페이지로 리다이렉트 완료 대기
-    console.log('   [auth] 로그인 완료 대기...');
-    await page.waitForURL(/amoremall\.com.*pacificShop/i, { timeout: 30000 });
-    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-    console.log(`   [auth] 로그인 후 URL: ${page.url()}`);
+  // 5. 임직원몰 페이지로 리다이렉트 완료 대기
+  console.log('   [auth] 로그인 완료 대기...');
+  await page.waitForURL(/amoremall\.com.*pacificShop/i, { timeout: 30000 });
+  await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+  console.log(`   [auth] 로그인 후 URL: ${page.url()}`);
 
-    // 6. 토큰 추출 (쿠키 → localStorage → sessionStorage)
-    const token = await extractToken(context, page);
+  // 6. 토큰 추출 (쿠키 → localStorage → sessionStorage)
+  const token = await extractToken(context, page);
 
-    if (!token) {
-      throw new Error('로그인 후 액세스 토큰을 찾을 수 없습니다.');
-    }
-
-    console.log('   [auth] 토큰 획득 완료');
-    return token;
-  } finally {
+  if (!token) {
     await browser.close();
+    throw new Error('로그인 후 액세스 토큰을 찾을 수 없습니다.');
   }
+
+  console.log('   [auth] 토큰 획득 완료');
+  return { token, browser, context, page };
 }
 
 async function dismissPopups(page: import('playwright').Page) {

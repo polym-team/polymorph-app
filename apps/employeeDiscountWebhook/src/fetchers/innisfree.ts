@@ -1,4 +1,7 @@
-const API_URL = 'https://www.innisfree.com/kr/ko/dp/node/search/product-filter';
+import type { Page } from 'playwright';
+
+const INNISFREE_EMPLOYEES = 'https://www.innisfree.com/kr/ko/dp/employees';
+const API_PATH = '/kr/ko/dp/node/search/product-filter';
 const PRODUCT_PAGE_URL = 'https://www.innisfree.com/kr/ko/product';
 
 export interface InnisfreeProduct {
@@ -71,26 +74,36 @@ const REQUEST_BODY = {
   sale_status: ['1', '2', '4'],
 };
 
-export async function fetchAllProducts(token: string): Promise<InnisfreeProduct[]> {
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent':
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-      Origin: 'https://www.innisfree.com',
-      Referer: 'https://www.innisfree.com/kr/ko/dp/employees',
-    },
-    body: JSON.stringify(REQUEST_BODY),
-  });
+/**
+ * Playwright 브라우저 페이지를 이용하여 이니스프리 임직원 상품 조회
+ * (이니스프리 도메인 내에서 fetch 호출하여 쿠키/세션 자동 포함)
+ */
+export async function fetchAllProducts(page: Page): Promise<InnisfreeProduct[]> {
+  // 이니스프리 임직원 페이지로 이동 (도메인 컨텍스트 확보)
+  console.log('  [이니스프리] 임직원 페이지 접속...');
+  await page.goto(INNISFREE_EMPLOYEES, { waitUntil: 'networkidle', timeout: 30000 });
 
-  if (!res.ok) {
+  // 브라우저 내에서 API 호출
+  console.log('  [이니스프리] API 호출...');
+  const result = await page.evaluate(async ({ apiPath, body }) => {
+    const res = await fetch(apiPath, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
     const text = await res.text();
-    throw new Error(`[이니스프리] API 오류 (${res.status}): ${text.slice(0, 200)}`);
+    try {
+      return { ok: true, data: JSON.parse(text) };
+    } catch {
+      return { ok: false, status: res.status, body: text.slice(0, 300) };
+    }
+  }, { apiPath: API_PATH, body: REQUEST_BODY });
+
+  if (!result.ok) {
+    throw new Error(`[이니스프리] API 오류 (${(result as any).status}): ${(result as any).body}`);
   }
 
-  const data = (await res.json()) as ApiResponse;
+  const data = (result as { ok: true; data: ApiResponse }).data;
 
   if (data.code !== '0000') {
     throw new Error(`[이니스프리] API 오류: ${data.code}`);
