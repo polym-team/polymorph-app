@@ -30,7 +30,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright Chromium
-        run: npx --filter employee-discount-webhook playwright install chromium --with-deps
+        run: pnpm --filter employee-discount-webhook exec playwright install chromium --with-deps
 
       - name: Run employee discount webhook
         env:
