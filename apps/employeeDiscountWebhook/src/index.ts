@@ -10,10 +10,12 @@ async function main() {
   const pw = process.env.AMOREMALL_PW;
   const slackWebhookUrl = process.env.AMOREMALL_PRODUCT_INFO_SLACK_WEBHOOK;
 
+  const isCI = !!process.env.CI;
+
   if (!id || !pw) {
     throw new Error('AMOREMALL_ID, AMOREMALL_PW 환경변수가 필요합니다.');
   }
-  if (!slackWebhookUrl) {
+  if (isCI && !slackWebhookUrl) {
     throw new Error('AMOREMALL_PRODUCT_INFO_SLACK_WEBHOOK 환경변수가 필요합니다.');
   }
 
@@ -37,10 +39,22 @@ async function main() {
     const innisfreeAll = await fetchInnisfree(session.page);
     console.log(`   총 ${innisfreeAll.length}개 상품 조회됨`);
 
-    // === 슬랙 전송 ===
-    console.log('5. 슬랙 알림 전송...');
-    await sendAmoremallNotification(slackWebhookUrl, amoremallFiltered);
-    await sendInnisfreeNotification(slackWebhookUrl, innisfreeAll);
+    // === 슬랙 전송 or 콘솔 출력 ===
+    if (isCI && slackWebhookUrl) {
+      console.log('5. 슬랙 알림 전송...');
+      await sendAmoremallNotification(slackWebhookUrl, amoremallFiltered);
+      await sendInnisfreeNotification(slackWebhookUrl, innisfreeAll);
+    } else {
+      console.log('5. [로컬] 슬랙 미전송 — 결과 요약:');
+      console.log(`   아모레몰: ${amoremallFiltered.length}개 상품`);
+      for (const p of amoremallFiltered) {
+        console.log(`     - ${p.brandName} | ${p.goodsName} | ${p.salePrice.toLocaleString()}원`);
+      }
+      console.log(`   이니스프리: ${innisfreeAll.length}개 상품`);
+      for (const p of innisfreeAll) {
+        console.log(`     - ${p.name} | ${p.employeePrice.toLocaleString()}원`);
+      }
+    }
 
     console.log('완료!');
   } finally {

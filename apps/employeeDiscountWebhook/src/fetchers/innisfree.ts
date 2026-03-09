@@ -81,7 +81,8 @@ const REQUEST_BODY = {
 export async function fetchAllProducts(page: Page): Promise<InnisfreeProduct[]> {
   // 이니스프리 임직원 페이지로 이동 (도메인 컨텍스트 확보)
   console.log('  [이니스프리] 임직원 페이지 접속...');
-  await page.goto(INNISFREE_EMPLOYEES, { waitUntil: 'networkidle', timeout: 30000 });
+  await page.goto(INNISFREE_EMPLOYEES, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
 
   // 브라우저 내에서 API 호출
   console.log('  [이니스프리] API 호출...');
