@@ -83,11 +83,13 @@ export async function fetchAllProducts(page: Page): Promise<InnisfreeProduct[]> 
   console.log('  [이니스프리] 임직원 페이지 접속...');
   await page.goto(INNISFREE_EMPLOYEES, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+  console.log(`  [이니스프리] 현재 URL: ${page.url()}`);
 
-  // 브라우저 내에서 API 호출
-  console.log('  [이니스프리] API 호출...');
-  const result = await page.evaluate(async ({ apiPath, body }) => {
-    const res = await fetch(apiPath, {
+  // 브라우저 내에서 API 호출 (절대 URL 사용)
+  const apiUrl = `https://www.innisfree.com${API_PATH}`;
+  console.log(`  [이니스프리] API 호출: ${apiUrl}`);
+  const result = await page.evaluate(async ({ apiUrl, body }) => {
+    const res = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -98,7 +100,7 @@ export async function fetchAllProducts(page: Page): Promise<InnisfreeProduct[]> 
     } catch {
       return { ok: false, status: res.status, body: text.slice(0, 300) };
     }
-  }, { apiPath: API_PATH, body: REQUEST_BODY });
+  }, { apiUrl, body: REQUEST_BODY });
 
   if (!result.ok) {
     throw new Error(`[이니스프리] API 오류 (${(result as any).status}): ${(result as any).body}`);
