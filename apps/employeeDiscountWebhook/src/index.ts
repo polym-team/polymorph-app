@@ -34,9 +34,9 @@ async function main() {
     const amoremallFiltered = filterAmoremall(amoremallAll);
     console.log(`   ${amoremallFiltered.length}개 상품 매칭`);
 
-    // === 이니스프리 (같은 브라우저 세션 재활용) ===
+    // === 이니스프리 ===
     console.log('4. 이니스프리 상품 조회...');
-    const innisfreeAll = await fetchInnisfree(session.page);
+    const innisfreeAll = await fetchInnisfree(session.token);
     console.log(`   총 ${innisfreeAll.length}개 상품 조회됨`);
 
     // === 슬랙 전송 or 콘솔 출력 ===

@@ -1,7 +1,4 @@
-import type { Page } from 'playwright';
-
-const INNISFREE_EMPLOYEES = 'https://www.innisfree.com/kr/ko/dp/employees';
-const API_PATH = '/kr/ko/dp/node/search/product-filter';
+const API_URL = 'https://www.innisfree.com/kr/ko/dp/node/search/product';
 const PRODUCT_PAGE_URL = 'https://www.innisfree.com/kr/ko/product';
 
 export interface InnisfreeProduct {
@@ -74,39 +71,33 @@ const REQUEST_BODY = {
   sale_status: ['1', '2', '4'],
 };
 
-/**
- * Playwright 브라우저 페이지를 이용하여 이니스프리 임직원 상품 조회
- * (이니스프리 도메인 내에서 fetch 호출하여 쿠키/세션 자동 포함)
- */
-export async function fetchAllProducts(page: Page): Promise<InnisfreeProduct[]> {
-  // 이니스프리 임직원 페이지로 이동 (도메인 컨텍스트 확보)
-  console.log('  [이니스프리] 임직원 페이지 접속...');
-  await page.goto(INNISFREE_EMPLOYEES, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-  console.log(`  [이니스프리] 현재 URL: ${page.url()}`);
+export async function fetchAllProducts(token: string): Promise<InnisfreeProduct[]> {
+  console.log(`  [이니스프리] API 호출: ${API_URL}`);
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+      Origin: 'https://www.innisfree.com',
+      Referer: 'https://www.innisfree.com/kr/ko/dp/employees',
+    },
+    body: JSON.stringify(REQUEST_BODY),
+  });
 
-  // 브라우저 내에서 API 호출 (절대 URL 사용)
-  const apiUrl = `https://www.innisfree.com${API_PATH}`;
-  console.log(`  [이니스프리] API 호출: ${apiUrl}`);
-  const result = await page.evaluate(async ({ apiUrl, body }) => {
-    const res = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    const text = await res.text();
-    try {
-      return { ok: true, data: JSON.parse(text) };
-    } catch {
-      return { ok: false, status: res.status, body: text.slice(0, 300) };
-    }
-  }, { apiUrl, body: REQUEST_BODY });
+  const text = await res.text();
 
-  if (!result.ok) {
-    throw new Error(`[이니스프리] API 오류 (${(result as any).status}): ${(result as any).body}`);
+  if (!res.ok) {
+    throw new Error(`[이니스프리] API 오류 (${res.status}): ${text.slice(0, 300)}`);
   }
 
-  const data = (result as { ok: true; data: ApiResponse }).data;
+  let data: ApiResponse;
+  try {
+    data = JSON.parse(text) as ApiResponse;
+  } catch {
+    throw new Error(`[이니스프리] JSON 파싱 실패 (${res.status}): ${text.slice(0, 300)}`);
+  }
 
   if (data.code !== '0000') {
     throw new Error(`[이니스프리] API 오류: ${data.code}`);
