@@ -1,0 +1,19 @@
+{
+  "name": "employee-discount-webhook",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "playwright": "^1.52.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "@types/node": "20.17.9",
+    "typescript": "5.7.2"
+  }
+}

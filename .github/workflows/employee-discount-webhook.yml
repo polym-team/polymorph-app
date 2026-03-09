@@ -1,0 +1,40 @@
+name: Employee Discount Webhook
+
+on:
+  schedule:
+    # 월~금 오전 11:01 (KST) = 02:01 UTC
+    - cron: '1 2 * * 1-5'
+  workflow_dispatch: # 수동 실행 가능
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    environment: Production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: npx --filter employee-discount-webhook playwright install chromium --with-deps
+
+      - name: Run employee discount webhook
+        env:
+          AMOREMALL_ID: ${{ secrets.AMOREMALL_ID }}
+          AMOREMALL_PW: ${{ secrets.AMOREMALL_PW }}
+          AMOREMALL_PRODUCT_INFO_SLACK_WEBHOOK: ${{ secrets.AMOREMALL_PRODUCT_INFO_SLACK_WEBHOOK }}
+        run: pnpm --filter employee-discount-webhook start
