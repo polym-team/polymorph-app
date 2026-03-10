@@ -83,29 +83,15 @@ export async function fetchAllProducts(context: BrowserContext): Promise<Innisfr
   const res = await context.request.post(API_URL, {
     headers: {
       'Content-Type': 'application/json',
-      'User-Agent':
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-      'Accept-Language': 'ko-KR,ko;q=0.9',
-      Origin: 'https://www.innisfree.com',
-      Referer: 'https://www.innisfree.com/kr/ko/dp/employees',
-      Cookie: 'country=KR; locale=ko_KR; innisfree_locale=ko_KR; INM_COUNTRY=KR',
     },
     data: REQUEST_BODY,
-    maxRedirects: 0,
   });
 
   const text = await res.text();
-  const status = res.status();
-  console.log(`  [이니스프리] 응답 상태: ${status}`);
-
-  if (status === 301 || status === 302) {
-    const location = res.headers()['location'] ?? 'unknown';
-    console.log(`  [이니스프리] 리다이렉트 Location: ${location}`);
-    throw new Error(`[이니스프리] 리다이렉트됨 (${status}) → ${location}`);
-  }
+  console.log(`  [이니스프리] 응답 상태: ${res.status()}`);
 
   if (!res.ok()) {
-    throw new Error(`[이니스프리] API 오류 (${status}): ${text.slice(0, 300)}`);
+    throw new Error(`[이니스프리] API 오류 (${res.status()}): ${text.slice(0, 300)}`);
   }
 
   let data: ApiResponse;

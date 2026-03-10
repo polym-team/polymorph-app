@@ -11,7 +11,6 @@ async function main() {
   const id = process.env.AMOREMALL_ID;
   const pw = process.env.AMOREMALL_PW;
   const slackWebhookUrl = process.env.AMOREMALL_PRODUCT_INFO_SLACK_WEBHOOK;
-  const isCI = !!process.env.CI;
 
   if (!id || !pw) {
     throw new Error('AMOREMALL_ID, AMOREMALL_PW 환경변수가 필요합니다.');
@@ -53,11 +52,11 @@ async function main() {
     console.log(`   업로드 완료: ${pageUrl}`);
 
     // === 슬랙 전송 ===
-    if (isCI && slackWebhookUrl) {
+    if (slackWebhookUrl) {
       console.log('7. 슬랙 알림 전송...');
       await sendNotification(slackWebhookUrl, pageUrl, amoremallFiltered.length, innisfreeAll.length);
     } else {
-      console.log('7. [로컬] 슬랙 미전송');
+      console.log('7. [로컬] 슬랙 미전송 (AMOREMALL_PRODUCT_INFO_SLACK_WEBHOOK 미설정)');
       console.log(`   페이지 URL: ${pageUrl}`);
     }
 
