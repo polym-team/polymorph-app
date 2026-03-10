@@ -19,6 +19,9 @@ export async function loginAndGetSession(id: string, pw: string): Promise<AuthSe
   const context = await browser.newContext({
     userAgent:
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    locale: 'ko-KR',
+    geolocation: { latitude: 37.5665, longitude: 126.978 },
+    permissions: ['geolocation'],
   });
   const page = await context.newPage();
 

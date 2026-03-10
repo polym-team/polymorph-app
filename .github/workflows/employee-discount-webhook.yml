@@ -37,4 +37,6 @@ jobs:
           AMOREMALL_ID: ${{ secrets.AMOREMALL_ID }}
           AMOREMALL_PW: ${{ secrets.AMOREMALL_PW }}
           AMOREMALL_PRODUCT_INFO_SLACK_WEBHOOK: ${{ secrets.AMOREMALL_PRODUCT_INFO_SLACK_WEBHOOK }}
+          POLYMORPH_MINIO_ACCESS_KEY: ${{ secrets.POLYMORPH_MINIO_ACCESS_KEY }}
+          POLYMORPH_MINIO_SECRET_KEY: ${{ secrets.POLYMORPH_MINIO_SECRET_KEY }}
         run: pnpm --filter employee-discount-webhook start

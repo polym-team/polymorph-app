@@ -8,12 +8,13 @@
     "dev": "tsx watch src/index.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1005.0",
     "dotenv": "^16.4.7",
     "playwright": "^1.52.0"
   },
   "devDependencies": {
-    "tsx": "^4.19.2",
     "@types/node": "20.17.9",
+    "tsx": "^4.19.2",
     "typescript": "5.7.2"
   }
 }
