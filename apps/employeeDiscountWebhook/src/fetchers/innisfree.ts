@@ -1,7 +1,6 @@
 import type { BrowserContext } from 'playwright';
 
-const INNISFREE_EMPLOYEES = 'https://www.innisfree.com/kr/ko/dp/employees';
-const API_PATH = '/kr/ko/dp/node/search/product';
+const API_URL = 'https://www.innisfree.com/kr/ko/dp/node/search/product';
 const PRODUCT_PAGE_URL = 'https://www.innisfree.com/kr/ko/product';
 
 export interface InnisfreeProduct {
@@ -75,51 +74,44 @@ const REQUEST_BODY = {
 };
 
 /**
- * Playwright 브라우저 컨텍스트를 이용하여 이니스프리 임직원 상품 조회.
- * 이니스프리 페이지에 접속 후 page.evaluate로 API 호출 (지역 리다이렉트 우회).
+ * Playwright의 APIRequestContext로 이니스프리 API 직접 호출.
+ * 브라우저 페이지가 아닌 HTTP 요청이라 CORS/지역 리다이렉트 영향 없음.
  */
 export async function fetchAllProducts(context: BrowserContext): Promise<InnisfreeProduct[]> {
-  const page = await context.newPage();
+  console.log(`  [이니스프리] API 호출: ${API_URL}`);
 
-  try {
-    console.log('  [이니스프리] 임직원 페이지 접속...');
-    await page.goto(INNISFREE_EMPLOYEES, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-    console.log(`  [이니스프리] 현재 URL: ${page.url()}`);
+  const res = await context.request.post(API_URL, {
+    headers: {
+      'Content-Type': 'application/json',
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+      Origin: 'https://www.innisfree.com',
+      Referer: 'https://www.innisfree.com/kr/ko/dp/employees',
+    },
+    data: REQUEST_BODY,
+    maxRedirects: 0,
+  });
 
-    console.log('  [이니스프리] API 호출...');
-    const result = await page.evaluate(
-      async ({ apiPath, body }) => {
-        const res = await fetch(apiPath, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-        const text = await res.text();
-        try {
-          return { ok: true, data: JSON.parse(text) };
-        } catch {
-          return { ok: false, status: res.status, body: text.slice(0, 300) };
-        }
-      },
-      { apiPath: API_PATH, body: REQUEST_BODY },
-    );
+  const text = await res.text();
+  console.log(`  [이니스프리] 응답 상태: ${res.status()}`);
 
-    if (!result.ok) {
-      throw new Error(`[이니스프리] API 오류 (${(result as any).status}): ${(result as any).body}`);
-    }
-
-    const data = (result as { ok: true; data: ApiResponse }).data;
-
-    if (data.code !== '0000') {
-      throw new Error(`[이니스프리] API 오류: ${data.code}`);
-    }
-
-    const products = data.data.content.map(normalizeProduct);
-    console.log(`  [이니스프리] 총 ${products.length}/${data.data.total_elements} 상품 로드됨`);
-
-    return products;
-  } finally {
-    await page.close();
+  if (!res.ok()) {
+    throw new Error(`[이니스프리] API 오류 (${res.status()}): ${text.slice(0, 300)}`);
   }
+
+  let data: ApiResponse;
+  try {
+    data = JSON.parse(text) as ApiResponse;
+  } catch {
+    throw new Error(`[이니스프리] JSON 파싱 실패 (${res.status()}): ${text.slice(0, 300)}`);
+  }
+
+  if (data.code !== '0000') {
+    throw new Error(`[이니스프리] API 오류: ${data.code}`);
+  }
+
+  const products = data.data.content.map(normalizeProduct);
+  console.log(`  [이니스프리] 총 ${products.length}/${data.data.total_elements} 상품 로드됨`);
+
+  return products;
 }
