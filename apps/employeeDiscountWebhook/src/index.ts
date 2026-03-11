@@ -41,11 +41,7 @@ async function main() {
     const html = generateProductHtml(amoremallFiltered, innisfreeAll);
 
     // === MinIO 업로드 ===
-    const today = new Date()
-      .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Seoul' })
-      .replace(/\. /g, '-')
-      .replace('.', '');
-    const key = `${today}.html`;
+    const key = 'amorepacific/index.html';
 
     console.log(`6. MinIO 업로드 (${key})...`);
     const pageUrl = await uploadHtml(html, key);

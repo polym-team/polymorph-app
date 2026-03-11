@@ -23,6 +23,18 @@ function amoremallCard(p: AmoremallProduct): string {
          <span class="badge discount">${p.discountRate}%</span>`
       : `<span class="price-sale">${formatPrice(p.salePrice)}</span>`;
 
+  const cartData = JSON.stringify({
+    id: `amoremall-${p.goodsNo}`,
+    name: p.goodsName,
+    brand: p.brandName,
+    price: p.salePrice,
+    store: '아모레몰',
+  }).replace(/"/g, '&quot;');
+
+  const addBtn = p.soldOut
+    ? ''
+    : `<button class="btn-cart" onclick="addToCart(${cartData})">담기</button>`;
+
   return `
     <div class="card${p.soldOut ? ' card-sold-out' : ''}">
       <div class="card-img"><img src="${p.imageUrl}" alt="${p.goodsName}" loading="lazy" /></div>
@@ -30,6 +42,7 @@ function amoremallCard(p: AmoremallProduct): string {
         <div class="card-brand">${p.brandName}</div>
         <div class="card-name">${p.goodsName} ${soldOut}</div>
         <div class="card-price">${discount}</div>
+        ${addBtn}
       </div>
     </div>`;
 }
@@ -43,6 +56,18 @@ function innisfreeCard(p: InnisfreeProduct): string {
          <span class="badge discount">${p.employeeRate}%</span>`
       : `<span class="price-sale">${formatPrice(p.employeePrice)}</span>`;
 
+  const cartData = JSON.stringify({
+    id: `innisfree-${p.productId}`,
+    name: p.name,
+    brand: '이니스프리',
+    price: p.employeePrice,
+    store: '이니스프리',
+  }).replace(/"/g, '&quot;');
+
+  const addBtn = p.soldOut
+    ? ''
+    : `<button class="btn-cart" onclick="addToCart(${cartData})">담기</button>`;
+
   return `
     <div class="card${p.soldOut ? ' card-sold-out' : ''}">
       <div class="card-img"><img src="${p.imageUrl}" alt="${p.name}" loading="lazy" /></div>
@@ -50,6 +75,7 @@ function innisfreeCard(p: InnisfreeProduct): string {
         <div class="card-brand">이니스프리</div>
         <div class="card-name">${p.name} ${soldOut}</div>
         <div class="card-price">${discount}</div>
+        ${addBtn}
       </div>
     </div>`;
 }
@@ -91,9 +117,51 @@ export function generateProductHtml(
   .summary { background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: flex; gap: 24px; flex-wrap: wrap; }
   .summary-item { font-size: 14px; }
   .summary-item strong { font-size: 20px; }
+  .btn-cart { width: 100%; margin-top: 8px; padding: 8px; border: none; border-radius: 8px; background: #007aff; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .btn-cart:hover { background: #0056b3; }
+  .btn-cart:active { transform: scale(0.97); }
+
+  /* 장바구니 FAB */
+  .cart-fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: #007aff; color: #fff; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 4px 16px rgba(0,122,255,0.4); z-index: 1000; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+  .cart-fab:hover { transform: scale(1.08); }
+  .cart-fab .fab-count { position: absolute; top: -4px; right: -4px; background: #ff3b30; color: #fff; font-size: 12px; font-weight: 700; min-width: 20px; height: 20px; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+
+  /* 장바구니 패널 */
+  .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1001; display: none; }
+  .cart-overlay.open { display: block; }
+  .cart-panel { position: fixed; top: 0; right: -420px; width: 400px; max-width: 100vw; height: 100%; background: #fff; z-index: 1002; box-shadow: -4px 0 24px rgba(0,0,0,0.15); transition: right 0.3s ease; display: flex; flex-direction: column; }
+  .cart-panel.open { right: 0; }
+  .cart-header { padding: 20px; border-bottom: 1px solid #e5e5e5; display: flex; align-items: center; justify-content: space-between; }
+  .cart-header h3 { font-size: 18px; font-weight: 700; }
+  .cart-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #86868b; padding: 4px; }
+  .cart-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+  .cart-empty { text-align: center; color: #86868b; padding: 40px 0; font-size: 14px; }
+  .cart-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+  .cart-item-info { flex: 1; min-width: 0; }
+  .cart-item-brand { font-size: 11px; color: #86868b; }
+  .cart-item-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cart-item-price { font-size: 13px; color: #1d1d1f; font-weight: 600; margin-top: 2px; }
+  .cart-item-qty { display: flex; align-items: center; gap: 8px; }
+  .cart-item-qty button { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #d2d2d7; background: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .cart-item-qty button:hover { background: #f5f5f7; }
+  .cart-item-qty span { font-size: 14px; font-weight: 600; min-width: 20px; text-align: center; }
+  .cart-footer { padding: 16px 20px; border-top: 1px solid #e5e5e5; }
+  .cart-delivery { margin-bottom: 12px; }
+  .cart-delivery label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px; }
+  .cart-delivery-options { display: flex; gap: 8px; }
+  .cart-delivery-options button { flex: 1; padding: 10px; border: 2px solid #d2d2d7; border-radius: 8px; background: #fff; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+  .cart-delivery-options button.selected { border-color: #007aff; background: #eef4ff; color: #007aff; font-weight: 700; }
+  .cart-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 15px; font-weight: 700; }
+  .cart-notice { font-size: 11px; color: #ff3b30; margin-bottom: 12px; line-height: 1.4; padding: 8px; background: #fff5f5; border-radius: 6px; }
+  .btn-copy { width: 100%; padding: 14px; border: none; border-radius: 10px; background: #007aff; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+  .btn-copy:hover { background: #0056b3; }
+  .btn-copy:disabled { background: #d2d2d7; cursor: not-allowed; }
+  .btn-copy.copied { background: #34c759; }
+
   @media (max-width: 600px) {
     .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    body { padding: 12px; }
+    body { padding: 12px; padding-bottom: 80px; }
+    .cart-panel { width: 100vw; }
   }
 </style>
 </head>
@@ -117,6 +185,166 @@ export function generateProductHtml(
     ${innisfreeProducts.map(innisfreeCard).join('\n')}
   </div>
 </div>
+
+<!-- 장바구니 FAB -->
+<button class="cart-fab" onclick="toggleCart()">
+  🛒
+  <span class="fab-count" id="fab-count" style="display:none">0</span>
+</button>
+
+<!-- 장바구니 오버레이 -->
+<div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
+
+<!-- 장바구니 패널 -->
+<div class="cart-panel" id="cart-panel">
+  <div class="cart-header">
+    <h3>장바구니</h3>
+    <button class="cart-close" onclick="toggleCart()">&times;</button>
+  </div>
+  <div class="cart-body" id="cart-body">
+    <div class="cart-empty">상품을 담아주세요</div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-delivery">
+      <label>배송 요청지</label>
+      <div class="cart-delivery-options">
+        <button id="dlv-pangyo" class="selected" onclick="selectDelivery('pangyo')">axz판교오피스</button>
+        <button id="dlv-jeju" onclick="selectDelivery('jeju')">axz제주오피스</button>
+      </div>
+    </div>
+    <div class="cart-total">
+      <span>합계</span>
+      <span id="cart-total-price">0원</span>
+    </div>
+    <div class="cart-notice">
+      ⚠️ 실제 주문 시 구매제한 수량 및 품절로 인해 주문 내역과 차이가 있을 수 있습니다.
+    </div>
+    <button class="btn-copy" id="btn-copy" onclick="copyMessage()" disabled>메시지 복사</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  var cart = {};
+  var delivery = 'pangyo';
+  var deliveryLabels = { pangyo: 'axz판교오피스', jeju: 'axz제주오피스' };
+
+  window.addToCart = function(item) {
+    if (cart[item.id]) {
+      cart[item.id].qty++;
+    } else {
+      cart[item.id] = { ...item, qty: 1 };
+    }
+    renderCart();
+    if (!document.getElementById('cart-panel').classList.contains('open')) {
+      toggleCart();
+    }
+  };
+
+  window.removeFromCart = function(id) {
+    delete cart[id];
+    renderCart();
+  };
+
+  window.changeQty = function(id, delta) {
+    if (!cart[id]) return;
+    cart[id].qty += delta;
+    if (cart[id].qty <= 0) delete cart[id];
+    renderCart();
+  };
+
+  window.toggleCart = function() {
+    document.getElementById('cart-panel').classList.toggle('open');
+    document.getElementById('cart-overlay').classList.toggle('open');
+  };
+
+  window.selectDelivery = function(key) {
+    delivery = key;
+    document.getElementById('dlv-pangyo').classList.toggle('selected', key === 'pangyo');
+    document.getElementById('dlv-jeju').classList.toggle('selected', key === 'jeju');
+  };
+
+  window.copyMessage = function() {
+    var items = Object.values(cart);
+    if (items.length === 0) return;
+
+    var lines = ['[임직원 할인 주문 요청]', ''];
+    var total = 0;
+
+    var stores = {};
+    items.forEach(function(item) {
+      if (!stores[item.store]) stores[item.store] = [];
+      stores[item.store].push(item);
+    });
+
+    Object.keys(stores).forEach(function(store) {
+      lines.push('📦 ' + store);
+      stores[store].forEach(function(item) {
+        var subtotal = item.price * item.qty;
+        total += subtotal;
+        lines.push('  - ' + item.name + ' x' + item.qty + ' (' + item.price.toLocaleString() + '원)');
+      });
+      lines.push('');
+    });
+
+    lines.push('🏢 배송지: ' + deliveryLabels[delivery]);
+    lines.push('💰 합계: ' + total.toLocaleString() + '원');
+    lines.push('');
+    lines.push('⚠️ 구매제한/품절로 실제 주문과 차이가 있을 수 있습니다.');
+
+    var text = lines.join('\\n');
+    navigator.clipboard.writeText(text).then(function() {
+      var btn = document.getElementById('btn-copy');
+      btn.textContent = '복사됨!';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = '메시지 복사';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  };
+
+  function renderCart() {
+    var items = Object.values(cart);
+    var body = document.getElementById('cart-body');
+    var fabCount = document.getElementById('fab-count');
+    var totalEl = document.getElementById('cart-total-price');
+    var copyBtn = document.getElementById('btn-copy');
+
+    var totalQty = items.reduce(function(s, i) { return s + i.qty; }, 0);
+    fabCount.textContent = totalQty;
+    fabCount.style.display = totalQty > 0 ? 'flex' : 'none';
+    copyBtn.disabled = items.length === 0;
+
+    if (items.length === 0) {
+      body.innerHTML = '<div class="cart-empty">상품을 담아주세요</div>';
+      totalEl.textContent = '0원';
+      return;
+    }
+
+    var total = 0;
+    var html = items.map(function(item) {
+      var subtotal = item.price * item.qty;
+      total += subtotal;
+      return '<div class="cart-item">'
+        + '<div class="cart-item-info">'
+        + '<div class="cart-item-brand">' + item.store + ' · ' + item.brand + '</div>'
+        + '<div class="cart-item-name">' + item.name + '</div>'
+        + '<div class="cart-item-price">' + subtotal.toLocaleString() + '원</div>'
+        + '</div>'
+        + '<div class="cart-item-qty">'
+        + '<button onclick="changeQty(\\''+item.id+'\\', -1)">−</button>'
+        + '<span>' + item.qty + '</span>'
+        + '<button onclick="changeQty(\\''+item.id+'\\', 1)">+</button>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+
+    body.innerHTML = html;
+    totalEl.textContent = total.toLocaleString() + '원';
+  }
+})();
+</script>
 </body>
 </html>`;
 }
