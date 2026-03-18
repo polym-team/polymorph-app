@@ -95,7 +95,7 @@ export async function fetchAllProducts(token: string): Promise<AmoremallProduct[
 }
 
 const TARGET_BRANDS = ['설화수', '헤라', '프리메라'];
-const TARGET_NAME_KEYWORDS = ['기획', '세트'];
+const TARGET_NAME_KEYWORDS = ['기획', '세트', '리퍼'];
 
 export function filterProducts(products: AmoremallProduct[]): AmoremallProduct[] {
   return products.filter((p) => {
