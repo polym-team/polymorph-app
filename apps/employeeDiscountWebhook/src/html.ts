@@ -6,12 +6,20 @@ function formatPrice(price: number): string {
 }
 
 function getNowStr(): string {
-  return new Date().toLocaleDateString('ko-KR', {
+  const now = new Date();
+  const date = now.toLocaleDateString('ko-KR', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     timeZone: 'Asia/Seoul',
   });
+  const time = now.toLocaleTimeString('ko-KR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Seoul',
+    hour12: true,
+  });
+  return `${date} ${time}`;
 }
 
 function amoremallCard(p: AmoremallProduct): string {
@@ -151,6 +159,9 @@ export function generateProductHtml(
   .cart-delivery-options { display: flex; gap: 8px; }
   .cart-delivery-options button { flex: 1; padding: 10px; border: 2px solid #d2d2d7; border-radius: 8px; background: #fff; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
   .cart-delivery-options button.selected { border-color: #007aff; background: #eef4ff; color: #007aff; font-weight: 700; }
+  .cart-shipping-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #86868b; padding: 4px 0; }
+  .cart-shipping-row span:last-child { color: #ff3b30; font-weight: 600; }
+  #cart-shipping-info:not(:empty) { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #e5e5e5; }
   .cart-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 15px; font-weight: 700; }
   .cart-notice { font-size: 11px; color: #ff3b30; margin-bottom: 12px; line-height: 1.4; padding: 8px; background: #fff5f5; border-radius: 6px; }
   .btn-copy { width: 100%; padding: 14px; border: none; border-radius: 10px; background: #007aff; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
@@ -212,6 +223,7 @@ export function generateProductHtml(
         <button id="dlv-jeju" onclick="selectDelivery('jeju')">axz제주오피스</button>
       </div>
     </div>
+    <div id="cart-shipping-info"></div>
     <div class="cart-total">
       <span>합계</span>
       <span id="cart-total-price">0원</span>
@@ -277,18 +289,28 @@ export function generateProductHtml(
       stores[item.store].push(item);
     });
 
+    var totalShipping = 0;
     Object.keys(stores).forEach(function(store) {
       lines.push('📦 ' + store);
+      var storeTotal = 0;
       stores[store].forEach(function(item) {
         var subtotal = item.price * item.qty;
         total += subtotal;
+        storeTotal += subtotal;
         lines.push('  - ' + item.name + ' x' + item.qty + ' (' + item.price.toLocaleString() + '원)');
       });
+      if (storeTotal <= FREE_SHIPPING_THRESHOLD) {
+        totalShipping += SHIPPING_FEE;
+        lines.push('  📮 택배비: +' + SHIPPING_FEE.toLocaleString() + '원 (2만원 이하)');
+      }
       lines.push('');
     });
 
     lines.push('🏢 배송지: ' + deliveryLabels[delivery]);
-    lines.push('💰 합계: ' + total.toLocaleString() + '원');
+    if (totalShipping > 0) {
+      lines.push('📮 택배비 합계: ' + totalShipping.toLocaleString() + '원');
+    }
+    lines.push('💰 합계: ' + (total + totalShipping).toLocaleString() + '원');
     lines.push('');
     lines.push('⚠️ 구매제한/품절로 실제 주문과 차이가 있을 수 있습니다.');
 
@@ -304,11 +326,24 @@ export function generateProductHtml(
     });
   };
 
+  var SHIPPING_FEE = 2500;
+  var FREE_SHIPPING_THRESHOLD = 20000;
+
+  function calcStoreSubtotals() {
+    var stores = {};
+    Object.values(cart).forEach(function(item) {
+      if (!stores[item.store]) stores[item.store] = 0;
+      stores[item.store] += item.price * item.qty;
+    });
+    return stores;
+  }
+
   function renderCart() {
     var items = Object.values(cart);
     var body = document.getElementById('cart-body');
     var fabCount = document.getElementById('fab-count');
     var totalEl = document.getElementById('cart-total-price');
+    var shippingEl = document.getElementById('cart-shipping-info');
     var copyBtn = document.getElementById('btn-copy');
 
     var totalQty = items.reduce(function(s, i) { return s + i.qty; }, 0);
@@ -319,6 +354,7 @@ export function generateProductHtml(
     if (items.length === 0) {
       body.innerHTML = '<div class="cart-empty">상품을 담아주세요</div>';
       totalEl.textContent = '0원';
+      shippingEl.innerHTML = '';
       return;
     }
 
@@ -341,7 +377,23 @@ export function generateProductHtml(
     }).join('');
 
     body.innerHTML = html;
-    totalEl.textContent = total.toLocaleString() + '원';
+
+    var storeSubtotals = calcStoreSubtotals();
+    var totalShipping = 0;
+    var shippingHtml = '';
+    Object.keys(storeSubtotals).forEach(function(store) {
+      var sub = storeSubtotals[store];
+      if (sub <= FREE_SHIPPING_THRESHOLD) {
+        totalShipping += SHIPPING_FEE;
+        shippingHtml += '<div class="cart-shipping-row">'
+          + '<span>' + store + ' 택배비</span>'
+          + '<span>+' + SHIPPING_FEE.toLocaleString() + '원</span>'
+          + '</div>';
+      }
+    });
+
+    shippingEl.innerHTML = shippingHtml;
+    totalEl.textContent = (total + totalShipping).toLocaleString() + '원';
   }
 })();
 </script>

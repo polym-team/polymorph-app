@@ -1,16 +1,28 @@
 import 'dotenv/config';
 
 import { loginAndGetSession } from './auth/amoremall.js';
-import { fetchAllProducts as fetchAmoremall, filterProducts as filterAmoremall } from './fetchers/amoremall.js';
+import { fetchAllProducts as fetchAmoremall } from './fetchers/amoremall.js';
 import { fetchAllProducts as fetchInnisfree } from './fetchers/innisfree.js';
 import { generateProductHtml } from './html.js';
 import { uploadHtml } from './minio.js';
 import { sendNotification } from './slack.js';
 
-async function main() {
+const PAGE_URL = 'https://minio.polymorph.co.kr/share-discount-products/amorepacific/index.html';
+
+async function slackOnly() {
+  const slackWebhookUrl = process.env.AMOREMALL_PRODUCT_INFO_SLACK_WEBHOOK;
+  if (!slackWebhookUrl) {
+    throw new Error('AMOREMALL_PRODUCT_INFO_SLACK_WEBHOOK 환경변수가 필요합니다.');
+  }
+
+  console.log('1. 슬랙 알림 전송...');
+  await sendNotification(slackWebhookUrl, PAGE_URL);
+  console.log('완료!');
+}
+
+async function refresh() {
   const id = process.env.AMOREMALL_ID;
   const pw = process.env.AMOREMALL_PW;
-  const slackWebhookUrl = process.env.AMOREMALL_PRODUCT_INFO_SLACK_WEBHOOK;
 
   if (!id || !pw) {
     throw new Error('AMOREMALL_ID, AMOREMALL_PW 환경변수가 필요합니다.');
@@ -27,38 +39,35 @@ async function main() {
     const amoremallAll = await fetchAmoremall(session.token);
     console.log(`   총 ${amoremallAll.length}개 상품 조회됨`);
 
-    console.log('3. 아모레몰 상품 필터링...');
-    const amoremallFiltered = filterAmoremall(amoremallAll);
-    console.log(`   ${amoremallFiltered.length}개 상품 매칭`);
-
     // === 이니스프리 ===
-    console.log('4. 이니스프리 상품 조회...');
+    console.log('3. 이니스프리 상품 조회...');
     const innisfreeAll = await fetchInnisfree(session.context);
     console.log(`   총 ${innisfreeAll.length}개 상품 조회됨`);
 
     // === HTML 생성 ===
-    console.log('5. HTML 페이지 생성...');
-    const html = generateProductHtml(amoremallFiltered, innisfreeAll);
+    console.log('4. HTML 페이지 생성...');
+    const html = generateProductHtml(amoremallAll, innisfreeAll);
 
     // === MinIO 업로드 ===
     const key = 'amorepacific/index.html';
 
-    console.log(`6. MinIO 업로드 (${key})...`);
+    console.log(`5. MinIO 업로드 (${key})...`);
     const pageUrl = await uploadHtml(html, key);
     console.log(`   업로드 완료: ${pageUrl}`);
-
-    // === 슬랙 전송 ===
-    if (slackWebhookUrl) {
-      console.log('7. 슬랙 알림 전송...');
-      await sendNotification(slackWebhookUrl, pageUrl, amoremallFiltered.length, innisfreeAll.length);
-    } else {
-      console.log('7. [로컬] 슬랙 미전송 (AMOREMALL_PRODUCT_INFO_SLACK_WEBHOOK 미설정)');
-      console.log(`   페이지 URL: ${pageUrl}`);
-    }
 
     console.log('완료!');
   } finally {
     await session.browser.close();
+  }
+}
+
+async function main() {
+  const mode = process.argv[2];
+
+  if (mode === '--slack-only') {
+    await slackOnly();
+  } else {
+    await refresh();
   }
 }
 

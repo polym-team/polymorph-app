@@ -1,8 +1,6 @@
 export async function sendNotification(
   webhookUrl: string,
   pageUrl: string,
-  amoremallCount: number,
-  innisfreeCount: number,
 ): Promise<void> {
   const now = new Date().toLocaleDateString('ko-KR', {
     year: 'numeric',
@@ -24,7 +22,7 @@ export async function sendNotification(
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `아모레몰 *${amoremallCount}개* | 이니스프리 *${innisfreeCount}개*\n\n<${pageUrl}|상품 목록 보기>`,
+            text: `<${pageUrl}|상품 목록 보기>`,
           },
         },
       ],
