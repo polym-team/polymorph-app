@@ -44,7 +44,7 @@ function amoremallCard(p: AmoremallProduct): string {
     : `<button class="btn-cart" onclick="addToCart(${cartData})">담기</button>`;
 
   return `
-    <div class="card${p.soldOut ? ' card-sold-out' : ''}">
+    <div class="card${p.soldOut ? ' card-sold-out' : ''}" data-brand="${p.brandName}">
       <div class="card-img"><img src="${p.imageUrl}" alt="${p.goodsName}" loading="lazy" /></div>
       <div class="card-body">
         <div class="card-brand">${p.brandName}</div>
@@ -93,6 +93,7 @@ export function generateProductHtml(
   innisfreeProducts: InnisfreeProduct[],
 ): string {
   const date = getNowStr();
+  const brands = [...new Set(amoremallProducts.map((p) => p.brandName))].sort();
 
   return `<!DOCTYPE html>
 <html lang="ko">
@@ -125,6 +126,10 @@ export function generateProductHtml(
   .summary { background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: flex; gap: 24px; flex-wrap: wrap; }
   .summary-item { font-size: 14px; }
   .summary-item strong { font-size: 20px; }
+  .brand-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .brand-chip { padding: 6px 14px; border-radius: 20px; border: 1.5px solid #d2d2d7; background: #fff; font-size: 13px; cursor: pointer; transition: all 0.2s; user-select: none; white-space: nowrap; }
+  .brand-chip:hover { border-color: #007aff; }
+  .brand-chip.active { background: #007aff; color: #fff; border-color: #007aff; }
   .btn-cart { width: 100%; margin-top: 8px; padding: 8px; border: none; border-radius: 8px; background: #007aff; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
   .btn-cart:hover { background: #0056b3; }
   .btn-cart:active { transform: scale(0.97); }
@@ -187,7 +192,8 @@ export function generateProductHtml(
   </div>
 
   <h2>아모레몰</h2>
-  <div class="grid">
+  <div class="brand-filter" id="brand-filter"></div>
+  <div class="grid" id="amoremall-grid">
     ${amoremallProducts.map(amoremallCard).join('\n')}
   </div>
 
@@ -237,6 +243,58 @@ export function generateProductHtml(
 
 <script>
 (function() {
+  var brands = ${JSON.stringify(brands)};
+  var brandSet = new Set(brands);
+  var selectedBrands = new Set(
+    (JSON.parse(sessionStorage.getItem('selectedBrands') || '[]')).filter(function(b) { return brandSet.has(b); })
+  );
+
+  function saveBrandFilter() {
+    sessionStorage.setItem('selectedBrands', JSON.stringify(Array.from(selectedBrands)));
+  }
+
+  function renderBrandFilter() {
+    var container = document.getElementById('brand-filter');
+    var allCls = selectedBrands.size === 0 ? ' active' : '';
+    var html = '<button class="brand-chip' + allCls + '" onclick="filterBrand(null)">전체</button>';
+    brands.forEach(function(b) {
+      var cls = selectedBrands.has(b) ? ' active' : '';
+      html += '<button class="brand-chip' + cls + '" onclick="filterBrand(\\''+b.replace(/'/g, "\\\\'")+'\\')">' + b + '</button>';
+    });
+    container.innerHTML = html;
+  }
+
+  window.filterBrand = function(brand) {
+    if (brand === null) {
+      selectedBrands.clear();
+    } else {
+      if (selectedBrands.has(brand)) {
+        selectedBrands.delete(brand);
+      } else {
+        selectedBrands.add(brand);
+      }
+    }
+    var cards = document.querySelectorAll('#amoremall-grid .card');
+    cards.forEach(function(card) {
+      if (selectedBrands.size === 0) {
+        card.style.display = '';
+      } else {
+        card.style.display = selectedBrands.has(card.getAttribute('data-brand')) ? '' : 'none';
+      }
+    });
+    saveBrandFilter();
+    renderBrandFilter();
+  };
+
+  // 초기 로드 시 저장된 필터 적용
+  if (selectedBrands.size > 0) {
+    var cards = document.querySelectorAll('#amoremall-grid .card');
+    cards.forEach(function(card) {
+      card.style.display = selectedBrands.has(card.getAttribute('data-brand')) ? '' : 'none';
+    });
+  }
+  renderBrandFilter();
+
   var cart = {};
   var delivery = 'pangyo';
   var deliveryLabels = { pangyo: 'axz판교오피스', jeju: 'axz제주오피스' };
