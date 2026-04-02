@@ -4,12 +4,8 @@ on:
   push:
     branches: ["main"]
     paths:
-      # official-website와 관련된 코드가 바뀔 때만 실행
       - "apps/official-website/**"
-      - "packages/**" # 공통 패키지 변경 시에도 재배포 필요
       - ".github/workflows/official-website-deploy-polymorph-k8s-prd.yaml"
-      - "package.json"
-      - "pnpm-lock.yaml"
   # 수동 실행 버튼 활성화
   workflow_dispatch:
 

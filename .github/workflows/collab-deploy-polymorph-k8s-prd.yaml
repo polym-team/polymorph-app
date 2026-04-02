@@ -6,8 +6,6 @@ on:
     paths:
       - "apps/collab/**"
       - ".github/workflows/collab-deploy-polymorph-k8s-prd.yaml"
-      - "package.json"
-      - "pnpm-lock.yaml"
   workflow_dispatch:
 
 permissions:
