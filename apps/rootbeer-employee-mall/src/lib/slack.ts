@@ -80,6 +80,46 @@ export async function notifyRoundOpened(
   });
 }
 
+export async function notifyProductsUpdated(
+  amoremallCount: number,
+  innisfreeCount: number,
+) {
+  const now = new Date().toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'Asia/Seoul',
+  });
+
+  await postMessage({
+    text: `임직원 할인 상품 알림 (${now})`,
+    blocks: [
+      {
+        type: 'header',
+        text: { type: 'plain_text', text: `임직원 할인 상품 알림 (${now})` },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `상품이 업데이트되었습니다.\n:shopping_bags: 아모레몰 *${amoremallCount}*개 · 이니스프리 *${innisfreeCount}*개`,
+        },
+      },
+      {
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            text: { type: 'plain_text', text: '상품 목록 보기' },
+            url: SITE_URL,
+            style: 'primary',
+          },
+        ],
+      },
+    ],
+  });
+}
+
 export async function notifyRoundClosed(
   slackTs: string,
   title: string | null,
