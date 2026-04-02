@@ -49,23 +49,23 @@ export default function AdminRoundsPage() {
 
       <div className="bg-white rounded border p-4 mb-6">
         <h2 className="text-sm font-medium mb-3">새 라운드 생성</h2>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <input
             type="text"
             placeholder="제목 (선택)"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="border rounded px-3 py-1.5 text-sm flex-1"
+            className="border rounded px-3 py-1.5 text-sm flex-1 min-w-[120px]"
           />
           <input
             type="datetime-local"
             value={deadline}
             onChange={(e) => setDeadline(e.target.value)}
-            className="border rounded px-3 py-1.5 text-sm"
+            className="border rounded px-3 py-1.5 text-sm min-w-0"
           />
           <button
             onClick={handleCreate}
-            className="bg-black text-white px-4 py-1.5 rounded text-sm hover:bg-gray-800"
+            className="bg-accent-500 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-accent-600 font-medium"
           >
             생성
           </button>

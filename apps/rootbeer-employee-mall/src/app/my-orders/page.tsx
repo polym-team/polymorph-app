@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { STORE_LABELS, DELIVERY_LABELS } from '@/types';
 
@@ -186,6 +186,17 @@ export default function MyOrdersPage() {
           })}
         </div>
       )}
+
+      {/* 계정 정보 + 로그아웃 */}
+      <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+        <p className="text-xs text-gray-400 mb-2">{session.user.email}</p>
+        <button
+          onClick={() => signOut()}
+          className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          로그아웃
+        </button>
+      </div>
     </div>
   );
 }

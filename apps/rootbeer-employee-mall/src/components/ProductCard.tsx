@@ -30,9 +30,12 @@ export function ProductCard({ product }: { product: ProductWithDetail }) {
   };
 
   return (
-    <div ref={cardRef} className="bg-white rounded border overflow-hidden flex flex-col">
+    <div
+      ref={cardRef}
+      className="bg-white rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow duration-200"
+    >
       <div
-        className={`aspect-square bg-gray-100 relative ${product.hasDetail ? 'cursor-pointer' : ''}`}
+        className={`aspect-square bg-gray-50 relative ${product.hasDetail ? 'cursor-pointer' : ''}`}
         onClick={handleOpenDetail}
       >
         {product.imageUrl && (
@@ -43,59 +46,58 @@ export function ProductCard({ product }: { product: ProductWithDetail }) {
           />
         )}
         {product.soldOut && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <span className="text-white font-bold text-lg">품절</span>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
+            <span className="text-white font-bold text-sm bg-black/40 px-3 py-1 rounded-full">품절</span>
           </div>
         )}
-        {product.hasDetail && (
-          <span className="absolute top-1.5 right-1.5 bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded">
-            상세
+        {product.hasDetail && !product.soldOut && (
+          <span className="absolute top-2 right-2 bg-accent-500/90 text-white text-[10px] px-2 py-0.5 rounded-full font-medium backdrop-blur-sm">
+            상세보기
+          </span>
+        )}
+        {discountText && !product.soldOut && (
+          <span className="absolute top-2 left-2 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+            {discountText}
           </span>
         )}
       </div>
       <div className="p-3 flex flex-col flex-1">
-        {product.brand && (
-          <span className="text-xs text-gray-500 mb-1">{product.brand}</span>
-        )}
+        <span className="text-[11px] text-gray-400 mb-0.5">
+          {STORE_LABELS[product.store]}
+          {product.brand && ` · ${product.brand}`}
+        </span>
         <h3
-          className={`text-sm font-medium line-clamp-2 mb-2 ${product.hasDetail ? 'cursor-pointer hover:underline' : ''}`}
+          className={`text-[13px] leading-snug font-medium line-clamp-2 mb-2 ${product.hasDetail ? 'cursor-pointer hover:text-accent-500 transition-colors' : ''}`}
           onClick={handleOpenDetail}
         >
           {product.name}
         </h3>
-        <div className="mt-auto">
-          <div className="flex items-baseline gap-2">
-            {discountText && (
-              <span className="text-red-500 font-bold text-sm">{discountText}</span>
+        <div className="mt-auto flex items-end justify-between">
+          <div>
+            <span className="font-bold text-[15px]">{product.salePrice.toLocaleString()}</span>
+            <span className="text-xs text-gray-500">원</span>
+            {product.originPrice && product.originPrice !== product.salePrice && (
+              <span className="text-[11px] text-gray-300 line-through ml-1.5">
+                {product.originPrice.toLocaleString()}
+              </span>
             )}
-            <span className="font-bold">{product.salePrice.toLocaleString()}원</span>
           </div>
-          {product.originPrice && product.originPrice !== product.salePrice && (
-            <span className="text-xs text-gray-400 line-through">
-              {product.originPrice.toLocaleString()}원
-            </span>
-          )}
-          <div className="flex items-center justify-between mt-2">
-            <span className="text-xs text-gray-400">
-              {STORE_LABELS[product.store]}
-            </span>
-            <button
-              disabled={product.soldOut}
-              onClick={() =>
-                addItem({
-                  productId: product.id,
-                  name: product.name,
-                  brand: product.brand,
-                  price: product.salePrice,
-                  store: product.store,
-                  imageUrl: product.imageUrl,
-                })
-              }
-              className="text-xs px-3 py-1 bg-black text-white rounded hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              담기
-            </button>
-          </div>
+          <button
+            disabled={product.soldOut}
+            onClick={() =>
+              addItem({
+                productId: product.id,
+                name: product.name,
+                brand: product.brand,
+                price: product.salePrice,
+                store: product.store,
+                imageUrl: product.imageUrl,
+              })
+            }
+            className="text-xs px-3 py-1.5 bg-accent-500 text-white rounded-full hover:bg-accent-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
+          >
+            담기
+          </button>
         </div>
       </div>
     </div>

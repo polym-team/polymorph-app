@@ -2,10 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    @apply text-gray-800 antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+/* 스크롤바 숨기기 */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
 /* 상품 상세 HTML 스타일 */
 .product-detail-html img {
   max-width: 100%;
   height: auto;
+  border-radius: 8px;
 }
 .product-detail-html table {
   width: 100%;

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/components/AuthProvider';
-import { Header } from '@/components/Header';
+import { BottomNav } from '@/components/BottomNav';
 import { ProductDetailModal } from '@/components/ProductDetailModal';
 
 export const metadata: Metadata = {
@@ -12,10 +12,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <body className="bg-gray-50 min-h-screen">
+      <body className="bg-gray-50 min-h-screen overflow-x-hidden">
         <AuthProvider>
-          <Header />
-          <main className="max-w-6xl mx-auto px-4 py-6">{children}</main>
+          <main className="max-w-5xl mx-auto px-4 pt-4 pb-24">{children}</main>
+          <BottomNav />
           <ProductDetailModal />
         </AuthProvider>
       </body>
