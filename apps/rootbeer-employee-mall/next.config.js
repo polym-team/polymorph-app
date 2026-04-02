@@ -2,6 +2,7 @@
 const nextConfig = {
   output: 'standalone',
   transpilePackages: ['@package/ui', '@package/utils'],
+  serverExternalPackages: ['playwright', 'playwright-core'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '**.amoremall.com' },
