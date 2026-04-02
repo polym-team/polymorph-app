@@ -23,6 +23,7 @@ WORKDIR /app
 COPY --from=deps /app ./
 
 ENV IS_DOCKER_BUILD=true
+RUN pnpm --filter rootbeer-employee-mall db:generate
 RUN pnpm --filter rootbeer-employee-mall build
 
 # 4. Runner

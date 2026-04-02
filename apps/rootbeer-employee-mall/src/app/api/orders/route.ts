@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
+import type { Prisma } from '@prisma/client';
 
 export async function GET() {
   const { user, error } = await requireAuth();
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: '현재 열려있는 주문 라운드가 아닙니다' }, { status: 400 });
   }
 
-  const order = await prisma.$transaction(async (tx) => {
+  const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     // Delete existing order if any
     const existing = await tx.order.findUnique({
       where: { roundId_userId: { roundId, userId: user!.id } },
