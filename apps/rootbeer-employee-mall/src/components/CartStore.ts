@@ -12,13 +12,21 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface CustomDelivery {
+  name: string;
+  phone: string;
+  address: string;
+}
+
 interface CartState {
   items: CartItem[];
-  deliveryLocation: 'pangyo' | 'jeju';
+  deliveryLocation: 'pangyo' | 'jeju' | 'custom';
+  customDelivery: CustomDelivery;
   addItem: (item: Omit<CartItem, 'quantity'>) => void;
   removeItem: (productId: number) => void;
   updateQuantity: (productId: number, quantity: number) => void;
-  setDeliveryLocation: (location: 'pangyo' | 'jeju') => void;
+  setDeliveryLocation: (location: 'pangyo' | 'jeju' | 'custom') => void;
+  setCustomDelivery: (delivery: CustomDelivery) => void;
   clear: () => void;
 }
 
@@ -26,7 +34,8 @@ export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
       items: [],
-      deliveryLocation: 'pangyo',
+      deliveryLocation: 'jeju',
+      customDelivery: { name: '', phone: '', address: '' },
       addItem: (item) =>
         set((state) => {
           const existing = state.items.find((i) => i.productId === item.productId);
@@ -51,7 +60,8 @@ export const useCartStore = create<CartState>()(
               : state.items.map((i) => (i.productId === productId ? { ...i, quantity } : i)),
         })),
       setDeliveryLocation: (location) => set({ deliveryLocation: location }),
-      clear: () => set({ items: [], deliveryLocation: 'pangyo' }),
+      setCustomDelivery: (delivery) => set({ customDelivery: delivery }),
+      clear: () => set({ items: [], deliveryLocation: 'jeju', customDelivery: { name: '', phone: '', address: '' } }),
     }),
     { name: 'employee-mall-cart' },
   ),

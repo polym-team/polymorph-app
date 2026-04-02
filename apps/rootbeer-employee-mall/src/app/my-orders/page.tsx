@@ -8,6 +8,9 @@ interface OrderData {
   id: number;
   roundId: number;
   deliveryLocation: string;
+  customName: string | null;
+  customPhone: string | null;
+  customAddress: string | null;
   status: string;
   createdAt: string;
   round: { title: string | null; status: string };
@@ -161,10 +164,23 @@ export default function MyOrdersPage() {
                 </div>
                 <div className="p-3 border-t flex justify-between text-sm">
                   <span className="text-gray-500">
-                    {DELIVERY_LABELS[order.deliveryLocation] ?? order.deliveryLocation}
+                    {order.deliveryLocation === 'custom'
+                      ? `${order.customName} / ${order.customPhone} / ${order.customAddress}`
+                      : DELIVERY_LABELS[order.deliveryLocation] ?? order.deliveryLocation}
                   </span>
                   <span className="font-bold">{total.toLocaleString()}원</span>
                 </div>
+                {order.round.status === 'ordered' && (
+                  <div className="p-3 border-t bg-blue-50 text-sm">
+                    <p className="font-medium text-blue-800 mb-1">입금 안내</p>
+                    <p className="text-blue-700">
+                      우리은행 1002-854-981268 (예금주: 임흥선)
+                    </p>
+                    <p className="text-xs text-blue-500 mt-1">
+                      주문이 완료되었습니다. 위 계좌로 정산 금액을 입금해주세요.
+                    </p>
+                  </div>
+                )}
               </div>
             );
           })}

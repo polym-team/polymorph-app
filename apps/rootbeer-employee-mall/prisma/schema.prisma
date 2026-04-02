@@ -34,6 +34,7 @@ enum OrderStatus {
 enum DeliveryLocation {
   pangyo
   jeju
+  custom
 }
 
 enum OrderItemStatus {
@@ -54,9 +55,10 @@ model User {
   name         String
   profileImage String?  @map("profile_image")
   googleId     String?  @unique @map("google_id")
-  role         UserRole @default(pending)
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  role            UserRole @default(pending)
+  filterPreset    String?  @map("filter_preset") @db.Text
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   orders Order[]
 
@@ -118,6 +120,9 @@ model Order {
   roundId          Int              @map("round_id")
   userId           Int              @map("user_id")
   deliveryLocation DeliveryLocation @default(pangyo) @map("delivery_location")
+  customName       String?          @map("custom_name")
+  customPhone      String?          @map("custom_phone")
+  customAddress    String?          @map("custom_address") @db.VarChar(500)
   status           OrderStatus      @default(submitted)
   createdAt        DateTime         @default(now()) @map("created_at")
 

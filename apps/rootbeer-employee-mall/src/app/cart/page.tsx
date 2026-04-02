@@ -26,8 +26,10 @@ const ISSUE_LABELS: Record<string, string> = {
 export default function CartPage() {
   const { data: session } = useSession();
   const router = useRouter();
-  const { items, deliveryLocation, removeItem, updateQuantity, setDeliveryLocation, clear } =
-    useCartStore();
+  const {
+    items, deliveryLocation, customDelivery,
+    removeItem, updateQuantity, setDeliveryLocation, setCustomDelivery, clear,
+  } = useCartStore();
   const [openRounds, setOpenRounds] = useState<OrderRound[]>([]);
   const [selectedRoundId, setSelectedRoundId] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -85,10 +87,26 @@ export default function CartPage() {
     items: storeItems,
   }));
 
-  const grandTotal = storeSubtotals.reduce((sum, s) => sum + s.subtotal, 0);
+  const SHIPPING_FEE = 2500;
+  const FREE_SHIPPING_THRESHOLD = 20000;
+
+  const shippingByStore = deliveryLocation === 'custom'
+    ? storeSubtotals.map((s) => ({
+        store: s.store,
+        fee: s.subtotal > 0 && s.subtotal <= FREE_SHIPPING_THRESHOLD ? SHIPPING_FEE : 0,
+      }))
+    : [];
+
+  const totalShipping = shippingByStore.reduce((sum, s) => sum + s.fee, 0);
+  const grandSubtotal = storeSubtotals.reduce((sum, s) => sum + s.subtotal, 0);
+  const grandTotal = grandSubtotal + totalShipping;
+
+  const isCustomValid =
+    deliveryLocation !== 'custom' ||
+    (customDelivery.name.trim() && customDelivery.phone.trim() && customDelivery.address.trim());
 
   const handleSubmit = async () => {
-    if (!selectedRoundId) return;
+    if (!selectedRoundId || !isCustomValid) return;
     setSubmitting(true);
 
     try {
@@ -107,6 +125,11 @@ export default function CartPage() {
         body: JSON.stringify({
           roundId: selectedRoundId,
           deliveryLocation,
+          ...(deliveryLocation === 'custom' ? {
+            customName: customDelivery.name.trim(),
+            customPhone: customDelivery.phone.trim(),
+            customAddress: customDelivery.address.trim(),
+          } : {}),
           items: submitItems,
         }),
       });
@@ -249,7 +272,7 @@ export default function CartPage() {
               <label className="text-sm font-medium block mb-2">배송지</label>
               <select
                 value={deliveryLocation}
-                onChange={(e) => setDeliveryLocation(e.target.value as 'pangyo' | 'jeju')}
+                onChange={(e) => setDeliveryLocation(e.target.value as 'pangyo' | 'jeju' | 'custom')}
                 className="border rounded px-3 py-1.5 text-sm w-full"
               >
                 {Object.entries(DELIVERY_LABELS).map(([k, v]) => (
@@ -259,22 +282,68 @@ export default function CartPage() {
                 ))}
               </select>
             </div>
+            {deliveryLocation === 'custom' && (
+              <div className="space-y-2 pt-2 border-t">
+                <p className="text-xs text-orange-600">
+                  특정 배송지는 단독 주문으로 처리되며 합배송이 적용되지 않습니다.
+                </p>
+                <input
+                  type="text"
+                  placeholder="수령인 이름"
+                  value={customDelivery.name}
+                  onChange={(e) => setCustomDelivery({ ...customDelivery, name: e.target.value })}
+                  className="border rounded px-3 py-1.5 text-sm w-full"
+                />
+                <input
+                  type="text"
+                  placeholder="연락처"
+                  value={customDelivery.phone}
+                  onChange={(e) => setCustomDelivery({ ...customDelivery, phone: e.target.value })}
+                  className="border rounded px-3 py-1.5 text-sm w-full"
+                />
+                <input
+                  type="text"
+                  placeholder="배송 주소"
+                  value={customDelivery.address}
+                  onChange={(e) => setCustomDelivery({ ...customDelivery, address: e.target.value })}
+                  className="border rounded px-3 py-1.5 text-sm w-full"
+                />
+              </div>
+            )}
           </div>
 
           <div className="bg-white rounded border p-4 mb-4">
-            <div className="flex justify-between font-bold">
+            <div className="flex justify-between text-sm">
+              <span>상품 합계</span>
+              <span>{grandSubtotal.toLocaleString()}원</span>
+            </div>
+            {deliveryLocation === 'custom' && shippingByStore.length > 0 && (
+              <div className="mt-2 space-y-1">
+                {shippingByStore.map((s) => (
+                  <div key={s.store} className="flex justify-between text-xs text-gray-500">
+                    <span>
+                      {STORE_LABELS[s.store as keyof typeof STORE_LABELS]} 배송비
+                      {s.fee === 0 ? ' (무료)' : ''}
+                    </span>
+                    <span>{s.fee > 0 ? `+${s.fee.toLocaleString()}원` : '0원'}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex justify-between font-bold mt-2 pt-2 border-t">
               <span>합계</span>
               <span>{grandTotal.toLocaleString()}원</span>
             </div>
-            <p className="text-xs text-gray-400 mt-1">
-              배송비는 합배송 여부에 따라 정산 시 확정됩니다.<br/>
-              마켓별로 2만원 이하인 경우 배송비가 발생합니다. 다른 주문과 합산되어 배송비가 발생되지 않을때만 주문됩니다.
+            <p className="text-xs text-gray-400 mt-2">
+              {deliveryLocation === 'custom'
+                ? '특정 배송지는 단독 주문으로 처리되며, 마켓별 2만원 이하 시 배송비 2,500원이 부과됩니다.'
+                : '배송비는 합배송 여부에 따라 정산 시 확정됩니다. 마켓별로 2만원 이하인 경우 배송비가 발생합니다. 다른 주문과 합산되어 배송비가 발생되지 않을때만 주문됩니다.'}
             </p>
           </div>
 
           <button
             onClick={handleSubmit}
-            disabled={submitting || !selectedRoundId || hasBlockingIssues || validItems.length === 0}
+            disabled={submitting || !selectedRoundId || hasBlockingIssues || validItems.length === 0 || !isCustomValid}
             className="w-full bg-black text-white py-3 rounded hover:bg-gray-800 disabled:bg-gray-400 text-sm"
           >
             {submitting ? '주문 제출 중...' : '주문 제출'}

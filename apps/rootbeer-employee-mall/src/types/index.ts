@@ -18,6 +18,7 @@ export const STORE_LABELS: Record<Store, string> = {
 export const DELIVERY_LABELS: Record<string, string> = {
   pangyo: 'axz판교오피스',
   jeju: 'axz제주오피스',
+  custom: '특정 배송지',
 };
 
 export interface SettlementRow {

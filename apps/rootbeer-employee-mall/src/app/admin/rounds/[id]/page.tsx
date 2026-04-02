@@ -10,6 +10,9 @@ interface OrderRow {
   user_name: string;
   user_email: string;
   delivery_location: string;
+  custom_name: string | null;
+  custom_phone: string | null;
+  custom_address: string | null;
   order_status: string;
   item_id: number;
   product_id: number;
@@ -321,6 +324,11 @@ export default function RoundDetailPage({ params }: { params: Promise<{ id: stri
                             </td>
                             <td className="p-2">
                               <p className="font-medium">{row.user_name}</p>
+                              {row.delivery_location === 'custom' && (
+                                <span className="text-xs text-orange-600 block" title={`${row.custom_name} / ${row.custom_phone} / ${row.custom_address}`}>
+                                  개별배송
+                                </span>
+                              )}
                             </td>
                             <td className="p-2">
                               <p className={`truncate max-w-xs ${isSoldout ? 'line-through' : ''}`}>

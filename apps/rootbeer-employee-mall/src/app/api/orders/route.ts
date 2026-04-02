@@ -37,9 +37,12 @@ export async function POST(req: Request) {
   if (error) return error;
 
   const body = await req.json();
-  const { roundId, deliveryLocation, items } = body as {
+  const { roundId, deliveryLocation, customName, customPhone, customAddress, items } = body as {
     roundId: number;
-    deliveryLocation: 'pangyo' | 'jeju';
+    deliveryLocation: 'pangyo' | 'jeju' | 'custom';
+    customName?: string;
+    customPhone?: string;
+    customAddress?: string;
     items: { productId: number; quantity: number; price: number }[];
   };
 
@@ -69,7 +72,12 @@ export async function POST(req: Request) {
       data: {
         roundId,
         userId: user!.id,
-        deliveryLocation: deliveryLocation || 'pangyo',
+        deliveryLocation: deliveryLocation || 'jeju',
+        ...(deliveryLocation === 'custom' ? {
+          customName: customName ?? null,
+          customPhone: customPhone ?? null,
+          customAddress: customAddress ?? null,
+        } : {}),
         items: {
           create: items.map((item) => ({
             productId: item.productId,
