@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 상품 상세 HTML 스타일 */
+.product-detail-html img {
+  max-width: 100%;
+  height: auto;
+}
+.product-detail-html table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.product-detail-html td,
+.product-detail-html th {
+  border: 1px solid #e5e7eb;
+  padding: 8px;
+  font-size: 0.875rem;
+}
+.product-detail-html p {
+  margin-bottom: 0.5rem;
+}

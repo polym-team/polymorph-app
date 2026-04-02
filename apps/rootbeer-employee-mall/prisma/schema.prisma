@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  pending
+  user
+  admin
+}
+
+enum Store {
+  amoremall
+  innisfree
+}
+
+enum RoundStatus {
+  open
+  closed
+  ordered
+  settled
+}
+
+enum OrderStatus {
+  submitted
+  confirmed
+  settled
+}
+
+enum DeliveryLocation {
+  pangyo
+  jeju
+}
+
+enum OrderItemStatus {
+  active
+  soldout
+}
+
+enum PurchaseStatus {
+  pending
+  ordered
+  delivered
+  settled
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String
+  profileImage String?  @map("profile_image")
+  googleId     String?  @unique @map("google_id")
+  role         UserRole @default(pending)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  orders Order[]
+
+  @@map("users")
+}
+
+model Product {
+  id           Int      @id @default(autoincrement())
+  store        Store
+  externalId   String   @map("external_id")
+  name         String   @db.VarChar(500)
+  brand        String?
+  salePrice    Int      @map("sale_price")
+  originPrice  Int?     @map("origin_price")
+  discountRate Int?     @map("discount_rate")
+  imageUrl     String?  @map("image_url") @db.VarChar(1000)
+  productUrl   String?  @map("product_url") @db.VarChar(1000)
+  soldOut      Boolean  @default(false) @map("sold_out")
+  scrapedAt    DateTime @default(now()) @map("scraped_at")
+
+  orderItems OrderItem[]
+  detail     ProductDetail?
+
+  @@unique([store, externalId])
+  @@map("products")
+}
+
+model ProductDetail {
+  id          Int      @id @default(autoincrement())
+  productId   Int      @unique @map("product_id")
+  description String?  @db.Text
+  images      String?  @db.Text
+  htmlContent String?  @map("html_content") @db.MediumText
+  rawJson     String?  @map("raw_json") @db.MediumText
+  scrapedAt   DateTime @default(now()) @map("scraped_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_details")
+}
+
+model OrderRound {
+  id         Int         @id @default(autoincrement())
+  title      String?
+  status     RoundStatus @default(open)
+  deadline   DateTime?
+  slackTs    String?     @map("slack_ts")
+  createdAt  DateTime    @default(now()) @map("created_at")
+  closedAt   DateTime?   @map("closed_at")
+
+  orders    Order[]
+  purchases Purchase[]
+
+  @@map("order_rounds")
+}
+
+model Order {
+  id               Int              @id @default(autoincrement())
+  roundId          Int              @map("round_id")
+  userId           Int              @map("user_id")
+  deliveryLocation DeliveryLocation @default(pangyo) @map("delivery_location")
+  status           OrderStatus      @default(submitted)
+  createdAt        DateTime         @default(now()) @map("created_at")
+
+  round OrderRound @relation(fields: [roundId], references: [id])
+  user  User       @relation(fields: [userId], references: [id])
+  items OrderItem[]
+
+  @@unique([roundId, userId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id           Int             @id @default(autoincrement())
+  orderId      Int             @map("order_id")
+  productId    Int             @map("product_id")
+  quantity     Int             @default(1)
+  priceAtOrder Int             @map("price_at_order")
+  status       OrderItemStatus @default(active)
+
+  order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product       Product        @relation(fields: [productId], references: [id])
+  purchaseItems PurchaseItem[]
+
+  @@map("order_items")
+}
+
+model Purchase {
+  id              Int            @id @default(autoincrement())
+  roundId         Int            @map("round_id")
+  store           Store
+  externalOrderNo String?        @map("external_order_no")
+  shippingFee     Int            @default(0) @map("shipping_fee")
+  status          PurchaseStatus @default(pending)
+  orderedAt       DateTime?      @map("ordered_at")
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  round OrderRound     @relation(fields: [roundId], references: [id])
+  items PurchaseItem[]
+
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id          Int @id @default(autoincrement())
+  purchaseId  Int @map("purchase_id")
+  orderItemId Int @map("order_item_id")
+  quantity    Int
+
+  purchase  Purchase  @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id])
+
+  @@unique([purchaseId, orderItemId])
+  @@map("purchase_items")
+}
