@@ -10,7 +10,10 @@ export interface AuthSession {
 }
 
 export async function loginAndGetSession(id: string, pw: string): Promise<AuthSession> {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined,
+  });
 
   const context = await browser.newContext({
     userAgent:
