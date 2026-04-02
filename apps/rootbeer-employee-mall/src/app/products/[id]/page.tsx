@@ -57,7 +57,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="max-w-3xl mx-auto">
-      <button onClick={() => router.back()} className="text-sm text-gray-500 mb-4 hover:text-gray-700">
+      <button onClick={() => router.push('/')} className="text-sm text-gray-500 mb-4 hover:text-gray-700">
         ← 목록으로
       </button>
 
