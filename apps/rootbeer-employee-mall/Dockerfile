@@ -37,7 +37,6 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/apps/rootbeer-employee-mall/.next/standalone ./
 COPY --from=builder /app/apps/rootbeer-employee-mall/.next/static ./apps/rootbeer-employee-mall/.next/static
-COPY --from=builder /app/apps/rootbeer-employee-mall/public ./apps/rootbeer-employee-mall/public
 
 USER nextjs
 
