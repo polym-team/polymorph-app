@@ -499,6 +499,39 @@ function PurchaseCard({
       </div>
 
       <div className="p-3 text-sm">
+        {/* 배송지 정보 */}
+        {(() => {
+          const deliveries = new Map<string, { location: string; detail: string }>();
+          for (const d of itemDetails) {
+            const key = `${d.order_id}`;
+            if (!deliveries.has(key)) {
+              if (d.delivery_location === 'custom') {
+                deliveries.set(key, {
+                  location: '개별배송',
+                  detail: `${d.custom_name} / ${d.custom_phone} / ${d.custom_address}`,
+                });
+              } else {
+                deliveries.set(key, {
+                  location: d.delivery_location === 'jeju' ? 'axz제주오피스' : 'axz판교오피스',
+                  detail: '',
+                });
+              }
+            }
+          }
+          return (
+            <div className="mb-3 p-2 bg-gray-50 rounded text-xs text-gray-600">
+              <span className="font-medium text-gray-700">배송지: </span>
+              {[...deliveries.values()].map((v, i) => (
+                <span key={i}>
+                  {i > 0 && ' / '}
+                  {v.location}
+                  {v.detail && <span className="text-gray-500"> ({v.detail})</span>}
+                </span>
+              ))}
+            </div>
+          );
+        })()}
+
         <table className="w-full mb-3">
           <tbody className="divide-y">
             {itemDetails.map((d) => (
