@@ -12,7 +12,7 @@ export async function GET(req: Request) {
   const brand = searchParams.get('brand');
   const keyword = searchParams.get('keyword');
 
-  const where: Prisma.ProductWhereInput = {};
+  const where: Prisma.ProductWhereInput = { removed: false };
 
   if (store) where.store = store as 'amoremall' | 'innisfree';
   if (brand) where.brand = brand;

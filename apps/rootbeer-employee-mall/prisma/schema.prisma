@@ -77,6 +77,7 @@ model Product {
   imageUrl     String?  @map("image_url") @db.VarChar(1000)
   productUrl   String?  @map("product_url") @db.VarChar(1000)
   soldOut      Boolean  @default(false) @map("sold_out")
+  removed      Boolean  @default(false)
   scrapedAt    DateTime @default(now()) @map("scraped_at")
 
   orderItems OrderItem[]
