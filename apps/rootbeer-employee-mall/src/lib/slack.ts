@@ -1,4 +1,4 @@
-const SITE_URL = process.env.NEXTAUTH_URL || 'https://rootbeer-employee-mall.polymorph.co.kr';
+const SITE_URL = 'https://rootbeer-employee-mall.polymorph.co.kr';
 const BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 const CHANNEL_ID = process.env.SLACK_CHANNEL_ID;
 
