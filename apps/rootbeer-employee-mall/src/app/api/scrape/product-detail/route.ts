@@ -76,7 +76,7 @@ export async function POST(req: Request) {
   });
 
   if (products.length === 0) {
-    return NextResponse.json({ message: '처리할 상품이 없습니다', processed: 0 });
+    return NextResponse.json({ message: '처리할 상품이 없습니다', processed: 0, success: 0, failed: 0, results: [] });
   }
 
   const id = process.env.AMOREMALL_ID;
