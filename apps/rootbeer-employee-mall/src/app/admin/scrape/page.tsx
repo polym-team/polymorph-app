@@ -9,6 +9,11 @@ interface DetailResult {
   results: { productId: number; name: string; success: boolean; error?: string }[];
 }
 
+interface NoticeResult {
+  total: number;
+  notices: { id: number; title: string }[];
+}
+
 export default function AdminScrapePage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ amoremall: number; innisfree: number } | null>(null);
@@ -17,6 +22,10 @@ export default function AdminScrapePage() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailResult, setDetailResult] = useState<DetailResult | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
+
+  const [noticeLoading, setNoticeLoading] = useState(false);
+  const [noticeResult, setNoticeResult] = useState<NoticeResult | null>(null);
+  const [noticeError, setNoticeError] = useState<string | null>(null);
 
   const handleScrape = async () => {
     setLoading(true);
@@ -34,6 +43,25 @@ export default function AdminScrapePage() {
       setError('요청 실패');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleNoticeScrape = async () => {
+    setNoticeLoading(true);
+    setNoticeResult(null);
+    setNoticeError(null);
+
+    try {
+      const res = await fetch('/api/scrape/notice', { method: 'POST' });
+      if (res.ok) {
+        setNoticeResult(await res.json());
+      } else {
+        setNoticeError((await res.json()).error || '공지사항 갱신 실패');
+      }
+    } catch {
+      setNoticeError('요청 실패');
+    } finally {
+      setNoticeLoading(false);
     }
   };
 
@@ -133,6 +161,45 @@ export default function AdminScrapePage() {
         {detailError && (
           <div className="mt-4 bg-red-50 border border-red-200 rounded p-3 text-sm text-red-700">
             {detailError}
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded border p-6">
+        <h2 className="font-medium mb-2">임직원 공지사항 갱신</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          아모레몰 임직원(퍼시픽샵) 공지사항을 가져와 DB에 저장합니다.
+          <br />
+          Playwright 브라우저를 사용하므로 1-2분 소요됩니다.
+        </p>
+
+        <button
+          onClick={handleNoticeScrape}
+          disabled={noticeLoading}
+          className="bg-black text-white px-6 py-2 rounded text-sm hover:bg-gray-800 disabled:bg-gray-400"
+        >
+          {noticeLoading ? '갱신 중...' : '공지사항 갱신'}
+        </button>
+
+        {noticeResult && (
+          <div className="mt-4 space-y-2">
+            <div className="bg-green-50 border border-green-200 rounded p-3 text-sm">
+              신규 공지사항 {noticeResult.total}건 저장 완료
+            </div>
+            {noticeResult.notices.length > 0 && (
+              <div className="text-xs space-y-1">
+                {noticeResult.notices.map((n) => (
+                  <div key={n.id} className="text-green-700">
+                    #{n.id} {n.title}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        {noticeError && (
+          <div className="mt-4 bg-red-50 border border-red-200 rounded p-3 text-sm text-red-700">
+            {noticeError}
           </div>
         )}
       </div>

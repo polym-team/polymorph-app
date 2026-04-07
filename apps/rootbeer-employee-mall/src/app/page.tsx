@@ -2,13 +2,16 @@
 
 import { useSession, signIn } from 'next-auth/react';
 import { useEffect, useState, useRef, useCallback } from 'react';
-import type { Product, OrderRound } from '@/types';
+import type { Product, OrderRound, Notice } from '@/types';
 import { ProductCard } from '@/components/ProductCard';
+import Link from 'next/link';
 
 export default function HomePage() {
   const { data: session, status } = useSession();
   const [products, setProducts] = useState<Product[]>([]);
   const [openRounds, setOpenRounds] = useState<OrderRound[]>([]);
+  const [latestNotice, setLatestNotice] = useState<Notice | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [storeFilter, setStoreFilter] = useState<string>('all');
   const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set());
   const [keyword, setKeyword] = useState('');
@@ -49,9 +52,19 @@ export default function HomePage() {
       fetch('/api/products').then((r) => r.json()),
       fetch('/api/rounds').then((r) => r.json()),
       fetch('/api/users/filter-preset').then((r) => r.ok ? r.json() : null).catch(() => null),
-    ]).then(([prods, rounds, preset]) => {
+      fetch('/api/notices').then((r) => r.ok ? r.json() : []).catch(() => []),
+    ]).then(([prods, rounds, preset, notices]) => {
       setProducts(prods);
       setOpenRounds((rounds as OrderRound[]).filter((r) => r.status === 'open'));
+      if (notices.length > 0) setLatestNotice(notices[0]);
+      if (prods.length > 0) {
+        const latest = prods.reduce((max: Product, p: Product) =>
+          new Date(p.scrapedAt) > new Date(max.scrapedAt) ? p : max
+        );
+        setLastUpdated(new Date(latest.scrapedAt).toLocaleDateString('ko-KR', {
+          month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
+        }));
+      }
       if (preset) {
         if (preset.store) setStoreFilter(preset.store);
         if (preset.brands?.length) setSelectedBrands(new Set(preset.brands));
@@ -124,6 +137,11 @@ export default function HomePage() {
 
   return (
     <div>
+      {/* 상품 갱신일 */}
+      {lastUpdated && (
+        <p className="text-[11px] text-gray-400 mb-2">상품 갱신: {lastUpdated}</p>
+      )}
+
       {/* 라운드 배너 - 얇은 띠 */}
       {openRounds.length > 0 && (
         <div className="space-y-1.5 mb-3">
@@ -145,6 +163,22 @@ export default function HomePage() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* 공지사항 배너 */}
+      {latestNotice && (
+        <Link
+          href={`/notices/${latestNotice.id}`}
+          className="flex items-center gap-2 bg-amber-50 border border-amber-200/50 rounded-lg px-3 py-2 mb-3 group"
+        >
+          <span className="text-xs font-semibold text-amber-600 flex-shrink-0">공지</span>
+          <span className="text-xs text-gray-600 truncate group-hover:text-gray-900 transition-colors">
+            {latestNotice.title}
+          </span>
+          <span className="text-[10px] text-gray-400 flex-shrink-0 ml-auto">
+            {new Date(latestNotice.noticeDate).toLocaleDateString('ko-KR')}
+          </span>
+        </Link>
       )}
 
       {/* 검색바 + 필터 */}

@@ -178,3 +178,14 @@ model PurchaseItem {
   @@unique([purchaseId, orderItemId])
   @@map("purchase_items")
 }
+
+model Notice {
+  id          Int      @id @default(autoincrement())
+  externalId  Int      @unique @map("external_id")
+  title       String   @db.VarChar(500)
+  content     String?  @db.MediumText
+  noticeDate  DateTime @map("notice_date")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("notices")
+}

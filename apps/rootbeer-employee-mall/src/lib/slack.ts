@@ -120,6 +120,38 @@ export async function notifyProductsUpdated(
   });
 }
 
+export async function notifyNewNotices(
+  notices: { id: number; title: string }[],
+) {
+  const now = new Date().toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'Asia/Seoul',
+  });
+
+  const noticeList = notices
+    .map((n) => `• <https://www.amoremall.com/kr/ko/cs/noticeView/${n.id}|${n.title}>`)
+    .join('\n');
+
+  await postMessage({
+    text: `임직원 공지사항 업데이트 (${now})`,
+    blocks: [
+      {
+        type: 'header',
+        text: { type: 'plain_text', text: `임직원 공지사항 업데이트 (${now})` },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `:mega: 새로운 임직원 공지사항 *${notices.length}건*이 등록되었습니다.\n\n${noticeList}`,
+        },
+      },
+    ],
+  });
+}
+
 export async function notifyRoundClosed(
   slackTs: string,
   title: string | null,
