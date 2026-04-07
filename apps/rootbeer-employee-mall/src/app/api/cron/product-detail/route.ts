@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { verifyCronKey } from '@/lib/cron-auth';
 import { loginAndGetSession } from '@/lib/scraper/amoremall-auth';
 import { scrapeProductDetail } from '@/lib/scraper/product-detail';
+import { fetchInnisfreeProductDetail } from '@/lib/scraper/innisfree';
 
 export const maxDuration = 300;
 
@@ -12,12 +13,14 @@ export async function POST(req: Request) {
 
   const products = await prisma.product.findMany({
     where: {
-      store: 'amoremall',
-      productUrl: { not: null },
       soldOut: false,
       detail: null,
+      OR: [
+        { store: 'amoremall', productUrl: { not: null } },
+        { store: 'innisfree' },
+      ],
     },
-    take: 3,
+    take: 5,
     orderBy: { id: 'asc' },
   });
 
@@ -38,25 +41,44 @@ export async function POST(req: Request) {
   try {
     for (const product of products) {
       try {
-        const detail = await scrapeProductDetail(session.page, product.productUrl!);
-        await prisma.productDetail.upsert({
-          where: { productId: product.id },
-          update: {
-            description: detail.description,
-            images: JSON.stringify(detail.images),
-            htmlContent: detail.detailHtml,
-            scrapedAt: new Date(),
-          },
-          create: {
-            productId: product.id,
-            description: detail.description,
-            images: JSON.stringify(detail.images),
-            htmlContent: detail.detailHtml,
-          },
-        });
+        if (product.store === 'innisfree') {
+          const detail = await fetchInnisfreeProductDetail(session.context, product.externalId);
+          await prisma.productDetail.upsert({
+            where: { productId: product.id },
+            update: {
+              description: detail.description,
+              images: JSON.stringify(detail.images),
+              rawJson: detail.rawJson,
+              scrapedAt: new Date(),
+            },
+            create: {
+              productId: product.id,
+              description: detail.description,
+              images: JSON.stringify(detail.images),
+              rawJson: detail.rawJson,
+            },
+          });
+        } else {
+          const detail = await scrapeProductDetail(session.page, product.productUrl!);
+          await prisma.productDetail.upsert({
+            where: { productId: product.id },
+            update: {
+              description: detail.description,
+              images: JSON.stringify(detail.images),
+              htmlContent: detail.detailHtml,
+              scrapedAt: new Date(),
+            },
+            create: {
+              productId: product.id,
+              description: detail.description,
+              images: JSON.stringify(detail.images),
+              htmlContent: detail.detailHtml,
+            },
+          });
+        }
         success++;
       } catch (err) {
-        console.error(`[cron/product-detail] #${product.id} 실패:`, err);
+        console.error(`[cron/product-detail] ${product.store} #${product.id} 실패:`, err);
         failed++;
       }
     }

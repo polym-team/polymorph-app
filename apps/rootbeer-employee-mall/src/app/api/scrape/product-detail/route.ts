@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/api-utils';
 import { loginAndGetSession } from '@/lib/scraper/amoremall-auth';
 import { scrapeProductDetail } from '@/lib/scraper/product-detail';
+import { fetchInnisfreeProductDetail } from '@/lib/scraper/innisfree';
 
 export const maxDuration = 300;
 
@@ -26,13 +27,32 @@ export async function GET(req: Request) {
   const id = process.env.AMOREMALL_ID;
   const pw = process.env.AMOREMALL_PW;
   if (!id || !pw) {
-    return NextResponse.json({ error: '아모레몰 자격증명 필요' }, { status: 500 });
+    return NextResponse.json({ error: '자격증명 필요' }, { status: 500 });
   }
 
   const session = await loginAndGetSession(id, pw);
   try {
-    const detail = await scrapeProductDetail(session.page, product.productUrl);
+    if (product.store === 'innisfree') {
+      const detail = await fetchInnisfreeProductDetail(session.context, product.externalId);
+      await prisma.productDetail.upsert({
+        where: { productId: product.id },
+        update: {
+          description: detail.description,
+          images: JSON.stringify(detail.images),
+          rawJson: detail.rawJson,
+          scrapedAt: new Date(),
+        },
+        create: {
+          productId: product.id,
+          description: detail.description,
+          images: JSON.stringify(detail.images),
+          rawJson: detail.rawJson,
+        },
+      });
+      return NextResponse.json({ productId: product.id, ...detail, saved: true });
+    }
 
+    const detail = await scrapeProductDetail(session.page, product.productUrl);
     await prisma.productDetail.upsert({
       where: { productId: product.id },
       update: {
@@ -63,13 +83,15 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const limit = (body as { limit?: number }).limit ?? 5;
 
-  // 상세가 없는 아모레몰 상품 조회 (이니스프리는 별도 인증 불필요하므로 제외)
+  // 상세가 없는 상품 조회 (아모레몰 + 이니스프리)
   const products = await prisma.product.findMany({
     where: {
-      store: 'amoremall',
-      productUrl: { not: null },
       soldOut: false,
       detail: null,
+      OR: [
+        { store: 'amoremall', productUrl: { not: null } },
+        { store: 'innisfree' },
+      ],
     },
     take: limit,
     orderBy: { id: 'asc' },
@@ -82,7 +104,7 @@ export async function POST(req: Request) {
   const id = process.env.AMOREMALL_ID;
   const pw = process.env.AMOREMALL_PW;
   if (!id || !pw) {
-    return NextResponse.json({ error: '아모레몰 자격증명 필요' }, { status: 500 });
+    return NextResponse.json({ error: '자격증명 필요' }, { status: 500 });
   }
 
   const session = await loginAndGetSession(id, pw);
@@ -91,24 +113,41 @@ export async function POST(req: Request) {
   try {
     for (const product of products) {
       try {
-        const detail = await scrapeProductDetail(session.page, product.productUrl!);
-
-        await prisma.productDetail.upsert({
-          where: { productId: product.id },
-          update: {
-            description: detail.description,
-            images: JSON.stringify(detail.images),
-            htmlContent: detail.detailHtml,
-            scrapedAt: new Date(),
-          },
-          create: {
-            productId: product.id,
-            description: detail.description,
-            images: JSON.stringify(detail.images),
-            htmlContent: detail.detailHtml,
-          },
-        });
-
+        if (product.store === 'innisfree') {
+          const detail = await fetchInnisfreeProductDetail(session.context, product.externalId);
+          await prisma.productDetail.upsert({
+            where: { productId: product.id },
+            update: {
+              description: detail.description,
+              images: JSON.stringify(detail.images),
+              rawJson: detail.rawJson,
+              scrapedAt: new Date(),
+            },
+            create: {
+              productId: product.id,
+              description: detail.description,
+              images: JSON.stringify(detail.images),
+              rawJson: detail.rawJson,
+            },
+          });
+        } else {
+          const detail = await scrapeProductDetail(session.page, product.productUrl!);
+          await prisma.productDetail.upsert({
+            where: { productId: product.id },
+            update: {
+              description: detail.description,
+              images: JSON.stringify(detail.images),
+              htmlContent: detail.detailHtml,
+              scrapedAt: new Date(),
+            },
+            create: {
+              productId: product.id,
+              description: detail.description,
+              images: JSON.stringify(detail.images),
+              htmlContent: detail.detailHtml,
+            },
+          });
+        }
         results.push({ productId: product.id, name: product.name, success: true });
       } catch (err) {
         results.push({

@@ -10,6 +10,7 @@
     "official-website": "pnpm --filter official-website",
     "okra": "pnpm --parallel --filter okra --filter collab dev",
     "collab": "pnpm --filter collab",
+    "rootbeer": "pnpm --filter rootbeer-employee-mall",
     "prepare": "husky"
   },
   "engines": {

@@ -73,6 +73,74 @@ const REQUEST_BODY = {
   sale_status: ['1', '2', '4'],
 };
 
+// ── 상품 상세 API ──
+
+const DETAIL_API_URL = 'https://www.innisfree.com/api/dp/product/detail/v1/getPrdDtlInfo';
+const DETAIL_IMG_API_URL = 'https://www.innisfree.com/api/dp/product/detail/v1/getPrdDtlImgList';
+
+export interface InnisfreeProductDetail {
+  description: string | null;
+  images: string[];
+  rawJson: string;
+}
+
+interface DetailApiResponse {
+  statusCode: number;
+  data: {
+    inmPrdNm: string;
+    opntTxt: string | null;
+    tagListVl: string | null;
+    [key: string]: unknown;
+  };
+}
+
+interface DetailImgApiResponse {
+  statusCode: number;
+  data: {
+    imgList: { usdtAcesUrl: string; inmPrdImgTpCd: string; imgExpsSn: number }[];
+  };
+}
+
+export async function fetchInnisfreeProductDetail(
+  context: BrowserContext,
+  inmPrdNo: string,
+): Promise<InnisfreeProductDetail> {
+  const data = { inmPrdNo, inmChnCd: '1' };
+  const headers = { 'Content-Type': 'application/json' };
+
+  const [detailRes, imgRes] = await Promise.all([
+    context.request.post(DETAIL_API_URL, { headers, data }),
+    context.request.post(DETAIL_IMG_API_URL, { headers, data }),
+  ]);
+
+  if (!detailRes.ok()) {
+    throw new Error(`[이니스프리 상세] API 오류 (${detailRes.status()})`);
+  }
+
+  const detailData = (await detailRes.json()) as DetailApiResponse;
+  if (detailData.statusCode !== 200) {
+    throw new Error(`[이니스프리 상세] statusCode: ${detailData.statusCode}`);
+  }
+
+  let images: string[] = [];
+  if (imgRes.ok()) {
+    const imgData = (await imgRes.json()) as DetailImgApiResponse;
+    if (imgData.statusCode === 200 && imgData.data?.imgList) {
+      images = imgData.data.imgList
+        .sort((a, b) => a.imgExpsSn - b.imgExpsSn)
+        .map((img) => img.usdtAcesUrl);
+    }
+  }
+
+  return {
+    description: detailData.data.opntTxt ?? null,
+    images,
+    rawJson: JSON.stringify(detailData.data),
+  };
+}
+
+// ── 상품 목록 API ──
+
 export async function fetchAllProducts(context: BrowserContext): Promise<InnisfreeProduct[]> {
   const res = await context.request.post(API_URL, {
     headers: { 'Content-Type': 'application/json' },
