@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import Image from 'next/image';
 import type { Product } from '@/types';
 import { STORE_LABELS } from '@/types';
 import { useCartStore } from './CartStore';
@@ -39,10 +40,12 @@ export function ProductCard({ product }: { product: ProductWithDetail }) {
         onClick={handleOpenDetail}
       >
         {product.imageUrl && (
-          <img
+          <Image
             src={product.imageUrl}
             alt={product.name}
-            className="w-full h-full object-cover"
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
+            className="object-cover"
           />
         )}
         {product.soldOut && (
