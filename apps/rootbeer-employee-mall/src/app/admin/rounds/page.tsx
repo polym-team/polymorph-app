@@ -11,11 +11,33 @@ const STATUS_LABELS: Record<string, { text: string; color: string }> = {
   settled: { text: '정산완료', color: 'bg-gray-100 text-gray-800' },
 };
 
+const ROUND_NAMES = [
+  '봄맞이 공구', '여름 준비 공구', '가을 공구', '겨울 준비 공구',
+  '이번 주 공구', '월간 공구', '깜짝 공구', '정기 공구',
+  '뷰티 공구', '스킨케어 공구', '바디케어 공구', '선케어 공구',
+];
+
+function generateDefaults() {
+  const now = new Date();
+  const name = ROUND_NAMES[now.getMonth() % ROUND_NAMES.length];
+
+  // 일주일 뒤 오후 4시
+  const dl = new Date(now);
+  dl.setDate(dl.getDate() + 7);
+  dl.setHours(16, 0, 0, 0);
+  // datetime-local 형식: YYYY-MM-DDTHH:mm
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const deadlineStr = `${dl.getFullYear()}-${pad(dl.getMonth() + 1)}-${pad(dl.getDate())}T${pad(dl.getHours())}:${pad(dl.getMinutes())}`;
+
+  return { title: name, deadline: deadlineStr };
+}
+
 export default function AdminRoundsPage() {
   const [rounds, setRounds] = useState<(OrderRound & { order_count: number })[]>([]);
   const [loading, setLoading] = useState(true);
-  const [title, setTitle] = useState('');
-  const [deadline, setDeadline] = useState('');
+  const defaults = generateDefaults();
+  const [title, setTitle] = useState(defaults.title);
+  const [deadline, setDeadline] = useState(defaults.deadline);
 
   const fetchRounds = () => {
     fetch('/api/rounds')
@@ -36,8 +58,9 @@ export default function AdminRoundsPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: title || undefined, deadline: deadline || undefined }),
     });
-    setTitle('');
-    setDeadline('');
+    const next = generateDefaults();
+    setTitle(next.title);
+    setDeadline(next.deadline);
     fetchRounds();
   };
 

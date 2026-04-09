@@ -22,12 +22,21 @@ export function ProductCard({ product }: { product: ProductWithDetail }) {
   const handleOpenDetail = () => {
     if (!product.hasDetail || !cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
-    openDetail(product.id, {
-      top: rect.top,
-      left: rect.left,
-      width: rect.width,
-      height: rect.height,
-    });
+    openDetail(
+      product.id,
+      { top: rect.top, left: rect.left, width: rect.width, height: rect.height },
+      {
+        id: product.id,
+        name: product.name,
+        brand: product.brand,
+        store: product.store,
+        salePrice: product.salePrice,
+        originPrice: product.originPrice,
+        discountRate: product.discountRate,
+        imageUrl: product.imageUrl,
+        soldOut: product.soldOut,
+      },
+    );
   };
 
   return (

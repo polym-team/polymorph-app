@@ -1,9 +1,13 @@
 'use client';
 
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useCartStore } from './CartStore';
+import { useProductDetailModal, type PreviewProduct } from './ProductStore';
+
+/* ─── Icons ─── */
 
 const HomeIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -36,59 +40,155 @@ const AdminIcon = () => (
   </svg>
 );
 
+const BackIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+);
+
+/* ─── Constants ─── */
+
+const ISLAND_HEIGHT = 52;
+const MODAL_MAX_WIDTH = 480;
+const WIDTH_DURATION = '0.3s';
+const WIDTH_TRANSITION = `width ${WIDTH_DURATION} cubic-bezier(0.4, 0, 0.2, 1)`;
+
+/* ─── Sub-components ─── */
+
 interface NavItem {
   href: string;
   label: string;
   icon: React.ReactNode;
   badge?: number;
-  adminOnly?: boolean;
   activePrefix?: string;
 }
+
+function DetailActions({ previewProduct }: { previewProduct: PreviewProduct }) {
+  const addItem = useCartStore((s) => s.addItem);
+
+  return (
+    <>
+      <button
+        onClick={() => window.history.back()}
+        className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl text-gray-400 hover:text-white transition-colors"
+      >
+        <BackIcon />
+      </button>
+      <button
+        onClick={() =>
+          addItem({
+            productId: previewProduct.id,
+            name: previewProduct.name,
+            brand: previewProduct.brand ?? null,
+            price: previewProduct.salePrice,
+            store: previewProduct.store,
+            imageUrl: previewProduct.imageUrl ?? null,
+          })
+        }
+        disabled={previewProduct.soldOut}
+        className="flex-1 min-w-0 py-2.5 bg-accent-500 text-white rounded-xl text-sm font-semibold hover:bg-accent-400 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
+      >
+        {previewProduct.soldOut ? '품절' : '장바구니 담기'}
+      </button>
+    </>
+  );
+}
+
+/* ─── Main ─── */
 
 export function BottomNav() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const itemCount = useCartStore((s) => s.items.length);
+  const { productId, previewProduct, isClosing } = useProductDetailModal();
+  const [navWidth, setNavWidth] = useState(0);
+
+  // callback ref: DOM에 붙는 순간 1회 측정 — effect 타이밍 이슈 없음
+  const measureRef = useCallback((node: HTMLDivElement | null) => {
+    if (node) setNavWidth(node.scrollWidth);
+  }, []);
 
   if (!session || session.user.role === 'pending') return null;
+
+  // isClosing이면 모달 축소와 동시에 아일랜드도 네비 모드로 전환
+  const isDetailMode = productId !== null && !isClosing;
+  const measured = navWidth > 0;
+  const vw = typeof window !== 'undefined' ? window.innerWidth : 480;
+  const detailWidth = Math.min(vw, MODAL_MAX_WIDTH);
+
+  // 측정 전: auto(자연 크기). 측정 후: 항상 명시적 px → CSS transition 가능
+  const targetWidth = measured ? (isDetailMode ? detailWidth : navWidth) : undefined;
 
   const items: NavItem[] = [
     { href: '/', label: '홈', icon: <HomeIcon /> },
     { href: '/cart', label: '장바구니', icon: <CartIcon />, badge: itemCount },
     { href: '/my-orders', label: '내 주문', icon: <OrderIcon /> },
     ...(session.user.role === 'admin'
-      ? [{ href: '/admin/rounds', label: '관리', icon: <AdminIcon />, adminOnly: true, activePrefix: '/admin' }]
+      ? [{ href: '/admin/rounds', label: '관리', icon: <AdminIcon />, activePrefix: '/admin' }]
       : []),
   ];
 
   return (
-    <div className="fixed bottom-5 inset-x-0 z-40 flex justify-center pointer-events-none">
-      <nav className="flex items-center gap-1 bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-xl shadow-black/30 px-2 py-1.5 pointer-events-auto">
-        {items.map((item) => {
-          const matchPath = item.activePrefix ?? item.href;
-          const isActive = matchPath === '/' ? pathname === '/' : pathname.startsWith(matchPath);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`relative flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all duration-200 ${
-                isActive
-                  ? 'bg-accent-500 text-white'
-                  : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
-              {item.icon}
-              <span className="text-[10px] font-medium leading-none whitespace-nowrap">{item.label}</span>
-              {item.badge && item.badge > 0 ? (
-                <span className={`absolute -top-1 -right-0.5 text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center ${
-                  isActive ? 'bg-white text-accent-500' : 'bg-rose-500 text-white'
-                }`}>
-                  {item.badge}
-                </span>
-              ) : null}
-            </Link>
-          );
-        })}
+    <div className="fixed bottom-5 inset-x-0 z-[60] flex justify-center pointer-events-none">
+      <nav
+        className="relative bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-xl shadow-black/30 pointer-events-auto overflow-hidden"
+        style={{
+          height: ISLAND_HEIGHT,
+          width: targetWidth,
+          transition: measured ? WIDTH_TRANSITION : 'none',
+        }}
+      >
+        {/* 네비: normal flow → 자연 너비 결정 */}
+        <div
+          ref={measureRef}
+          className="flex items-center gap-1 px-1 w-fit"
+          style={{
+            height: ISLAND_HEIGHT,
+            opacity: isDetailMode ? 0 : 1,
+            // 복귀 시: width 전환 끝난 뒤 즉시 등장 / 진입 시: 즉시 사라짐
+            transition: isDetailMode ? 'none' : `opacity 0s ${WIDTH_DURATION}`,
+            pointerEvents: isDetailMode ? 'none' : 'auto',
+          }}
+        >
+          {items.map((item) => {
+            const matchPath = item.activePrefix ?? item.href;
+            const isActive = matchPath === '/' ? pathname === '/' : pathname.startsWith(matchPath);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`relative flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all duration-200 ${
+                  isActive ? 'bg-accent-500 text-white' : 'text-gray-400 hover:text-gray-200'
+                }`}
+              >
+                {item.icon}
+                <span className="text-[10px] font-medium leading-none whitespace-nowrap">{item.label}</span>
+                {item.badge && item.badge > 0 ? (
+                  <span
+                    className={`absolute -top-1 -right-0.5 text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center ${
+                      isActive ? 'bg-white text-accent-500' : 'bg-rose-500 text-white'
+                    }`}
+                  >
+                    {item.badge}
+                  </span>
+                ) : null}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* 상세 액션: absolute 오버레이 */}
+        <div
+          className="absolute inset-0 flex items-center gap-2 px-3"
+          style={{
+            opacity: isDetailMode ? 1 : 0,
+            // 진입 시: width 전환 끝난 뒤 즉시 등장 / 복귀 시: 즉시 사라짐
+            transition: isDetailMode ? `opacity 0s ${WIDTH_DURATION}` : 'none',
+            pointerEvents: isDetailMode ? 'auto' : 'none',
+          }}
+        >
+          {previewProduct && <DetailActions previewProduct={previewProduct} />}
+        </div>
       </nav>
     </div>
   );

@@ -6,6 +6,41 @@ import type { Product, OrderRound, Notice } from '@/types';
 import { ProductCard } from '@/components/ProductCard';
 import Link from 'next/link';
 
+function PageSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="h-3 bg-gray-200 rounded w-32 mb-2" />
+      <div className="bg-gray-100 rounded-lg h-9 mb-3" />
+      <div className="bg-gray-100 rounded-lg h-9 mb-3" />
+      <div className="mb-3">
+        <div className="bg-white rounded-xl h-9 shadow-sm border border-gray-100" />
+        <div className="flex gap-1.5 mt-2">
+          {['w-12', 'w-16', 'w-20'].map((w, i) => (
+            <div key={i} className={`h-7 ${w} bg-gray-100 rounded-full`} />
+          ))}
+        </div>
+      </div>
+      <div className="h-3 bg-gray-200 rounded w-16 mb-2 mt-1" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm">
+            <div className="aspect-square bg-gray-100" />
+            <div className="p-3 space-y-2">
+              <div className="h-2.5 bg-gray-100 rounded w-16" />
+              <div className="h-3 bg-gray-100 rounded w-full" />
+              <div className="h-3 bg-gray-100 rounded w-3/4" />
+              <div className="flex justify-between items-end pt-1">
+                <div className="h-4 bg-gray-100 rounded w-20" />
+                <div className="h-7 bg-gray-100 rounded-full w-12" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
   const { data: session, status } = useSession();
   const [products, setProducts] = useState<Product[]>([]);
@@ -75,7 +110,7 @@ export default function HomePage() {
     });
   }, [status, session?.user?.role]);
 
-  if (status === 'loading') return <div className="text-center py-12 text-gray-500">로딩 중...</div>;
+  if (status === 'loading') return <PageSkeleton />;
 
   if (!session) {
     return (
@@ -110,7 +145,7 @@ export default function HomePage() {
     );
   }
 
-  if (loading) return <div className="text-center py-12 text-gray-500">상품 불러오는 중...</div>;
+  if (loading) return <PageSkeleton />;
 
   // 현재 마켓 필터에 해당하는 상품에서 브랜드 추출
   const storeProducts = storeFilter === 'all'
