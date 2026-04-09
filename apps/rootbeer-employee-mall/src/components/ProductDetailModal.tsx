@@ -5,6 +5,13 @@ import { useProductDetailModal } from './ProductStore';
 import { STORE_LABELS } from '@/types';
 import type { Product } from '@/types';
 
+interface ProductOption {
+  id: number;
+  name: string;
+  stock: number;
+  soldOut: boolean;
+}
+
 interface ProductWithDetail extends Product {
   detail: {
     description: string | null;
@@ -12,12 +19,13 @@ interface ProductWithDetail extends Product {
     htmlContent: string | null;
     scrapedAt: string;
   } | null;
+  options?: ProductOption[];
 }
 
 const MAX_WIDTH = 480;
 
 export function ProductDetailModal() {
-  const { productId, cardRect, previewProduct, startClose, close } = useProductDetailModal();
+  const { productId, cardRect, previewProduct, startClose, close, setOptions, selectOption, selectedOption } = useProductDetailModal();
   const [product, setProduct] = useState<ProductWithDetail | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [detailLoaded, setDetailLoaded] = useState(false);
@@ -66,12 +74,19 @@ export function ProductDetailModal() {
     });
 
     fetch(`/api/products/${productId}`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`${r.status}`);
+        return r.json();
+      })
       .then((data) => {
         setProduct(data);
         setSelectedImage(data.imageUrl);
+        if (data.options?.length > 0) {
+          setOptions(data.options);
+        }
         setDetailLoaded(true);
-      });
+      })
+      .catch(() => setDetailLoaded(true));
 
     return () => {
       document.body.style.overflow = '';
@@ -216,6 +231,32 @@ export function ProductDetailModal() {
                   <p className="text-sm text-gray-300 line-through mb-4">
                     {displayProduct.originPrice.toLocaleString()}원
                   </p>
+                )}
+
+                {/* 옵션 선택 */}
+                {detailLoaded && product?.options && product.options.length > 0 && (
+                  <div className="border-t border-gray-100 pt-4 mt-4">
+                    <h2 className="text-sm font-semibold mb-2 text-gray-700">옵션 선택</h2>
+                    <div className="flex flex-col gap-1.5">
+                      {product.options.map((opt) => (
+                        <button
+                          key={opt.id}
+                          disabled={opt.soldOut}
+                          onClick={() => selectOption(selectedOption?.id === opt.id ? null : opt)}
+                          className={`text-left px-3 py-2.5 rounded-xl text-sm transition-all border ${
+                            selectedOption?.id === opt.id
+                              ? 'border-accent-500 bg-accent-50 text-accent-700 font-medium'
+                              : opt.soldOut
+                                ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
+                                : 'border-gray-200 text-gray-600 hover:border-accent-300'
+                          }`}
+                        >
+                          <span>{opt.name}</span>
+                          {opt.soldOut && <span className="ml-2 text-xs text-gray-300">품절</span>}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
                 {/* 상세 정보: 로딩 중이면 skeleton, 완료되면 실제 내용 */}

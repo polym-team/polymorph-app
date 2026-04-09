@@ -4,6 +4,8 @@ import type { Store } from '@/types';
 
 export interface CartItem {
   productId: number;
+  optionId: number | null;
+  optionName: string | null;
   name: string;
   brand: string | null;
   price: number;
@@ -23,8 +25,8 @@ interface CartState {
   deliveryLocation: 'pangyo' | 'jeju' | 'custom';
   customDelivery: CustomDelivery;
   addItem: (item: Omit<CartItem, 'quantity'>) => void;
-  removeItem: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
+  removeItem: (productId: number, optionId?: number | null) => void;
+  updateQuantity: (productId: number, quantity: number, optionId?: number | null) => void;
   setDeliveryLocation: (location: 'pangyo' | 'jeju' | 'custom') => void;
   setCustomDelivery: (delivery: CustomDelivery) => void;
   clear: () => void;
@@ -38,27 +40,33 @@ export const useCartStore = create<CartState>()(
       customDelivery: { name: '', phone: '', address: '' },
       addItem: (item) =>
         set((state) => {
-          const existing = state.items.find((i) => i.productId === item.productId);
+          const existing = state.items.find(
+            (i) => i.productId === item.productId && i.optionId === item.optionId,
+          );
           if (existing) {
             return {
               items: state.items.map((i) =>
-                i.productId === item.productId ? { ...i, quantity: i.quantity + 1 } : i,
+                i.productId === item.productId && i.optionId === item.optionId
+                  ? { ...i, quantity: i.quantity + 1 }
+                  : i,
               ),
             };
           }
           return { items: [...state.items, { ...item, quantity: 1 }] };
         }),
-      removeItem: (productId) =>
+      removeItem: (productId, optionId) =>
         set((state) => ({
-          items: state.items.filter((i) => i.productId !== productId),
+          items: state.items.filter((i) => !(i.productId === productId && i.optionId === (optionId ?? null))),
         })),
-      updateQuantity: (productId, quantity) =>
-        set((state) => ({
-          items:
-            quantity <= 0
-              ? state.items.filter((i) => i.productId !== productId)
-              : state.items.map((i) => (i.productId === productId ? { ...i, quantity } : i)),
-        })),
+      updateQuantity: (productId, quantity, optionId) =>
+        set((state) => {
+          const match = (i: CartItem) => i.productId === productId && i.optionId === (optionId ?? null);
+          return {
+            items: quantity <= 0
+              ? state.items.filter((i) => !match(i))
+              : state.items.map((i) => (match(i) ? { ...i, quantity } : i)),
+          };
+        }),
       setDeliveryLocation: (location) => set({ deliveryLocation: location }),
       setCustomDelivery: (delivery) => set({ customDelivery: delivery }),
       clear: () => set({ items: [], deliveryLocation: 'jeju', customDelivery: { name: '', phone: '', address: '' } }),

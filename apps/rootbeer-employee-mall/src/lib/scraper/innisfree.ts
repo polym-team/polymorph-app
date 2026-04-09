@@ -78,10 +78,27 @@ const REQUEST_BODY = {
 const DETAIL_API_URL = 'https://www.innisfree.com/api/dp/product/detail/v1/getPrdDtlInfo';
 const DETAIL_IMG_API_URL = 'https://www.innisfree.com/api/dp/product/detail/v1/getPrdDtlImgList';
 
+export interface InnisfreeProductOption {
+  externalId: string;
+  name: string;
+  stock: number;
+  sortOrder: number;
+}
+
 export interface InnisfreeProductDetail {
   description: string | null;
   images: string[];
+  options: InnisfreeProductOption[];
   rawJson: string;
+}
+
+interface DetailApiOption {
+  inmOptnPrdNo: string;
+  prdCd: string;
+  prdOptnNm: string;
+  onlnInvnQty: number;
+  wrhsTcReqYn: string;
+  useLimitDate: string;
 }
 
 interface DetailApiResponse {
@@ -90,6 +107,7 @@ interface DetailApiResponse {
     inmPrdNm: string;
     opntTxt: string | null;
     tagListVl: string | null;
+    optnList?: DetailApiOption[];
     [key: string]: unknown;
   };
 }
@@ -132,9 +150,17 @@ export async function fetchInnisfreeProductDetail(
     }
   }
 
+  const options: InnisfreeProductOption[] = (detailData.data.optnList ?? []).map((opt, i) => ({
+    externalId: opt.inmOptnPrdNo,
+    name: opt.prdOptnNm,
+    stock: opt.onlnInvnQty,
+    sortOrder: i,
+  }));
+
   return {
     description: detailData.data.opntTxt ?? null,
     images,
+    options,
     rawJson: JSON.stringify(detailData.data),
   };
 }

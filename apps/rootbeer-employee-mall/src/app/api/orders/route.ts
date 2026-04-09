@@ -43,7 +43,7 @@ export async function POST(req: Request) {
     customName?: string;
     customPhone?: string;
     customAddress?: string;
-    items: { productId: number; quantity: number; price: number }[];
+    items: { productId: number; optionId?: number | null; optionName?: string | null; quantity: number; price: number }[];
   };
 
   if (!roundId || !items?.length) {
@@ -81,6 +81,8 @@ export async function POST(req: Request) {
         items: {
           create: items.map((item) => ({
             productId: item.productId,
+            optionId: item.optionId ?? null,
+            optionName: item.optionName ?? null,
             quantity: item.quantity,
             priceAtOrder: item.price,
           })),

@@ -65,6 +65,28 @@ interface NavItem {
 
 function DetailActions({ previewProduct }: { previewProduct: PreviewProduct }) {
   const addItem = useCartStore((s) => s.addItem);
+  const { options, selectedOption } = useProductDetailModal();
+
+  const hasOptions = options.length > 0;
+  const needsOption = hasOptions && !selectedOption;
+  const isDisabled = previewProduct.soldOut || needsOption;
+
+  const handleAddToCart = () => {
+    addItem({
+      productId: previewProduct.id,
+      optionId: selectedOption?.id ?? null,
+      optionName: selectedOption?.name ?? null,
+      name: previewProduct.name,
+      brand: previewProduct.brand ?? null,
+      price: previewProduct.salePrice,
+      store: previewProduct.store,
+      imageUrl: previewProduct.imageUrl ?? null,
+    });
+  };
+
+  let buttonText = '장바구니 담기';
+  if (previewProduct.soldOut) buttonText = '품절';
+  else if (needsOption) buttonText = '옵션을 선택해주세요';
 
   return (
     <>
@@ -75,20 +97,11 @@ function DetailActions({ previewProduct }: { previewProduct: PreviewProduct }) {
         <BackIcon />
       </button>
       <button
-        onClick={() =>
-          addItem({
-            productId: previewProduct.id,
-            name: previewProduct.name,
-            brand: previewProduct.brand ?? null,
-            price: previewProduct.salePrice,
-            store: previewProduct.store,
-            imageUrl: previewProduct.imageUrl ?? null,
-          })
-        }
-        disabled={previewProduct.soldOut}
+        onClick={handleAddToCart}
+        disabled={isDisabled}
         className="flex-1 min-w-0 py-2.5 bg-accent-500 text-white rounded-xl text-sm font-semibold hover:bg-accent-400 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
       >
-        {previewProduct.soldOut ? '품절' : '장바구니 담기'}
+        {buttonText}
       </button>
     </>
   );

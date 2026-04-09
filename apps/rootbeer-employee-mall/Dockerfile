@@ -46,10 +46,16 @@ COPY --from=builder /app/apps/rootbeer-employee-mall/.next/static ./apps/rootbee
 COPY --from=builder /playwright-modules/playwright-core ./node_modules/playwright-core
 COPY --from=builder /playwright-modules/playwright ./node_modules/playwright
 
+# Prisma migrate deploy에 필요한 파일
+COPY --from=builder /app/apps/rootbeer-employee-mall/prisma ./prisma
+COPY --from=builder /app/node_modules/.pnpm/prisma@*/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/.pnpm/@prisma+engines@*/node_modules/@prisma/engines ./node_modules/@prisma/engines
+
 USER nextjs
 
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "apps/rootbeer-employee-mall/server.js"]
+# 앱 시작 전 미적용 migration 실행 → 이미 적용된 건 건너뜀 (멱등)
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma && node apps/rootbeer-employee-mall/server.js"]

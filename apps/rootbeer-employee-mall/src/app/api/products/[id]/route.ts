@@ -10,7 +10,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   const product = await prisma.product.findUnique({
     where: { id: Number(id) },
-    include: { detail: true },
+    include: {
+      detail: true,
+      options: { orderBy: { sortOrder: 'asc' } },
+    },
   });
 
   if (!product) {
@@ -27,5 +30,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           scrapedAt: product.detail.scrapedAt,
         }
       : null,
+    options: product.options.map((o) => ({
+      id: o.id,
+      name: o.name,
+      stock: o.stock,
+      soldOut: o.soldOut,
+    })),
   });
 }

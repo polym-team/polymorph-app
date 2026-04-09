@@ -27,12 +27,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   useEffect(() => {
     fetch(`/api/products/${id}`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`${r.status}`);
+        return r.json();
+      })
       .then((data) => {
         setProduct(data);
         setSelectedImage(data.imageUrl);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, [id]);
 
   if (!session) return null;
@@ -47,6 +51,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const handleAddToCart = () => {
     addItem({
       productId: product.id,
+      optionId: null,
+      optionName: null,
       name: product.name,
       brand: product.brand,
       price: product.salePrice,

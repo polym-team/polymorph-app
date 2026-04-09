@@ -82,6 +82,7 @@ model Product {
 
   orderItems OrderItem[]
   detail     ProductDetail?
+  options    ProductOption[]
 
   @@unique([store, externalId])
   @@map("products")
@@ -99,6 +100,23 @@ model ProductDetail {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_details")
+}
+
+model ProductOption {
+  id         Int      @id @default(autoincrement())
+  productId  Int      @map("product_id")
+  externalId String   @map("external_id")
+  name       String   @db.VarChar(500)
+  stock      Int      @default(0)
+  soldOut    Boolean  @default(false) @map("sold_out")
+  sortOrder  Int      @default(0) @map("sort_order")
+  scrapedAt  DateTime @default(now()) @map("scraped_at")
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@unique([productId, externalId])
+  @@map("product_options")
 }
 
 model OrderRound {
@@ -139,12 +157,15 @@ model OrderItem {
   id           Int             @id @default(autoincrement())
   orderId      Int             @map("order_id")
   productId    Int             @map("product_id")
+  optionId     Int?            @map("option_id")
+  optionName   String?         @map("option_name") @db.VarChar(500)
   quantity     Int             @default(1)
   priceAtOrder Int             @map("price_at_order")
   status       OrderItemStatus @default(active)
 
   order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product       Product        @relation(fields: [productId], references: [id])
+  option        ProductOption? @relation(fields: [optionId], references: [id])
   purchaseItems PurchaseItem[]
 
   @@map("order_items")

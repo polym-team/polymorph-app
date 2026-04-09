@@ -3,7 +3,17 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/api-utils';
 import { loginAndGetSession } from '@/lib/scraper/amoremall-auth';
 import { scrapeProductDetail } from '@/lib/scraper/product-detail';
-import { fetchInnisfreeProductDetail } from '@/lib/scraper/innisfree';
+import { fetchInnisfreeProductDetail, type InnisfreeProductOption } from '@/lib/scraper/innisfree';
+
+async function saveOptions(productId: number, options: InnisfreeProductOption[]) {
+  for (const opt of options) {
+    await prisma.productOption.upsert({
+      where: { productId_externalId: { productId, externalId: opt.externalId } },
+      update: { name: opt.name, stock: opt.stock, soldOut: opt.stock <= 0, sortOrder: opt.sortOrder, scrapedAt: new Date() },
+      create: { productId, externalId: opt.externalId, name: opt.name, stock: opt.stock, soldOut: opt.stock <= 0, sortOrder: opt.sortOrder },
+    });
+  }
+}
 
 export const maxDuration = 300;
 
@@ -49,6 +59,9 @@ export async function GET(req: Request) {
           rawJson: detail.rawJson,
         },
       });
+      if (detail.options.length > 0) {
+        await saveOptions(product.id, detail.options);
+      }
       return NextResponse.json({ productId: product.id, ...detail, saved: true });
     }
 
@@ -130,6 +143,9 @@ export async function POST(req: Request) {
               rawJson: detail.rawJson,
             },
           });
+          if (detail.options.length > 0) {
+            await saveOptions(product.id, detail.options);
+          }
         } else {
           const detail = await scrapeProductDetail(session.page, product.productUrl!);
           await prisma.productDetail.upsert({

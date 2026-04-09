@@ -99,6 +99,8 @@ export function ProductCard({ product }: { product: ProductWithDetail }) {
             onClick={() =>
               addItem({
                 productId: product.id,
+                optionId: null,
+                optionName: null,
                 name: product.name,
                 brand: product.brand,
                 price: product.salePrice,

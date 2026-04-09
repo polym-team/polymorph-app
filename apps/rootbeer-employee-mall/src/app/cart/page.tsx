@@ -114,6 +114,8 @@ export default function CartPage() {
         const product = productsMap.get(i.productId);
         return {
           productId: i.productId,
+          optionId: i.optionId,
+          optionName: i.optionName,
           quantity: i.quantity,
           price: product ? product.salePrice : i.price,
         };
@@ -187,7 +189,10 @@ export default function CartPage() {
                         <p className={`text-sm truncate ${isUnavailable ? 'line-through text-gray-400' : ''}`}>
                           {item.name}
                         </p>
-                        <p className="text-xs text-gray-400">{item.brand}</p>
+                        <p className="text-xs text-gray-400">
+                          {item.brand}
+                          {item.optionName && <span className="ml-1">· {item.optionName}</span>}
+                        </p>
                         {isUnavailable ? (
                           <p className="text-xs text-red-500 font-medium mt-0.5">
                             {ISSUE_LABELS[item.issue!]}
@@ -209,7 +214,7 @@ export default function CartPage() {
                       <div className="flex items-center gap-2">
                         {isUnavailable ? (
                           <button
-                            onClick={() => removeItem(item.productId)}
+                            onClick={() => removeItem(item.productId, item.optionId)}
                             className="text-xs text-red-500 font-medium"
                           >
                             삭제
@@ -217,20 +222,20 @@ export default function CartPage() {
                         ) : (
                           <>
                             <button
-                              onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                              onClick={() => updateQuantity(item.productId, item.quantity - 1, item.optionId)}
                               className="w-7 h-7 border rounded text-sm"
                             >
                               -
                             </button>
                             <span className="text-sm w-6 text-center">{item.quantity}</span>
                             <button
-                              onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                              onClick={() => updateQuantity(item.productId, item.quantity + 1, item.optionId)}
                               className="w-7 h-7 border rounded text-sm"
                             >
                               +
                             </button>
                             <button
-                              onClick={() => removeItem(item.productId)}
+                              onClick={() => removeItem(item.productId, item.optionId)}
                               className="text-xs text-red-500 ml-2"
                             >
                               삭제
