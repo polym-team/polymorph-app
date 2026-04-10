@@ -35,7 +35,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       name: o.name,
       salePrice: o.salePrice,
       stock: o.stock,
-      soldOut: o.soldOut,
+      soldOut: o.soldOut || (product.store === 'amoremall' && o.salePrice == null),
     })),
   });
 }

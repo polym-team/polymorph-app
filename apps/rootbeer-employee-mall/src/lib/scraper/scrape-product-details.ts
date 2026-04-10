@@ -23,10 +23,11 @@ async function saveInnisfreeOptions(productId: number, options: InnisfreeProduct
 
 async function saveAmoremallOptions(productId: number, options: ProductOption[]) {
   for (const opt of options) {
+    const soldOut = opt.price == null;
     await prisma.productOption.upsert({
       where: { productId_externalId: { productId, externalId: opt.externalId } },
-      update: { name: opt.name, salePrice: opt.price, discountRate: opt.discountRate, sortOrder: opt.sortOrder, scrapedAt: new Date() },
-      create: { productId, externalId: opt.externalId, name: opt.name, salePrice: opt.price, discountRate: opt.discountRate, sortOrder: opt.sortOrder },
+      update: { name: opt.name, salePrice: opt.price, discountRate: opt.discountRate, soldOut, sortOrder: opt.sortOrder, scrapedAt: new Date() },
+      create: { productId, externalId: opt.externalId, name: opt.name, salePrice: opt.price, discountRate: opt.discountRate, soldOut, sortOrder: opt.sortOrder },
     });
   }
 }
