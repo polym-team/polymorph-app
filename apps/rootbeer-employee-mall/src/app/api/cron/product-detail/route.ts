@@ -2,18 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyCronKey } from '@/lib/cron-auth';
 import { loginAndGetSession } from '@/lib/scraper/amoremall-auth';
-import { scrapeProductDetail } from '@/lib/scraper/product-detail';
-import { fetchInnisfreeProductDetail, type InnisfreeProductOption } from '@/lib/scraper/innisfree';
-
-async function saveOptions(productId: number, options: InnisfreeProductOption[]) {
-  for (const opt of options) {
-    await prisma.productOption.upsert({
-      where: { productId_externalId: { productId, externalId: opt.externalId } },
-      update: { name: opt.name, stock: opt.stock, soldOut: opt.stock <= 0, sortOrder: opt.sortOrder, scrapedAt: new Date() },
-      create: { productId, externalId: opt.externalId, name: opt.name, stock: opt.stock, soldOut: opt.stock <= 0, sortOrder: opt.sortOrder },
-    });
-  }
-}
+import { scrapeProductDetails } from '@/lib/scraper/scrape-product-details';
 
 export const maxDuration = 300;
 
@@ -45,60 +34,15 @@ export async function POST(req: Request) {
   }
 
   const session = await loginAndGetSession(id, pw);
-  let success = 0;
-  let failed = 0;
 
   try {
-    for (const product of products) {
-      try {
-        if (product.store === 'innisfree') {
-          const detail = await fetchInnisfreeProductDetail(session.context, product.externalId);
-          await prisma.productDetail.upsert({
-            where: { productId: product.id },
-            update: {
-              description: detail.description,
-              images: JSON.stringify(detail.images),
-              rawJson: detail.rawJson,
-              scrapedAt: new Date(),
-            },
-            create: {
-              productId: product.id,
-              description: detail.description,
-              images: JSON.stringify(detail.images),
-              rawJson: detail.rawJson,
-            },
-          });
-          if (detail.options.length > 0) {
-            await saveOptions(product.id, detail.options);
-          }
-        } else {
-          const detail = await scrapeProductDetail(session.page, product.productUrl!);
-          await prisma.productDetail.upsert({
-            where: { productId: product.id },
-            update: {
-              description: detail.description,
-              images: JSON.stringify(detail.images),
-              htmlContent: detail.detailHtml,
-              scrapedAt: new Date(),
-            },
-            create: {
-              productId: product.id,
-              description: detail.description,
-              images: JSON.stringify(detail.images),
-              htmlContent: detail.detailHtml,
-            },
-          });
-        }
-        success++;
-      } catch (err) {
-        console.error(`[cron/product-detail] ${product.store} #${product.id} 실패:`, err);
-        failed++;
-      }
-    }
+    const results = await scrapeProductDetails(products, session.context, session.page);
+    const success = results.filter((r) => r.success).length;
+    const failed = results.filter((r) => !r.success).length;
+
+    console.log(`[cron/product-detail] 처리: ${success} 성공, ${failed} 실패`);
+    return NextResponse.json({ processed: products.length, success, failed });
   } finally {
     await session.browser.close();
   }
-
-  console.log(`[cron/product-detail] 처리: ${success} 성공, ${failed} 실패`);
-  return NextResponse.json({ processed: products.length, success, failed });
 }

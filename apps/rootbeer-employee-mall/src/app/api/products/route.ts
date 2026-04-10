@@ -20,7 +20,10 @@ export async function GET(req: Request) {
 
   const products = await prisma.product.findMany({
     where,
-    include: { detail: { select: { id: true } } },
+    include: {
+      detail: { select: { id: true } },
+      _count: { select: { options: true } },
+    },
     orderBy: [{ soldOut: 'asc' }, { brand: 'asc' }, { name: 'asc' }],
   });
 
@@ -28,7 +31,9 @@ export async function GET(req: Request) {
     products.map((p) => ({
       ...p,
       hasDetail: !!p.detail,
+      hasOptions: p._count.options > 0,
       detail: undefined,
+      _count: undefined,
     })),
   );
 }

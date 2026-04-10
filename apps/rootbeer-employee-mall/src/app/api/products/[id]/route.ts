@@ -33,6 +33,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     options: product.options.map((o) => ({
       id: o.id,
       name: o.name,
+      salePrice: o.salePrice,
       stock: o.stock,
       soldOut: o.soldOut,
     })),

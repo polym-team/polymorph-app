@@ -91,14 +91,3 @@ export async function fetchAllProducts(token: string): Promise<AmoremallProduct[
 
   return allProducts;
 }
-
-const TARGET_BRANDS = ['설화수', '헤라', '프리메라', '아윤채', '아모스 프로페셔널'];
-const TARGET_NAME_KEYWORDS = ['기획', '세트', '리퍼'];
-
-export function filterProducts(products: AmoremallProduct[]): AmoremallProduct[] {
-  return products.filter((p) => {
-    const brandMatch = TARGET_BRANDS.some((b) => p.brandName === b);
-    const nameMatch = TARGET_NAME_KEYWORDS.some((kw) => p.goodsName.includes(kw));
-    return brandMatch || nameMatch;
-  });
-}

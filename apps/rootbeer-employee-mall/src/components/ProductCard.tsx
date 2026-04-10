@@ -9,6 +9,7 @@ import { useProductDetailModal } from './ProductStore';
 
 interface ProductWithDetail extends Product {
   hasDetail?: boolean;
+  hasOptions?: boolean;
 }
 
 export function ProductCard({ product }: { product: ProductWithDetail }) {
@@ -96,21 +97,25 @@ export function ProductCard({ product }: { product: ProductWithDetail }) {
           </div>
           <button
             disabled={product.soldOut}
-            onClick={() =>
-              addItem({
-                productId: product.id,
-                optionId: null,
-                optionName: null,
-                name: product.name,
-                brand: product.brand,
-                price: product.salePrice,
-                store: product.store,
-                imageUrl: product.imageUrl,
-              })
-            }
+            onClick={() => {
+              if (product.hasOptions && product.hasDetail && cardRef.current) {
+                handleOpenDetail();
+              } else {
+                addItem({
+                  productId: product.id,
+                  optionId: null,
+                  optionName: null,
+                  name: product.name,
+                  brand: product.brand,
+                  price: product.salePrice,
+                  store: product.store,
+                  imageUrl: product.imageUrl,
+                });
+              }
+            }}
             className="text-xs px-3 py-1.5 bg-accent-500 text-white rounded-full hover:bg-accent-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
           >
-            담기
+            {product.hasOptions ? '옵션선택' : '담기'}
           </button>
         </div>
       </div>

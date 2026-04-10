@@ -2,18 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/api-utils';
 import { loginAndGetSession } from '@/lib/scraper/amoremall-auth';
-import { scrapeProductDetail } from '@/lib/scraper/product-detail';
-import { fetchInnisfreeProductDetail, type InnisfreeProductOption } from '@/lib/scraper/innisfree';
-
-async function saveOptions(productId: number, options: InnisfreeProductOption[]) {
-  for (const opt of options) {
-    await prisma.productOption.upsert({
-      where: { productId_externalId: { productId, externalId: opt.externalId } },
-      update: { name: opt.name, stock: opt.stock, soldOut: opt.stock <= 0, sortOrder: opt.sortOrder, scrapedAt: new Date() },
-      create: { productId, externalId: opt.externalId, name: opt.name, stock: opt.stock, soldOut: opt.stock <= 0, sortOrder: opt.sortOrder },
-    });
-  }
-}
+import { scrapeProductDetails } from '@/lib/scraper/scrape-product-details';
 
 export const maxDuration = 300;
 
@@ -42,47 +31,8 @@ export async function GET(req: Request) {
 
   const session = await loginAndGetSession(id, pw);
   try {
-    if (product.store === 'innisfree') {
-      const detail = await fetchInnisfreeProductDetail(session.context, product.externalId);
-      await prisma.productDetail.upsert({
-        where: { productId: product.id },
-        update: {
-          description: detail.description,
-          images: JSON.stringify(detail.images),
-          rawJson: detail.rawJson,
-          scrapedAt: new Date(),
-        },
-        create: {
-          productId: product.id,
-          description: detail.description,
-          images: JSON.stringify(detail.images),
-          rawJson: detail.rawJson,
-        },
-      });
-      if (detail.options.length > 0) {
-        await saveOptions(product.id, detail.options);
-      }
-      return NextResponse.json({ productId: product.id, ...detail, saved: true });
-    }
-
-    const detail = await scrapeProductDetail(session.page, product.productUrl);
-    await prisma.productDetail.upsert({
-      where: { productId: product.id },
-      update: {
-        description: detail.description,
-        images: JSON.stringify(detail.images),
-        htmlContent: detail.detailHtml,
-        scrapedAt: new Date(),
-      },
-      create: {
-        productId: product.id,
-        description: detail.description,
-        images: JSON.stringify(detail.images),
-        htmlContent: detail.detailHtml,
-      },
-    });
-
-    return NextResponse.json({ productId: product.id, ...detail, saved: true });
+    const results = await scrapeProductDetails([product], session.context, session.page);
+    return NextResponse.json({ ...results[0], saved: true });
   } finally {
     await session.browser.close();
   }
@@ -121,67 +71,17 @@ export async function POST(req: Request) {
   }
 
   const session = await loginAndGetSession(id, pw);
-  const results: { productId: number; name: string; success: boolean; error?: string }[] = [];
 
   try {
-    for (const product of products) {
-      try {
-        if (product.store === 'innisfree') {
-          const detail = await fetchInnisfreeProductDetail(session.context, product.externalId);
-          await prisma.productDetail.upsert({
-            where: { productId: product.id },
-            update: {
-              description: detail.description,
-              images: JSON.stringify(detail.images),
-              rawJson: detail.rawJson,
-              scrapedAt: new Date(),
-            },
-            create: {
-              productId: product.id,
-              description: detail.description,
-              images: JSON.stringify(detail.images),
-              rawJson: detail.rawJson,
-            },
-          });
-          if (detail.options.length > 0) {
-            await saveOptions(product.id, detail.options);
-          }
-        } else {
-          const detail = await scrapeProductDetail(session.page, product.productUrl!);
-          await prisma.productDetail.upsert({
-            where: { productId: product.id },
-            update: {
-              description: detail.description,
-              images: JSON.stringify(detail.images),
-              htmlContent: detail.detailHtml,
-              scrapedAt: new Date(),
-            },
-            create: {
-              productId: product.id,
-              description: detail.description,
-              images: JSON.stringify(detail.images),
-              htmlContent: detail.detailHtml,
-            },
-          });
-        }
-        results.push({ productId: product.id, name: product.name, success: true });
-      } catch (err) {
-        results.push({
-          productId: product.id,
-          name: product.name,
-          success: false,
-          error: err instanceof Error ? err.message : String(err),
-        });
-      }
-    }
+    const results = await scrapeProductDetails(products, session.context, session.page);
+
+    return NextResponse.json({
+      processed: results.length,
+      success: results.filter((r) => r.success).length,
+      failed: results.filter((r) => !r.success).length,
+      results,
+    });
   } finally {
     await session.browser.close();
   }
-
-  return NextResponse.json({
-    processed: results.length,
-    success: results.filter((r) => r.success).length,
-    failed: results.filter((r) => !r.success).length,
-    results,
-  });
 }

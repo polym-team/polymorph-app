@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/api-utils';
 import { loginAndGetSession } from '@/lib/scraper/amoremall-auth';
-import { fetchAllProducts as fetchAmoremall, filterProducts } from '@/lib/scraper/amoremall';
+import { fetchAllProducts as fetchAmoremall } from '@/lib/scraper/amoremall';
 import { fetchAllProducts as fetchInnisfree } from '@/lib/scraper/innisfree';
 
 export const maxDuration = 120;
@@ -25,11 +25,10 @@ export async function POST() {
 
   try {
     const amoremallAll = await fetchAmoremall(session.token);
-    const amoremallFiltered = filterProducts(amoremallAll);
     const innisfreeAll = await fetchInnisfree(session.context);
 
     // Upsert amoremall products
-    for (const p of amoremallFiltered) {
+    for (const p of amoremallAll) {
       await prisma.product.upsert({
         where: {
           store_externalId: { store: 'amoremall', externalId: String(p.goodsNo) },
@@ -92,7 +91,7 @@ export async function POST() {
     }
 
     return NextResponse.json({
-      amoremall: amoremallFiltered.length,
+      amoremall: amoremallAll.length,
       innisfree: innisfreeAll.length,
     });
   } finally {

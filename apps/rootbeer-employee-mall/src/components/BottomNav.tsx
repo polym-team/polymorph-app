@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -66,6 +66,15 @@ interface NavItem {
 function DetailActions({ previewProduct }: { previewProduct: PreviewProduct }) {
   const addItem = useCartStore((s) => s.addItem);
   const { options, selectedOption } = useProductDetailModal();
+  const [added, setAdded] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => {
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, []);
+
+  // 모달이 바뀌면 added 초기화
+  useEffect(() => { setAdded(false); }, [previewProduct.id]);
 
   const hasOptions = options.length > 0;
   const needsOption = hasOptions && !selectedOption;
@@ -78,15 +87,19 @@ function DetailActions({ previewProduct }: { previewProduct: PreviewProduct }) {
       optionName: selectedOption?.name ?? null,
       name: previewProduct.name,
       brand: previewProduct.brand ?? null,
-      price: previewProduct.salePrice,
+      price: selectedOption?.salePrice ?? previewProduct.salePrice,
       store: previewProduct.store,
       imageUrl: previewProduct.imageUrl ?? null,
     });
+    setAdded(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setAdded(false), 1500);
   };
 
   let buttonText = '장바구니 담기';
   if (previewProduct.soldOut) buttonText = '품절';
   else if (needsOption) buttonText = '옵션을 선택해주세요';
+  else if (added) buttonText = '담김!';
 
   return (
     <>
@@ -99,7 +112,11 @@ function DetailActions({ previewProduct }: { previewProduct: PreviewProduct }) {
       <button
         onClick={handleAddToCart}
         disabled={isDisabled}
-        className="flex-1 min-w-0 py-2.5 bg-accent-500 text-white rounded-xl text-sm font-semibold hover:bg-accent-400 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
+        className={`flex-1 min-w-0 py-2.5 text-white rounded-xl text-sm font-semibold transition-colors ${
+          added
+            ? 'bg-green-500'
+            : 'bg-accent-500 hover:bg-accent-400 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed'
+        }`}
       >
         {buttonText}
       </button>

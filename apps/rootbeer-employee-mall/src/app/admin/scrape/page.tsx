@@ -128,7 +128,7 @@ export default function AdminScrapePage() {
           상품당 약 10-15초 소요됩니다.
         </p>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {[3, 5, 10].map((n) => (
             <button
               key={n}
@@ -139,6 +139,13 @@ export default function AdminScrapePage() {
               {detailLoading ? '처리 중...' : `${n}개 처리`}
             </button>
           ))}
+          <button
+            onClick={() => handleDetailScrape(9999)}
+            disabled={detailLoading}
+            className="bg-rose-600 text-white px-4 py-2 rounded text-sm hover:bg-rose-700 disabled:bg-gray-400"
+          >
+            {detailLoading ? '처리 중...' : '전체 처리'}
+          </button>
         </div>
 
         {detailResult && (

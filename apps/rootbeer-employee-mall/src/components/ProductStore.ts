@@ -22,6 +22,7 @@ export interface PreviewProduct {
 export interface ProductOptionItem {
   id: number;
   name: string;
+  salePrice: number | null;
   stock: number;
   soldOut: boolean;
 }

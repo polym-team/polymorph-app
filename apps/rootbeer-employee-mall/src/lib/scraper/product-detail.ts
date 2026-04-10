@@ -1,9 +1,18 @@
 import type { Page } from 'playwright';
 
+export interface ProductOption {
+  externalId: string;
+  name: string;
+  price: number | null;
+  discountRate: number | null;
+  sortOrder: number;
+}
+
 export interface ProductDetailData {
   description: string | null;
   images: string[];
   detailHtml: string | null;
+  options: ProductOption[];
 }
 
 export async function scrapeProductDetail(
@@ -57,10 +66,38 @@ export async function scrapeProductDetail(
       detailHtml = detailEl.innerHTML;
     }
 
+    // 상품 옵션 추출
+    const options: { externalId: string; name: string; price: number | null; discountRate: number | null; sortOrder: number }[] = [];
+    document.querySelectorAll('.selectProdOption .optionSheet ul li').forEach((li, i) => {
+      const nameEl = li.querySelector('.prodInfo .name');
+      const name = nameEl?.textContent?.trim() ?? '';
+
+      // 이미지 URL에서 unitproducts/{id} 추출
+      const img = li.querySelector('img');
+      const imgSrc = img?.getAttribute('data-src') || img?.getAttribute('src') || '';
+      const idMatch = imgSrc.match(/unitproducts\/(\d+)\//);
+      const externalId = idMatch?.[1] ?? '';
+
+      if (!externalId || !name) return;
+
+      // 가격 추출
+      const priceEl = li.querySelector('.price .val');
+      const priceText = priceEl?.textContent?.replace(/,/g, '').trim() ?? '';
+      const price = priceText ? parseInt(priceText, 10) : null;
+
+      // 할인율 추출
+      const discountEl = li.querySelector('.discountRate');
+      const discountText = discountEl?.textContent?.replace(/%/g, '').trim() ?? '';
+      const discountRate = discountText ? parseInt(discountText, 10) : null;
+
+      options.push({ externalId, name, price, discountRate, sortOrder: i });
+    });
+
     return {
       description,
       images: Array.from(imageSet),
       detailHtml,
+      options,
     };
   }, prodCode);
 

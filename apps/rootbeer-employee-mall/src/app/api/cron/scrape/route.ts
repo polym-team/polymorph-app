@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyCronKey } from '@/lib/cron-auth';
 import { loginAndGetSession } from '@/lib/scraper/amoremall-auth';
-import { fetchAllProducts as fetchAmoremall, filterProducts } from '@/lib/scraper/amoremall';
+import { fetchAllProducts as fetchAmoremall } from '@/lib/scraper/amoremall';
 import { fetchAllProducts as fetchInnisfree } from '@/lib/scraper/innisfree';
 
 export const maxDuration = 120;
@@ -21,12 +21,11 @@ export async function POST(req: Request) {
 
   try {
     const amoremallAll = await fetchAmoremall(session.token);
-    const amoremallFiltered = filterProducts(amoremallAll);
     const innisfreeAll = await fetchInnisfree(session.context);
 
     // Upsert amoremall products
     const amoremallIds = new Set<string>();
-    for (const p of amoremallFiltered) {
+    for (const p of amoremallAll) {
       amoremallIds.add(String(p.goodsNo));
       await prisma.product.upsert({
         where: { store_externalId: { store: 'amoremall', externalId: String(p.goodsNo) } },
@@ -85,8 +84,8 @@ export async function POST(req: Request) {
       data: { removed: true },
     });
 
-    console.log(`[cron/scrape] 아모레몰: ${amoremallFiltered.length}, 이니스프리: ${innisfreeAll.length}`);
-    return NextResponse.json({ amoremall: amoremallFiltered.length, innisfree: innisfreeAll.length });
+    console.log(`[cron/scrape] 아모레몰: ${amoremallAll.length}, 이니스프리: ${innisfreeAll.length}`);
+    return NextResponse.json({ amoremall: amoremallAll.length, innisfree: innisfreeAll.length });
   } finally {
     await session.browser.close();
   }

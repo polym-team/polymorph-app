@@ -8,6 +8,7 @@ import type { Product } from '@/types';
 interface ProductOption {
   id: number;
   name: string;
+  salePrice: number | null;
   stock: number;
   soldOut: boolean;
 }
@@ -243,7 +244,7 @@ export function ProductDetailModal() {
                           key={opt.id}
                           disabled={opt.soldOut}
                           onClick={() => selectOption(selectedOption?.id === opt.id ? null : opt)}
-                          className={`text-left px-3 py-2.5 rounded-xl text-sm transition-all border ${
+                          className={`text-left px-3 py-2.5 rounded-xl text-sm transition-all border flex items-center justify-between ${
                             selectedOption?.id === opt.id
                               ? 'border-accent-500 bg-accent-50 text-accent-700 font-medium'
                               : opt.soldOut
@@ -252,7 +253,10 @@ export function ProductDetailModal() {
                           }`}
                         >
                           <span>{opt.name}</span>
-                          {opt.soldOut && <span className="ml-2 text-xs text-gray-300">품절</span>}
+                          {opt.soldOut
+                            ? <span className="ml-2 text-xs text-gray-300">품절</span>
+                            : opt.salePrice != null && <span className="ml-2 text-xs font-medium">{opt.salePrice.toLocaleString()}원</span>
+                          }
                         </button>
                       ))}
                     </div>

@@ -103,14 +103,16 @@ model ProductDetail {
 }
 
 model ProductOption {
-  id         Int      @id @default(autoincrement())
-  productId  Int      @map("product_id")
-  externalId String   @map("external_id")
-  name       String   @db.VarChar(500)
-  stock      Int      @default(0)
-  soldOut    Boolean  @default(false) @map("sold_out")
-  sortOrder  Int      @default(0) @map("sort_order")
-  scrapedAt  DateTime @default(now()) @map("scraped_at")
+  id           Int      @id @default(autoincrement())
+  productId    Int      @map("product_id")
+  externalId   String   @map("external_id")
+  name         String   @db.VarChar(500)
+  salePrice    Int?     @map("sale_price")
+  discountRate Int?     @map("discount_rate")
+  stock        Int      @default(0)
+  soldOut      Boolean  @default(false) @map("sold_out")
+  sortOrder    Int      @default(0) @map("sort_order")
+  scrapedAt    DateTime @default(now()) @map("scraped_at")
 
   product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   orderItems OrderItem[]
