@@ -31,6 +31,10 @@ const DEFAULT_HEADERS: Record<string, string> = {
   'Sec-Fetch-Dest': 'document',
 };
 
+// 세션 캐시: userId -> { client, expiresAt }
+const SESSION_TTL = 10 * 60 * 1000; // 10분
+const sessionCache = new Map<string, { client: DhLotteryClient; expiresAt: number }>();
+
 export class DhLotteryClient {
   private cookieJar: CookieJar;
   private userId: string;
@@ -43,12 +47,34 @@ export class DhLotteryClient {
   }
 
   /**
-   * 클라이언트 생성 + 로그인 (팩토리 메서드)
+   * 클라이언트 생성 + 로그인 (캐싱 지원)
+   * 동일 userId로 10분 내 재요청 시 기존 세션 재사용
    */
   static async create(userId: string, userPw: string): Promise<DhLotteryClient> {
+    const cached = sessionCache.get(userId);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.client;
+    }
+
+    // 만료된 캐시 제거
+    sessionCache.delete(userId);
+
     const client = new DhLotteryClient(userId, userPw);
     await client.login();
+
+    sessionCache.set(userId, {
+      client,
+      expiresAt: Date.now() + SESSION_TTL,
+    });
+
     return client;
+  }
+
+  /**
+   * 세션 무효화 (로그인 실패 등)
+   */
+  static invalidateSession(userId: string): void {
+    sessionCache.delete(userId);
   }
 
   private async fetch(

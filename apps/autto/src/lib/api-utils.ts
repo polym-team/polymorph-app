@@ -35,7 +35,7 @@ export async function requireAdmin() {
 }
 
 /**
- * DhAccount ID로 동행복권 클라이언트 생성
+ * DhAccount ID로 동행복권 클라이언트 생성 (세션 캐싱 지원)
  */
 export async function createDhClient(accountId: number, userId: number) {
   const account = await prisma.dhAccount.findFirst({
@@ -54,6 +54,24 @@ export async function createDhClient(accountId: number, userId: number) {
   }
 
   const password = decrypt(account.dhlotteryPwEnc);
-  const client = await DhLotteryClient.create(account.dhlotteryId, password);
-  return { client, error: null };
+
+  try {
+    const client = await DhLotteryClient.create(account.dhlotteryId, password);
+    return { client, error: null };
+  } catch {
+    // 캐시된 세션이 만료되었을 수 있으므로 무효화 후 재시도
+    DhLotteryClient.invalidateSession(account.dhlotteryId);
+    try {
+      const client = await DhLotteryClient.create(account.dhlotteryId, password);
+      return { client, error: null };
+    } catch (retryError) {
+      return {
+        client: null,
+        error: NextResponse.json(
+          { error: retryError instanceof Error ? retryError.message : '동행복권 로그인 실패' },
+          { status: 502 },
+        ),
+      };
+    }
+  }
 }
