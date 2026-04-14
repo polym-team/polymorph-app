@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String
+  profileImage String?  @map("profile_image")
+  googleId     String?  @unique @map("google_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  dhAccounts DhAccount[]
+
+  @@map("users")
+}
+
+model DhAccount {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @map("user_id")
+  dhlotteryId   String   @map("dhlottery_id")
+  dhlotteryPwEnc String  @map("dhlottery_pw_enc") @db.Text
+  nickname      String?
+  autoEnabled   Boolean  @default(false) @map("auto_enabled")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  presets      LottoPreset[]
+  purchaseLogs PurchaseLog[]
+
+  @@map("dh_accounts")
+}
+
+model LottoPreset {
+  id          Int      @id @default(autoincrement())
+  accountId   Int      @map("account_id")
+  slot        String   @db.Char(1)
+  mode        String   @default("auto")
+  numbers     String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  account DhAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, slot])
+  @@map("lotto_presets")
+}
+
+model PurchaseLog {
+  id          Int      @id @default(autoincrement())
+  accountId   Int      @map("account_id")
+  roundNo     Int      @map("round_no")
+  ticketCount Int      @map("ticket_count")
+  totalAmount Int      @map("total_amount")
+  slots       String?  @db.Text
+  source      String   @default("manual")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  account DhAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("purchase_logs")
+}
