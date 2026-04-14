@@ -54,6 +54,7 @@ export class DhLotteryClient {
   private async fetch(
     url: string,
     options: RequestInit = {},
+    retries = 3,
   ): Promise<Response> {
     const cookieString = await this.cookieJar.getCookieString(url);
     const headers: Record<string, string> = {
@@ -64,26 +65,39 @@ export class DhLotteryClient {
       headers['Cookie'] = cookieString;
     }
 
-    const resp = await fetch(url, {
-      ...options,
-      headers,
-      redirect: 'manual',
-    });
-
-    // Set-Cookie 처리
-    const setCookies = resp.headers.getSetCookie?.() ?? [];
-    for (const sc of setCookies) {
+    let lastError: Error | null = null;
+    for (let attempt = 0; attempt < retries; attempt++) {
       try {
-        const cookie = Cookie.parse(sc);
-        if (cookie) {
-          await this.cookieJar.setCookie(cookie, url);
+        const resp = await fetch(url, {
+          ...options,
+          headers,
+          redirect: 'manual',
+          signal: AbortSignal.timeout(15000),
+        });
+
+        // Set-Cookie 처리
+        const setCookies = resp.headers.getSetCookie?.() ?? [];
+        for (const sc of setCookies) {
+          try {
+            const cookie = Cookie.parse(sc);
+            if (cookie) {
+              await this.cookieJar.setCookie(cookie, url);
+            }
+          } catch {
+            // 무시
+          }
         }
-      } catch {
-        // 무시
+
+        return resp;
+      } catch (e) {
+        lastError = e instanceof Error ? e : new Error(String(e));
+        if (attempt < retries - 1) {
+          await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+        }
       }
     }
 
-    return resp;
+    throw lastError!;
   }
 
   /**
