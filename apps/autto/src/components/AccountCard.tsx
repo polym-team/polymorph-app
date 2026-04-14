@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import type { DhAccount } from './Dashboard';
 import { PresetEditor } from './PresetEditor';
 import { BalanceInfo } from './BalanceInfo';
@@ -17,6 +17,18 @@ export function AccountCard({ account, isSelected, onSelect, onUpdate }: Props) 
   const [buyResult, setBuyResult] = useState<string | null>(null);
   const [toggling, setToggling] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [presetEditing, setPresetEditing] = useState(false);
+  const [presetsValid, setPresetsValid] = useState(true);
+
+  const handleEditingChange = useCallback((editing: boolean) => {
+    setPresetEditing(editing);
+  }, []);
+
+  const handleValidChange = useCallback((valid: boolean) => {
+    setPresetsValid(valid);
+  }, []);
+
+  const canBuy = !buying && !presetEditing && presetsValid;
 
   async function handleBuy() {
     if (!confirm('이 계정으로 로또를 구매하시겠습니까?')) return;
@@ -127,15 +139,21 @@ export function AccountCard({ account, isSelected, onSelect, onUpdate }: Props) 
             accountId={account.id}
             presets={account.presets}
             onUpdate={onUpdate}
+            onEditingChange={handleEditingChange}
+            onValidChange={handleValidChange}
           />
 
           {/* 구매 버튼 */}
           <button
             onClick={handleBuy}
-            disabled={buying}
-            className="w-full rounded-lg bg-lotto-500 py-3 font-medium text-white transition hover:bg-lotto-600 disabled:opacity-50"
+            disabled={!canBuy}
+            className="w-full rounded-lg bg-lotto-500 py-3 font-medium text-white transition hover:bg-lotto-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            title={
+              presetEditing ? '번호 설정을 저장한 후 구매해주세요' :
+              !presetsValid ? '모든 수동 번호를 올바르게 입력해주세요' : ''
+            }
           >
-            {buying ? '구매 중...' : '수동 구매'}
+            {buying ? '구매 중...' : presetEditing ? '번호 설정 저장 후 구매 가능' : '수동 구매'}
           </button>
 
           {/* 구매 결과 */}
