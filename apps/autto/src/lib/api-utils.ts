@@ -5,6 +5,8 @@ import { prisma } from './prisma';
 import { DhLotteryClient } from './dhlottery';
 import { decrypt } from './crypto';
 
+const ADMIN_EMAIL = 'majac6@gmail.com';
+
 export async function getSessionUser() {
   const session = await getServerSession(authOptions);
   return session?.user ?? null;
@@ -17,6 +19,17 @@ export async function requireAuth() {
       user: null,
       error: NextResponse.json({ error: '로그인이 필요합니다' }, { status: 401 }),
     };
+  }
+  return { user, error: null };
+}
+
+export async function requireAdmin() {
+  const user = await getSessionUser();
+  if (!user) {
+    return { user: null, error: NextResponse.json({ error: '로그인이 필요합니다' }, { status: 401 }) };
+  }
+  if (user.email !== ADMIN_EMAIL) {
+    return { user: null, error: NextResponse.json({ error: '권한이 없습니다' }, { status: 403 }) };
   }
   return { user, error: null };
 }
