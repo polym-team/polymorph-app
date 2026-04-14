@@ -52,6 +52,10 @@ async function scrapeOneProduct(product: Product, context: BrowserContext, page:
     });
     if (detail.options.length > 0) {
       await saveInnisfreeOptions(product.id, detail.options);
+      const allSoldOut = detail.options.every((opt) => opt.stock <= 0);
+      if (allSoldOut !== product.soldOut) {
+        await prisma.product.update({ where: { id: product.id }, data: { soldOut: allSoldOut } });
+      }
     }
   } else {
     const detail = await scrapeProductDetail(page, product.productUrl!);
@@ -72,6 +76,10 @@ async function scrapeOneProduct(product: Product, context: BrowserContext, page:
     });
     if (detail.options.length > 0) {
       await saveAmoremallOptions(product.id, detail.options);
+      const allSoldOut = detail.options.every((opt) => opt.price == null);
+      if (allSoldOut !== product.soldOut) {
+        await prisma.product.update({ where: { id: product.id }, data: { soldOut: allSoldOut } });
+      }
     }
   }
 }

@@ -51,7 +51,7 @@ export async function POST(req: Request) {
         removed: false,
         externalId: { notIn: Array.from(amoremallIds) },
       },
-      data: { removed: true },
+      data: { removed: true, soldOut: true },
     });
 
     // Upsert innisfree products
@@ -74,18 +74,28 @@ export async function POST(req: Request) {
       });
     }
 
-    // 이니스프리에서 사라진 상품 removed 처리
+    // 이니스프리에서 사라진 상품 removed + 품절 처리
     await prisma.product.updateMany({
       where: {
         store: 'innisfree',
         removed: false,
         externalId: { notIn: Array.from(innisfreeIds) },
       },
-      data: { removed: true },
+      data: { removed: true, soldOut: true },
     });
 
-    console.log(`[cron/scrape] 아모레몰: ${amoremallAll.length}, 이니스프리: ${innisfreeAll.length}`);
-    return NextResponse.json({ amoremall: amoremallAll.length, innisfree: innisfreeAll.length });
+    // 품절/삭제된 상품의 미구매 주문아이템 자동 품절 처리
+    const soldOutResult = await prisma.orderItem.updateMany({
+      where: {
+        status: 'active',
+        product: { OR: [{ soldOut: true }, { removed: true }] },
+        order: { round: { status: { in: ['open', 'closed'] } } },
+      },
+      data: { status: 'soldout' },
+    });
+
+    console.log(`[cron/scrape] 아모레몰: ${amoremallAll.length}, 이니스프리: ${innisfreeAll.length}, 품절처리: ${soldOutResult.count}`);
+    return NextResponse.json({ amoremall: amoremallAll.length, innisfree: innisfreeAll.length, soldOutItems: soldOutResult.count });
   } finally {
     await session.browser.close();
   }

@@ -46,18 +46,32 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const limit = (body as { limit?: number }).limit ?? 5;
 
-  // 상세가 없는 상품 조회 (아모레몰 + 이니스프리)
+  const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  // 상세가 없거나 일주일 이상 지난 상품 조회
   const products = await prisma.product.findMany({
     where: {
       soldOut: false,
-      detail: null,
+      removed: false,
       OR: [
-        { store: 'amoremall', productUrl: { not: null } },
-        { store: 'innisfree' },
+        {
+          detail: null,
+          OR: [
+            { store: 'amoremall', productUrl: { not: null } },
+            { store: 'innisfree' },
+          ],
+        },
+        {
+          detail: { scrapedAt: { lt: oneWeekAgo } },
+          OR: [
+            { store: 'amoremall', productUrl: { not: null } },
+            { store: 'innisfree' },
+          ],
+        },
       ],
     },
     take: limit,
-    orderBy: { id: 'asc' },
+    orderBy: [{ detail: { scrapedAt: 'asc' } }, { id: 'asc' }],
   });
 
   if (products.length === 0) {

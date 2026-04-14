@@ -28,7 +28,9 @@ export async function POST() {
     const innisfreeAll = await fetchInnisfree(session.context);
 
     // Upsert amoremall products
+    const amoremallIds = new Set<string>();
     for (const p of amoremallAll) {
+      amoremallIds.add(String(p.goodsNo));
       await prisma.product.upsert({
         where: {
           store_externalId: { store: 'amoremall', externalId: String(p.goodsNo) },
@@ -42,6 +44,7 @@ export async function POST() {
           imageUrl: p.imageUrl,
           productUrl: p.productUrl,
           soldOut: p.soldOut,
+          removed: false,
           scrapedAt: new Date(),
         },
         create: {
@@ -59,8 +62,20 @@ export async function POST() {
       });
     }
 
+    // 아모레몰에서 사라진 상품 removed 처리
+    await prisma.product.updateMany({
+      where: {
+        store: 'amoremall',
+        removed: false,
+        externalId: { notIn: Array.from(amoremallIds) },
+      },
+      data: { removed: true, soldOut: true },
+    });
+
     // Upsert innisfree products
+    const innisfreeIds = new Set<string>();
     for (const p of innisfreeAll) {
+      innisfreeIds.add(p.productId);
       await prisma.product.upsert({
         where: {
           store_externalId: { store: 'innisfree', externalId: p.productId },
@@ -73,6 +88,7 @@ export async function POST() {
           imageUrl: p.imageUrl,
           productUrl: p.productUrl,
           soldOut: p.soldOut,
+          removed: false,
           scrapedAt: new Date(),
         },
         create: {
@@ -90,9 +106,30 @@ export async function POST() {
       });
     }
 
+    // 이니스프리에서 사라진 상품 removed + 품절 처리
+    await prisma.product.updateMany({
+      where: {
+        store: 'innisfree',
+        removed: false,
+        externalId: { notIn: Array.from(innisfreeIds) },
+      },
+      data: { removed: true, soldOut: true },
+    });
+
+    // 품절/삭제된 상품의 미구매 주문아이템 자동 품절 처리
+    const soldOutResult = await prisma.orderItem.updateMany({
+      where: {
+        status: 'active',
+        product: { OR: [{ soldOut: true }, { removed: true }] },
+        order: { round: { status: { in: ['open', 'closed'] } } },
+      },
+      data: { status: 'soldout' },
+    });
+
     return NextResponse.json({
       amoremall: amoremallAll.length,
       innisfree: innisfreeAll.length,
+      soldOutItems: soldOutResult.count,
     });
   } finally {
     await session.browser.close();
