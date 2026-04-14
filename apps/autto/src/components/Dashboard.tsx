@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { AccountCard } from './AccountCard';
 import { AddAccountForm } from './AddAccountForm';
 import { PurchaseHistory } from './PurchaseHistory';
+import { Guide } from './Guide';
 
 interface Preset {
   id: number;
@@ -113,6 +114,9 @@ export function Dashboard() {
           }}
         />
       )}
+
+      {/* 이용 안내 */}
+      <Guide />
 
       {/* 구매내역 */}
       {selectedAccountId && (
