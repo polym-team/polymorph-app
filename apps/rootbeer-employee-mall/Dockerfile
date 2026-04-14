@@ -46,6 +46,8 @@ COPY --from=builder /app/apps/rootbeer-employee-mall/.next/static ./apps/rootbee
 COPY --from=builder /playwright-modules/playwright-core ./node_modules/playwright-core
 COPY --from=builder /playwright-modules/playwright ./node_modules/playwright
 
+RUN mkdir -p /app/apps/rootbeer-employee-mall/.next/cache && chown -R nextjs:nodejs /app/apps/rootbeer-employee-mall/.next/cache
+
 USER nextjs
 
 EXPOSE 3000
