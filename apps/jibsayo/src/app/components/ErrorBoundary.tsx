@@ -44,12 +44,14 @@ export class ErrorBoundary extends Component<
               >
                 다시 시도
               </button>
-              <a
-                href="/"
+              <button
+                onClick={() => {
+                  if (typeof window !== 'undefined') window.location.href = '/';
+                }}
                 className="rounded border border-red-300 bg-white px-3 py-1.5 text-xs text-red-600 hover:bg-red-50"
               >
                 홈으로
-              </a>
+              </button>
             </div>
             {process.env.NODE_ENV !== 'production' && this.state.error.stack && (
               <pre className="mt-4 max-h-60 overflow-auto rounded bg-white p-3 text-[10px] text-gray-600">

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 /**
@@ -60,7 +61,7 @@ export function CallbackClient() {
       <div className="flex min-h-screen items-center justify-center px-4">
         <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600">
           {error}{' '}
-          <a href="/" className="underline">홈으로</a>
+          <Link href="/" className="underline">홈으로</Link>
         </div>
       </div>
     );
