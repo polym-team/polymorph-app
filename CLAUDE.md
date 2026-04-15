@@ -177,8 +177,13 @@ await pushClient.sendPushNotification(tokens, message);
 
 Firebase 설정은 환경변수로 관리하며, Admin SDK는 서버 사이드에서만 사용해야 합니다.
 
+## Authentication
+
+인증이 필요한 앱은 **`apps/oauth-server`** 중앙 인증 서버로 위임합니다. 각 앱은 자체 로그인/계정 관리 UI를 만들지 않고 `oauth.polymorph.co.kr`로 리다이렉트하며, JWT 검증은 `packages/shared-auth`를 사용합니다. 상세 통합 가이드는 **`apps/oauth-server/CLAUDE.md`** 참조.
+
 ## App-Specific Documentation
 
 각 앱의 상세한 아키텍처와 개발 가이드는 각 앱 디렉토리의 CLAUDE.md를 참조하세요:
+- **apps/oauth-server**: `apps/oauth-server/CLAUDE.md` - 중앙 인증 서버, 다른 앱 통합 가이드
 - **apps/jibsayo**: `apps/jibsayo/CLAUDE.md` - Feature-Sliced Design 아키텍처, API 개발, 테스트 전략 등
 - **apps/scaffolding**: UI 컴포넌트 쇼케이스 및 데모 앱
