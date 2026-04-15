@@ -27,10 +27,10 @@ function normalizeRow(row: Record<string, unknown>): Record<string, unknown> {
  */
 export const query = async <T>(sql: string, params?: unknown[]): Promise<T> => {
   const rows = !params || params.length === 0
-    ? await prisma.$queryRawUnsafe<Record<string, unknown>[]>(sql)
-    : await prisma.$queryRawUnsafe<Record<string, unknown>[]>(sql, ...params);
+    ? await prisma.$queryRawUnsafe(sql)
+    : await prisma.$queryRawUnsafe(sql, ...params);
 
-  return rows.map(normalizeRow) as T;
+  return (rows as Record<string, unknown>[]).map(normalizeRow) as T;
 };
 
 export { prisma };
