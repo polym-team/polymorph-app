@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 import * as dotenv from 'dotenv';
 
-import { getDbPool, query } from '../src/app/api/shared/libs/database';
+import { getDbPool, query } from '../src/app/api/shared/libs/database-legacy';
 import { fetchGovApiData } from '../src/app/api/transactions/services/legacy-api';
 import { GovApiItem } from '../src/app/api/transactions/types';
 import regionCodesData from '../src/entities/region/models/codes.json';

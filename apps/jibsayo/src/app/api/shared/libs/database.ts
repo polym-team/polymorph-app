@@ -1,36 +1,16 @@
-import mysql from 'mysql2/promise';
 import { prisma } from './prisma';
 
 /**
- * @deprecated daily-sync 스크립트 호환용. 새 코드에서는 prisma를 직접 사용하세요.
- */
-export const getDbPool = () => {
-  const globalForDb = globalThis as unknown as { dbPool: mysql.Pool | undefined };
-  if (!globalForDb.dbPool) {
-    globalForDb.dbPool = mysql.createPool({
-      host: process.env.MARIA_DB_HOST,
-      port: Number(process.env.MARIA_DB_PORT),
-      user: process.env.MARIA_DB_ID,
-      password: process.env.MARIA_DB_PW,
-      database: process.env.MARIA_DB_NAME,
-      waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0,
-      dateStrings: true,
-      timezone: '+09:00',
-    });
-  }
-  return globalForDb.dbPool;
-};
-
-/**
- * BigInt/Decimal을 일반 Number로 변환
+ * BigInt/Decimal을 Number로, Date를 문자열로 변환 (mysql2 dateStrings 호환)
  */
 function normalizeRow(row: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(row)) {
     if (typeof value === 'bigint') {
       result[key] = Number(value);
+    } else if (value instanceof Date) {
+      // mysql2의 dateStrings: true와 동일한 포맷으로 변환
+      result[key] = value.toISOString().split('T')[0];
     } else if (value !== null && typeof value === 'object' && 'toNumber' in (value as object)) {
       result[key] = (value as { toNumber(): number }).toNumber();
     } else {
