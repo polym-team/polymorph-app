@@ -24,6 +24,15 @@ const CLIENT_APPS = [
     ].join(','),
     accessTokenLifetime: 60 * 60 * 24 * 7,
   },
+  {
+    clientId: 'test',
+    name: '테스트 클라이언트',
+    allowedRedirectUris: [
+      'http://localhost:3007/test/callback',
+      'https://oauth.polymorph.co.kr/test/callback',
+    ].join(','),
+    accessTokenLifetime: 60 * 60,
+  },
 ];
 
 async function main() {

@@ -11,7 +11,8 @@ import { generateToken } from '@polymorph/shared-auth';
  */
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
+  const userId = (session?.user as { id?: string } | undefined)?.id;
+  if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
 
   // User 조회
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { id: userId },
     include: { accounts: { take: 1, orderBy: { createdAt: 'desc' } } },
   });
   if (!user) {

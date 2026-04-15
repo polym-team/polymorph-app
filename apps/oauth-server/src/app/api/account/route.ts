@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
+/**
+ * 현재 유저의 프로필 + 연결된 소셜 계정 목록
+ */
 export async function GET() {
   const session = await getServerSession(authOptions);
   const userId = (session?.user as { id?: string } | undefined)?.id;
@@ -12,12 +15,11 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      profileImage: true,
-      accounts: { select: { provider: true } },
+    include: {
+      accounts: {
+        select: { id: true, provider: true, providerAccountId: true, createdAt: true },
+        orderBy: { createdAt: 'asc' },
+      },
     },
   });
 

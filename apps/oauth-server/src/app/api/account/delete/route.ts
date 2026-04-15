@@ -3,23 +3,19 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+/**
+ * 계정 삭제 (탈퇴)
+ * 현재 User + 모든 Account 삭제
+ */
+export async function POST() {
   const session = await getServerSession(authOptions);
   const userId = (session?.user as { id?: string } | undefined)?.id;
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      profileImage: true,
-      accounts: { select: { provider: true } },
-    },
-  });
+  // User 삭제 시 Cascade로 Account도 함께 삭제
+  await prisma.user.delete({ where: { id: userId } });
 
-  return NextResponse.json(user);
+  return NextResponse.json({ success: true });
 }

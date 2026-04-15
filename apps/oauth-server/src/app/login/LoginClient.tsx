@@ -1,21 +1,30 @@
 'use client';
 
-import { signIn, useSession } from 'next-auth/react';
+import { signIn, signOut, useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export function LoginClient() {
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
   const clientId = searchParams.get('clientId') ?? '';
   const redirectUri = searchParams.get('redirectUri') ?? '';
+  const nextAuthError = searchParams.get('error');
   const [issuing, setIssuing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const attemptedRef = useRef(false);
 
-  // 이미 로그인된 상태에서 페이지 진입 → 바로 토큰 발급 + 리다이렉트
+  useEffect(() => {
+    if (nextAuthError) {
+      setError(`인증 오류: ${nextAuthError}`);
+    }
+  }, [nextAuthError]);
+
+  // 이미 로그인된 상태에서 페이지 진입 → 바로 토큰 발급 + 리다이렉트 (1회만)
   useEffect(() => {
     if (status !== 'authenticated' || !clientId || !redirectUri) return;
-    if (issuing) return;
+    if (attemptedRef.current) return;
+    attemptedRef.current = true;
 
     setIssuing(true);
     (async () => {
@@ -27,7 +36,11 @@ export function LoginClient() {
         });
         const data = await res.json();
         if (!res.ok) {
-          setError(data.error || '토큰 발급 실패');
+          setError(
+            res.status === 401
+              ? '세션이 만료되었습니다. 로그아웃 후 다시 로그인해주세요.'
+              : (data.error || '토큰 발급 실패'),
+          );
           setIssuing(false);
           return;
         }
@@ -38,7 +51,7 @@ export function LoginClient() {
         setIssuing(false);
       }
     })();
-  }, [status, clientId, redirectUri, issuing]);
+  }, [status, clientId, redirectUri]);
 
   if (!clientId || !redirectUri) {
     return (
@@ -67,7 +80,17 @@ export function LoginClient() {
         </div>
 
         {error && (
-          <div className="mb-4 rounded bg-red-50 p-3 text-sm text-red-600">{error}</div>
+          <div className="mb-4 rounded bg-red-50 p-3 text-sm text-red-600">
+            {error}
+            {status === 'authenticated' && (
+              <button
+                onClick={() => signOut({ callbackUrl: window.location.href })}
+                className="ml-2 underline"
+              >
+                로그아웃
+              </button>
+            )}
+          </div>
         )}
 
         <div className="space-y-3">
