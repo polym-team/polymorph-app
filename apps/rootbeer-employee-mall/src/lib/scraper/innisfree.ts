@@ -150,12 +150,16 @@ export async function fetchInnisfreeProductDetail(
     }
   }
 
-  const options: InnisfreeProductOption[] = (detailData.data.optnList ?? []).map((opt, i) => ({
-    externalId: opt.inmOptnPrdNo,
-    name: opt.prdOptnNm,
-    stock: opt.onlnInvnQty,
-    sortOrder: i,
-  }));
+  const rawOptions = detailData.data.optnList ?? [];
+  // 옵션명이 비어있는 경우는 단일 상품 (실제 옵션이 아님) → 필터링
+  const options: InnisfreeProductOption[] = rawOptions
+    .filter((opt) => opt.prdOptnNm && opt.prdOptnNm.trim() !== '')
+    .map((opt, i) => ({
+      externalId: opt.inmOptnPrdNo,
+      name: opt.prdOptnNm,
+      stock: opt.onlnInvnQty,
+      sortOrder: i,
+    }));
 
   return {
     description: detailData.data.opntTxt ?? null,
