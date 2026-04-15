@@ -302,12 +302,6 @@ export default function AccountPage() {
           </button>
         </div>
 
-        <a
-          href="/test"
-          className="block rounded-lg border bg-white px-4 py-3 text-center text-sm text-gray-600 hover:bg-gray-50"
-        >
-          ← 테스트 페이지로
-        </a>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { isAllowedRedirectUri } from '@/lib/redirectUri';
 import { generateToken } from '@polymorph/shared-auth';
 
 /**
@@ -32,9 +33,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: '허용되지 않은 클라이언트입니다.' }, { status: 403 });
   }
 
-  // redirectUri 검증
-  const allowedUris = clientApp.allowedRedirectUris.split(',').map(s => s.trim());
-  if (!allowedUris.includes(redirectUri)) {
+  // redirectUri 검증 (origin + path 매칭, query/fragment 무시)
+  // 표준 OAuth 2.0 방식: 앱이 redirectUri에 자유롭게 query 추가 가능 (returnTo 등)
+  if (!isAllowedRedirectUri(redirectUri, clientApp.allowedRedirectUris)) {
     return NextResponse.json({ error: '허용되지 않은 redirectUri입니다.' }, { status: 403 });
   }
 

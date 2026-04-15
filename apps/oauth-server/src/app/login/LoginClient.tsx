@@ -9,10 +9,14 @@ export function LoginClient() {
   const { data: session, status } = useSession();
   const clientId = searchParams.get('clientId') ?? '';
   const redirectUri = searchParams.get('redirectUri') ?? '';
+  const callbackUrl = searchParams.get('callbackUrl') ?? '/';
   const nextAuthError = searchParams.get('error');
   const [issuing, setIssuing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const attemptedRef = useRef(false);
+
+  // self-login 모드: clientId/redirectUri 없이 oauth-server 자체에 로그인
+  const isSelfLogin = !clientId && !redirectUri;
 
   useEffect(() => {
     if (nextAuthError) {
@@ -20,7 +24,14 @@ export function LoginClient() {
     }
   }, [nextAuthError]);
 
-  // 이미 로그인된 상태에서 페이지 진입 → 바로 토큰 발급 + 리다이렉트 (1회만)
+  // self-login 모드에서 이미 로그인되어 있으면 바로 callbackUrl로 이동
+  useEffect(() => {
+    if (isSelfLogin && status === 'authenticated') {
+      window.location.replace(callbackUrl);
+    }
+  }, [isSelfLogin, status, callbackUrl]);
+
+  // 앱 통합 모드: 이미 로그인된 상태에서 페이지 진입 → 바로 토큰 발급 + 리다이렉트 (1회만)
   useEffect(() => {
     if (status !== 'authenticated' || !clientId || !redirectUri) return;
     if (attemptedRef.current) return;
@@ -53,7 +64,8 @@ export function LoginClient() {
     })();
   }, [status, clientId, redirectUri]);
 
-  if (!clientId || !redirectUri) {
+  // 앱 통합 모드인데 파라미터가 부족하면 에러
+  if (!isSelfLogin && (!clientId || !redirectUri)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="rounded-lg bg-white p-6 text-sm text-red-500 shadow">
