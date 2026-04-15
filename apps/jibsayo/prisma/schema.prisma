@@ -73,6 +73,23 @@ model transactions {
   @@index([region_code, deal_date], map: "idx_transactions_region_date")
 }
 
+/**
+ * 사용자별 관심 아파트 (oauth-server의 User.id 참조)
+ * oauth DB와 별도 관리되므로 userId는 FK 없이 String으로만 저장
+ */
+model user_favorite_aparts {
+  id          Int      @id @default(autoincrement())
+  userId      String   @map("user_id") @db.VarChar(50)
+  apartId     Int      @map("apart_id")
+  regionCode  String   @map("region_code") @db.VarChar(10)
+  apartName   String   @map("apart_name") @db.VarChar(100)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+
+  @@unique([userId, apartId], map: "uq_user_favorite_aparts")
+  @@index([userId], map: "idx_user_favorite_aparts_user")
+  @@map("user_favorite_aparts")
+}
+
 model transactions_backup {
   id                  Int       @id @default(autoincrement())
   region_code         String    @db.VarChar(10)

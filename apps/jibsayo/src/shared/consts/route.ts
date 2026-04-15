@@ -7,6 +7,7 @@ export const ROUTE_PATH = {
   SEARCH: '/search',
   PRIVACY: '/privacy',
   POLICY: '/policy',
+  AUTH_CALLBACK: '/auth/callback',
 } as const;
 
 export const ROUTE_PATH_LABEL = {

@@ -3,8 +3,11 @@ import { Suspense } from 'react';
 
 import { Toaster } from '@package/ui';
 
+import { GlobalConfirmDialog } from '@/widgets/ui/GlobalConfirmDialog';
+
 import '../../../../packages/styles/globals.css';
 import { ConfigProvider } from './components/ConfigProvider';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { FirebaseInitializer } from './components/FirebaseInitializer';
 import { QueryClientProvider } from './components/QueryClientProvider';
 
@@ -46,15 +49,24 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body>
-        <Suspense fallback={null}>
-          <ConfigProvider>
-            <QueryClientProvider>
-              <FirebaseInitializer />
-              <Toaster />
-              {children}
-            </QueryClientProvider>
-          </ConfigProvider>
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense
+            fallback={
+              <div className="flex min-h-screen items-center justify-center text-sm text-gray-300">
+                불러오는 중...
+              </div>
+            }
+          >
+            <ConfigProvider>
+              <QueryClientProvider>
+                <FirebaseInitializer />
+                <Toaster />
+                <GlobalConfirmDialog />
+                {children}
+              </QueryClientProvider>
+            </ConfigProvider>
+          </Suspense>
+        </ErrorBoundary>
       </body>
     </html>
   );
