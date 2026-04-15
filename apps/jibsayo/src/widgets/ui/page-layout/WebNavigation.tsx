@@ -7,6 +7,7 @@ import { useEffect, useRef } from 'react';
 import { Button } from '@package/ui';
 
 const MENU_KEYS = [
+  'HOME' as const,
   'TRANSACTIONS' as const,
   'TRANSACTION_COMPARE' as const,
   'FAVORITES' as const,
@@ -35,7 +36,9 @@ export function WebNavigation() {
 
   useEffect(() => {
     const activeKey = MENU_KEYS.find(key =>
-      pathname.startsWith(ROUTE_PATH[key])
+      key === 'HOME'
+        ? pathname === ROUTE_PATH[key]
+        : pathname.startsWith(ROUTE_PATH[key])
     );
 
     if (activeKey) {
@@ -52,7 +55,10 @@ export function WebNavigation() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="mx-auto flex max-w-screen-md items-center justify-between gap-x-5 px-3 py-3 lg:max-w-screen-lg">
-        <span className="flex flex-shrink-0 items-center space-x-2 overflow-hidden transition-all duration-200">
+        <span
+          className="flex flex-shrink-0 cursor-pointer items-center space-x-2 overflow-hidden transition-all duration-200"
+          onClick={() => router.push(ROUTE_PATH.HOME)}
+        >
           <span className="flex h-[40px] overflow-hidden rounded-md">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={logo.src} alt="집사요" className="h-full w-auto" />
@@ -74,7 +80,7 @@ export function WebNavigation() {
                   size="sm"
                   className="flex-shrink-0 whitespace-nowrap text-xs lg:text-sm"
                   variant={
-                    pathname.startsWith(ROUTE_PATH[key])
+                    (key === 'HOME' ? pathname === ROUTE_PATH[key] : pathname.startsWith(ROUTE_PATH[key]))
                       ? 'primary-light'
                       : 'ghost'
                   }

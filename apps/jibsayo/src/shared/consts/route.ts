@@ -1,4 +1,5 @@
 export const ROUTE_PATH = {
+  HOME: '/',
   TRANSACTIONS: '/transactions',
   TRANSACTION_COMPARE: '/transaction-compare',
   FAVORITES: '/favorites',
@@ -9,6 +10,7 @@ export const ROUTE_PATH = {
 } as const;
 
 export const ROUTE_PATH_LABEL = {
+  HOME: '홈',
   TRANSACTIONS: '실거래가 조회',
   TRANSACTION_COMPARE: '실거래가 비교',
   FAVORITES: '저장된 아파트',
