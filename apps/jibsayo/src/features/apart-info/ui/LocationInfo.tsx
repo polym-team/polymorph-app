@@ -1,5 +1,6 @@
 'use client';
 
+import { Lock, Unlock } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { ApartInfoType } from '../type';
@@ -16,7 +17,17 @@ interface LocationInfoProps {
 
 export function LocationInfo({ data }: LocationInfoProps) {
   const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+
+  // 잠금 상태에 따라 지도 인터랙션 토글
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    map.setZoomable(isUnlocked);
+    map.setDraggable(isUnlocked);
+  }, [isUnlocked]);
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -51,6 +62,12 @@ export function LocationInfo({ data }: LocationInfoProps) {
     };
 
     const map = new window.kakao.maps.Map(container, options);
+    mapInstanceRef.current = map;
+
+    // 초기에는 잠금 상태 (인터랙션 비활성화)
+    map.setZoomable(false);
+    map.setDraggable(false);
+
     const places = new window.kakao.maps.services.Places();
     const geocoder = new window.kakao.maps.services.Geocoder();
 
@@ -221,8 +238,29 @@ export function LocationInfo({ data }: LocationInfoProps) {
   }
 
   return (
-    <div className="-mx-3 overflow-hidden md:mx-0 md:rounded">
+    <div className="relative -mx-3 overflow-hidden md:mx-0 md:rounded">
       <div ref={mapRef} className="aspect-[4/3] max-h-[450px] w-full" />
+      <button
+        onClick={() => setIsUnlocked(prev => !prev)}
+        className={`absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold shadow-lg ring-2 transition-all hover:scale-105 ${
+          isUnlocked
+            ? 'bg-blue-500 text-white ring-white/60 hover:bg-blue-600'
+            : 'bg-gray-900 text-white ring-white/60 hover:bg-gray-800'
+        }`}
+        title={isUnlocked ? '지도 잠그기' : '지도 잠금 해제'}
+      >
+        {isUnlocked ? (
+          <>
+            <Unlock size={16} />
+            <span>지도 활성</span>
+          </>
+        ) : (
+          <>
+            <Lock size={16} />
+            <span>지도 잠김</span>
+          </>
+        )}
+      </button>
     </div>
   );
 }
