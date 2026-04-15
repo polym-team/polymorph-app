@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  profileImage String?  @map("profile_image")
+  password     String?  // 추후 자체 가입 시 사용 (Argon2 해시)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  accounts Account[]
+
+  @@map("users")
+}
+
+/**
+ * 소셜 로그인 연결 정보 (provider별)
+ * 같은 이메일로 Google + Kakao 로그인하면 같은 User에 Account 2개가 연결됨
+ */
+model Account {
+  id                String   @id @default(cuid())
+  userId            String   @map("user_id")
+  provider          String   // google, kakao
+  providerAccountId String   @map("provider_account_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+/**
+ * 등록된 클라이언트 앱
+ * 각 앱별로 토큰 만료시간, 콜백 URL 등을 다르게 설정
+ */
+model ClientApp {
+  id                   String   @id @default(cuid())
+  clientId             String   @unique @map("client_id")
+  name                 String
+  allowedRedirectUris  String   @map("allowed_redirect_uris") @db.Text
+  accessTokenLifetime  Int      @default(3600) @map("access_token_lifetime")
+  enabled              Boolean  @default(true)
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@map("client_apps")
+}

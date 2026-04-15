@@ -278,6 +278,64 @@ importers:
         specifier: ^4.7.0
         version: 4.21.0
 
+  apps/oauth-server:
+    dependencies:
+      '@package/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@package/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      '@polymorph/shared-auth':
+        specifier: workspace:*
+        version: link:../../packages/shared-auth
+      '@prisma/client':
+        specifier: ^6.2.1
+        version: 6.19.2(prisma@6.19.2)(typescript@5.9.3)
+      next:
+        specifier: ^15.3.1
+        version: 15.5.9(react-dom@19.2.3)(react@19.2.3)
+      next-auth:
+        specifier: ^4.24.11
+        version: 4.24.13(next@15.5.9)(react-dom@19.2.3)(react@19.2.3)
+      react:
+        specifier: ^19.1.0
+        version: 19.2.3
+      react-dom:
+        specifier: ^19.1.0
+        version: 19.2.3(react@19.2.3)
+    devDependencies:
+      '@package/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@types/node':
+        specifier: ^20.17.9
+        version: 20.17.9
+      '@types/react':
+        specifier: ^19.1.2
+        version: 19.2.9
+      '@types/react-dom':
+        specifier: ^19.1.2
+        version: 19.2.3(@types/react@19.2.9)
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.4.20(postcss@8.5.1)
+      postcss:
+        specifier: ^8.5.1
+        version: 8.5.1
+      prisma:
+        specifier: ^6.2.1
+        version: 6.19.2(typescript@5.9.3)
+      tailwindcss:
+        specifier: ^3.4.17
+        version: 3.4.17
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
   apps/official-website:
     dependencies:
       '@package/ui':
@@ -486,6 +544,12 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
+
+  packages/shared-auth:
+    dependencies:
+      jose:
+        specifier: ^5.9.6
+        version: 5.10.0
 
   packages/ui:
     dependencies:
@@ -8810,7 +8874,7 @@ packages:
       lodash.isstring: 4.0.1
       lodash.once: 4.1.1
       ms: 2.1.3
-      semver: 7.7.2
+      semver: 7.7.3
     dev: false
 
   /jsx-ast-utils@3.3.5:
@@ -11183,6 +11247,7 @@ packages:
     resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
     engines: {node: '>=10'}
     hasBin: true
+    dev: true
 
   /semver@7.7.3:
     resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}

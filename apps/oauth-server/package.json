@@ -1,0 +1,40 @@
+{
+  "name": "oauth-server",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3007",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "tsc": "tsc --noEmit",
+    "clean": "rm -rf .next",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@package/ui": "workspace:*",
+    "@package/utils": "workspace:*",
+    "@polymorph/shared-auth": "workspace:*",
+    "@prisma/client": "^6.2.1",
+    "next": "^15.3.1",
+    "next-auth": "^4.24.11",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@package/config": "workspace:*",
+    "@types/node": "^20.17.9",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.1",
+    "prisma": "^6.2.1",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.7.0",
+    "typescript": "^5.7.2"
+  }
+}
