@@ -5,12 +5,14 @@
   "private": true,
   "scripts": {
     "scaffolding": "pnpm --filter scaffolding",
-    "jibsayo": "pnpm --filter jibsayo",
-    "bookmark-share": "pnpm --filter bookmark-share",
+    "jibsayo": "pnpm --parallel --filter jibsayo --filter oauth-server dev",
+    "bookmark-share": "pnpm --parallel --filter bookmark-share --filter oauth-server dev",
     "official-website": "pnpm --filter official-website",
-    "okra": "pnpm --parallel --filter okra --filter collab dev",
+    "okra": "pnpm --parallel --filter okra --filter collab --filter oauth-server dev",
     "collab": "pnpm --filter collab",
-    "rootbeer": "pnpm --filter rootbeer-employee-mall",
+    "rootbeer": "pnpm --parallel --filter rootbeer-employee-mall --filter oauth-server dev",
+    "autto": "pnpm --parallel --filter autto --filter oauth-server dev",
+    "oauth": "pnpm --filter oauth-server dev",
     "prepare": "husky"
   },
   "engines": {

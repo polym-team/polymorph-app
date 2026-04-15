@@ -213,6 +213,9 @@ importers:
       '@polymorph/firebase':
         specifier: workspace:*
         version: link:../../packages/firebase
+      '@polymorph/shared-auth':
+        specifier: workspace:*
+        version: link:../../packages/shared-auth
       '@prisma/client':
         specifier: ^6.2.1
         version: 6.19.2(prisma@6.19.2)(typescript@5.7.2)
