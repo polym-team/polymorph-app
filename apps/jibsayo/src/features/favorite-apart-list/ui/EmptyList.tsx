@@ -2,7 +2,7 @@
 
 import { ROUTE_PATH } from '@/shared/consts/route';
 
-import { Heart, Search } from 'lucide-react';
+import { Search, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@package/ui';
@@ -12,8 +12,8 @@ export function EmptyList() {
 
   return (
     <div className="flex flex-col items-center justify-center gap-y-4 px-4 py-12 lg:py-20">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
-        <Heart size={24} className="text-gray-400" />
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-yellow-50">
+        <Star size={24} className="fill-yellow-400 text-yellow-400" />
       </div>
       <div className="text-center">
         <p className="text-base font-medium text-gray-800">

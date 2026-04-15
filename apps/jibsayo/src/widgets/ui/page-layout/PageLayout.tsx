@@ -5,6 +5,7 @@ import { useGlobalConfigStore } from '@/shared/stores/globalConfigStore';
 import { cn } from '@package/utils';
 
 import { AppNavigation } from './AppNavigation';
+import { BottomNavigation } from './BottomNavigation';
 import { Main } from './Main';
 import { WebNavigation } from './WebNavigation';
 
@@ -36,6 +37,8 @@ export function PageLayout({
         <WebNavigation />
       )}
       <Main>{children}</Main>
+      {/* 모바일 전용 하단 네비게이션 (웹뷰 제외) */}
+      {!isInApp && <BottomNavigation />}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useFavoriteApartListQuery } from '@/entities/apart/hooks/useFavoriteApa
 import { ROUTE_PATH } from '@/shared/consts/route';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
-import { ChevronRight, Heart } from 'lucide-react';
+import { ChevronRight, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export function MyFavorites() {
@@ -20,7 +20,7 @@ export function MyFavorites() {
         onClick={() => router.push(ROUTE_PATH.FAVORITES)}
       >
         <h2 className="flex items-center gap-1.5 text-base font-bold">
-          <Heart size={16} className="text-red-400" fill="currentColor" />
+          <Star size={16} className="fill-yellow-400 text-yellow-400" />
           내 관심 아파트
           <span className="text-sm font-normal text-gray-400">
             {favorites.length}

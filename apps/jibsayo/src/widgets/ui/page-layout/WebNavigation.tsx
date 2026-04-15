@@ -27,6 +27,26 @@ export function WebNavigation() {
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
   const user = useAuthStore(s => s.user);
   const [menuOpen, setMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // 프로필 드롭다운 외부 클릭/ESC 닫기
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (!profileMenuRef.current?.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [menuOpen]);
 
   const scrollToCenter = (key: string) => {
     const nav = navRef.current;
@@ -73,7 +93,8 @@ export function WebNavigation() {
           </span>
         </span>
 
-        <div className="relative min-w-0 flex-1">
+        {/* 데스크톱 메뉴 (md 이상). 모바일은 BottomNavigation 사용 */}
+        <div className="relative hidden min-w-0 flex-1 md:block">
           <nav
             ref={navRef}
             className="scrollbar-hide overflow-x-auto text-right"
@@ -105,7 +126,7 @@ export function WebNavigation() {
         {!isInApp && (
           <div className="relative flex-shrink-0">
             {isAuthenticated ? (
-              <div className="relative">
+              <div className="relative" ref={profileMenuRef}>
                 <Button
                   size="sm"
                   variant="ghost"
@@ -116,26 +137,20 @@ export function WebNavigation() {
                   <span className="hidden max-w-[80px] truncate lg:inline">{user?.name ?? user?.email}</span>
                 </Button>
                 {menuOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setMenuOpen(false)}
-                    />
-                    <div className="absolute right-0 top-full z-50 mt-1 w-40 overflow-hidden rounded-lg border bg-white shadow-lg">
-                      <button
-                        onClick={() => { setMenuOpen(false); redirectToAccount(); }}
-                        className="block w-full px-3 py-2 text-left text-xs hover:bg-gray-50 lg:text-sm"
-                      >
-                        계정 관리
-                      </button>
-                      <button
-                        onClick={() => { setMenuOpen(false); logout(); }}
-                        className="block w-full border-t px-3 py-2 text-left text-xs text-red-500 hover:bg-red-50 lg:text-sm"
-                      >
-                        로그아웃
-                      </button>
-                    </div>
-                  </>
+                  <div className="absolute right-0 top-full z-50 mt-1 w-40 overflow-hidden rounded-lg border bg-white shadow-lg">
+                    <button
+                      onClick={() => { setMenuOpen(false); redirectToAccount(); }}
+                      className="block w-full px-3 py-2 text-left text-xs hover:bg-gray-50 lg:text-sm"
+                    >
+                      계정 관리
+                    </button>
+                    <button
+                      onClick={() => { setMenuOpen(false); logout(); }}
+                      className="block w-full border-t px-3 py-2 text-left text-xs text-red-500 hover:bg-red-50 lg:text-sm"
+                    >
+                      로그아웃
+                    </button>
+                  </div>
                 )}
               </div>
             ) : (
