@@ -14,7 +14,11 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "push:run": "tsx scripts/push.ts",
-    "daily-sync": "tsx scripts/transactions-daily-sync.ts"
+    "daily-sync": "tsx scripts/transactions-daily-sync.ts",
+    "db:generate": "prisma generate",
+    "db:pull": "prisma db pull",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@package/ui": "workspace:*",
@@ -25,6 +29,7 @@
     "d3": "7.9.0",
     "fast-xml-parser": "^4.5.3",
     "firebase-admin": "13.4.0",
+    "@prisma/client": "^6.2.1",
     "mysql2": "^3.15.3",
     "zustand": "5.0.8"
   },
@@ -36,6 +41,7 @@
     "@types/jest": "29.5.14",
     "autoprefixer": "10.4.20",
     "dotenv": "^17.2.3",
+    "prisma": "^6.2.1",
     "jest": "29.7.0",
     "jest-environment-jsdom": "29.7.0",
     "postcss": "8.5.1",

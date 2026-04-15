@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model apartments {
+  id                        Int            @id @default(autoincrement())
+  region_code               String         @db.VarChar(10)
+  apart_code                String         @db.VarChar(32)
+  apart_name                String         @db.VarChar(100)
+  apart_type                String?        @db.VarChar(10)
+  sale_type                 String?        @db.VarChar(10)
+  building_structure        String?        @db.VarChar(10)
+  heating_type              String?        @db.VarChar(10)
+  dong                      String?        @db.VarChar(20)
+  jibun                     String?        @db.VarChar(20)
+  jibun_addr                String?        @db.VarChar(500)
+  doro_addr                 String?        @db.VarChar(500)
+  constructor_company       String?        @db.VarChar(100)
+  developer_company         String?        @db.VarChar(100)
+  completion_year           Int?
+  building_count            Int?
+  total_household_count     Int?
+  sale_household_count      Int?
+  rent_household_count      Int?
+  parking_count             Int?
+  ground_parking_count      Int?
+  underground_parking_count Int?
+  ev_parking_count          Int?
+  max_floor                 Int?
+  amenities                 String?        @db.LongText
+  transactions              transactions[]
+
+  @@index([apart_name], map: "idx_apartments_name")
+  @@index([region_code], map: "idx_apartments_region")
+}
+
+model regions {
+  region_code  String         @id @db.VarChar(10)
+  region_name  String         @db.VarChar(50)
+  sido_name    String         @db.VarChar(50)
+  transactions transactions[]
+}
+
+model transactions {
+  id                  Int         @id @default(autoincrement())
+  region_code         String      @db.VarChar(10)
+  apart_id            Int?
+  deal_date           DateTime    @db.Date
+  deal_amount         Int
+  exclusive_area      Decimal?    @db.Decimal(10, 4)
+  floor               Int?
+  building_dong       String?     @db.VarChar(20)
+  estate_agent_region String?     @db.VarChar(50)
+  registration_date   DateTime?   @db.Date
+  cancellation_type   String?     @db.VarChar(10)
+  cancellation_date   DateTime?   @db.Date
+  deal_type           String?     @db.VarChar(10)
+  seller_type         String?     @db.VarChar(10)
+  buyer_type          String?     @db.VarChar(10)
+  is_land_lease       Boolean?    @default(false)
+  created_at          DateTime    @default(now()) @db.Timestamp(0)
+  updated_at          DateTime    @default(now()) @db.Timestamp(0)
+  regions             regions     @relation(fields: [region_code], references: [region_code], onUpdate: Restrict, map: "transactions_ibfk_1")
+  apartments          apartments? @relation(fields: [apart_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "transactions_ibfk_2")
+
+  @@index([apart_id, deal_date], map: "idx_transactions_apart_date")
+  @@index([deal_date], map: "idx_transactions_date")
+  @@index([region_code, deal_date], map: "idx_transactions_region_date")
+}
+
+model transactions_backup {
+  id                  Int       @id @default(autoincrement())
+  region_code         String    @db.VarChar(10)
+  apart_id            Int?
+  apart_name          String    @db.VarChar(100)
+  deal_date           DateTime  @db.Date
+  deal_amount         Int
+  exclusive_area      Decimal?  @db.Decimal(10, 4)
+  floor               Int?
+  building_dong       String?   @db.VarChar(20)
+  estate_agent_region String?   @db.VarChar(50)
+  registration_date   DateTime? @db.Date
+  cancellation_type   String?   @db.VarChar(10)
+  cancellation_date   DateTime? @db.Date
+  deal_type           String?   @db.VarChar(10)
+  seller_type         String?   @db.VarChar(10)
+  buyer_type          String?   @db.VarChar(10)
+  is_land_lease       Boolean?  @default(false)
+  created_at          DateTime  @default(now()) @db.Timestamp(0)
+  updated_at          DateTime  @default(now()) @db.Timestamp(0)
+
+  @@index([apart_id, deal_date], map: "idx_transactions_apart_date")
+  @@index([deal_date], map: "idx_transactions_date")
+  @@index([region_code, deal_date], map: "idx_transactions_region_date")
+}
