@@ -28,11 +28,28 @@ export const metadata: Metadata = {
   },
   manifest: '/favicons/site.webmanifest',
   // --
-  title: '집사요 - 실거래가 기반 부동산 정보 플랫폼',
+  title: {
+    default: '집사요 - 실거래가 기반 부동산 정보 플랫폼',
+    template: '%s | 집사요',
+  },
   description:
-    '실시간 실거래가 데이터로 신뢰할 수 있는 부동산 정보를 확인하세요',
+    '실시간 실거래가 데이터로 신뢰할 수 있는 부동산 정보를 확인하세요. 아파트 실거래가 조회, 시세 추이, 거래 비교까지 한 곳에서.',
   viewport:
     'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover',
+  openGraph: {
+    title: '집사요 - 실거래가 기반 부동산 정보 플랫폼',
+    description:
+      '실시간 실거래가 데이터로 신뢰할 수 있는 부동산 정보를 확인하세요.',
+    siteName: '집사요',
+    type: 'website',
+    locale: 'ko_KR',
+  },
+  twitter: {
+    card: 'summary',
+    title: '집사요 - 실거래가 기반 부동산 정보 플랫폼',
+    description:
+      '실시간 실거래가 데이터로 신뢰할 수 있는 부동산 정보를 확인하세요.',
+  },
   // --
   verification: {
     other: {
