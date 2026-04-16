@@ -103,7 +103,7 @@ export function CompareChart({
             style={{
               width: '100%',
               height: `${CHART_HEIGHT}px`,
-              touchAction: 'none',
+              touchAction: 'pan-y',
             }}
           >
             {isLoading && (
@@ -116,7 +116,7 @@ export function CompareChart({
               style={{
                 width: '100%',
                 height: '100%',
-                touchAction: 'none',
+                touchAction: 'pan-y',
               }}
             />
           </div>

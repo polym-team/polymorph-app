@@ -239,7 +239,19 @@ export function LocationInfo({ data }: LocationInfoProps) {
 
   return (
     <div className="relative -mx-3 overflow-hidden md:mx-0 md:rounded">
-      <div ref={mapRef} className="aspect-[4/3] max-h-[450px] w-full" />
+      <div
+        ref={mapRef}
+        className={`aspect-[4/3] max-h-[450px] w-full ${
+          !isUnlocked ? 'pointer-events-none' : ''
+        }`}
+      />
+      {!isUnlocked && (
+        <div
+          className="absolute inset-0 z-[5]"
+          aria-hidden="true"
+          style={{ touchAction: 'pan-y' }}
+        />
+      )}
       <button
         onClick={() => setIsUnlocked(prev => !prev)}
         className={`absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold shadow-lg ring-2 transition-all hover:scale-105 ${
