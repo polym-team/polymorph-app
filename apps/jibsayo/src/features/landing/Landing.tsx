@@ -1,16 +1,10 @@
-'use client';
-
 import { PageContainer } from '@/shared/ui/PageContainer';
 
-import { useLandingData } from './hooks';
+import { LandingData } from './sub-features/landing-data/LandingData';
 import { MyFavorites } from './sub-features/my-favorites/MyFavorites';
-import { RecentTransactions } from './sub-features/recent-transactions/RecentTransactions';
-import { RegionSummary } from './sub-features/region-summary/RegionSummary';
 import { SearchBar } from './sub-features/search-bar/SearchBar';
 
 export function Landing() {
-  const { data, isLoading } = useLandingData();
-
   return (
     <div className="flex flex-col gap-y-4">
       <PageContainer>
@@ -24,30 +18,7 @@ export function Landing() {
       </PageContainer>
 
       <MyFavorites />
-
-      {isLoading ? (
-        <PageContainer>
-          <div className="py-8 text-center text-sm text-gray-400">
-            데이터를 불러오는 중...
-          </div>
-        </PageContainer>
-      ) : (
-        data && (
-          <>
-            {data.regionSummaries.length > 0 && (
-              <PageContainer>
-                <RegionSummary summaries={data.regionSummaries} />
-              </PageContainer>
-            )}
-
-            {data.recentTransactions.length > 0 && (
-              <PageContainer>
-                <RecentTransactions transactions={data.recentTransactions} />
-              </PageContainer>
-            )}
-          </>
-        )
-      )}
+      <LandingData />
     </div>
   );
 }
