@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import localFont from 'next/font/local';
 import { Suspense } from 'react';
 
 import { Toaster } from '@package/ui';
@@ -10,6 +11,33 @@ import { ConfigProvider } from './components/ConfigProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { FirebaseInitializer } from './components/FirebaseInitializer';
 import { QueryClientProvider } from './components/QueryClientProvider';
+
+const pretendard = localFont({
+  src: [
+    {
+      path: '../assets/fonts/Pretendard-Regular.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/Pretendard-Medium.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/Pretendard-SemiBold.woff2',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/Pretendard-Bold.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  display: 'swap',
+  variable: '--font-pretendard',
+});
 
 export const metadata: Metadata = {
   icons: {
@@ -64,8 +92,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko">
-      <body>
+    <html lang="ko" className={pretendard.variable}>
+      <body className={pretendard.className}>
         <ErrorBoundary>
           <Suspense
             fallback={

@@ -1,8 +1,15 @@
 'use client';
 
+import dynamic from 'next/dynamic';
+
 import { CompareAparts } from './sub-features/compare-aparts';
-import { CompareChart } from './sub-features/compare-chart';
 import { ApartSearch } from './ui/ApartSearch';
+
+const CompareChart = dynamic(
+  () =>
+    import('./sub-features/compare-chart').then(mod => mod.CompareChart),
+  { ssr: false }
+);
 import { NotSearched } from './ui/NotSearched';
 import { useTransactionCompare } from './useTransactionCompare';
 

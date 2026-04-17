@@ -1,6 +1,12 @@
 import { formatKoreanAmountText } from '@/shared/utils/formatter';
 
-import * as d3 from 'd3';
+import { group, max, min } from 'd3-array';
+import { axisBottom, axisLeft } from 'd3-axis';
+import { scaleLinear, scalePoint } from 'd3-scale';
+import { select } from 'd3-selection';
+import { curveMonotoneX, line } from 'd3-shape';
+import { timeFormat } from 'd3-time-format';
+import 'd3-transition';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { ChartLegendItem, TransactionChartData } from '../type';
@@ -54,7 +60,7 @@ export const useTransactionChartView = ({
   // 스케일 계산
   const xScale = useMemo(() => {
     if (!chartData.length) {
-      return d3.scalePoint().domain([]).range([0, chartWidth]);
+      return scalePoint().domain([]).range([0, chartWidth]);
     }
 
     // 실제 데이터가 있는 날짜들만 추출하고 정렬
@@ -65,7 +71,7 @@ export const useTransactionChartView = ({
       .sort((a, b) => a.getTime() - b.getTime());
 
     // 날짜를 문자열로 변환하여 도메인으로 사용
-    const dateStrings = uniqueDates.map(date => d3.timeFormat('%Y-%m')(date));
+    const dateStrings = uniqueDates.map(date => timeFormat('%Y-%m')(date));
 
     // 바의 너비 계산
     const barMargin = 0.5;
@@ -80,8 +86,7 @@ export const useTransactionChartView = ({
     // 바가 차트 영역을 벗어나지 않도록 range 조정
     const marginPadding = Math.max(barWidth / 2, 10);
 
-    return d3
-      .scalePoint()
+    return scalePoint()
       .domain(dateStrings)
       .range([marginPadding, chartWidth - marginPadding])
       .padding(0);
@@ -89,44 +94,42 @@ export const useTransactionChartView = ({
 
   const yPriceScale = useMemo(() => {
     if (!chartData.length) {
-      return d3.scaleLinear().domain([0, 100000]).range([priceChartHeight, 0]);
+      return scaleLinear().domain([0, 100000]).range([priceChartHeight, 0]);
     }
 
-    const minPrice = d3.min(chartData, d => d.averagePrice) || 0;
-    const maxPrice = d3.max(chartData, d => d.averagePrice) || 0;
+    const minPrice = min(chartData, d => d.averagePrice) || 0;
+    const maxPrice = max(chartData, d => d.averagePrice) || 0;
 
     const eok = 100000000;
 
     const minDomain = Math.floor(minPrice / eok) * eok;
     const maxDomain = (Math.ceil(maxPrice / eok) + 1) * eok;
 
-    return d3
-      .scaleLinear()
+    return scaleLinear()
       .domain([minDomain, maxDomain])
       .range([priceChartHeight, 0]);
   }, [chartData, priceChartHeight]);
 
   const yCountScale = useMemo(() => {
     if (!chartData.length) {
-      return d3.scaleLinear().domain([0, 10]).range([countChartHeight, 0]);
+      return scaleLinear().domain([0, 10]).range([countChartHeight, 0]);
     }
 
     // 날짜별 거래건수 합산하여 최대값 계산
     const dateCountMap = new Map<string, number>();
     chartData.forEach(d => {
-      const dateKey = d3.timeFormat('%Y-%m')(d.date);
+      const dateKey = timeFormat('%Y-%m')(d.date);
       dateCountMap.set(dateKey, (dateCountMap.get(dateKey) || 0) + d.count);
     });
 
     const maxCount = Math.max(...Array.from(dateCountMap.values())) || 0;
-    return d3
-      .scaleLinear()
+    return scaleLinear()
       .domain([0, maxCount * 1.1])
       .range([countChartHeight, 0]);
   }, [chartData, countChartHeight]);
 
   // 날짜를 문자열로 변환하는 헬퍼 함수
-  const formatDateForScale = (date: Date) => d3.timeFormat('%Y-%m')(date);
+  const formatDateForScale = (date: Date) => timeFormat('%Y-%m')(date);
 
   // 차트 렌더링
   useEffect(() => {
@@ -141,7 +144,7 @@ export const useTransactionChartView = ({
       return;
     }
 
-    const svg = d3.select(svgRef.current);
+    const svg = select(svgRef.current);
     svg.selectAll('*').remove();
 
     // 상단 차트 그룹 (가격)
@@ -159,8 +162,7 @@ export const useTransactionChartView = ({
 
     // 툴팁 생성
     if (!tooltipRef.current) {
-      tooltipRef.current = d3
-        .select(svgRef.current?.parentElement)
+      tooltipRef.current = select(svgRef.current?.parentElement)
         .append('div')
         .attr(
           'class',
@@ -187,8 +189,7 @@ export const useTransactionChartView = ({
       .append('g')
       .attr('transform', `translate(0,${countChartHeight})`)
       .call(
-        d3
-          .axisBottom(xScale)
+        axisBottom(xScale)
           .tickValues(displayTicks)
           .tickFormat(dateString => {
             const [year, month] = dateString.split('-');
@@ -228,8 +229,7 @@ export const useTransactionChartView = ({
     }
 
     const priceAxis = priceGroup.append('g').call(
-      d3
-        .axisLeft(yPriceScale)
+      axisLeft(yPriceScale)
         .tickFormat(d => `${Math.round(Number(d) / 100000000)}억`)
         .tickValues(priceTickValues)
         .tickSize(0)
@@ -237,7 +237,7 @@ export const useTransactionChartView = ({
 
     // 가격 그리드 라인 추가 (연한 수평선) - 자동 계산된 틱 값 사용
     priceAxis.selectAll('.tick').each(function () {
-      const tickValue = d3.select(this).datum() as number;
+      const tickValue = select(this).datum() as number;
       priceGroup
         .append('line')
         .attr('x1', 0)
@@ -278,8 +278,7 @@ export const useTransactionChartView = ({
     });
 
     const countAxis = countGroup.append('g').call(
-      d3
-        .axisLeft(yCountScale)
+      axisLeft(yCountScale)
         .tickFormat(d => `${d}건`)
         .tickValues(countTickValues)
         .tickSize(0)
@@ -289,7 +288,7 @@ export const useTransactionChartView = ({
     countAxis.select('.domain').remove();
 
     // 평형별로 그룹화
-    const pyeongGroups = d3.group(chartData, d => d.pyeong);
+    const pyeongGroups = group(chartData, d => d.pyeong);
 
     // 날짜별 거래건수 합산 (바 차트용)
     const dateCountMap = new Map<string, number>();
@@ -346,11 +345,10 @@ export const useTransactionChartView = ({
         (a, b) => a.date.getTime() - b.date.getTime()
       );
 
-      const line = d3
-        .line<TransactionChartData>()
+      const lineFn = line<TransactionChartData>()
         .x(d => xScale(formatDateForScale(d.date)) || 0)
         .y(d => yPriceScale(d.averagePrice))
-        .curve(d3.curveMonotoneX);
+        .curve(curveMonotoneX);
 
       const path = priceGroup
         .append('path')
@@ -358,7 +356,7 @@ export const useTransactionChartView = ({
         .attr('fill', 'none')
         .attr('stroke', color)
         .attr('stroke-width', 2)
-        .attr('d', line);
+        .attr('d', lineFn);
 
       path
         .attr('stroke-dasharray', function () {

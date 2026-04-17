@@ -2,10 +2,19 @@
 
 import { PageContainer } from '@/shared/ui/PageContainer';
 
+import dynamic from 'next/dynamic';
+
 import { ApartInfoType } from '../apart-info';
 import { useApartTransactionList } from './hooks/useApartTransactionList';
-import { TransactionChart } from './sub-features/transaction-chart/TransactionChart';
 import { TransactionList } from './sub-features/transaction-list/TransactionList';
+
+const TransactionChart = dynamic(
+  () =>
+    import('./sub-features/transaction-chart/TransactionChart').then(
+      mod => mod.TransactionChart
+    ),
+  { ssr: false }
+);
 import { TransactionFilter } from './ui/TransactionFilter';
 
 interface ApartTransactionListProps {

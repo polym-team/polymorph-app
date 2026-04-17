@@ -1,6 +1,12 @@
 import { formatKoreanAmountText, formatNumber } from '@/shared/utils/formatter';
 
-import * as d3 from 'd3';
+import { group, max, min } from 'd3-array';
+import { axisBottom, axisLeft } from 'd3-axis';
+import { scaleLinear, scalePoint } from 'd3-scale';
+import { select } from 'd3-selection';
+import { curveMonotoneX, line } from 'd3-shape';
+import { timeFormat } from 'd3-time-format';
+import 'd3-transition';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { CompareChartData } from '../types';
@@ -52,7 +58,7 @@ export const useCompareChartView = ({
 
   const xScale = useMemo(() => {
     if (!chartData.length) {
-      return d3.scalePoint().domain([]).range([0, chartWidth]);
+      return scalePoint().domain([]).range([0, chartWidth]);
     }
 
     const uniqueDates = Array.from(
@@ -61,12 +67,11 @@ export const useCompareChartView = ({
       .map(time => new Date(time))
       .sort((a, b) => a.getTime() - b.getTime());
 
-    const dateStrings = uniqueDates.map(date => d3.timeFormat('%Y-%m')(date));
+    const dateStrings = uniqueDates.map(date => timeFormat('%Y-%m')(date));
 
     const marginPadding = 10;
 
-    return d3
-      .scalePoint()
+    return scalePoint()
       .domain(dateStrings)
       .range([marginPadding, chartWidth - marginPadding])
       .padding(0);
@@ -76,27 +81,25 @@ export const useCompareChartView = ({
     const bottomPadding = 50;
 
     if (!chartData.length) {
-      return d3
-        .scaleLinear()
+      return scaleLinear()
         .domain([0, 100000])
         .range([chartHeight - bottomPadding, 0]);
     }
 
-    const minPrice = d3.min(chartData, d => d.averagePrice) || 0;
-    const maxPrice = d3.max(chartData, d => d.averagePrice) || 0;
+    const minPrice = min(chartData, d => d.averagePrice) || 0;
+    const maxPrice = max(chartData, d => d.averagePrice) || 0;
 
     const eok = 100000000;
 
     const minDomain = Math.floor(minPrice / eok) * eok;
     const maxDomain = (Math.ceil(maxPrice / eok) + 1) * eok;
 
-    return d3
-      .scaleLinear()
+    return scaleLinear()
       .domain([minDomain, maxDomain])
       .range([chartHeight - bottomPadding, 0]);
   }, [chartData, chartHeight]);
 
-  const formatDateForScale = (date: Date) => d3.timeFormat('%Y-%m')(date);
+  const formatDateForScale = (date: Date) => timeFormat('%Y-%m')(date);
 
   useEffect(() => {
     if (!svgRef.current || !chartData.length || chartWidth <= 0 || chartHeight <= 0) {
@@ -104,7 +107,7 @@ export const useCompareChartView = ({
       return;
     }
 
-    const svg = d3.select(svgRef.current);
+    const svg = select(svgRef.current);
     svg.selectAll('*').remove();
 
     const chartGroup = svg
@@ -112,8 +115,7 @@ export const useCompareChartView = ({
       .attr('transform', `translate(${MARGIN.left},${MARGIN.top})`);
 
     if (!tooltipRef.current) {
-      tooltipRef.current = d3
-        .select(svgRef.current?.parentElement)
+      tooltipRef.current = select(svgRef.current?.parentElement)
         .append('div')
         .attr(
           'class',
@@ -135,8 +137,7 @@ export const useCompareChartView = ({
       .append('g')
       .attr('transform', `translate(0,${chartHeight})`)
       .call(
-        d3
-          .axisBottom(xScale)
+        axisBottom(xScale)
           .tickValues(displayTicks)
           .tickFormat(dateString => {
             const [year, month] = dateString.split('-');
@@ -173,15 +174,14 @@ export const useCompareChartView = ({
     }
 
     const yAxis = chartGroup.append('g').call(
-      d3
-        .axisLeft(yScale)
+      axisLeft(yScale)
         .tickFormat(d => `${Math.round(Number(d) / 100000000)}억`)
         .tickValues(priceTickValues)
         .tickSize(0)
     );
 
     yAxis.selectAll('.tick').each(function () {
-      const tickValue = d3.select(this).datum() as number;
+      const tickValue = select(this).datum() as number;
       chartGroup
         .append('line')
         .attr('x1', 0)
@@ -195,18 +195,17 @@ export const useCompareChartView = ({
 
     yAxis.select('.domain').remove();
 
-    const apartGroups = d3.group(chartData, d => d.apartId);
+    const apartGroups = group(chartData, d => d.apartId);
 
     Array.from(apartGroups, ([, data]) => {
       const color = data[0]?.color || '#3b82f6';
 
       const sortedData = data.sort((a, b) => a.date.getTime() - b.date.getTime());
 
-      const line = d3
-        .line<CompareChartData>()
+      const lineFn = line<CompareChartData>()
         .x(d => xScale(formatDateForScale(d.date)) || 0)
         .y(d => yScale(d.averagePrice))
-        .curve(d3.curveMonotoneX);
+        .curve(curveMonotoneX);
 
       const path = chartGroup
         .append('path')
@@ -214,7 +213,7 @@ export const useCompareChartView = ({
         .attr('fill', 'none')
         .attr('stroke', color)
         .attr('stroke-width', 2)
-        .attr('d', line);
+        .attr('d', lineFn);
 
       path
         .attr('stroke-dasharray', function () {

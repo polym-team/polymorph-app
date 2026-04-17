@@ -1,22 +1,23 @@
 'use client';
 
-import { useOnceEffect } from '@/shared/hooks/useOnceEffect';
-import { jibsayoFirebaseClient } from '@/shared/lib/firebase';
+import { useEffect } from 'react';
 
 export function FirebaseInitializer() {
-  useOnceEffect(true, () => {
-    // Firebase Analytics 초기화 확인
-    const analytics = jibsayoFirebaseClient.getAnalytics();
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
 
-    if (analytics) {
-      console.log(
-        'Firebase Analytics가 성공적으로 초기화되었습니다:',
-        analytics
-      );
+    const init = () => {
+      import('@/shared/lib/firebase').then(({ jibsayoFirebaseClient }) => {
+        jibsayoFirebaseClient.getAnalytics();
+      });
+    };
+
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(init);
     } else {
-      console.log('Firebase Analytics 초기화 실패 (서버 사이드 렌더링)');
+      setTimeout(init, 3000);
     }
-  });
+  }, []);
 
   return null;
 }
