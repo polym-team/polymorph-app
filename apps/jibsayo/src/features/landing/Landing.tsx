@@ -1,17 +1,13 @@
 import { PageContainer } from '@/shared/ui/PageContainer';
 
 import { MyFavorites } from './sub-features/my-favorites/MyFavorites';
-import { RecentTransactions } from './sub-features/recent-transactions/RecentTransactions';
-import { RegionSummary } from './sub-features/region-summary/RegionSummary';
 import { SearchBar } from './sub-features/search-bar/SearchBar';
-import type { RecentTransaction, RegionPriceSummary } from './types';
 
 interface LandingProps {
-  recentTransactions: RecentTransaction[];
-  regionSummaries: RegionPriceSummary[];
+  children: React.ReactNode;
 }
 
-export function Landing({ recentTransactions, regionSummaries }: LandingProps) {
+export function Landing({ children }: LandingProps) {
   return (
     <div className="flex flex-col gap-y-4">
       <PageContainer>
@@ -25,18 +21,7 @@ export function Landing({ recentTransactions, regionSummaries }: LandingProps) {
       </PageContainer>
 
       <MyFavorites />
-
-      {regionSummaries.length > 0 && (
-        <PageContainer>
-          <RegionSummary summaries={regionSummaries} />
-        </PageContainer>
-      )}
-
-      {recentTransactions.length > 0 && (
-        <PageContainer>
-          <RecentTransactions transactions={recentTransactions} />
-        </PageContainer>
-      )}
+      {children}
     </div>
   );
 }
