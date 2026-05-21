@@ -54,14 +54,16 @@ model LottoPreset {
 }
 
 model PurchaseLog {
-  id          Int      @id @default(autoincrement())
-  accountId   Int      @map("account_id")
-  roundNo     Int      @map("round_no")
-  ticketCount Int      @map("ticket_count")
-  totalAmount Int      @map("total_amount")
-  slots       String?  @db.Text
-  source      String   @default("manual")
-  createdAt   DateTime @default(now()) @map("created_at")
+  id           Int      @id @default(autoincrement())
+  accountId    Int      @map("account_id")
+  roundNo      Int      @map("round_no")
+  ticketCount  Int      @map("ticket_count")
+  totalAmount  Int      @map("total_amount")
+  slots        String?  @db.Text
+  source       String   @default("manual")
+  success      Boolean  @default(true)
+  errorMessage String?  @map("error_message") @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
 
   account DhAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
