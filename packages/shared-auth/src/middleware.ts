@@ -23,11 +23,15 @@ const SILENT_TTL_SEC = 60;
  * 운영 외부 URL을 구한다.
  * - ingress 뒤에서는 `req.nextUrl.origin`이 컨테이너 내부 host(http://0.0.0.0:3000)로 잡힐 수 있다.
  * - 따라서 신뢰 가능한 ingress가 보내는 X-Forwarded-Host / X-Forwarded-Proto를 우선 사용한다.
+ * - 일부 ingress는 HTTPS 종단 처리 후 내부로 forward할 때 X-Forwarded-Proto를 'http'로
+ *   잘못 세팅한다. 운영 외부 host(non-local)면 항상 https로 가정한다.
  */
 function getExternalOrigin(req: NextRequest): string {
   const forwardedHost = req.headers.get('x-forwarded-host');
   if (forwardedHost) {
-    const proto = req.headers.get('x-forwarded-proto') ?? 'https';
+    const forwardedProto = req.headers.get('x-forwarded-proto');
+    const isLocal = /^(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?$/i.test(forwardedHost);
+    const proto = isLocal ? (forwardedProto ?? 'http') : 'https';
     return `${proto}://${forwardedHost}`;
   }
   return req.nextUrl.origin;
