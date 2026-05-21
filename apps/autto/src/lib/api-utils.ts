@@ -1,15 +1,72 @@
-import { getServerSession } from 'next-auth';
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { authOptions } from './auth';
+import { validateToken, TOKEN_COOKIE } from '@polymorph/shared-auth';
 import { prisma } from './prisma';
 import { DhLotteryClient } from './dhlottery';
 import { decrypt } from './crypto';
 
 const ADMIN_EMAIL = 'majac6@gmail.com';
 
-export async function getSessionUser() {
-  const session = await getServerSession(authOptions);
-  return session?.user ?? null;
+export interface AuttoUser {
+  id: number;
+  email: string;
+  name: string;
+}
+
+/**
+ * 쿠키의 JWT를 직접 검증해 oauth 사용자 정보를 얻고, autto 로컬 User row를 보장한다.
+ * 미들웨어 matcher가 /api를 제외하므로 헤더에 의존하지 않고 API 내부에서 직접 토큰을 본다.
+ *
+ * Phase 1 임시 어댑터: oauth User → autto User.id(int) 매핑.
+ *   1) payload.email로 먼저 시도 (provider가 google 단일 사용자이거나 진짜 email인 경우)
+ *   2) 실패 시 payload.linkedEmails 순회 (카카오 더미 email 등 마이그레이션 매핑)
+ *   3) 그래도 없으면 신규 생성 (대표 email은 payload.email 그대로)
+ * Phase 2에서 autto users 테이블 제거 + FK 교체하면 이 함수도 사라진다.
+ */
+export async function getSessionUser(): Promise<AuttoUser | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(TOKEN_COOKIE)?.value;
+  if (!token) return null;
+
+  const result = await validateToken(token);
+  if (!result.valid || !result.payload) return null;
+
+  const primaryEmail = result.payload.email;
+  const linkedEmails = result.payload.linkedEmails ?? [];
+  const name = result.payload.name ?? '';
+  // oauth-server가 카카오처럼 email 없는 provider에 만들어주는 가짜 email.
+  // 이 경우 진짜 사용자 식별은 linkedEmails 쪽에 있다고 봐야 한다.
+  const isPrimaryDummy = primaryEmail.endsWith('@no-email.polymorph.co.kr');
+
+  // primary가 더미면 linkedEmails를 먼저, 진짜 email이면 primary를 먼저 시도.
+  const lookupOrder: string[] = isPrimaryDummy
+    ? [...linkedEmails, primaryEmail]
+    : [primaryEmail, ...linkedEmails];
+
+  let user: AuttoUser | null = null;
+  for (const candidate of lookupOrder) {
+    user = await prisma.user.findUnique({
+      where: { email: candidate },
+      select: { id: true, email: true, name: true },
+    });
+    if (user) break;
+  }
+
+  // 3) 없으면 신규 생성 (대표 email 사용)
+  if (!user) {
+    user = await prisma.user.create({
+      data: { email: primaryEmail, name },
+      select: { id: true, email: true, name: true },
+    });
+  } else if (name && user.name !== name) {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { name },
+      select: { id: true, email: true, name: true },
+    });
+  }
+
+  return user;
 }
 
 export async function requireAuth() {

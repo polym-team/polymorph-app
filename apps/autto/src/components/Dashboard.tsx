@@ -1,6 +1,5 @@
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect, useCallback } from 'react';
 import { AccountCard } from './AccountCard';
 import { AddAccountForm } from './AddAccountForm';
@@ -22,8 +21,17 @@ export interface DhAccount {
   presets: Preset[];
 }
 
+interface MeUser {
+  id: string;
+  email: string;
+  name?: string;
+}
+
+const OAUTH_SERVER_URL =
+  process.env.NEXT_PUBLIC_OAUTH_SERVER_URL ?? 'https://oauth.polymorph.co.kr';
+
 export function Dashboard() {
-  const { data: session } = useSession();
+  const [user, setUser] = useState<MeUser | null>(null);
   const [accounts, setAccounts] = useState<DhAccount[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
@@ -45,8 +53,20 @@ export function Dashboard() {
   }, [selectedAccountId]);
 
   useEffect(() => {
+    fetch('/api/auth/me')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.authenticated) setUser(d.user);
+      })
+      .catch(() => {});
     fetchAccounts();
   }, [fetchAccounts]);
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    const returnTo = encodeURIComponent(window.location.origin);
+    window.location.href = `${OAUTH_SERVER_URL}/api/logout?returnTo=${returnTo}`;
+  };
 
   if (loading) {
     return <div className="text-center text-gray-400 py-20">로딩 중...</div>;
@@ -58,10 +78,10 @@ export function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Autto</h1>
-          <p className="text-sm text-gray-500">{session?.user?.name}</p>
+          <p className="text-sm text-gray-500">{user?.name ?? user?.email}</p>
         </div>
         <button
-          onClick={() => signOut()}
+          onClick={handleLogout}
           className="rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100"
         >
           로그아웃
