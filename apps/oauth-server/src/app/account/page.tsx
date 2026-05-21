@@ -7,6 +7,8 @@ interface Account {
   id: string;
   provider: string;
   providerAccountId: string;
+  email: string | null;
+  name: string | null;
   createdAt: string;
 }
 
@@ -100,12 +102,12 @@ export default function AccountPage() {
     }
   }
 
-  async function handleUnlink(provider: string) {
+  async function handleUnlink(accountId: string, provider: string) {
     if (!confirm(`${PROVIDER_LABELS[provider]?.name} 연동을 해제하시겠습니까?`)) return;
     const res = await fetch('/api/account/unlink', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ provider }),
+      body: JSON.stringify({ accountId }),
     });
     const data = await res.json();
     if (!res.ok) {
@@ -158,10 +160,8 @@ export default function AccountPage() {
     );
   }
 
-  const linkedProviders = new Set(user.accounts.map((a) => a.provider));
-  const availableProviders = Object.keys(PROVIDER_LABELS).filter(
-    (p) => !linkedProviders.has(p),
-  );
+  // 같은 provider 여러 개 연결 가능 (예: Google 계정 N개)
+  const availableProviders = Object.keys(PROVIDER_LABELS);
 
   return (
     <div className="min-h-screen px-4 py-8">
@@ -213,21 +213,23 @@ export default function AccountPage() {
             {user.accounts.map((account) => {
               const label = PROVIDER_LABELS[account.provider]?.name ?? account.provider;
               const canUnlink = user.accounts.length > 1;
+              const identifier = account.email ?? account.name ?? '이메일 정보 없음';
               return (
                 <div
                   key={account.id}
                   className="flex items-center justify-between rounded-lg border bg-gray-50 px-4 py-3"
                 >
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium">{label}</div>
+                    <div className="truncate text-xs text-gray-500">{identifier}</div>
                     <div className="text-xs text-gray-400">
                       연결일: {new Date(account.createdAt).toLocaleDateString('ko-KR')}
                     </div>
                   </div>
                   <button
-                    onClick={() => handleUnlink(account.provider)}
+                    onClick={() => handleUnlink(account.id, account.provider)}
                     disabled={!canUnlink}
-                    className="rounded px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 disabled:text-gray-300 disabled:hover:bg-transparent"
+                    className="ml-2 shrink-0 rounded px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 disabled:text-gray-300 disabled:hover:bg-transparent"
                     title={!canUnlink ? '최소 1개의 계정이 연결되어야 합니다.' : ''}
                   >
                     해제

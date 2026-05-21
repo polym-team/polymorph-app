@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 
 /**
  * 소셜 계정 연동 해제
- * Body: { provider: string }
+ * Body: { accountId: string }
  * 마지막 1개는 해제 불가 (계정 접근 불능 방지)
  */
 export async function POST(req: Request) {
@@ -15,9 +15,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await req.json() as { provider: string };
-  if (!body.provider) {
-    return NextResponse.json({ error: 'provider가 필요합니다.' }, { status: 400 });
+  const body = await req.json() as { accountId?: string };
+  if (!body.accountId) {
+    return NextResponse.json({ error: 'accountId가 필요합니다.' }, { status: 400 });
   }
 
   const user = await prisma.user.findUnique({
@@ -35,9 +35,9 @@ export async function POST(req: Request) {
     );
   }
 
-  const target = user.accounts.find((a) => a.provider === body.provider);
+  const target = user.accounts.find((a) => a.id === body.accountId);
   if (!target) {
-    return NextResponse.json({ error: '해당 프로바이더가 연결되어 있지 않습니다.' }, { status: 404 });
+    return NextResponse.json({ error: '해당 계정이 연결되어 있지 않습니다.' }, { status: 404 });
   }
 
   await prisma.account.delete({ where: { id: target.id } });

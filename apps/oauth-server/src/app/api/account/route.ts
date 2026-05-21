@@ -17,7 +17,7 @@ export async function GET() {
     where: { id: userId },
     include: {
       accounts: {
-        select: { id: true, provider: true, providerAccountId: true, createdAt: true },
+        select: { id: true, provider: true, providerAccountId: true, email: true, name: true, createdAt: true },
         orderBy: { createdAt: 'asc' },
       },
     },

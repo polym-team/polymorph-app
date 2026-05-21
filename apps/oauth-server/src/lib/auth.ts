@@ -40,6 +40,9 @@ export const authOptions: NextAuthOptions = {
       const email =
         socialUser.email ?? `${provider}_${providerAccountId}@no-email.polymorph.co.kr`;
 
+      const socialEmail = socialUser.email ?? null;
+      const socialName = socialUser.name ?? null;
+
       // 0. 연동/병합 모드 확인
       let linkingUserId: string | undefined;
       let mergingUserId: string | undefined;
@@ -88,7 +91,7 @@ export const authOptions: NextAuthOptions = {
 
         // 기존 Account 없으면 현재 User에 새 Account만 추가
         await prisma.account.create({
-          data: { userId: mergingUserId, provider, providerAccountId },
+          data: { userId: mergingUserId, provider, providerAccountId, email: socialEmail, name: socialName },
         });
         if (!mergeTarget.name && socialUser.name) {
           await prisma.user.update({
@@ -104,13 +107,17 @@ export const authOptions: NextAuthOptions = {
         if (linkingUserId && existingAccount.userId !== linkingUserId) {
           return `/account?error=already_linked_to_other`;
         }
-        // 프로필 정보 업데이트
+        // 프로필 정보 업데이트 + Account의 email/name 백필
         await prisma.user.update({
           where: { id: existingAccount.userId },
           data: {
             name: socialUser.name ?? existingAccount.user.name,
             profileImage: socialUser.image ?? existingAccount.user.profileImage,
           },
+        });
+        await prisma.account.update({
+          where: { id: existingAccount.id },
+          data: { email: socialEmail, name: socialName },
         });
         return true;
       }
@@ -122,7 +129,7 @@ export const authOptions: NextAuthOptions = {
           return `/account?error=invalid_linking_user`;
         }
         await prisma.account.create({
-          data: { userId: linkingUserId, provider, providerAccountId },
+          data: { userId: linkingUserId, provider, providerAccountId, email: socialEmail, name: socialName },
         });
         if (!targetUser.name && socialUser.name) {
           await prisma.user.update({
@@ -140,7 +147,7 @@ export const authOptions: NextAuthOptions = {
 
       if (existingUser) {
         await prisma.account.create({
-          data: { userId: existingUser.id, provider, providerAccountId },
+          data: { userId: existingUser.id, provider, providerAccountId, email: socialEmail, name: socialName },
         });
         await prisma.user.update({
           where: { id: existingUser.id },
@@ -159,7 +166,7 @@ export const authOptions: NextAuthOptions = {
           name: socialUser.name ?? null,
           profileImage: socialUser.image ?? null,
           accounts: {
-            create: { provider, providerAccountId },
+            create: { provider, providerAccountId, email: socialEmail, name: socialName },
           },
         },
       });

@@ -44,19 +44,27 @@ export async function GET(req: Request) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { accounts: { take: 1, orderBy: { createdAt: 'desc' } } },
+    include: { accounts: { orderBy: { createdAt: 'desc' } } },
   });
   if (!user) {
     return NextResponse.redirect(redirectUri);
   }
 
   const provider = user.accounts[0]?.provider ?? 'unknown';
+  const linkedEmails = Array.from(
+    new Set(
+      user.accounts
+        .map((a) => a.email)
+        .filter((e): e is string => !!e && !e.endsWith('@no-email.polymorph.co.kr')),
+    ),
+  );
   const token = await generateToken({
     sub: user.id,
     email: user.email,
     name: user.name ?? undefined,
     provider,
     clientId,
+    linkedEmails,
     expiresInSec: clientApp.accessTokenLifetime,
   });
 

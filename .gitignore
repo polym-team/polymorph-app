@@ -108,4 +108,10 @@ Thumbs.db
 .webpack/
 
 # Turbo
-.turbo/ 
+.turbo/
+
+# Local backups (DB dumps, migration artifacts)
+.backups/
+
+# Prisma generated clients (per-app, prevents cross-app overwrite)
+apps/*/src/generated/ 

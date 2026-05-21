@@ -39,16 +39,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: '허용되지 않은 redirectUri입니다.' }, { status: 403 });
   }
 
-  // User 조회
+  // User + 연동된 모든 account 조회 (linkedEmails 산출용)
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { accounts: { take: 1, orderBy: { createdAt: 'desc' } } },
+    include: { accounts: { orderBy: { createdAt: 'desc' } } },
   });
   if (!user) {
     return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
   }
 
   const provider = user.accounts[0]?.provider ?? 'unknown';
+  const linkedEmails = Array.from(
+    new Set(
+      user.accounts
+        .map((a) => a.email)
+        .filter((e): e is string => !!e && !e.endsWith('@no-email.polymorph.co.kr')),
+    ),
+  );
 
   // JWT 발급
   const token = await generateToken({
@@ -57,6 +64,7 @@ export async function POST(req: Request) {
     name: user.name ?? undefined,
     provider,
     clientId,
+    linkedEmails,
     expiresInSec: clientApp.accessTokenLifetime,
   });
 

@@ -17,6 +17,7 @@ interface GenerateTokenOptions {
   name?: string;
   provider: string;
   clientId: string;
+  linkedEmails?: string[];
   /** 만료 시간 (초). 기본 1시간 */
   expiresInSec?: number;
 }
@@ -33,6 +34,7 @@ export async function generateToken(options: GenerateTokenOptions): Promise<stri
     name: options.name,
     provider: options.provider,
     clientId: options.clientId,
+    linkedEmails: options.linkedEmails,
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuer(ISSUER)
@@ -58,6 +60,7 @@ export async function validateToken(token: string): Promise<ValidateResult> {
         name: payload.name as string | undefined,
         provider: payload.provider as string,
         clientId: payload.clientId as string,
+        linkedEmails: payload.linkedEmails as string[] | undefined,
         iss: payload.iss,
         exp: payload.exp,
         iat: payload.iat,

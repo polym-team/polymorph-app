@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -30,6 +31,8 @@ model Account {
   userId            String   @map("user_id")
   provider          String   // google, kakao
   providerAccountId String   @map("provider_account_id")
+  email             String?
+  name              String?
   createdAt         DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
