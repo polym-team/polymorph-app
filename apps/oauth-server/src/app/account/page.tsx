@@ -131,8 +131,8 @@ export default function AccountPage() {
       setError(data.error || '계정 삭제 실패');
       return;
     }
-    // 세션도 종료하고 테스트 페이지로 이동
-    signOut({ callbackUrl: '/test' });
+    // 계정 삭제 후 세션 종료
+    signOut({ callbackUrl: '/' });
   }
 
   if (loading) {
@@ -186,7 +186,7 @@ export default function AccountPage() {
               <div className="truncate text-sm text-gray-500">{user.email}</div>
             </div>
             <button
-              onClick={() => signOut({ callbackUrl: '/test' })}
+              onClick={() => signOut({ callbackUrl: '/' })}
               className="rounded-lg px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-100"
             >
               로그아웃

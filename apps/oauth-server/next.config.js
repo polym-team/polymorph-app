@@ -8,6 +8,10 @@ const nextConfig = {
       { protocol: 'https', hostname: 'k.kakaocdn.net' },
     ],
   },
+  logging: {
+    fetches: { fullUrl: true },
+    incomingRequests: true,
+  },
 };
 
 module.exports = nextConfig;
