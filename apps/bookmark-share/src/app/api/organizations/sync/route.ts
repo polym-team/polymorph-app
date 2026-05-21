@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { getUserOrganizations, getOrgMembership } from '@/lib/github';
-import type { MemberRole } from '@prisma/client';
+import type { MemberRole } from '@/generated/prisma';
 
 // POST /api/organizations/sync - Sync user's organizations from GitHub
 export async function POST(request: NextRequest) {

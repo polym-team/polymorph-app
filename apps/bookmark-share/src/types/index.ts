@@ -1,4 +1,4 @@
-import type { Bookmark, Category, Organization, User, Importance, MemberRole } from '@prisma/client';
+import type { Bookmark, Category, Organization, User, Importance, MemberRole } from '@/generated/prisma';
 
 export type { Bookmark, Category, Organization, User, Importance, MemberRole };
 

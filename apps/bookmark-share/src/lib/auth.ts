@@ -2,7 +2,7 @@ import NextAuth, { type DefaultSession } from 'next-auth';
 import GitHub from 'next-auth/providers/github';
 import { prisma } from './prisma';
 import { getUserOrganizations, getOrgMembership } from './github';
-import type { MemberRole } from '@prisma/client';
+import type { MemberRole } from '@/generated/prisma';
 
 declare module 'next-auth' {
   interface Session extends DefaultSession {

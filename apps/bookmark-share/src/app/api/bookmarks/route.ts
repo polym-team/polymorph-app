@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getAuthUser } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
-import { Importance, Prisma } from '@prisma/client';
+import { Importance, Prisma } from '@/generated/prisma';
 
 const createBookmarkSchema = z.object({
   url: z.string().url(),
