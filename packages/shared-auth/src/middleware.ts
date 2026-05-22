@@ -2,7 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { validateToken } from './jwt';
 
 const TOKEN_COOKIE_NAME = 'polymorph_auth';
-const SILENT_ATTEMPTED_COOKIE = 'polymorph_silent_auth_tried';
+const SILENT_RETRY_PARAM = '_silent_retry';
+const MAX_SILENT_RETRY = 3;
 
 export interface MiddlewareOptions {
   /** 인증 실패 시 동작
@@ -16,8 +17,6 @@ export interface MiddlewareOptions {
   /** oauth-server URL (기본: https://oauth.polymorph.co.kr) */
   oauthServerUrl?: string;
 }
-
-const SILENT_TTL_SEC = 60;
 
 /**
  * 운영 외부 URL을 구한다.
@@ -81,25 +80,22 @@ function handleUnauthorized(req: NextRequest, options: MiddlewareOptions): NextR
   }
 
   if (mode === 'silent') {
-    // 무한 루프 방지: 직전에 silent auth 시도했으면 스킵
-    const tried = req.cookies.get(SILENT_ATTEMPTED_COOKIE)?.value;
-    if (tried) {
-      console.log(`[shared-auth:${options.clientId}] ${req.method} ${req.nextUrl.pathname} -> silent skipped (tried)`);
+    // 무한 루프 방지: URL 쿼리(_silent_retry)에 시도 횟수를 기록하고 MAX 도달 시 silent SSO 중단
+    const retryRaw = req.nextUrl.searchParams.get(SILENT_RETRY_PARAM);
+    const retry = Number.parseInt(retryRaw ?? '0', 10) || 0;
+    if (retry >= MAX_SILENT_RETRY) {
+      console.log(`[shared-auth:${options.clientId}] ${req.method} ${req.nextUrl.pathname} -> silent retry exceeded (${retry})`);
       return NextResponse.next();
     }
 
-    const redirectUri = `${externalOrigin}/auth/callback?returnTo=${encodeURIComponent(req.nextUrl.pathname + req.nextUrl.search)}`;
+    // returnTo: 현재 path + 기존 쿼리 + _silent_retry 증가
+    const nextSearch = new URLSearchParams(req.nextUrl.search);
+    nextSearch.set(SILENT_RETRY_PARAM, String(retry + 1));
+    const returnTo = `${req.nextUrl.pathname}?${nextSearch.toString()}`;
+    const redirectUri = `${externalOrigin}/auth/callback?returnTo=${encodeURIComponent(returnTo)}`;
     const silentUrl = `${oauthUrl}/api/silent-auth?clientId=${options.clientId}&redirectUri=${encodeURIComponent(redirectUri)}`;
-    console.log(`[shared-auth:${options.clientId}] ${req.method} ${req.nextUrl.pathname} -> silent SSO (origin=${externalOrigin})`);
-
-    const res = NextResponse.redirect(silentUrl);
-    res.cookies.set(SILENT_ATTEMPTED_COOKIE, '1', {
-      maxAge: SILENT_TTL_SEC,
-      httpOnly: true,
-      sameSite: 'lax',
-      path: '/',
-    });
-    return res;
+    console.log(`[shared-auth:${options.clientId}] ${req.method} ${req.nextUrl.pathname} -> silent SSO (retry=${retry + 1}, origin=${externalOrigin})`);
+    return NextResponse.redirect(silentUrl);
   }
 
   // 'continue' (기본)
