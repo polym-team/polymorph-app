@@ -5,6 +5,10 @@ on:
     branches: ["main"]
     paths:
       - "apps/autto/**"
+      - "packages/shared-auth/**"
+      - "packages/config/**"
+      - "packages/ui/**"
+      - "packages/utils/**"
       - ".github/workflows/autto-deploy-polymorph-k8s-prd.yaml"
   workflow_dispatch:
 

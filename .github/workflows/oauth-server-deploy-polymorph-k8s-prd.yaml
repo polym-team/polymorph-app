@@ -6,6 +6,9 @@ on:
     paths:
       - "apps/oauth-server/**"
       - "packages/shared-auth/**"
+      - "packages/config/**"
+      - "packages/ui/**"
+      - "packages/utils/**"
       - ".github/workflows/oauth-server-deploy-polymorph-k8s-prd.yaml"
   workflow_dispatch:
 
