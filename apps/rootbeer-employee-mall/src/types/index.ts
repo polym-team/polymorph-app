@@ -7,7 +7,7 @@ export type {
   Purchase,
   PurchaseItem,
   Notice,
-} from '@prisma/client';
+} from '@/generated/prisma';
 
 export type Store = 'amoremall' | 'innisfree';
 

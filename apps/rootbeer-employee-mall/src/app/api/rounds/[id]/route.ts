@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/api-utils';
-import { notifyRoundClosed } from '@/lib/slack';
+import { notifyRoundOrdered, notifyRoundSettled } from '@/lib/slack';
+import { closeRoundAndOpenNext } from '@/lib/round-rollover';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { error } = await requireAdmin();
@@ -95,17 +96,23 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: 'No updates' }, { status: 400 });
   }
 
+  if (status === 'closed') {
+    const result = await closeRoundAndOpenNext(roundId);
+    if (!result) {
+      return NextResponse.json({ error: '이미 마감된 라운드입니다' }, { status: 400 });
+    }
+    return NextResponse.json({ success: true, nextRoundId: result.nextRoundId });
+  }
+
   const round = await prisma.orderRound.update({
     where: { id: roundId },
-    data: {
-      status,
-      ...(status === 'closed' ? { closedAt: new Date() } : {}),
-    },
-    include: { _count: { select: { orders: true } } },
+    data: { status },
   });
 
-  if (status === 'closed' && round.slackTs) {
-    await notifyRoundClosed(round.slackTs, round.title, round._count.orders);
+  if (status === 'ordered' && round.slackTs) {
+    await notifyRoundOrdered(round.slackTs, round.title);
+  } else if (status === 'settled' && round.slackTs) {
+    await notifyRoundSettled(round.slackTs, round.title);
   }
 
   return NextResponse.json({ success: true });

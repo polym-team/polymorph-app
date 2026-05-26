@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@/generated/prisma';
 
 export async function GET() {
   const { user, error } = await requireAuth();
@@ -19,7 +19,7 @@ export async function GET() {
           purchaseItems: {
             include: {
               purchase: {
-                select: { externalOrderNo: true, status: true },
+                select: { id: true, externalOrderNo: true, status: true },
               },
             },
           },
@@ -29,7 +29,50 @@ export async function GET() {
     orderBy: { createdAt: 'desc' },
   });
 
-  return NextResponse.json(orders);
+  // 사용자 주문이 연결된 모든 purchase의 배송비 분담액 계산
+  // (settlement 로직과 동일: 한 purchase의 shippingFee를 참여 유저 수로 나눔)
+  const purchaseIds = new Set<number>();
+  for (const order of orders) {
+    for (const item of order.items) {
+      for (const pi of item.purchaseItems) {
+        purchaseIds.add(pi.purchase.id);
+      }
+    }
+  }
+
+  const purchases = purchaseIds.size > 0
+    ? await prisma.purchase.findMany({
+        where: { id: { in: [...purchaseIds] }, shippingFee: { gt: 0 } },
+        include: {
+          items: {
+            include: { orderItem: { select: { order: { select: { userId: true } } } } },
+          },
+        },
+      })
+    : [];
+
+  const purchaseShareMap = new Map<number, number>();
+  for (const p of purchases) {
+    const userIds = new Set(p.items.map((pi) => pi.orderItem.order.userId));
+    if (userIds.size === 0) continue;
+    purchaseShareMap.set(p.id, Math.ceil(p.shippingFee / userIds.size));
+  }
+
+  const enriched = orders.map((order) => {
+    const orderPurchaseIds = new Set<number>();
+    for (const item of order.items) {
+      for (const pi of item.purchaseItems) {
+        orderPurchaseIds.add(pi.purchase.id);
+      }
+    }
+    const shippingShare = [...orderPurchaseIds].reduce(
+      (sum, pid) => sum + (purchaseShareMap.get(pid) ?? 0),
+      0,
+    );
+    return { ...order, shippingShare };
+  });
+
+  return NextResponse.json(enriched);
 }
 
 export async function POST(req: Request) {

@@ -171,3 +171,41 @@ export async function notifyRoundClosed(
     ],
   });
 }
+
+export async function notifyRoundOrdered(
+  slackTs: string,
+  title: string | null,
+) {
+  await postMessage({
+    text: '발주가 완료되었습니다.',
+    thread_ts: slackTs,
+    blocks: [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `${title ? `*${title}* ` : ''}:package: 발주가 완료되었습니다.\n배송 도착 후 정산이 진행됩니다.`,
+        },
+      },
+    ],
+  });
+}
+
+export async function notifyRoundSettled(
+  slackTs: string,
+  title: string | null,
+) {
+  await postMessage({
+    text: '정산이 완료되었습니다.',
+    thread_ts: slackTs,
+    blocks: [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `${title ? `*${title}* ` : ''}:white_check_mark: 정산이 완료되었습니다.`,
+        },
+      },
+    ],
+  });
+}

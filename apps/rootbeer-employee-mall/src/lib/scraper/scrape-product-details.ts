@@ -1,4 +1,4 @@
-import type { Product } from '@prisma/client';
+import type { Product } from '@/generated/prisma';
 import type { BrowserContext, Page } from 'playwright';
 import { prisma } from '@/lib/prisma';
 import { scrapeProductDetail, type ProductOption } from './product-detail';

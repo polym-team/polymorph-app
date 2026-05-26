@@ -13,6 +13,7 @@ interface OrderData {
   customAddress: string | null;
   status: string;
   createdAt: string;
+  shippingShare: number;
   round: { title: string | null; status: string };
   items: {
     id: number;
@@ -82,10 +83,11 @@ export default function MyOrdersPage() {
       ) : (
         <div className="space-y-4">
           {orders.map((order) => {
-            const total = order.items.reduce(
-              (sum, i) => sum + i.priceAtOrder * i.quantity,
-              0,
-            );
+            const itemsTotal = order.items
+              .filter((i) => i.status === 'active')
+              .reduce((sum, i) => sum + i.priceAtOrder * i.quantity, 0);
+            const shippingShare = order.shippingShare ?? 0;
+            const total = itemsTotal + shippingShare;
             const statusInfo = STATUS_LABELS[order.status] ?? STATUS_LABELS.submitted;
 
             return (
@@ -162,13 +164,25 @@ export default function MyOrdersPage() {
                     </div>
                   ))}
                 </div>
-                <div className="p-3 border-t flex justify-between text-sm">
-                  <span className="text-gray-500">
-                    {order.deliveryLocation === 'custom'
-                      ? `${order.customName} / ${order.customPhone} / ${order.customAddress}`
-                      : DELIVERY_LABELS[order.deliveryLocation] ?? order.deliveryLocation}
-                  </span>
-                  <span className="font-bold">{total.toLocaleString()}원</span>
+                <div className="p-3 border-t text-sm space-y-1">
+                  <div className="flex justify-between text-gray-500">
+                    <span>
+                      {order.deliveryLocation === 'custom'
+                        ? `${order.customName} / ${order.customPhone} / ${order.customAddress}`
+                        : DELIVERY_LABELS[order.deliveryLocation] ?? order.deliveryLocation}
+                    </span>
+                    <span>{itemsTotal.toLocaleString()}원</span>
+                  </div>
+                  {shippingShare > 0 && (
+                    <div className="flex justify-between text-gray-500">
+                      <span>배송비 분담</span>
+                      <span>{shippingShare.toLocaleString()}원</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-bold pt-1">
+                    <span>합계</span>
+                    <span>{total.toLocaleString()}원</span>
+                  </div>
                 </div>
                 {order.round.status === 'ordered' && (
                   <div className="p-3 border-t bg-blue-50 text-sm">
