@@ -117,3 +117,30 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   return NextResponse.json({ success: true });
 }
+
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { error } = await requireAdmin();
+  if (error) return error;
+
+  const { id } = await params;
+  const roundId = Number(id);
+
+  const round = await prisma.orderRound.findUnique({
+    where: { id: roundId },
+    include: { _count: { select: { orders: true, purchases: true } } },
+  });
+  if (!round) {
+    return NextResponse.json({ error: '라운드를 찾을 수 없습니다' }, { status: 404 });
+  }
+
+  if (round._count.orders > 0 || round._count.purchases > 0) {
+    return NextResponse.json(
+      { error: '주문이 존재하는 라운드는 삭제할 수 없습니다' },
+      { status: 400 },
+    );
+  }
+
+  await prisma.orderRound.delete({ where: { id: roundId } });
+
+  return NextResponse.json({ success: true });
+}

@@ -64,6 +64,19 @@ export default function AdminRoundsPage() {
     fetchRounds();
   };
 
+  const handleDelete = async (round: OrderRound & { order_count: number }) => {
+    const label = round.title || `라운드 #${round.id}`;
+    if (!confirm(`'${label}' 라운드를 삭제하시겠습니까?`)) return;
+
+    const res = await fetch(`/api/rounds/${round.id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || '삭제에 실패했습니다');
+      return;
+    }
+    fetchRounds();
+  };
+
   if (loading) return <div className="text-center py-12 text-gray-500">로딩 중...</div>;
 
   return (
@@ -98,13 +111,13 @@ export default function AdminRoundsPage() {
       <div className="space-y-2">
         {rounds.map((round) => {
           const statusInfo = STATUS_LABELS[round.status];
+          const canDelete = round.order_count === 0;
           return (
-            <Link
+            <div
               key={round.id}
-              href={`/admin/rounds/${round.id}`}
-              className="bg-white rounded border p-4 flex items-center justify-between hover:bg-gray-50 block"
+              className="bg-white rounded border flex items-center justify-between hover:bg-gray-50"
             >
-              <div>
+              <Link href={`/admin/rounds/${round.id}`} className="flex-1 p-4">
                 <span className="font-medium text-sm">
                   {round.title || `라운드 #${round.id}`}
                 </span>
@@ -116,14 +129,22 @@ export default function AdminRoundsPage() {
                     마감: {new Date(round.deadline).toLocaleString('ko-KR')}
                   </span>
                 )}
-              </div>
-              <div className="flex items-center gap-3">
+              </Link>
+              <div className="flex items-center gap-3 pr-4">
                 <span className="text-sm text-gray-500">{round.order_count}건</span>
                 <span className={`text-xs px-2 py-0.5 rounded ${statusInfo.color}`}>
                   {statusInfo.text}
                 </span>
+                {canDelete && (
+                  <button
+                    onClick={() => handleDelete(round)}
+                    className="text-xs text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50"
+                  >
+                    삭제
+                  </button>
+                )}
               </div>
-            </Link>
+            </div>
           );
         })}
       </div>
