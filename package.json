@@ -5,14 +5,14 @@
   "private": true,
   "scripts": {
     "scaffolding": "pnpm --filter scaffolding",
-    "jibsayo": "pnpm --parallel --filter jibsayo --filter oauth-server dev",
-    "bookmark-share": "pnpm --parallel --filter bookmark-share --filter oauth-server dev",
+    "jibsayo": "node scripts/dev.mjs jibsayo oauth-server",
+    "bookmark-share": "node scripts/dev.mjs bookmark-share oauth-server",
     "official-website": "pnpm --filter official-website",
-    "okra": "pnpm --parallel --filter okra --filter collab --filter oauth-server dev",
+    "okra": "node scripts/dev.mjs okra collab oauth-server",
     "collab": "pnpm --filter collab",
-    "rootbeer": "pnpm --parallel --filter rootbeer-employee-mall --filter oauth-server dev",
-    "autto": "pnpm --parallel --filter autto --filter oauth-server dev",
-    "oauth": "pnpm --filter oauth-server dev",
+    "rootbeer": "node scripts/dev.mjs rootbeer-employee-mall oauth-server",
+    "autto": "node scripts/dev.mjs autto oauth-server",
+    "oauth": "node scripts/dev.mjs oauth-server",
     "prepare": "husky"
   },
   "engines": {
