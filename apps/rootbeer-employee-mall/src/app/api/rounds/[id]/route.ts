@@ -46,6 +46,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       product_id: item.product.id,
       product_name: item.product.name,
       product_brand: item.product.brand,
+      product_option: item.optionName,
       product_store: item.product.store,
       product_image_url: item.product.imageUrl,
       quantity: item.quantity,

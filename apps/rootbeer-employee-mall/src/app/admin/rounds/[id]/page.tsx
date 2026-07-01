@@ -18,6 +18,7 @@ interface OrderRow {
   product_id: number;
   product_name: string;
   product_brand: string;
+  product_option: string | null;
   product_store: string;
   product_image_url: string;
   quantity: number;
@@ -331,10 +332,13 @@ export default function RoundDetailPage({ params }: { params: Promise<{ id: stri
                               )}
                             </td>
                             <td className="p-2">
-                              <p className={`truncate max-w-xs ${isSoldout ? 'line-through' : ''}`}>
+                              <p className={`break-words ${isSoldout ? 'line-through' : ''}`}>
                                 {row.product_name}
                               </p>
-                              <p className="text-xs text-gray-400">{row.product_brand}</p>
+                              <p className="text-xs text-gray-400">
+                                {row.product_brand}
+                                {row.product_option && ` · ${row.product_option}`}
+                              </p>
                             </td>
                             <td className="p-2 text-right">{row.quantity}</td>
                             <td className="p-2 text-right">
@@ -537,7 +541,12 @@ function PurchaseCard({
             {itemDetails.map((d) => (
               <tr key={d.item_id}>
                 <td className="py-1">{d.user_name}</td>
-                <td className="py-1 truncate max-w-xs">{d.product_name}</td>
+                <td className="py-1 break-words">
+                  {d.product_name}
+                  {d.product_option && (
+                    <span className="text-gray-400"> · {d.product_option}</span>
+                  )}
+                </td>
                 <td className="py-1 text-right">x{d.quantity}</td>
                 <td className="py-1 text-right">
                   {(d.price_at_order * d.quantity).toLocaleString()}원
