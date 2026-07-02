@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { PageHeader, SectionCard, Button } from '@/components/ui';
 
 interface DetailResult {
   processed: number;
@@ -12,6 +13,22 @@ interface DetailResult {
 interface NoticeResult {
   total: number;
   notices: { id: number; title: string }[];
+}
+
+function SuccessBox({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-4 bg-sage-50 border border-sage-500/20 rounded-lg p-3 text-sm text-ink-900">
+      {children}
+    </div>
+  );
+}
+
+function ErrorBox({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-4 bg-terra-50 border border-terra-500/20 rounded-lg p-3 text-sm text-terra-600">
+      {children}
+    </div>
+  );
 }
 
 export default function AdminScrapePage() {
@@ -90,39 +107,31 @@ export default function AdminScrapePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold">상품 갱신</h1>
+      <PageHeader title="상품 갱신" />
 
-      <div className="bg-white rounded border p-6">
-        <h2 className="font-medium mb-2">상품 목록 갱신</h2>
-        <p className="text-sm text-gray-600 mb-4">
+      <SectionCard className="p-6">
+        <h2 className="font-medium text-ink-900 mb-2">상품 목록 갱신</h2>
+        <p className="text-sm text-ink-600 mb-4 leading-relaxed">
           아모레몰과 이니스프리의 임직원 할인 상품을 스크래핑하여 DB에 갱신합니다.
           <br />
           Playwright 브라우저를 사용하므로 1-2분 소요됩니다.
         </p>
 
-        <button
-          onClick={handleScrape}
-          disabled={loading}
-          className="bg-black text-white px-6 py-2 rounded text-sm hover:bg-gray-800 disabled:bg-gray-400"
-        >
+        <Button onClick={handleScrape} disabled={loading}>
           {loading ? '스크래핑 중...' : '상품 목록 갱신'}
-        </button>
+        </Button>
 
         {result && (
-          <div className="mt-4 bg-green-50 border border-green-200 rounded p-3 text-sm">
+          <SuccessBox>
             아모레몰: {result.amoremall}개, 이니스프리: {result.innisfree}개 갱신 완료
-          </div>
+          </SuccessBox>
         )}
-        {error && (
-          <div className="mt-4 bg-red-50 border border-red-200 rounded p-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-      </div>
+        {error && <ErrorBox>{error}</ErrorBox>}
+      </SectionCard>
 
-      <div className="bg-white rounded border p-6">
-        <h2 className="font-medium mb-2">상품 상세 스크래핑</h2>
-        <p className="text-sm text-gray-600 mb-4">
+      <SectionCard className="p-6">
+        <h2 className="font-medium text-ink-900 mb-2">상품 상세 스크래핑</h2>
+        <p className="text-sm text-ink-600 mb-4 leading-relaxed">
           상세 정보가 없는 아모레몰 상품의 상세 페이지를 스크래핑합니다.
           <br />
           상품당 약 10-15초 소요됩니다.
@@ -130,73 +139,51 @@ export default function AdminScrapePage() {
 
         <div className="flex gap-2 flex-wrap">
           {[3, 5, 10].map((n) => (
-            <button
-              key={n}
-              onClick={() => handleDetailScrape(n)}
-              disabled={detailLoading}
-              className="bg-black text-white px-4 py-2 rounded text-sm hover:bg-gray-800 disabled:bg-gray-400"
-            >
+            <Button key={n} onClick={() => handleDetailScrape(n)} disabled={detailLoading}>
               {detailLoading ? '처리 중...' : `${n}개 처리`}
-            </button>
+            </Button>
           ))}
-          <button
-            onClick={() => handleDetailScrape(9999)}
-            disabled={detailLoading}
-            className="bg-rose-600 text-white px-4 py-2 rounded text-sm hover:bg-rose-700 disabled:bg-gray-400"
-          >
+          <Button variant="danger" onClick={() => handleDetailScrape(9999)} disabled={detailLoading}>
             {detailLoading ? '처리 중...' : '전체 처리'}
-          </button>
+          </Button>
         </div>
 
         {detailResult && (
           <div className="mt-4 space-y-2">
-            <div className="bg-green-50 border border-green-200 rounded p-3 text-sm">
+            <SuccessBox>
               처리: {detailResult.processed}개 (성공: {detailResult.success}, 실패: {detailResult.failed})
-            </div>
+            </SuccessBox>
             <div className="text-xs space-y-1">
               {detailResult.results.map((r) => (
-                <div
-                  key={r.productId}
-                  className={r.success ? 'text-green-700' : 'text-red-600'}
-                >
+                <div key={r.productId} className={r.success ? 'text-sage-600' : 'text-terra-600'}>
                   #{r.productId} {r.name.slice(0, 40)}... {r.success ? '성공' : `실패: ${r.error}`}
                 </div>
               ))}
             </div>
           </div>
         )}
-        {detailError && (
-          <div className="mt-4 bg-red-50 border border-red-200 rounded p-3 text-sm text-red-700">
-            {detailError}
-          </div>
-        )}
-      </div>
+        {detailError && <ErrorBox>{detailError}</ErrorBox>}
+      </SectionCard>
 
-      <div className="bg-white rounded border p-6">
-        <h2 className="font-medium mb-2">임직원 공지사항 갱신</h2>
-        <p className="text-sm text-gray-600 mb-4">
+      <SectionCard className="p-6">
+        <h2 className="font-medium text-ink-900 mb-2">임직원 공지사항 갱신</h2>
+        <p className="text-sm text-ink-600 mb-4 leading-relaxed">
           아모레몰 임직원(퍼시픽샵) 공지사항을 가져와 DB에 저장합니다.
           <br />
           Playwright 브라우저를 사용하므로 1-2분 소요됩니다.
         </p>
 
-        <button
-          onClick={handleNoticeScrape}
-          disabled={noticeLoading}
-          className="bg-black text-white px-6 py-2 rounded text-sm hover:bg-gray-800 disabled:bg-gray-400"
-        >
+        <Button onClick={handleNoticeScrape} disabled={noticeLoading}>
           {noticeLoading ? '갱신 중...' : '공지사항 갱신'}
-        </button>
+        </Button>
 
         {noticeResult && (
           <div className="mt-4 space-y-2">
-            <div className="bg-green-50 border border-green-200 rounded p-3 text-sm">
-              신규 공지사항 {noticeResult.total}건 저장 완료
-            </div>
+            <SuccessBox>신규 공지사항 {noticeResult.total}건 저장 완료</SuccessBox>
             {noticeResult.notices.length > 0 && (
               <div className="text-xs space-y-1">
                 {noticeResult.notices.map((n) => (
-                  <div key={n.id} className="text-green-700">
+                  <div key={n.id} className="text-sage-600">
                     #{n.id} {n.title}
                   </div>
                 ))}
@@ -204,12 +191,8 @@ export default function AdminScrapePage() {
             )}
           </div>
         )}
-        {noticeError && (
-          <div className="mt-4 bg-red-50 border border-red-200 rounded p-3 text-sm text-red-700">
-            {noticeError}
-          </div>
-        )}
-      </div>
+        {noticeError && <ErrorBox>{noticeError}</ErrorBox>}
+      </SectionCard>
     </div>
   );
 }

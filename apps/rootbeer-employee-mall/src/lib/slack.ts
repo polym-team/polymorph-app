@@ -70,7 +70,7 @@ export async function notifyRoundOpened(
         elements: [
           {
             type: 'button',
-            text: { type: 'plain_text', text: '임직원몰 바로가기' },
+            text: { type: 'plain_text', text: 'ROOTBEER MALL 바로가기' },
             url: SITE_URL,
             style: 'primary',
           },

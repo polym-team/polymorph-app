@@ -2,12 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import type { User } from '@/types';
-
-const ROLE_LABELS: Record<string, { text: string; color: string }> = {
-  pending: { text: '승인대기', color: 'bg-yellow-100 text-yellow-800' },
-  user: { text: '일반', color: 'bg-green-100 text-green-800' },
-  admin: { text: '관리자', color: 'bg-blue-100 text-blue-800' },
-};
+import { PageHeader, SectionCard, Button, StatusBadge } from '@/components/ui';
+import { ROLE_STATUS } from '@/lib/status';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -35,66 +31,58 @@ export default function AdminUsersPage() {
     fetchUsers();
   };
 
-  if (loading) return <div className="text-center py-12 text-gray-500">로딩 중...</div>;
+  if (loading) return <div className="text-center py-12 text-ink-600">로딩 중...</div>;
 
   const pendingUsers = users.filter((u) => u.role === 'pending');
   const activeUsers = users.filter((u) => u.role !== 'pending');
 
   return (
     <div>
-      <h1 className="text-xl font-bold mb-4">사용자 관리</h1>
+      <PageHeader title="사용자 관리" />
 
       {pendingUsers.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-sm font-medium text-yellow-700 mb-2">
+          <h2 className="text-sm font-medium text-ocher-600 mb-2">
             승인 대기 ({pendingUsers.length})
           </h2>
-          <div className="bg-white rounded border divide-y">
+          <SectionCard className="divide-y divide-line">
             {pendingUsers.map((user) => (
               <div key={user.id} className="p-3 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">{user.name}</p>
-                  <p className="text-xs text-gray-400">{user.email}</p>
+                  <p className="text-sm font-medium text-ink-900">{user.name}</p>
+                  <p className="text-xs text-ink-400">{user.email}</p>
                 </div>
-                <button
-                  onClick={() => handleRoleChange(user.id, 'user')}
-                  className="text-xs bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-                >
+                <Button variant="accent" size="sm" onClick={() => handleRoleChange(user.id, 'user')}>
                   승인
-                </button>
+                </Button>
               </div>
             ))}
-          </div>
+          </SectionCard>
         </div>
       )}
 
-      <h2 className="text-sm font-medium text-gray-500 mb-2">활성 사용자 ({activeUsers.length})</h2>
-      <div className="bg-white rounded border divide-y">
-        {activeUsers.map((user) => {
-          const roleInfo = ROLE_LABELS[user.role];
-          return (
-            <div key={user.id} className="p-3 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">{user.name}</p>
-                <p className="text-xs text-gray-400">{user.email}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={`text-xs px-2 py-0.5 rounded ${roleInfo.color}`}>
-                  {roleInfo.text}
-                </span>
-                {user.role === 'user' && (
-                  <button
-                    onClick={() => handleRoleChange(user.id, 'pending')}
-                    className="text-xs text-red-500"
-                  >
-                    비활성화
-                  </button>
-                )}
-              </div>
+      <h2 className="text-sm font-medium text-ink-600 mb-2">활성 사용자 ({activeUsers.length})</h2>
+      <SectionCard className="divide-y divide-line">
+        {activeUsers.map((user) => (
+          <div key={user.id} className="p-3 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-ink-900">{user.name}</p>
+              <p className="text-xs text-ink-400">{user.email}</p>
             </div>
-          );
-        })}
-      </div>
+            <div className="flex items-center gap-2">
+              <StatusBadge status={ROLE_STATUS[user.role]} />
+              {user.role === 'user' && (
+                <button
+                  onClick={() => handleRoleChange(user.id, 'pending')}
+                  className="text-xs text-ink-400 hover:text-terra-600 transition-colors"
+                >
+                  비활성화
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </SectionCard>
     </div>
   );
 }

@@ -3,13 +3,9 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { OrderRound } from '@/types';
-
-const STATUS_LABELS: Record<string, { text: string; color: string }> = {
-  open: { text: '접수중', color: 'bg-green-100 text-green-800' },
-  closed: { text: '마감', color: 'bg-yellow-100 text-yellow-800' },
-  ordered: { text: '주문완료', color: 'bg-blue-100 text-blue-800' },
-  settled: { text: '정산완료', color: 'bg-gray-100 text-gray-800' },
-};
+import { PageHeader, SectionCard, Button, StatusBadge, EmptyState, fieldClass } from '@/components/ui';
+import { ROUND_STATUS } from '@/lib/status';
+import { formatDate, formatDateTime } from '@/lib/format';
 
 const ROUND_NAMES = [
   '봄맞이 공구', '여름 준비 공구', '가을 공구', '겨울 준비 공구',
@@ -77,81 +73,69 @@ export default function AdminRoundsPage() {
     fetchRounds();
   };
 
-  if (loading) return <div className="text-center py-12 text-gray-500">로딩 중...</div>;
+  if (loading) return <div className="text-center py-12 text-ink-600">로딩 중...</div>;
 
   return (
     <div>
-      <h1 className="text-xl font-bold mb-4">주문 라운드</h1>
+      <PageHeader title="주문 라운드" />
 
-      <div className="bg-white rounded border p-4 mb-6">
-        <h2 className="text-sm font-medium mb-3">새 라운드 생성</h2>
+      <SectionCard className="p-4 mb-6">
+        <h2 className="text-sm font-medium text-ink-900 mb-3">새 라운드 생성</h2>
         <div className="flex flex-wrap gap-2">
           <input
             type="text"
             placeholder="제목 (선택)"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="border rounded px-3 py-1.5 text-sm flex-1 min-w-[120px]"
+            className={`${fieldClass} flex-1 min-w-[120px]`}
           />
           <input
             type="datetime-local"
             value={deadline}
             onChange={(e) => setDeadline(e.target.value)}
-            className="border rounded px-3 py-1.5 text-sm min-w-0"
+            className={`${fieldClass} w-auto min-w-0`}
           />
-          <button
-            onClick={handleCreate}
-            className="bg-accent-500 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-accent-600 font-medium"
-          >
+          <Button variant="accent" size="sm" onClick={handleCreate}>
             생성
-          </button>
+          </Button>
         </div>
-      </div>
+      </SectionCard>
 
       <div className="space-y-2">
         {rounds.map((round) => {
-          const statusInfo = STATUS_LABELS[round.status];
           const canDelete = round.order_count === 0;
           return (
-            <div
+            <SectionCard
               key={round.id}
-              className="bg-white rounded border flex items-center justify-between hover:bg-gray-50"
+              className="flex items-center justify-between hover:border-clay-500/40 transition-colors"
             >
               <Link href={`/admin/rounds/${round.id}`} className="flex-1 p-4">
-                <span className="font-medium text-sm">
+                <span className="font-medium text-sm text-ink-900">
                   {round.title || `라운드 #${round.id}`}
                 </span>
-                <span className="text-xs text-gray-400 ml-2">
-                  {new Date(round.createdAt).toLocaleDateString('ko-KR')}
-                </span>
+                <span className="text-xs text-ink-400 ml-2">{formatDate(round.createdAt)}</span>
                 {round.deadline && (
-                  <span className="text-xs text-gray-400 ml-2">
-                    마감: {new Date(round.deadline).toLocaleString('ko-KR')}
-                  </span>
+                  <span className="text-xs text-ink-400 ml-2">마감: {formatDateTime(round.deadline)}</span>
                 )}
               </Link>
               <div className="flex items-center gap-3 pr-4">
-                <span className="text-sm text-gray-500">{round.order_count}건</span>
-                <span className={`text-xs px-2 py-0.5 rounded ${statusInfo.color}`}>
-                  {statusInfo.text}
-                </span>
+                <span className="text-sm text-ink-600 tnum">{round.order_count}건</span>
+                <StatusBadge status={ROUND_STATUS[round.status]} />
                 {canDelete && (
                   <button
                     onClick={() => handleDelete(round)}
-                    className="text-xs text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50"
+                    className="text-xs text-ink-400 hover:text-terra-600 px-2 py-1 rounded hover:bg-terra-50 transition-colors"
                   >
                     삭제
                   </button>
                 )}
               </div>
-            </div>
+            </SectionCard>
           );
         })}
       </div>
 
-      {rounds.length === 0 && (
-        <div className="text-center py-12 text-gray-400">라운드가 없습니다.</div>
-      )}
+      {rounds.length === 0 && <EmptyState title="라운드가 없습니다" />}
     </div>
   );
 }

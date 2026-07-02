@@ -3,6 +3,9 @@
 import { useSession, signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { STORE_LABELS, DELIVERY_LABELS } from '@/types';
+import { SectionCard, StatusBadge, EmptyState, PageHeader } from '@/components/ui';
+import { ORDER_STATUS, ROUND_STATUS } from '@/lib/status';
+import { formatDate, formatPrice } from '@/lib/format';
 
 interface OrderData {
   id: number;
@@ -35,19 +38,6 @@ interface OrderData {
   }[];
 }
 
-const STATUS_LABELS: Record<string, { text: string; color: string }> = {
-  submitted: { text: '제출됨', color: 'bg-blue-100 text-blue-800' },
-  confirmed: { text: '확인됨', color: 'bg-green-100 text-green-800' },
-  settled: { text: '정산완료', color: 'bg-gray-100 text-gray-800' },
-};
-
-const ROUND_STATUS_LABELS: Record<string, { text: string; color: string }> = {
-  open: { text: '접수중', color: 'bg-green-100 text-green-800' },
-  closed: { text: '마감', color: 'bg-yellow-100 text-yellow-800' },
-  ordered: { text: '주문완료', color: 'bg-blue-100 text-blue-800' },
-  settled: { text: '정산완료', color: 'bg-gray-100 text-gray-800' },
-};
-
 export default function MyOrdersPage() {
   const { data: session } = useSession();
   const [orders, setOrders] = useState<OrderData[]>([]);
@@ -64,7 +54,7 @@ export default function MyOrdersPage() {
   }, [session]);
 
   if (!session) return null;
-  if (loading) return <div className="text-center py-12 text-gray-500">로딩 중...</div>;
+  if (loading) return <div className="text-center py-12 text-ink-600">로딩 중...</div>;
 
   const handleCancel = async (orderId: number) => {
     if (!confirm('주문을 취소하시겠습니까?')) return;
@@ -76,10 +66,10 @@ export default function MyOrdersPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-xl font-bold mb-4">내 주문</h1>
+      <PageHeader title="내 주문" subtitle={orders.length > 0 ? `${orders.length}건` : undefined} />
 
       {orders.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">주문 내역이 없습니다.</div>
+        <EmptyState title="주문 내역이 없습니다" />
       ) : (
         <div className="space-y-4">
           {orders.map((order) => {
@@ -88,125 +78,113 @@ export default function MyOrdersPage() {
               .reduce((sum, i) => sum + i.priceAtOrder * i.quantity, 0);
             const shippingShare = order.shippingShare ?? 0;
             const total = itemsTotal + shippingShare;
-            const statusInfo = STATUS_LABELS[order.status] ?? STATUS_LABELS.submitted;
 
             return (
-              <div key={order.id} className="bg-white rounded border">
-                <div className="p-3 border-b flex items-center justify-between">
+              <SectionCard key={order.id}>
+                <div className="p-3 border-b border-line flex items-center justify-between">
                   <div>
-                    <span className="text-sm font-medium">
+                    <span className="text-sm font-medium text-ink-900">
                       {order.round.title || `라운드 #${order.roundId}`}
                     </span>
-                    <span className="text-xs text-gray-400 ml-2">
-                      {new Date(order.createdAt).toLocaleDateString('ko-KR')}
+                    <span className="text-xs text-ink-400 ml-2">
+                      {formatDate(order.createdAt)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    {(() => {
-                      const roundInfo = ROUND_STATUS_LABELS[order.round.status] ?? ROUND_STATUS_LABELS.open;
-                      return (
-                        <span className={`text-xs px-2 py-0.5 rounded ${roundInfo.color}`}>
-                          {roundInfo.text}
-                        </span>
-                      );
-                    })()}
-                    <span className={`text-xs px-2 py-0.5 rounded ${statusInfo.color}`}>
-                      {statusInfo.text}
-                    </span>
+                    <StatusBadge status={ROUND_STATUS[order.round.status] ?? ROUND_STATUS.open} />
+                    <StatusBadge status={ORDER_STATUS[order.status] ?? ORDER_STATUS.submitted} />
                     {order.round.status === 'open' && (
                       <button
                         onClick={() => handleCancel(order.id)}
-                        className="text-xs text-red-500"
+                        className="text-xs text-ink-400 hover:text-terra-600 transition-colors"
                       >
                         취소
                       </button>
                     )}
                   </div>
                 </div>
-                <div className="divide-y">
+                <div className="divide-y divide-line">
                   {order.items.map((item) => (
                     <div
                       key={item.id}
-                      className={`p-3 flex items-center gap-3 ${item.status === 'soldout' ? 'bg-red-50 opacity-60' : ''}`}
+                      className={`p-3 flex items-center gap-3 ${item.status === 'soldout' ? 'bg-terra-50 opacity-60' : ''}`}
                     >
                       {item.product.imageUrl && (
                         <img
                           src={item.product.imageUrl}
                           alt=""
-                          className="w-10 h-10 object-cover rounded"
+                          className="w-10 h-10 object-cover rounded-lg"
                         />
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm truncate ${item.status === 'soldout' ? 'line-through' : ''}`}>
+                        <p className={`text-sm truncate ${item.status === 'soldout' ? 'line-through text-ink-400' : 'text-ink-900'}`}>
                           {item.product.name}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-ink-400">
                           {STORE_LABELS[item.product.store as keyof typeof STORE_LABELS]} ·{' '}
                           {item.product.brand}
                         </p>
                         {item.status === 'soldout' && (
-                          <span className="text-xs text-red-600 font-medium">품절</span>
+                          <span className="text-xs text-terra-600 font-medium">품절</span>
                         )}
                         {item.status === 'active' && item.purchaseItems.length > 0 && (
-                          <span className="text-xs text-green-600">
+                          <span className="text-xs text-sage-600">
                             {item.purchaseItems[0].purchase.externalOrderNo
                               ? `주문번호: ${item.purchaseItems[0].purchase.externalOrderNo}`
                               : '구매 진행중'}
                           </span>
                         )}
                       </div>
-                      <div className="text-right text-sm">
-                        <p className={item.status === 'soldout' ? 'line-through text-gray-400' : ''}>
-                          {item.priceAtOrder.toLocaleString()}원
+                      <div className="text-right text-sm tnum">
+                        <p className={item.status === 'soldout' ? 'line-through text-ink-400' : 'text-ink-900'}>
+                          {formatPrice(item.priceAtOrder)}
                         </p>
-                        <p className="text-xs text-gray-400">x{item.quantity}</p>
+                        <p className="text-xs text-ink-400">x{item.quantity}</p>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="p-3 border-t text-sm space-y-1">
-                  <div className="flex justify-between text-gray-500">
+                <div className="p-3 border-t border-line text-sm space-y-1 tnum">
+                  <div className="flex justify-between text-ink-600">
                     <span>
                       {order.deliveryLocation === 'custom'
                         ? `${order.customName} / ${order.customPhone} / ${order.customAddress}`
                         : DELIVERY_LABELS[order.deliveryLocation] ?? order.deliveryLocation}
                     </span>
-                    <span>{itemsTotal.toLocaleString()}원</span>
+                    <span>{formatPrice(itemsTotal)}</span>
                   </div>
                   {shippingShare > 0 && (
-                    <div className="flex justify-between text-gray-500">
+                    <div className="flex justify-between text-ink-600">
                       <span>배송비 분담</span>
-                      <span>{shippingShare.toLocaleString()}원</span>
+                      <span>{formatPrice(shippingShare)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between font-bold pt-1">
+                  <div className="flex justify-between font-bold text-ink-900 pt-1">
                     <span>합계</span>
-                    <span>{total.toLocaleString()}원</span>
+                    <span>{formatPrice(total)}</span>
                   </div>
                 </div>
                 {order.round.status === 'ordered' && (
-                  <div className="p-3 border-t bg-blue-50 text-sm">
-                    <p className="font-medium text-blue-800 mb-1">입금 안내</p>
-                    <p className="text-blue-700">
-                      우리은행 1002-854-981268 (예금주: 임흥선)
-                    </p>
-                    <p className="text-xs text-blue-500 mt-1">
+                  <div className="p-3 border-t border-line bg-clay-50 text-sm">
+                    <p className="font-medium text-clay-600 mb-1">입금 안내</p>
+                    <p className="text-ink-900">우리은행 1002-854-981268 (예금주: 임흥선)</p>
+                    <p className="text-xs text-ink-600 mt-1">
                       주문이 완료되었습니다. 위 계좌로 정산 금액을 입금해주세요.
                     </p>
                   </div>
                 )}
-              </div>
+              </SectionCard>
             );
           })}
         </div>
       )}
 
       {/* 계정 정보 + 로그아웃 */}
-      <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-        <p className="text-xs text-gray-400 mb-2">{session.user.email}</p>
+      <div className="mt-8 pt-6 border-t border-line text-center">
+        <p className="text-xs text-ink-400 mb-2">{session.user.email}</p>
         <button
           onClick={() => signOut()}
-          className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+          className="text-xs text-ink-400 hover:text-ink-600 transition-colors"
         >
           로그아웃
         </button>
