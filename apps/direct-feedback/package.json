@@ -1,0 +1,30 @@
+{
+  "name": "direct-feedback",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p 3008",
+    "lint": "next lint",
+    "tsc": "tsc --noEmit",
+    "clean": "rm -rf .next",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@package/ui": "workspace:*",
+    "@package/utils": "workspace:*",
+    "@polymorph/shared-auth": "workspace:*",
+    "@prisma/client": "^6.2.1",
+    "next": "^15.3.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "prisma": "^6.2.1"
+  }
+}

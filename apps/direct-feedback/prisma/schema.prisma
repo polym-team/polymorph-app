@@ -1,0 +1,88 @@
+// DirectFeedback — URL-key 엘리먼트 코멘트 스토어
+// 신원은 oauth-server userId 로 연결(로컬 User 테이블 없음). 그룹은 이 앱이 소유.
+// 설계 문서: docs/directfeedback-design.md
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum MemberRole {
+  OWNER
+  MEMBER
+}
+
+enum CommentStatus {
+  OPEN
+  RESOLVED
+}
+
+model Group {
+  id        String        @id @default(cuid())
+  name      String
+  createdBy String        @map("created_by") // oauth-server userId (OWNER)
+  members   GroupMember[]
+  comments  Comment[]
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id        String     @id @default(cuid())
+  groupId   String     @map("group_id")
+  email     String // 초대/식별 키 (초대는 이메일로, userId 는 최초 로그인 시 claim)
+  userId    String?    @map("user_id") // oauth-server userId (claim 전 null)
+  role      MemberRole @default(MEMBER)
+  group     Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  @@unique([groupId, email])
+  @@index([userId])
+  @@index([email])
+  @@map("group_members")
+}
+
+model Comment {
+  id         String         @id @default(cuid())
+  groupId    String         @map("group_id")
+  // URL 키
+  pageUrl    String         @map("page_url") @db.Text
+  urlKey     String         @map("url_key") // Storybook: story id
+  // 엘리먼트 앵커
+  cssPath    String         @map("css_path") @db.Text
+  classList  String         @map("class_list") @db.Text
+  tagName    String         @map("tag_name")
+  rect       Json
+  anchorHint Json?          @map("anchor_hint")
+  // 본문/상태
+  body       String         @db.Text
+  status     CommentStatus  @default(OPEN)
+  authorId   String         @map("author_id") // oauth-server userId
+  authorName String         @map("author_name")
+  replies    CommentReply[]
+  group      Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt  DateTime       @default(now()) @map("created_at")
+  resolvedAt DateTime?      @map("resolved_at")
+
+  @@index([groupId, urlKey, status])
+  @@map("comments")
+}
+
+model CommentReply {
+  id         String   @id @default(cuid())
+  commentId  String   @map("comment_id")
+  body       String   @db.Text
+  authorId   String   @map("author_id")
+  authorName String   @map("author_name")
+  comment    Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([commentId])
+  @@map("comment_replies")
+}
