@@ -23,12 +23,13 @@ enum CommentStatus {
 }
 
 model Group {
-  id        String        @id @default(cuid())
-  name      String
-  createdBy String        @map("created_by") // oauth-server userId (OWNER)
-  members   GroupMember[]
-  comments  Comment[]
-  createdAt DateTime      @default(now()) @map("created_at")
+  id          String        @id @default(cuid())
+  name        String
+  createdBy   String        @map("created_by") // oauth-server userId (OWNER)
+  inviteToken String?       @unique @map("invite_token") // 초대 링크 토큰
+  members     GroupMember[]
+  comments    Comment[]
+  createdAt   DateTime      @default(now()) @map("created_at")
 
   @@map("groups")
 }

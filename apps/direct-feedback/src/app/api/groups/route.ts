@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
@@ -35,6 +36,7 @@ export async function POST(req: Request) {
     data: {
       name: parsed.data.name,
       createdBy: user.userId,
+      inviteToken: randomUUID(),
       members: {
         create: { email: user.email, userId: user.userId, role: 'OWNER' },
       },
