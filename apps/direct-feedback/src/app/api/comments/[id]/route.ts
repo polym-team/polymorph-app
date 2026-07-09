@@ -52,3 +52,25 @@ export async function PATCH(
   });
   return NextResponse.json({ comment: updated });
 }
+
+// DELETE /api/comments/:id — 코멘트 삭제(완료 제거). 답글은 cascade. (그룹 멤버만)
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { user, error } = await requireAuth();
+  if (error) return error;
+
+  const { id } = await params;
+  const comment = await prisma.comment.findUnique({ where: { id } });
+  if (!comment) {
+    return NextResponse.json({ error: '코멘트를 찾을 수 없습니다' }, { status: 404 });
+  }
+  const me = await getMembership(user, comment.groupId);
+  if (!me) {
+    return NextResponse.json({ error: '그룹 멤버가 아닙니다' }, { status: 403 });
+  }
+
+  await prisma.comment.delete({ where: { id } });
+  return NextResponse.json({ ok: true });
+}
