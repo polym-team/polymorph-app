@@ -81,8 +81,27 @@ export default function Home() {
   }
   async function copyInvite(g: Group) {
     const url = inviteUrl(g);
-    if (!url) return;
-    await navigator.clipboard.writeText(url);
+    if (!url) {
+      alert('이 그룹은 초대 링크가 아직 없습니다. 페이지를 새로고침해 주세요.');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // 클립보드 API 실패 시 폴백 (execCommand)
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+      } catch {
+        /* 그래도 실패하면 사용자가 input 에서 수동 복사 가능 */
+      }
+      ta.remove();
+    }
     setCopied(g.id);
     setTimeout(() => setCopied(''), 1500);
   }
