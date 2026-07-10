@@ -27,14 +27,18 @@ const CLIENT_APPS = [
   {
     clientId: 'direct-feedback',
     name: 'DirectFeedback',
-    // 확장 redirect URI 는 chrome.identity.getRedirectURL() = https://<EXT_ID>.chromiumapp.org/
-    // EXT_ID 는 unpacked 로드 후 chrome://extensions 에서 확인 → 아래 env 로 주입하고 재-seed.
-    //   DIRECT_FEEDBACK_EXT_ID=<id> pnpm --filter oauth-server db:seed
+    // 확장 redirect URI = chrome.identity.getRedirectURL() = https://<EXT_ID>.chromiumapp.org/
+    // 로컬 unpacked 개발본과 웹스토어 배포본은 ID 가 달라 둘 다 등록한다.
+    // 추가 ID 는 DIRECT_FEEDBACK_EXT_ID(들, 콤마구분) env 로도 주입 가능.
     allowedRedirectUris: [
       'http://localhost:3008/auth/callback', // 대시보드 웹 로그인용
-      ...(process.env.DIRECT_FEEDBACK_EXT_ID
-        ? [`https://${process.env.DIRECT_FEEDBACK_EXT_ID}.chromiumapp.org/`]
-        : []),
+      ...[
+        'oaoboabibkdlppgglbccllmognkkpinn', // 로컬 unpacked 개발
+        'eooipclemnmfgcmkpcedkejelmnjlpkb', // Chrome 웹스토어 배포
+        ...(process.env.DIRECT_FEEDBACK_EXT_ID
+          ? process.env.DIRECT_FEEDBACK_EXT_ID.split(',').map((s) => s.trim()).filter(Boolean)
+          : []),
+      ].map((id) => `https://${id}.chromiumapp.org/`),
     ].join(','),
     accessTokenLifetime: 60 * 60 * 24 * 7,
   },
