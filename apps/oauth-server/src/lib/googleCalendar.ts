@@ -82,6 +82,20 @@ export async function exchangeCalendarCode(
   return res.json();
 }
 
+/** 구글에서 토큰(주로 refresh token)을 폐기한다. best-effort — 실패해도 throw 하지 않음. */
+export async function revokeCalendarToken(token: string): Promise<boolean> {
+  try {
+    const res = await fetch('https://oauth2.googleapis.com/revoke', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ token }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 /** 캘린더 이벤트 (앱 소비에 필요한 필드만 추린 형태). */
 export interface CalendarEvent {
   id: string;
