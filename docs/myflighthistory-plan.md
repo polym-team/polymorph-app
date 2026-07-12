@@ -128,6 +128,22 @@
 - **예측은 미국(BTS) 한정 MVP**: 한국/기타 노선 예측은 데이터 확보 후 확장.
 - **oauth-server가 토큰 브로커가 됨**: 공용 인증 서버에 리소스 접근 책임이 추가되는 셈. refresh token 암호화·최소 노출·연결 해제 경로를 초기에 확실히 잡을 것.
 
-## 7. 다음 스텝
+## 7. 진행 현황
 
-작업 A-1(oauth-server 스키마)부터 착수. 각 커밋 후 사용자 확인.
+### ✅ A. oauth-server (완료)
+- **A-1** `GoogleCalendarGrant` 스키마 + 운영 DB `db push` 반영 완료
+- **A-5** 토큰 암호화 유틸 `tokenCrypto.ts` (AES-256-GCM)
+- **A-2** 연동 흐름 `GET /api/connect/google-calendar` + `/callback` (incremental auth, CSRF state 쿠키)
+- **A-3** 브로커 API `GET /api/google/calendar/events` + `calendarBroker.getValidAccessToken`
+- **A-4** 상태 조회/해제 `GET|DELETE /api/connect/google-calendar/grant`
+
+> **로컬 `.env` 에 생성해둔 시크릿 2개** (gitignore, 값은 별도 보관):
+> - `GOOGLE_TOKEN_ENC_KEY` (32B hex) — 토큰 암호화 키
+> - `CALENDAR_BROKER_SECRET` — 브로커 API 서버간 시크릿
+>
+> ⚠️ 로컬이 운영 DB 에 직접 쓰므로, **이 두 값은 k8s secret(B-6) 및 myFlightHistory 앱과 반드시 동일해야 함.** (다른 키 → 암복호화/인증 불일치)
+
+### ⬜ 다음 스텝
+- **D. Google Cloud Console (수동)**: 동의 화면에 `calendar.events.readonly` scope 추가, 테스트 사용자 등록, 리디렉션 URI 2개(`http://localhost:3007/...`, `https://oauth.polymorph.co.kr/api/connect/google-calendar/callback`) 등록 — 실제 연동 테스트의 선행조건
+- **B. k8s**: oauth-server secret 에 위 2개 키 주입
+- **C. myFlightHistory 앱**: 스캐폴딩 → oauth 로그인 통합(ClientApp 등록) → 캘린더 연결 UI → sync/파싱 → 타임라인
