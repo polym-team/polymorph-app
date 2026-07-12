@@ -143,7 +143,18 @@
 >
 > ⚠️ 로컬이 운영 DB 에 직접 쓰므로, **이 두 값은 k8s secret(B-6) 및 myFlightHistory 앱과 반드시 동일해야 함.** (다른 키 → 암복호화/인증 불일치)
 
-### ⬜ 다음 스텝
-- **D. Google Cloud Console (수동)**: 동의 화면에 `calendar.events.readonly` scope 추가, 테스트 사용자 등록, 리디렉션 URI 2개(`http://localhost:3007/...`, `https://oauth.polymorph.co.kr/api/connect/google-calendar/callback`) 등록 — 실제 연동 테스트의 선행조건
-- **B. k8s**: oauth-server secret 에 위 2개 키 주입
-- **C. myFlightHistory 앱**: 스캐폴딩 → oauth 로그인 통합(ClientApp 등록) → 캘린더 연결 UI → sync/파싱 → 타임라인
+### ✅ D. Google Cloud Console (완료 — okra-polymorph 프로젝트)
+scope(`calendar.events.readonly`) 추가, 테스트 사용자 등록, 리디렉션 URI 2개 등록 완료.
+
+### ✅ C. myFlightHistory 앱 (핵심 슬라이스 완료)
+- 스캐폴딩(포트 3009) + oauth 로그인 통합(silent SSO, callback, set-cookie/me/logout)
+- ClientApp `myflighthistory` seed 등록, 로컬 `.env` 에 공유 시크릿(OAUTH_JWT_SECRET/CALENDAR_BROKER_SECRET) 복사
+- `GET /api/calendar/events`: 브로커 서버사이드 프록시(시크릿/JWT 미노출)
+- `flightParser`: 캘린더 이벤트 → 편명/노선 휴리스틱 추출
+- 홈 UI: 캘린더 연결 버튼 + 예정/지난 항공편 타임라인 + 결과 배너
+- 빌드/tsc/lint 통과. **로컬 E2E 테스트 대기**(`pnpm myflighthistory`)
+
+### ⬜ 남은 것
+- **로컬 E2E 검증**: `pnpm myflighthistory` → 로그인 → 캘린더 연결 → 항공편 표시 확인
+- **C 확장**: 앱 DB(항공편 영속화), 수동 입력 폼(파싱 보정), 지연 예측(BTS)
+- **B. k8s 배포**: oauth-server secret 에 `GOOGLE_TOKEN_ENC_KEY`+`CALENDAR_BROKER_SECRET` 주입, `manifests/myflighthistory/` + `apps/myflighthistory/application.yaml`, myflighthistory secret(JWT/broker/oauth URL)
