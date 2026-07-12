@@ -82,6 +82,74 @@ export async function exchangeCalendarCode(
   return res.json();
 }
 
+/** 캘린더 이벤트 (앱 소비에 필요한 필드만 추린 형태). */
+export interface CalendarEvent {
+  id: string;
+  status?: string;
+  summary?: string;
+  description?: string;
+  location?: string;
+  start?: { dateTime?: string; date?: string; timeZone?: string };
+  end?: { dateTime?: string; date?: string; timeZone?: string };
+  htmlLink?: string;
+}
+
+interface CalendarEventsListResponse {
+  items?: CalendarEvent[];
+  nextPageToken?: string;
+}
+
+const CALENDAR_EVENTS_ENDPOINT =
+  'https://www.googleapis.com/calendar/v3/calendars/primary/events';
+
+/**
+ * primary 캘린더의 이벤트를 조회한다. singleEvents=true 로 반복 일정을 전개하고
+ * 시작시각 순 정렬. nextPageToken 을 따라 전 구간을 수집(시간창으로 이미 제한됨).
+ */
+export async function listCalendarEvents(
+  accessToken: string,
+  opts: { timeMin?: string; timeMax?: string; maxResultsPerPage?: number } = {},
+): Promise<CalendarEvent[]> {
+  const events: CalendarEvent[] = [];
+  let pageToken: string | undefined;
+
+  do {
+    const params = new URLSearchParams({
+      singleEvents: 'true',
+      orderBy: 'startTime',
+      maxResults: String(opts.maxResultsPerPage ?? 250),
+    });
+    if (opts.timeMin) params.set('timeMin', opts.timeMin);
+    if (opts.timeMax) params.set('timeMax', opts.timeMax);
+    if (pageToken) params.set('pageToken', pageToken);
+
+    const res = await fetch(`${CALENDAR_EVENTS_ENDPOINT}?${params.toString()}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) {
+      const detail = await res.text();
+      throw new Error(`구글 캘린더 events.list 실패 (${res.status}): ${detail}`);
+    }
+
+    const data: CalendarEventsListResponse = await res.json();
+    for (const item of data.items ?? []) {
+      events.push({
+        id: item.id,
+        status: item.status,
+        summary: item.summary,
+        description: item.description,
+        location: item.location,
+        start: item.start,
+        end: item.end,
+        htmlLink: item.htmlLink,
+      });
+    }
+    pageToken = data.nextPageToken;
+  } while (pageToken);
+
+  return events;
+}
+
 /** refresh token 으로 새 access token 을 발급받는다. (A-3 브로커에서 재사용) */
 export async function refreshCalendarAccessToken(
   refreshToken: string,
