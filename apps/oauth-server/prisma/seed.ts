@@ -43,6 +43,15 @@ const CLIENT_APPS = [
     accessTokenLifetime: 60 * 60 * 24 * 7,
   },
   {
+    clientId: 'myflighthistory',
+    name: 'MyFlightHistory',
+    allowedRedirectUris: [
+      'http://localhost:3009/auth/callback',
+      'https://myflighthistory.polymorph.co.kr/auth/callback',
+    ].join(','),
+    accessTokenLifetime: 60 * 60 * 24 * 7,
+  },
+  {
     clientId: 'test',
     name: '테스트 클라이언트',
     allowedRedirectUris: [
