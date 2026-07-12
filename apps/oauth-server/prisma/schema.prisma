@@ -17,7 +17,8 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  accounts Account[]
+  accounts            Account[]
+  googleCalendarGrant GoogleCalendarGrant?
 
   @@map("users")
 }
@@ -39,6 +40,27 @@ model Account {
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
+}
+
+/**
+ * 구글 캘린더 연동 grant (incremental authorization)
+ * 로그인(openid/profile/email)과 분리된 별도 동의로 받은 calendar.events.readonly 권한.
+ * refresh token 은 AES-256-GCM 으로 암호화해 저장하며, 브로커 API 외부로 절대 노출하지 않는다.
+ * User 당 최대 1개(@unique userId).
+ */
+model GoogleCalendarGrant {
+  id                   String    @id @default(cuid())
+  userId               String    @unique @map("user_id")
+  refreshToken         String    @map("refresh_token") @db.Text // AES-256-GCM 암호문
+  accessToken          String?   @map("access_token") @db.Text // AES-256-GCM 암호문 (캐시)
+  accessTokenExpiresAt DateTime? @map("access_token_expires_at")
+  scopes               String    @db.Text
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("google_calendar_grants")
 }
 
 /**
