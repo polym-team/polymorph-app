@@ -13,6 +13,7 @@ interface IncheonItem {
   scheduleDatetime?: string; // YYYYMMDDHHmm
   estimatedDatetime?: string; // YYYYMMDDHHmm
   remark?: string; // 출발/지연/결항/도착/...
+  aircraftRegNo?: string; // 기체 등록번호 (HL…)
 }
 
 /** "YYYYMMDDHHmm" → { min(비교용), hhmm(표시용) }. 형식 불량은 null. */
@@ -58,6 +59,7 @@ export function incheonItemToStatus(item: IncheonItem): LiveStatus {
     actualTime: null,
     delayMin,
     remark: item.remark?.trim() || null,
+    registration: item.aircraftRegNo?.trim() || null,
     source: 'incheon',
   };
 }

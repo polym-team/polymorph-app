@@ -17,6 +17,8 @@ export interface LiveStatus {
   delayMin: number | null;
   /** 지연 사유 등 비고 */
   remark: string | null;
+  /** 기체 등록번호(HL…). 인천 API 만 제공, 국내선(airportal)은 null */
+  registration?: string | null;
   source: 'airportal' | 'incheon';
 }
 

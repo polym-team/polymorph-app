@@ -139,15 +139,16 @@
 
 .row {
   display: grid;
-  grid-template-columns: 130px 1fr 120px 150px;
-  gap: 20px;
+  grid-template-columns: 120px minmax(0, 1fr) 116px 132px;
+  gap: 16px;
   align-items: center;
   padding: 20px 18px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
+.row > * { min-width: 0; } /* grid 셀이 내용에 밀려 넘치지 않도록 */
 
 /* ---- split-flap tiles ---- */
-.flaps { display: inline-flex; gap: 3px; perspective: 360px; }
+.flaps { display: inline-flex; flex-wrap: wrap; gap: 3px; perspective: 360px; }
 .tile {
   position: relative;
   display: inline-block;
@@ -197,7 +198,7 @@
 }
 
 .col-flt .flaps { font-size: clamp(15px, 2vw, 19px); }
-.col-dest .flaps { font-size: clamp(24px, 5.2vw, 42px); }
+.col-dest .flaps { font-size: clamp(22px, 4.2vw, 34px); }
 .col-time .flaps { font-size: clamp(17px, 2.4vw, 22px); }
 .col-status .flaps { font-size: clamp(13px, 1.7vw, 16px); }
 
@@ -208,6 +209,12 @@
   letter-spacing: 0.1em;
   margin-top: 8px;
 }
+.fr24-link {
+  color: var(--fids-dim);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--fids-label);
+}
+.fr24-link:hover { color: var(--moved); border-bottom-color: var(--moved); }
 .col-dest .from {
   font-family: var(--fids-mono);
   font-size: 10px;

@@ -49,6 +49,24 @@ function md(iso: string | null): string {
   });
 }
 
+/** 보드 표시용 목적지명 정리: International/공항/시 등 접미사 제거. */
+function shortenDest(name: string | null): string {
+  if (!name) return '미정';
+  let s = name.trim();
+  s = s.replace(/\b(International|Intl\.?|Airport|Air ?Base)\b/gi, '');
+  s = s.replace(/(국제공항|공항|특별시|광역시|시)$/g, '');
+  s = s.replace(/\s+/g, ' ').trim();
+  return s || name.trim();
+}
+
+const FR24 = 'https://www.flightradar24.com/data';
+function fr24Flight(no: string | null): string | null {
+  return no ? `${FR24}/flights/${no.toLowerCase()}` : null;
+}
+function fr24Aircraft(reg: string | null | undefined): string | null {
+  return reg ? `${FR24}/aircraft/${reg.toLowerCase()}` : null;
+}
+
 /* ---- ParsedFlight → 현황 뷰모델 ---- */
 type StatusView = {
   kind: 'live' | 'pred' | 'none';
@@ -293,18 +311,35 @@ function Row({
     if (res.ok) onDeleted();
   }
 
+  const trackFlight = fr24Flight(f.flightNumber);
+  const reg = f.liveStatus?.registration ?? null;
+  const trackReg = fr24Aircraft(reg);
+
   return (
     <div className="row">
       <div className="col-flt">
         <SplitFlap value={f.flightNumber ?? '----'} animate={animate} order={order} />
-        <div className="al">{airlineName(f.flightNumber) ?? '—'}</div>
+        <div className="al">
+          {airlineName(f.flightNumber) ?? '—'}
+          {trackFlight && (
+            <>
+              {' · '}
+              <a className="fr24-link" href={trackFlight} target="_blank" rel="noopener noreferrer">FR24 ↗</a>
+            </>
+          )}
+        </div>
+        {reg && trackReg && (
+          <div className="al">
+            <a className="fr24-link" href={trackReg} target="_blank" rel="noopener noreferrer">{reg} ↗</a>
+          </div>
+        )}
       </div>
 
       <div className="r-date">{md(f.departure)}</div>
 
       <div className="col-dest">
         {f.from && <div className="from">{f.from} 발</div>}
-        <SplitFlap value={f.to ?? f.flightNumber ?? '—'} animate={animate} order={order} />
+        <SplitFlap value={shortenDest(f.to)} animate={animate} order={order} />
         {sv.remark && <div className="remark">{sv.remark}</div>}
         {f.source === 'manual' && f.calendarId && (
           <button
