@@ -6,6 +6,8 @@
  * confidence 로 신뢰도를 표기하고 저신뢰 건은 사용자 수동 보정을 유도한다.
  */
 
+import { readFlightData } from './flightEvent';
+
 export interface CalendarEventDTO {
   id: string;
   summary?: string;
@@ -14,6 +16,7 @@ export interface CalendarEventDTO {
   start?: { dateTime?: string; date?: string; timeZone?: string };
   end?: { dateTime?: string; date?: string; timeZone?: string };
   htmlLink?: string;
+  extendedProperties?: { private?: Record<string, string> };
 }
 
 export interface ParsedFlight {
@@ -26,6 +29,10 @@ export interface ParsedFlight {
   departure: string | null;
   arrival: string | null;
   confidence: 'high' | 'low';
+  /** manual: 우리가 등록(무손실) / auto: 구글 자동생성(휴리스틱 파싱) */
+  source: 'manual' | 'auto';
+  /** 우리 전용 캘린더 이벤트면 삭제 가능하도록 캘린더 id 를 담음 */
+  calendarId?: string;
   htmlLink?: string;
 }
 
@@ -45,6 +52,7 @@ function extractFlightNumber(text: string): string | null {
 
 /** 이벤트가 항공편으로 보이는지 판정. */
 export function looksLikeFlight(ev: CalendarEventDTO): boolean {
+  if (readFlightData(ev)) return true; // 우리 정규 이벤트는 무조건 항공편
   const summary = ev.summary ?? '';
   const haystack = `${summary} ${ev.description ?? ''}`;
   // 키워드가 있거나, (카운터가 아닌) 진짜 편명이 제목에 있으면 항공편으로 간주
@@ -111,11 +119,30 @@ function extractRoute(
   };
 }
 
-/** 단일 이벤트를 ParsedFlight 로 변환. */
-export function parseFlight(ev: CalendarEventDTO): ParsedFlight {
+/** 단일 이벤트를 ParsedFlight 로 변환. calendarId 는 우리 전용 캘린더 이벤트 삭제용. */
+export function parseFlight(ev: CalendarEventDTO, calendarId?: string): ParsedFlight {
   const summary = ev.summary ?? '';
-  const flightNumber = extractFlightNumber(summary) ?? extractFlightNumber(ev.description ?? '');
 
+  // 우리 정규 이벤트: extendedProperties 로 무손실 복원
+  const structured = readFlightData(ev);
+  if (structured) {
+    return {
+      id: ev.id,
+      title: summary || `${structured.flightNumber}`,
+      flightNumber: structured.flightNumber,
+      from: structured.from,
+      to: structured.to,
+      departure: structured.departure,
+      arrival: structured.arrival,
+      confidence: 'high',
+      source: 'manual',
+      calendarId,
+      htmlLink: ev.htmlLink,
+    };
+  }
+
+  // 구글 자동생성 등: 휴리스틱 파싱
+  const flightNumber = extractFlightNumber(summary) ?? extractFlightNumber(ev.description ?? '');
   let route = extractRoute(summary, flightNumber);
   if (!route.to && ev.location) {
     const locRoute = extractRoute(ev.location, flightNumber);
@@ -131,30 +158,41 @@ export function parseFlight(ev: CalendarEventDTO): ParsedFlight {
     departure: ev.start?.dateTime ?? ev.start?.date ?? null,
     arrival: ev.end?.dateTime ?? ev.end?.date ?? null,
     confidence: flightNumber ? 'high' : 'low',
+    source: 'auto',
     htmlLink: ev.htmlLink,
   };
 }
 
-/** 같은 편명+출발시각의 중복 이벤트를 병합(노선 정보가 더 많은 쪽을 유지). */
-function dedupe(flights: ParsedFlight[]): ParsedFlight[] {
+/** 이벤트 목록에서 항공편만 골라 파싱(중복제거·정렬 없음). */
+export function extractFlights(
+  events: CalendarEventDTO[],
+  calendarId?: string,
+): ParsedFlight[] {
+  return events.filter(looksLikeFlight).map((ev) => parseFlight(ev, calendarId));
+}
+
+/**
+ * 여러 캘린더에서 모은 항공편을 병합: 같은 편명+출발시각 중복 제거 후 출발시각 순 정렬.
+ * 중복 시 수동 등록(무손실)을 우선하고, 그다음 노선 정보가 있는 쪽을 우선한다.
+ */
+export function mergeFlights(flights: ParsedFlight[]): ParsedFlight[] {
   const byKey = new Map<string, ParsedFlight>();
   for (const f of flights) {
     const key =
       f.flightNumber && f.departure
-        ? `${f.flightNumber}|${f.departure.slice(0, 16)}`
+        ? `${f.flightNumber.toUpperCase().replace(/\s+/g, '')}|${f.departure.slice(0, 16)}`
         : `id:${f.id}`;
     const prev = byKey.get(key);
     if (!prev) {
       byKey.set(key, f);
-    } else if (!prev.to && f.to) {
-      byKey.set(key, f); // 노선이 있는 쪽으로 교체
+      continue;
     }
+    const better =
+      (prev.source !== 'manual' && f.source === 'manual') ||
+      (prev.source === f.source && !prev.to && !!f.to);
+    if (better) byKey.set(key, f);
   }
-  return [...byKey.values()];
-}
-
-/** 이벤트 목록에서 항공편만 골라 파싱·중복제거하고 출발시각 순 정렬. */
-export function extractFlights(events: CalendarEventDTO[]): ParsedFlight[] {
-  const parsed = events.filter(looksLikeFlight).map(parseFlight);
-  return dedupe(parsed).sort((a, b) => (a.departure ?? '').localeCompare(b.departure ?? ''));
+  return [...byKey.values()].sort((a, b) =>
+    (a.departure ?? '').localeCompare(b.departure ?? ''),
+  );
 }

@@ -1,68 +1,72 @@
-import { NextResponse, type NextRequest } from 'next/server';
-import { cookies } from 'next/headers';
-import { TOKEN_COOKIE } from '@polymorph/shared-auth';
-import { OAUTH_SERVER_INTERNAL_URL } from '@/lib/oauth';
-import { extractFlights, type CalendarEventDTO } from '@/lib/flightParser';
+import { NextResponse } from 'next/server';
+import { getAuthToken } from '@/lib/session';
+import {
+  BrokerError,
+  fetchCalendarEvents,
+  findOrCreateFlightCalendar,
+} from '@/lib/calendarClient';
+import { extractFlights, mergeFlights } from '@/lib/flightParser';
 
 const YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
 /**
- * 내 캘린더에서 항공편을 추출해 반환.
- *
- * 브라우저 → 이 라우트(서버) → oauth-server 브로커.
- * 브로커 시크릿과 사용자 JWT 는 서버사이드에서만 다루고 클라이언트에 노출하지 않는다.
+ * 내 항공편을 하이브리드로 수집:
+ *  - primary 캘린더(구글 Gmail 자동생성) → 휴리스틱 파싱
+ *  - 전용 "MyFlightHistory" 캘린더(우리 수동 등록) → extendedProperties 무손실 복원
+ * 두 소스를 병합·중복제거해서 반환.
  */
-export async function GET(req: NextRequest) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(TOKEN_COOKIE)?.value;
+export async function GET() {
+  const token = await getAuthToken();
   if (!token) {
     return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
   }
 
-  const brokerSecret = process.env.CALENDAR_BROKER_SECRET;
-  if (!brokerSecret) {
-    console.error('[calendar/events] CALENDAR_BROKER_SECRET 미설정');
-    return NextResponse.json({ error: 'server_misconfigured' }, { status: 500 });
+  const now = Date.now();
+  const timeMin = new Date(now - YEAR_MS).toISOString();
+  const timeMax = new Date(now + YEAR_MS).toISOString();
+
+  // 전용 캘린더 확보 (미연결이면 여기서 판별)
+  let dedicatedId: string | null = null;
+  let dedicatedUnavailable = false;
+  try {
+    dedicatedId = await findOrCreateFlightCalendar(token);
+  } catch (err) {
+    if (err instanceof BrokerError && err.status === 404) {
+      return NextResponse.json({ connected: false, flights: [] });
+    }
+    if (err instanceof BrokerError && err.code === 'refresh_failed') {
+      return NextResponse.json({ connected: false, needsReconnect: true, flights: [] });
+    }
+    // 쓰기 권한 부족(scope 미상향) 등 → 자동 소스만이라도 보여주도록 degrade
+    console.error('[calendar/events] 전용 캘린더 사용 불가:', err);
+    dedicatedUnavailable = true;
   }
 
-  const { searchParams } = new URL(req.url);
-  const now = Date.now();
-  const timeMin = searchParams.get('timeMin') ?? new Date(now - YEAR_MS).toISOString();
-  const timeMax = searchParams.get('timeMax') ?? new Date(now + YEAR_MS).toISOString();
-
-  const brokerUrl = new URL(
-    `${OAUTH_SERVER_INTERNAL_URL}/api/google/calendar/events`,
-  );
-  brokerUrl.searchParams.set('timeMin', timeMin);
-  brokerUrl.searchParams.set('timeMax', timeMax);
-
-  let res: Response;
   try {
-    res = await fetch(brokerUrl, {
-      headers: {
-        'x-internal-secret': brokerSecret,
-        Authorization: `Bearer ${token}`,
-      },
-      cache: 'no-store',
+    const primaryEvents = await fetchCalendarEvents(token, { timeMin, timeMax });
+    const dedicatedEvents = dedicatedId
+      ? await fetchCalendarEvents(token, { calendarId: dedicatedId, timeMin, timeMax })
+      : [];
+
+    const flights = mergeFlights([
+      ...extractFlights(primaryEvents),
+      ...extractFlights(dedicatedEvents, dedicatedId ?? undefined),
+    ]);
+
+    return NextResponse.json({
+      connected: true,
+      dedicatedCalendarId: dedicatedId,
+      dedicatedUnavailable,
+      flights,
     });
   } catch (err) {
-    console.error('[calendar/events] 브로커 호출 실패:', err);
-    return NextResponse.json({ error: 'broker_unreachable' }, { status: 502 });
-  }
-
-  if (res.status === 404) {
-    // 캘린더 미연결
-    return NextResponse.json({ connected: false, flights: [] });
-  }
-  if (res.status === 502) {
-    // refresh 실패 → 재연동 필요 신호
-    return NextResponse.json({ connected: false, needsReconnect: true, flights: [] });
-  }
-  if (!res.ok) {
+    if (err instanceof BrokerError && err.status === 404) {
+      return NextResponse.json({ connected: false, flights: [] });
+    }
+    if (err instanceof BrokerError && err.code === 'refresh_failed') {
+      return NextResponse.json({ connected: false, needsReconnect: true, flights: [] });
+    }
+    console.error('[calendar/events] 조회 실패:', err);
     return NextResponse.json({ error: 'broker_error' }, { status: 502 });
   }
-
-  const data = (await res.json()) as { events?: CalendarEventDTO[] };
-  const flights = extractFlights(data.events ?? []);
-  return NextResponse.json({ connected: true, flights });
 }
