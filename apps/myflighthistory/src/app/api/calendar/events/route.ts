@@ -8,6 +8,7 @@ import {
 import { extractFlights, mergeFlights, type ParsedFlight } from '@/lib/flightParser';
 import { predictDelay, isDomesticPlace } from '@/lib/prediction';
 import { fetchIncheonDeparture } from '@/lib/incheon';
+import { fetchAirportalStatus } from '@/lib/airportal';
 import type { LiveStatus } from '@/lib/liveStatus';
 
 const YEAR_MS = 365 * 24 * 60 * 60 * 1000;
@@ -98,8 +99,8 @@ const LIVE_BEHIND_MS = 12 * 60 * 60 * 1000;
 
 /**
  * 임박 항공편에 실시간 상태(공공데이터)를 병렬로 부여.
- * - 국제선(도착지가 국내 아님): 인천공항 공식 API
- * - 국내선: airportal (추후) — 현재는 미부여, 휴리스틱 예측 유지
+ * - 국내선(출발/도착이 국내): airportal (비공식, best-effort)
+ * - 그 외(국제선): 인천공항 공식 API
  * 실패는 조용히 무시(휴리스틱 fallback).
  */
 async function attachLiveStatus(flights: ParsedFlight[]): Promise<ParsedFlight[]> {
@@ -118,9 +119,18 @@ async function attachLiveStatus(flights: ParsedFlight[]): Promise<ParsedFlight[]
   const byId = new Map<string, LiveStatus>();
   await Promise.all(
     eligible.map(async (f) => {
-      if (isDomesticPlace(f.to)) return; // 국내선은 airportal(추후) 담당
-      const searchDate = f.departure!.slice(0, 10).replace(/-/g, '');
-      const st = await fetchIncheonDeparture(f.flightNumber!, searchDate);
+      const domestic = isDomesticPlace(f.to) || isDomesticPlace(f.from);
+      const st = domestic
+        ? await fetchAirportalStatus({
+            flightNumber: f.flightNumber!,
+            from: f.from,
+            to: f.to,
+            departure: f.departure!,
+          })
+        : await fetchIncheonDeparture(
+            f.flightNumber!,
+            f.departure!.slice(0, 10).replace(/-/g, ''),
+          );
       if (st) byId.set(f.id, st);
     }),
   );
