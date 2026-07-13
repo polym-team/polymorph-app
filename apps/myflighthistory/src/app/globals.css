@@ -148,7 +148,8 @@
 .row > * { min-width: 0; } /* grid 셀이 내용에 밀려 넘치지 않도록 */
 
 /* ---- split-flap tiles ---- */
-.flaps { display: inline-flex; flex-wrap: wrap; gap: 3px; perspective: 360px; }
+/* 기본은 한 줄 고정(편명·시각·현황). 목적지만 아래에서 wrap 허용 */
+.flaps { display: inline-flex; flex-wrap: nowrap; gap: 3px; perspective: 360px; }
 .tile {
   position: relative;
   display: inline-block;
@@ -198,7 +199,7 @@
 }
 
 .col-flt .flaps { font-size: clamp(15px, 2vw, 19px); }
-.col-dest .flaps { font-size: clamp(22px, 4.2vw, 34px); }
+.col-dest .flaps { font-size: clamp(22px, 4.2vw, 34px); flex-wrap: wrap; }
 .col-time .flaps { font-size: clamp(17px, 2.4vw, 22px); }
 .col-status .flaps { font-size: clamp(13px, 1.7vw, 16px); }
 
