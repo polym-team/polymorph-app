@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { CLIENT_ID, OAUTH_SERVER_URL } from '@/lib/oauth';
 import type { ParsedFlight } from '@/lib/flightParser';
+import type { DelayPrediction } from '@/lib/prediction';
 
 interface Me {
   authenticated: boolean;
@@ -300,12 +301,36 @@ function FlightItem({ f, onDeleted }: { f: ParsedFlight; onDeleted: () => void }
         {formatDate(f.departure)} {f.arrival ? `~ ${formatDate(f.arrival)}` : ''}
         {f.confidence === 'low' && ' · 자동 인식(확인 필요)'}
       </p>
+      {f.prediction && <DelayBadge p={f.prediction} />}
       {f.source === 'manual' && f.calendarId && (
         <button onClick={del} disabled={deleting} className="mt-2 text-xs text-red-500 underline disabled:opacity-50">
           {deleting ? '삭제 중...' : '삭제'}
         </button>
       )}
     </li>
+  );
+}
+
+const DELAY_STYLE: Record<DelayPrediction['level'], { badge: string; label: string }> = {
+  low: { badge: 'bg-green-50 text-green-700', label: '지연 낮음' },
+  moderate: { badge: 'bg-amber-50 text-amber-700', label: '지연 보통' },
+  high: { badge: 'bg-red-50 text-red-700', label: '지연 주의' },
+};
+
+function DelayBadge({ p }: { p: DelayPrediction }) {
+  const s = DELAY_STYLE[p.level];
+  return (
+    <div className="mt-2 text-xs">
+      <span className={`rounded px-2 py-0.5 ${s.badge}`}>
+        {s.label} · {Math.round(p.delayProbability * 100)}% · 예상 +{p.expectedDelayMin}분
+      </span>
+      {p.basis.length > 0 && (
+        <span className="ml-2 text-gray-400">{p.basis.join(', ')}</span>
+      )}
+      {p.source === 'heuristic' && (
+        <span className="ml-1 text-gray-300">(패턴 추정)</span>
+      )}
+    </div>
   );
 }
 

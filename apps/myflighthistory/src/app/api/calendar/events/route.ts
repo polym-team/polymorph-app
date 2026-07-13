@@ -6,6 +6,7 @@ import {
   findOrCreateFlightCalendar,
 } from '@/lib/calendarClient';
 import { extractFlights, mergeFlights } from '@/lib/flightParser';
+import { predictDelay } from '@/lib/prediction';
 
 const YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -48,10 +49,26 @@ export async function GET() {
       ? await fetchCalendarEvents(token, { calendarId: dedicatedId, timeMin, timeMax })
       : [];
 
-    const flights = mergeFlights([
+    const merged = mergeFlights([
       ...extractFlights(primaryEvents),
       ...extractFlights(dedicatedEvents, dedicatedId ?? undefined),
     ]);
+
+    // 예정(미래) 항공편에만 지연 예측 부여
+    const nowIso = new Date().toISOString();
+    const flights = merged.map((f) =>
+      f.departure && f.departure >= nowIso
+        ? {
+            ...f,
+            prediction: predictDelay({
+              flightNumber: f.flightNumber,
+              from: f.from,
+              to: f.to,
+              departure: f.departure,
+            }),
+          }
+        : f,
+    );
 
     return NextResponse.json({
       connected: true,
