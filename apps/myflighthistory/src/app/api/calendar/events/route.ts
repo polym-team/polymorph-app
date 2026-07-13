@@ -8,7 +8,7 @@ import {
 import { extractFlights, mergeFlights, type ParsedFlight } from '@/lib/flightParser';
 import { predictDelay, isDomesticPlace } from '@/lib/prediction';
 import { fetchIncheonDeparture } from '@/lib/incheon';
-import { fetchAirportalStatus } from '@/lib/airportal';
+import { fetchAirportalStatus, getAirportalSession } from '@/lib/airportal';
 import type { LiveStatus } from '@/lib/liveStatus';
 
 const YEAR_MS = 365 * 24 * 60 * 60 * 1000;
@@ -116,17 +116,26 @@ async function attachLiveStatus(flights: ParsedFlight[]): Promise<ParsedFlight[]
   });
   if (eligible.length === 0) return flights;
 
+  // 국내선이 있으면 airportal 세션을 배치당 한 번만 부트스트랩해 재사용
+  const hasDomestic = eligible.some(
+    (f) => isDomesticPlace(f.to) || isDomesticPlace(f.from),
+  );
+  const airportalCookie = hasDomestic ? await getAirportalSession() : null;
+
   const byId = new Map<string, LiveStatus>();
   await Promise.all(
     eligible.map(async (f) => {
       const domestic = isDomesticPlace(f.to) || isDomesticPlace(f.from);
       const st = domestic
-        ? await fetchAirportalStatus({
-            flightNumber: f.flightNumber!,
-            from: f.from,
-            to: f.to,
-            departure: f.departure!,
-          })
+        ? await fetchAirportalStatus(
+            {
+              flightNumber: f.flightNumber!,
+              from: f.from,
+              to: f.to,
+              departure: f.departure!,
+            },
+            airportalCookie,
+          )
         : await fetchIncheonDeparture(
             f.flightNumber!,
             f.departure!.slice(0, 10).replace(/-/g, ''),
