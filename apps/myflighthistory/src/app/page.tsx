@@ -1,17 +1,15 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { CLIENT_ID, OAUTH_SERVER_URL } from '@/lib/oauth';
+import { airlineName } from '@/lib/prediction';
 import type { ParsedFlight } from '@/lib/flightParser';
-import type { DelayPrediction } from '@/lib/prediction';
-import type { LiveStatus } from '@/lib/liveStatus';
+import { SplitFlap } from '@/components/SplitFlap';
 
 interface Me {
   authenticated: boolean;
   user?: { id: string; email: string; name?: string };
 }
-
 interface CalendarResult {
   connected: boolean;
   needsReconnect?: boolean;
@@ -22,7 +20,7 @@ interface CalendarResult {
 const BANNER: Record<string, { text: string; tone: 'ok' | 'warn' }> = {
   connected: { text: '구글 캘린더가 연결되었습니다.', tone: 'ok' },
   denied: { text: '캘린더 접근 동의가 취소되었습니다.', tone: 'warn' },
-  error: { text: '캘린더 연결 중 오류가 발생했습니다. 다시 시도해 주세요.', tone: 'warn' },
+  error: { text: '캘린더 연결 중 오류가 발생했습니다.', tone: 'warn' },
   login_required: { text: '먼저 로그인이 필요합니다.', tone: 'warn' },
 };
 
@@ -33,6 +31,68 @@ function connectCalendar() {
     `?clientId=${CLIENT_ID}&returnUrl=${encodeURIComponent(returnUrl)}`;
 }
 
+/* ---- 시각/날짜 포맷 (KST) ---- */
+function hhmm(iso: string | null): string {
+  if (!iso) return '--:--';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '--:--';
+  return d.toLocaleTimeString('ko-KR', {
+    hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Seoul',
+  });
+}
+function md(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('ko-KR', {
+    month: '2-digit', day: '2-digit', weekday: 'short', timeZone: 'Asia/Seoul',
+  });
+}
+
+/* ---- ParsedFlight → 현황 뷰모델 ---- */
+type StatusView = {
+  kind: 'live' | 'pred' | 'none';
+  label: string;
+  colorClass: string;
+  min: string | null;
+  remark: string | null;
+  est: string | null;
+  sevColor: string | null;
+};
+const SEV_COLOR: Record<string, string> = {
+  ontime: 'var(--ontime)', delay: 'var(--delay)', cancel: 'var(--cancel)', none: 'var(--fids-label)',
+};
+const LIVE_LABEL: Record<string, [string, string]> = {
+  ontime: ['정시', 'st-ontime'],
+  scheduled: ['정시예정', 'st-ontime'],
+  departed: ['출발', 'st-moved'],
+  arrived: ['도착', 'st-moved'],
+  delayed: ['지연', 'st-delay'],
+  cancelled: ['결항', 'st-cancel'],
+  unknown: ['확인', 'st-pred'],
+};
+
+function statusView(f: ParsedFlight): StatusView {
+  if (f.liveStatus) {
+    const s = f.liveStatus;
+    const [label, colorClass] = LIVE_LABEL[s.status] ?? LIVE_LABEL.unknown;
+    const showMin = s.delayMin != null && s.delayMin >= 15 && s.status !== 'cancelled';
+    const est = s.estimatedTime && s.estimatedTime !== s.scheduledTime ? s.estimatedTime : null;
+    return { kind: 'live', label, colorClass, min: showMin ? `+${s.delayMin}분` : null, remark: s.remark, est, sevColor: null };
+  }
+  if (f.prediction) {
+    const map: Record<string, [string, string]> = {
+      low: ['낮음', 'ontime'], moderate: ['보통', 'delay'], high: ['주의', 'cancel'],
+    };
+    const [label, sev] = map[f.prediction.level] ?? map.moderate;
+    const pct = Math.round(f.prediction.delayProbability * 100);
+    const why = f.prediction.basis[0] ?? '';
+    return { kind: 'pred', label, colorClass: 'st-pred', min: null, remark: `예측 ${pct}% · ${why}`, est: null, sevColor: SEV_COLOR[sev] };
+  }
+  return { kind: 'none', label: '기록 없음', colorClass: 'st-pred', min: null, remark: '3일 이전 · 데이터 없음', est: null, sevColor: SEV_COLOR.none };
+}
+
+/* ============ page ============ */
 export default function HomePage() {
   const [me, setMe] = useState<Me | null>(null);
   const [cal, setCal] = useState<CalendarResult | null>(null);
@@ -64,85 +124,226 @@ export default function HomePage() {
   }, [loadFlights]);
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-xl font-semibold">MyFlightHistory</h1>
-        <p className="text-sm text-gray-500">내 항공편을 한눈에 — 과거·현재·미래(지연 예측)</p>
-      </header>
+    <div className="fids">
+      <div className="wrap">
+        <div className="board">
+          <div className="signage">
+            <div>
+              <div className="name">
+                MYFLIGHT<span className="thin">HISTORY</span>
+              </div>
+              <div className="tagline">내 항공 편성표 · Departures 出發</div>
+            </div>
+            <Clock />
+          </div>
 
-      {banner && (
-        <div
-          className={`rounded p-3 text-sm ${
-            banner.tone === 'ok' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
-          }`}
-        >
-          {banner.text}
+          {banner && (
+            <div
+              style={{
+                marginTop: 14, padding: '10px 14px', borderRadius: 8, fontSize: 12.5,
+                fontFamily: 'var(--fids-mono)',
+                color: banner.tone === 'ok' ? 'var(--ontime)' : 'var(--delay)',
+                background: 'rgba(255,255,255,0.03)', border: '1px solid #000',
+              }}
+            >
+              {banner.text}
+            </div>
+          )}
+
+          {me === null ? (
+            <Loading />
+          ) : !me.authenticated ? (
+            <LoggedOut />
+          ) : (
+            <Authed cal={cal} reload={loadFlights} />
+          )}
         </div>
-      )}
 
-      {me === null ? (
-        <p className="text-sm text-gray-400">불러오는 중...</p>
-      ) : !me.authenticated ? (
-        <LoggedOut />
-      ) : (
-        <LoggedIn me={me} cal={cal} reload={loadFlights} />
-      )}
+        <p className="note">
+          실시간 상태는 공공데이터(한국공항공사·인천공항)로 <b>출발 임박(±3~6일)</b> 항공편에 표시됩니다.
+          그 밖의 예정편은 노선·시간대·계절 <b>패턴 예측</b>(무채색·심각도 점), 3일 이전 과거편은 데이터가 없어 <b>기록 없음</b>으로 둡니다.
+        </p>
+      </div>
     </div>
   );
+}
+
+function Clock() {
+  const [t, setT] = useState('--:--:--');
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const kst = new Date(now.getTime() + (now.getTimezoneOffset() + 540) * 60000);
+      const p = (n: number) => String(n).padStart(2, '0');
+      setT(`${p(kst.getHours())}:${p(kst.getMinutes())}:${p(kst.getSeconds())} KST`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+  return <div className="clock">{t}</div>;
+}
+
+function Loading() {
+  return <div className="empty">불러오는 중…</div>;
 }
 
 function LoggedOut() {
   return (
-    <div className="rounded border bg-white p-4 text-sm">
-      <p className="mb-3 text-gray-600">시작하려면 로그인하세요.</p>
-      <Link href="/login" className="inline-flex h-10 items-center rounded bg-gray-900 px-4 text-white">
-        로그인
-      </Link>
+    <div style={{ marginTop: 16 }} className="panel">
+      <div className="p-title">로그인</div>
+      <div className="p-sub">내 항공 편성표를 보려면 로그인하세요.</div>
+      <a className="btn btn-primary" href="/login">로그인</a>
     </div>
   );
 }
 
-function LoggedIn({ me, cal, reload }: { me: Me; cal: CalendarResult | null; reload: () => void }) {
-  if (cal === null) return <p className="text-sm text-gray-400">캘린더 확인 중...</p>;
+function Authed({ cal, reload }: { cal: CalendarResult | null; reload: () => void }) {
+  const [tab, setTab] = useState<'up' | 'past'>('up');
+
+  if (cal === null) return <Loading />;
 
   if (!cal.connected) {
     return (
-      <div className="rounded border bg-white p-4 text-sm">
-        <p className="mb-1 font-medium">구글 캘린더 연결</p>
-        <p className="mb-3 text-gray-500">
+      <div style={{ marginTop: 16 }} className="panel">
+        <div className="p-title">구글 캘린더 연결</div>
+        <div className="p-sub">
           {cal.needsReconnect
             ? '연결이 만료되어 다시 연결이 필요합니다.'
-            : '캘린더의 항공편 일정을 자동으로 불러오고, 수동 등록한 항공편도 캘린더에 저장합니다.'}
-        </p>
-        <button onClick={connectCalendar} className="inline-flex h-10 items-center rounded bg-blue-600 px-4 text-white">
-          구글 캘린더 연결하기
-        </button>
+            : '캘린더의 항공편을 자동으로 불러오고, 직접 등록한 항공편도 캘린더에 저장합니다.'}
+        </div>
+        <button className="btn btn-primary" onClick={connectCalendar}>구글 캘린더 연결하기</button>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-5">
-      <p className="text-sm text-gray-600">
-        <span className="font-medium">{me.user?.name ?? me.user?.email}</span> 님
-      </p>
+  const now = new Date().toISOString();
+  const upcoming = cal.flights.filter((f) => (f.departure ?? '') >= now);
+  const past = cal.flights.filter((f) => (f.departure ?? '') < now).reverse();
+  const list = tab === 'up' ? upcoming : past;
 
+  return (
+    <>
+      <div className="tabs" role="tablist">
+        <button className="tab" role="tab" aria-selected={tab === 'up'} onClick={() => setTab('up')}>
+          예정 <span className="c">{upcoming.length}</span>
+        </button>
+        <button className="tab" role="tab" aria-selected={tab === 'past'} onClick={() => setTab('past')}>
+          지난 <span className="c">{past.length}</span>
+        </button>
+      </div>
+
+      {tab === 'up' && !cal.dedicatedUnavailable && (
+        <div style={{ padding: '4px 4px 10px' }}>
+          <ManualForm onCreated={reload} />
+        </div>
+      )}
       {cal.dedicatedUnavailable && (
-        <div className="rounded bg-amber-50 p-3 text-sm text-amber-700">
-          수동 등록(캘린더 쓰기) 권한이 없어 자동 인식 항공편만 표시 중입니다.{' '}
-          <button onClick={connectCalendar} className="underline">
-            캘린더 다시 연결
-          </button>
+        <div style={{ padding: '4px', fontSize: 12, color: 'var(--delay)', fontFamily: 'var(--fids-mono)' }}>
+          캘린더 쓰기 권한이 없어 직접 등록이 비활성화됨.{' '}
+          <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: 11 }} onClick={connectCalendar}>다시 연결</button>
         </div>
       )}
 
-      {!cal.dedicatedUnavailable && <ManualForm onCreated={reload} />}
+      <div className="display">
+        <div className="colhead">
+          <div>편명 / Flight</div>
+          <div>목적지 / To</div>
+          <div className="r">예정 / Time</div>
+          <div className="r">현황 / Remark</div>
+        </div>
 
-      <FlightList flights={cal.flights} onDeleted={reload} />
+        {list.length === 0 ? (
+          <div className="empty">
+            {tab === 'up'
+              ? '예정된 항공편이 없습니다. 위에서 직접 등록하거나, 예약메일이 캘린더에 반영되면 나타납니다.'
+              : '지난 항공편이 없습니다.'}
+          </div>
+        ) : (
+          list.map((f, i) => (
+            <Row key={f.id} f={f} index={i} animate={tab === 'up'} onDeleted={reload} />
+          ))
+        )}
 
-      <button onClick={connectCalendar} className="text-xs text-gray-400 underline">
-        캘린더 다시 연결
-      </button>
+        <div className="legend">
+          <span><i style={{ background: 'var(--ontime)' }} />On time</span>
+          <span><i style={{ background: 'var(--delay)' }} />Delayed</span>
+          <span><i style={{ background: 'var(--cancel)' }} />Cancelled</span>
+          <span><i style={{ background: 'var(--moved)' }} />Departed</span>
+          <span><i style={{ background: 'var(--fids-dim)' }} />예측 Forecast</span>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function Row({
+  f, index, animate, onDeleted,
+}: {
+  f: ParsedFlight; index: number; animate: boolean; onDeleted: () => void;
+}) {
+  const sv = statusView(f);
+  const order = index * 6;
+
+  async function del() {
+    if (!f.calendarId) return;
+    if (!confirm('이 항공편을 삭제할까요? (구글 캘린더에서도 삭제됩니다)')) return;
+    const params = new URLSearchParams({ calendarId: f.calendarId, eventId: f.id });
+    const res = await fetch(`/api/flights?${params.toString()}`, { method: 'DELETE' });
+    if (res.ok) onDeleted();
+  }
+
+  return (
+    <div className="row">
+      <div className="col-flt">
+        <SplitFlap value={f.flightNumber ?? '----'} animate={animate} order={order} />
+        <div className="al">{airlineName(f.flightNumber) ?? '—'}</div>
+      </div>
+
+      <div className="r-date">{md(f.departure)}</div>
+
+      <div className="col-dest">
+        {f.from && <div className="from">{f.from} 발</div>}
+        <SplitFlap value={f.to ?? f.flightNumber ?? '—'} animate={animate} order={order} />
+        {sv.remark && <div className="remark">{sv.remark}</div>}
+        {f.source === 'manual' && f.calendarId && (
+          <button
+            onClick={del}
+            style={{
+              marginTop: 8, background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--fids-label)', fontSize: 11, fontFamily: 'var(--fids-mono)',
+              textDecoration: 'underline', padding: 0,
+            }}
+          >
+            직접 등록 · 삭제
+          </button>
+        )}
+      </div>
+
+      <div className="col-time">
+        {sv.est && <div className="struck">{hhmm(f.departure)}</div>}
+        <SplitFlap value={sv.est ?? hhmm(f.departure)} animate={animate} order={order} />
+        <div className="date">{md(f.departure)}</div>
+      </div>
+
+      <div className="col-status">
+        {sv.kind === 'pred' || sv.kind === 'none' ? (
+          <>
+            <div className="pred-tag">
+              <span className="lbl">{sv.kind === 'none' ? '기록' : '예측'}</span>
+              <span className="dot" style={{ background: sv.sevColor ?? 'var(--fids-label)' }} />
+            </div>
+            <div className={sv.colorClass}>
+              <SplitFlap value={sv.label} animate={animate} order={order} />
+            </div>
+          </>
+        ) : (
+          <div className={sv.colorClass}>
+            <SplitFlap value={sv.label} animate={animate} order={order} />
+            {sv.min && <div className="min">{sv.min}</div>}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -153,9 +354,7 @@ function ManualForm({ onCreated }: { onCreated: () => void }) {
   const [err, setErr] = useState<string | null>(null);
   const [form, setForm] = useState({ flightNumber: '', from: '', to: '', departure: '', arrival: '' });
 
-  function set(k: keyof typeof form, v: string) {
-    setForm((f) => ({ ...f, [k]: v }));
-  }
+  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -186,198 +385,34 @@ function ManualForm({ onCreated }: { onCreated: () => void }) {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="inline-flex h-10 items-center rounded border px-4 text-sm">
-        + 항공편 직접 등록
-      </button>
+      <button className="btn btn-ghost" onClick={() => setOpen(true)}>+ 항공편 직접 등록</button>
     );
   }
 
+  const inputStyle = { width: '100%' } as const;
   return (
-    <form onSubmit={submit} className="space-y-3 rounded border bg-white p-4 text-sm">
-      <p className="font-medium">항공편 직접 등록</p>
-      <div className="grid grid-cols-2 gap-2">
-        <input className="col-span-2 h-10 rounded border px-3" placeholder="편명 (예: OZ8995)" value={form.flightNumber} onChange={(e) => set('flightNumber', e.target.value)} />
-        <input className="h-10 rounded border px-3" placeholder="출발지 (예: 김포)" value={form.from} onChange={(e) => set('from', e.target.value)} />
-        <input className="h-10 rounded border px-3" placeholder="도착지 (예: 제주)" value={form.to} onChange={(e) => set('to', e.target.value)} />
-        <label className="text-xs text-gray-500">
+    <form onSubmit={submit} className="panel" style={{ display: 'grid', gap: 10 }}>
+      <div className="p-title">항공편 직접 등록</div>
+      <input className="fids-input" style={inputStyle} placeholder="편명 (예: OZ8995)" value={form.flightNumber} onChange={(e) => set('flightNumber', e.target.value)} />
+      <div style={{ display: 'flex', gap: 10 }}>
+        <input className="fids-input" style={{ flex: 1 }} placeholder="출발지 (예: 김포)" value={form.from} onChange={(e) => set('from', e.target.value)} />
+        <input className="fids-input" style={{ flex: 1 }} placeholder="도착지 (예: 제주)" value={form.to} onChange={(e) => set('to', e.target.value)} />
+      </div>
+      <div style={{ display: 'flex', gap: 10 }}>
+        <label style={{ flex: 1, fontSize: 11, color: 'var(--fids-label)', fontFamily: 'var(--fids-mono)' }}>
           출발
-          <input type="datetime-local" className="mt-1 h-10 w-full rounded border px-3" value={form.departure} onChange={(e) => set('departure', e.target.value)} />
+          <input type="datetime-local" className="fids-input" style={{ ...inputStyle, marginTop: 4 }} value={form.departure} onChange={(e) => set('departure', e.target.value)} />
         </label>
-        <label className="text-xs text-gray-500">
+        <label style={{ flex: 1, fontSize: 11, color: 'var(--fids-label)', fontFamily: 'var(--fids-mono)' }}>
           도착
-          <input type="datetime-local" className="mt-1 h-10 w-full rounded border px-3" value={form.arrival} onChange={(e) => set('arrival', e.target.value)} />
+          <input type="datetime-local" className="fids-input" style={{ ...inputStyle, marginTop: 4 }} value={form.arrival} onChange={(e) => set('arrival', e.target.value)} />
         </label>
       </div>
-      {err && <p className="text-red-600">{err}</p>}
-      <div className="flex gap-2">
-        <button type="submit" disabled={saving} className="h-10 rounded bg-blue-600 px-4 text-white disabled:opacity-50">
-          {saving ? '저장 중...' : '캘린더에 저장'}
-        </button>
-        <button type="button" onClick={() => setOpen(false)} className="h-10 rounded border px-4">
-          취소
-        </button>
+      {err && <div style={{ color: 'var(--cancel)', fontSize: 12 }}>{err}</div>}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? '저장 중…' : '캘린더에 저장'}</button>
+        <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>취소</button>
       </div>
     </form>
   );
-}
-
-function FlightList({ flights, onDeleted }: { flights: ParsedFlight[]; onDeleted: () => void }) {
-  if (flights.length === 0) {
-    return (
-      <div className="rounded border bg-white p-4 text-sm text-gray-500">
-        항공편이 없습니다. 위에서 직접 등록하거나, 항공권 예약메일이 구글 캘린더에 반영되면 자동으로 나타납니다.
-      </div>
-    );
-  }
-
-  const now = new Date().toISOString();
-  const upcoming = flights.filter((f) => (f.departure ?? '') >= now);
-  const past = flights.filter((f) => (f.departure ?? '') < now);
-
-  return (
-    <div className="space-y-5">
-      <FlightSection title="예정된 항공편" flights={upcoming} onDeleted={onDeleted} />
-      <FlightSection title="지난 항공편" flights={past} onDeleted={onDeleted} />
-    </div>
-  );
-}
-
-function FlightSection({
-  title,
-  flights,
-  onDeleted,
-}: {
-  title: string;
-  flights: ParsedFlight[];
-  onDeleted: () => void;
-}) {
-  if (flights.length === 0) return null;
-  return (
-    <section>
-      <h2 className="mb-2 text-sm font-semibold text-gray-700">{title}</h2>
-      <ul className="space-y-2">
-        {flights.map((f) => (
-          <FlightItem key={f.id} f={f} onDeleted={onDeleted} />
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function FlightItem({ f, onDeleted }: { f: ParsedFlight; onDeleted: () => void }) {
-  const [deleting, setDeleting] = useState(false);
-
-  async function del() {
-    if (!f.calendarId) return;
-    if (!confirm('이 항공편을 삭제할까요? (구글 캘린더에서도 삭제됩니다)')) return;
-    setDeleting(true);
-    try {
-      const params = new URLSearchParams({ calendarId: f.calendarId, eventId: f.id });
-      const res = await fetch(`/api/flights?${params.toString()}`, { method: 'DELETE' });
-      if (res.ok) onDeleted();
-    } finally {
-      setDeleting(false);
-    }
-  }
-
-  return (
-    <li className="rounded border bg-white p-3 text-sm">
-      <div className="flex items-center justify-between">
-        <span className="font-medium">{f.title}</span>
-        <div className="flex items-center gap-2">
-          {f.source === 'manual' && (
-            <span className="rounded bg-blue-50 px-2 py-0.5 text-xs text-blue-600">직접 등록</span>
-          )}
-          {f.flightNumber && (
-            <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{f.flightNumber}</span>
-          )}
-        </div>
-      </div>
-      {(f.from || f.to) && (
-        <p className="mt-1 text-gray-500">
-          {[f.from, f.to].filter(Boolean).join(' → ')}
-        </p>
-      )}
-      <p className="mt-1 text-xs text-gray-400">
-        {formatDate(f.departure)} {f.arrival ? `~ ${formatDate(f.arrival)}` : ''}
-        {f.confidence === 'low' && ' · 자동 인식(확인 필요)'}
-      </p>
-      {f.liveStatus ? (
-        <LiveStatusBadge s={f.liveStatus} />
-      ) : (
-        f.prediction && <DelayBadge p={f.prediction} />
-      )}
-      {f.source === 'manual' && f.calendarId && (
-        <button onClick={del} disabled={deleting} className="mt-2 text-xs text-red-500 underline disabled:opacity-50">
-          {deleting ? '삭제 중...' : '삭제'}
-        </button>
-      )}
-    </li>
-  );
-}
-
-const DELAY_STYLE: Record<DelayPrediction['level'], { badge: string; label: string }> = {
-  low: { badge: 'bg-green-50 text-green-700', label: '지연 낮음' },
-  moderate: { badge: 'bg-amber-50 text-amber-700', label: '지연 보통' },
-  high: { badge: 'bg-red-50 text-red-700', label: '지연 주의' },
-};
-
-function DelayBadge({ p }: { p: DelayPrediction }) {
-  const s = DELAY_STYLE[p.level];
-  return (
-    <div className="mt-2 text-xs">
-      <span className={`rounded px-2 py-0.5 ${s.badge}`}>
-        {s.label} · {Math.round(p.delayProbability * 100)}% · 예상 +{p.expectedDelayMin}분
-      </span>
-      {p.basis.length > 0 && (
-        <span className="ml-2 text-gray-400">{p.basis.join(', ')}</span>
-      )}
-      {p.source === 'heuristic' && (
-        <span className="ml-1 text-gray-300">(패턴 추정)</span>
-      )}
-    </div>
-  );
-}
-
-const LIVE_STYLE: Record<LiveStatus['status'], { badge: string; label: string }> = {
-  scheduled: { badge: 'bg-gray-100 text-gray-600', label: '정시 예정' },
-  departed: { badge: 'bg-green-50 text-green-700', label: '출발' },
-  arrived: { badge: 'bg-green-50 text-green-700', label: '도착' },
-  delayed: { badge: 'bg-red-50 text-red-700', label: '지연' },
-  cancelled: { badge: 'bg-red-100 text-red-800', label: '결항' },
-  unknown: { badge: 'bg-gray-100 text-gray-500', label: '상태 미상' },
-};
-
-function LiveStatusBadge({ s }: { s: LiveStatus }) {
-  const style = LIVE_STYLE[s.status];
-  const delayed = s.delayMin != null && s.delayMin >= 15;
-  return (
-    <div className="mt-2 text-xs">
-      <span className={`rounded px-2 py-0.5 ${style.badge}`}>
-        {style.label}
-        {delayed && s.status !== 'cancelled' ? ` +${s.delayMin}분` : ''}
-      </span>
-      {(s.scheduledTime || s.estimatedTime) && (
-        <span className="ml-2 text-gray-400">
-          예정 {s.scheduledTime ?? '-'}
-          {s.estimatedTime && s.estimatedTime !== s.scheduledTime ? ` → ${s.estimatedTime}` : ''}
-        </span>
-      )}
-      {s.remark && <span className="ml-2 text-gray-400">{s.remark}</span>}
-      <span className="ml-1 text-gray-300">(실시간)</span>
-    </div>
-  );
-}
-
-function formatDate(iso: string | null): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString('ko-KR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: iso.includes('T') ? '2-digit' : undefined,
-    minute: iso.includes('T') ? '2-digit' : undefined,
-  });
 }
