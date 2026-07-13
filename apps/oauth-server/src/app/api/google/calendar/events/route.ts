@@ -1,62 +1,126 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { validateToken } from '@polymorph/shared-auth';
 import { getValidAccessToken } from '@/lib/calendarBroker';
-import { listCalendarEvents } from '@/lib/googleCalendar';
+import {
+  listCalendarEvents,
+  insertCalendarEvent,
+  deleteCalendarEvent,
+  type CalendarEventInput,
+} from '@/lib/googleCalendar';
+import { authenticateBroker } from '@/lib/brokerAuth';
 
 /**
- * 캘린더 이벤트 브로커 API (서버 간 호출 전용)
+ * 캘린더 이벤트 브로커 (서버 간 호출 전용)
+ * 헤더: x-internal-secret + Authorization: Bearer <polymorph JWT>
  *
- * GET /api/google/calendar/events?timeMin=&timeMax=
- * 헤더: x-internal-secret(서버간 시크릿), Authorization: Bearer <polymorph JWT>
- *
- * - refresh token 은 절대 노출하지 않고, oauth-server 가 access token 갱신 후
- *   구글 캘린더를 프록시해 이벤트만 돌려준다.
- * - userId 는 JWT(sub)에서만 취득.
+ * GET    ?calendarId=&timeMin=&timeMax=  → 이벤트 목록
+ * POST   { calendarId, event }           → 이벤트 생성
+ * DELETE ?calendarId=&eventId=           → 이벤트 삭제
  */
 export async function GET(req: NextRequest) {
-  // 1) 서버 간 시크릿 — 브라우저 직접 호출 차단
-  const brokerSecret = process.env.CALENDAR_BROKER_SECRET;
-  if (!brokerSecret || req.headers.get('x-internal-secret') !== brokerSecret) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  const auth = await authenticateBroker(req);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  // 2) polymorph JWT 검증 → userId
-  const authHeader = req.headers.get('authorization');
-  const token = authHeader?.startsWith('Bearer ')
-    ? authHeader.slice('Bearer '.length)
-    : null;
-  if (!token) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
-  const result = await validateToken(token);
-  if (!result.valid || !result.payload?.sub) {
-    return NextResponse.json({ error: 'invalid_token' }, { status: 401 });
-  }
-  const userId = result.payload.sub;
+  const accessToken = await resolveToken(auth.userId);
+  if ('response' in accessToken) return accessToken.response;
 
-  // 3) 유효한 access token 확보 (필요 시 자동 갱신)
-  let accessToken: string | null;
-  try {
-    accessToken = await getValidAccessToken(userId);
-  } catch (err) {
-    console.error('[calendar broker] access token 갱신 실패:', err);
-    // refresh token 이 무효화됐을 수 있음 → 앱이 재연동 유도하도록 신호
-    return NextResponse.json({ error: 'refresh_failed' }, { status: 502 });
-  }
-  if (!accessToken) {
-    return NextResponse.json({ error: 'not_connected' }, { status: 404 });
-  }
-
-  // 4) 캘린더 이벤트 조회 후 프록시
   const { searchParams } = new URL(req.url);
+  const calendarId = searchParams.get('calendarId') ?? 'primary';
   const timeMin = searchParams.get('timeMin') ?? undefined;
   const timeMax = searchParams.get('timeMax') ?? undefined;
 
   try {
-    const events = await listCalendarEvents(accessToken, { timeMin, timeMax });
+    const events = await listCalendarEvents(accessToken.token, {
+      calendarId,
+      timeMin,
+      timeMax,
+    });
     return NextResponse.json({ events });
   } catch (err) {
     console.error('[calendar broker] events.list 실패:', err);
     return NextResponse.json({ error: 'calendar_fetch_failed' }, { status: 502 });
   }
+}
+
+export async function POST(req: NextRequest) {
+  const auth = await authenticateBroker(req);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
+  const body = (await req.json().catch(() => null)) as {
+    calendarId?: string;
+    event?: CalendarEventInput;
+  } | null;
+  if (!body?.calendarId || !body.event) {
+    return NextResponse.json(
+      { error: 'calendarId 와 event 가 필요합니다.' },
+      { status: 400 },
+    );
+  }
+
+  const accessToken = await resolveToken(auth.userId);
+  if ('response' in accessToken) return accessToken.response;
+
+  try {
+    const created = await insertCalendarEvent(
+      accessToken.token,
+      body.calendarId,
+      body.event,
+    );
+    return NextResponse.json(created, { status: 201 });
+  } catch (err) {
+    console.error('[calendar broker] events.insert 실패:', err);
+    return NextResponse.json({ error: 'calendar_insert_failed' }, { status: 502 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const auth = await authenticateBroker(req);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const calendarId = searchParams.get('calendarId');
+  const eventId = searchParams.get('eventId');
+  if (!calendarId || !eventId) {
+    return NextResponse.json(
+      { error: 'calendarId 와 eventId 가 필요합니다.' },
+      { status: 400 },
+    );
+  }
+
+  const accessToken = await resolveToken(auth.userId);
+  if ('response' in accessToken) return accessToken.response;
+
+  try {
+    await deleteCalendarEvent(accessToken.token, calendarId, eventId);
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error('[calendar broker] events.delete 실패:', err);
+    return NextResponse.json({ error: 'calendar_delete_failed' }, { status: 502 });
+  }
+}
+
+/** 유효한 access token 확보(자동 갱신). 미연결/갱신실패는 NextResponse 로 반환. */
+async function resolveToken(
+  userId: string,
+): Promise<{ token: string } | { response: NextResponse }> {
+  let token: string | null;
+  try {
+    token = await getValidAccessToken(userId);
+  } catch (err) {
+    console.error('[calendar broker] access token 갱신 실패:', err);
+    return {
+      response: NextResponse.json({ error: 'refresh_failed' }, { status: 502 }),
+    };
+  }
+  if (!token) {
+    return {
+      response: NextResponse.json({ error: 'not_connected' }, { status: 404 }),
+    };
+  }
+  return { token };
 }
