@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { CLIENT_ID, OAUTH_SERVER_URL } from '@/lib/oauth';
 import type { ParsedFlight } from '@/lib/flightParser';
 import type { DelayPrediction } from '@/lib/prediction';
+import type { LiveStatus } from '@/lib/liveStatus';
 
 interface Me {
   authenticated: boolean;
@@ -301,7 +302,11 @@ function FlightItem({ f, onDeleted }: { f: ParsedFlight; onDeleted: () => void }
         {formatDate(f.departure)} {f.arrival ? `~ ${formatDate(f.arrival)}` : ''}
         {f.confidence === 'low' && ' · 자동 인식(확인 필요)'}
       </p>
-      {f.prediction && <DelayBadge p={f.prediction} />}
+      {f.liveStatus ? (
+        <LiveStatusBadge s={f.liveStatus} />
+      ) : (
+        f.prediction && <DelayBadge p={f.prediction} />
+      )}
       {f.source === 'manual' && f.calendarId && (
         <button onClick={del} disabled={deleting} className="mt-2 text-xs text-red-500 underline disabled:opacity-50">
           {deleting ? '삭제 중...' : '삭제'}
@@ -330,6 +335,36 @@ function DelayBadge({ p }: { p: DelayPrediction }) {
       {p.source === 'heuristic' && (
         <span className="ml-1 text-gray-300">(패턴 추정)</span>
       )}
+    </div>
+  );
+}
+
+const LIVE_STYLE: Record<LiveStatus['status'], { badge: string; label: string }> = {
+  scheduled: { badge: 'bg-gray-100 text-gray-600', label: '정시 예정' },
+  departed: { badge: 'bg-green-50 text-green-700', label: '출발' },
+  arrived: { badge: 'bg-green-50 text-green-700', label: '도착' },
+  delayed: { badge: 'bg-red-50 text-red-700', label: '지연' },
+  cancelled: { badge: 'bg-red-100 text-red-800', label: '결항' },
+  unknown: { badge: 'bg-gray-100 text-gray-500', label: '상태 미상' },
+};
+
+function LiveStatusBadge({ s }: { s: LiveStatus }) {
+  const style = LIVE_STYLE[s.status];
+  const delayed = s.delayMin != null && s.delayMin >= 15;
+  return (
+    <div className="mt-2 text-xs">
+      <span className={`rounded px-2 py-0.5 ${style.badge}`}>
+        {style.label}
+        {delayed && s.status !== 'cancelled' ? ` +${s.delayMin}분` : ''}
+      </span>
+      {(s.scheduledTime || s.estimatedTime) && (
+        <span className="ml-2 text-gray-400">
+          예정 {s.scheduledTime ?? '-'}
+          {s.estimatedTime && s.estimatedTime !== s.scheduledTime ? ` → ${s.estimatedTime}` : ''}
+        </span>
+      )}
+      {s.remark && <span className="ml-2 text-gray-400">{s.remark}</span>}
+      <span className="ml-1 text-gray-300">(실시간)</span>
     </div>
   );
 }

@@ -8,6 +8,7 @@
 
 import { readFlightData } from './flightEvent';
 import type { DelayPrediction } from './prediction';
+import type { LiveStatus } from './liveStatus';
 
 export interface CalendarEventDTO {
   id: string;
@@ -35,8 +36,10 @@ export interface ParsedFlight {
   /** 우리 전용 캘린더 이벤트면 삭제 가능하도록 캘린더 id 를 담음 */
   calendarId?: string;
   htmlLink?: string;
-  /** 예정 항공편에 한해 부여되는 지연 예측 */
+  /** 예정 항공편에 한해 부여되는 지연 예측(휴리스틱) */
   prediction?: DelayPrediction;
+  /** 임박 항공편에 한해 부여되는 실시간 실제 상태(공공데이터) */
+  liveStatus?: LiveStatus;
 }
 
 // IATA 편명: 항공사 2자(영문/숫자 혼합) + 1~4자리 숫자. 예: OZ8995, KE81, 7C1234

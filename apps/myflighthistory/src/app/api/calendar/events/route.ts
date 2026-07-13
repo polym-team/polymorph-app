@@ -5,8 +5,10 @@ import {
   fetchCalendarEvents,
   findOrCreateFlightCalendar,
 } from '@/lib/calendarClient';
-import { extractFlights, mergeFlights } from '@/lib/flightParser';
-import { predictDelay } from '@/lib/prediction';
+import { extractFlights, mergeFlights, type ParsedFlight } from '@/lib/flightParser';
+import { predictDelay, isDomesticPlace } from '@/lib/prediction';
+import { fetchIncheonDeparture } from '@/lib/incheon';
+import type { LiveStatus } from '@/lib/liveStatus';
 
 const YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -54,9 +56,9 @@ export async function GET() {
       ...extractFlights(dedicatedEvents, dedicatedId ?? undefined),
     ]);
 
-    // 예정(미래) 항공편에만 지연 예측 부여
+    // 예정(미래) 항공편에 지연 예측(휴리스틱) 부여
     const nowIso = new Date().toISOString();
-    const flights = merged.map((f) =>
+    const withPrediction = merged.map((f) =>
       f.departure && f.departure >= nowIso
         ? {
             ...f,
@@ -69,6 +71,9 @@ export async function GET() {
           }
         : f,
     );
+
+    // 임박 항공편에 실시간 상태(공공데이터) 부여 — 예측보다 우선 표시
+    const flights = await attachLiveStatus(withPrediction);
 
     return NextResponse.json({
       connected: true,
@@ -86,4 +91,42 @@ export async function GET() {
     console.error('[calendar/events] 조회 실패:', err);
     return NextResponse.json({ error: 'broker_error' }, { status: 502 });
   }
+}
+
+const LIVE_AHEAD_MS = 6 * 24 * 60 * 60 * 1000; // 인천 API 조회창 D+6
+const LIVE_BEHIND_MS = 12 * 60 * 60 * 1000;
+
+/**
+ * 임박 항공편에 실시간 상태(공공데이터)를 병렬로 부여.
+ * - 국제선(도착지가 국내 아님): 인천공항 공식 API
+ * - 국내선: airportal (추후) — 현재는 미부여, 휴리스틱 예측 유지
+ * 실패는 조용히 무시(휴리스틱 fallback).
+ */
+async function attachLiveStatus(flights: ParsedFlight[]): Promise<ParsedFlight[]> {
+  if (!process.env.DATAGO_SERVICE_KEY) return flights;
+
+  const now = Date.now();
+  const eligible = flights.filter((f) => {
+    if (!f.flightNumber || !f.departure) return false;
+    const t = new Date(f.departure).getTime();
+    return (
+      !Number.isNaN(t) && t >= now - LIVE_BEHIND_MS && t <= now + LIVE_AHEAD_MS
+    );
+  });
+  if (eligible.length === 0) return flights;
+
+  const byId = new Map<string, LiveStatus>();
+  await Promise.all(
+    eligible.map(async (f) => {
+      if (isDomesticPlace(f.to)) return; // 국내선은 airportal(추후) 담당
+      const searchDate = f.departure!.slice(0, 10).replace(/-/g, '');
+      const st = await fetchIncheonDeparture(f.flightNumber!, searchDate);
+      if (st) byId.set(f.id, st);
+    }),
+  );
+
+  if (byId.size === 0) return flights;
+  return flights.map((f) =>
+    byId.has(f.id) ? { ...f, liveStatus: byId.get(f.id) } : f,
+  );
 }

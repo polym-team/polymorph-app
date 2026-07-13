@@ -50,10 +50,13 @@ export function airlineName(flightNumber: string | null): string | null {
   return AIRLINE_NAMES[code] ?? code;
 }
 
+/** 장소명이 한국 국내 공항/도시인지. */
+export function isDomesticPlace(p: string | null): boolean {
+  return !!p && KR_DOMESTIC.has(p.trim().toLowerCase());
+}
+
 function isDomestic(from: string | null, to: string | null): boolean {
-  const hit = (p: string | null) =>
-    !!p && KR_DOMESTIC.has(p.trim().toLowerCase());
-  return hit(from) && hit(to);
+  return isDomesticPlace(from) && isDomesticPlace(to);
 }
 
 /** ISO 문자열에서 벽시계 시(hour)·월·요일을 파싱(대략, KST 가정). */
