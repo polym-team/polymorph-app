@@ -73,9 +73,50 @@ model ClientApp {
   name                 String
   allowedRedirectUris  String   @map("allowed_redirect_uris") @db.Text
   accessTokenLifetime  Int      @default(3600) @map("access_token_lifetime")
+  refreshTokenLifetime Int      @default(2592000) @map("refresh_token_lifetime") // 30일
   enabled              Boolean  @default(true)
   createdAt            DateTime @default(now()) @map("created_at")
   updatedAt            DateTime @updatedAt @map("updated_at")
 
   @@map("client_apps")
+}
+
+/**
+ * OAuth 2.1 Authorization Code (PKCE)
+ * /api/oauth/authorize 가 발급, /api/oauth/token 이 소비하는 단기 1회용 코드.
+ * 평문 저장 금지: HMAC-SHA256(code, OAUTH_JWT_SECRET) 해시만 저장한다.
+ */
+model AuthorizationCode {
+  id            String    @id @default(cuid())
+  codeHash      String    @unique @map("code_hash")
+  userId        String    @map("user_id")
+  clientId      String    @map("client_id")
+  redirectUri   String    @map("redirect_uri") @db.Text
+  codeChallenge String    @map("code_challenge") // S256
+  scope         String?   @db.Text
+  expiresAt     DateTime  @map("expires_at") // 발급 후 60초
+  usedAt        DateTime? @map("used_at") // 단일 사용 표시
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([expiresAt])
+  @@map("authorization_codes")
+}
+
+/**
+ * OAuth 2.1 Refresh Token (rotation)
+ * opaque 랜덤값을 HMAC-SHA256(token, OAUTH_JWT_SECRET) 해시로만 저장.
+ * 갱신 시 회전(revoke old + issue new); revokedAt 세팅 후에도 rotatedTo 로 재사용 탐지 가능.
+ */
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique @map("token_hash")
+  userId    String    @map("user_id")
+  clientId  String    @map("client_id")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  rotatedTo String?   @map("rotated_to") // 회전 시 새 토큰 id
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([userId, clientId])
+  @@map("refresh_tokens")
 }
