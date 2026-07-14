@@ -89,8 +89,10 @@ export async function GET(req: Request) {
   const userId = (session?.user as { id?: string } | undefined)?.id;
 
   // 미로그인 → 기존 /login(self-login 모드)으로 유도, 로그인 후 이 authorize URL 로 복귀
+  // base 는 NEXTAUTH_URL 우선 — 프록시 뒤에서는 req.url origin 이 내부 주소(0.0.0.0:3000)라 브라우저가 못 감.
   if (!userId) {
-    const loginUrl = new URL('/login', url.origin);
+    const base = (process.env.NEXTAUTH_URL ?? url.origin).replace(/\/$/, '');
+    const loginUrl = new URL('/login', base);
     loginUrl.searchParams.set('callbackUrl', url.pathname + url.search);
     return NextResponse.redirect(loginUrl);
   }
