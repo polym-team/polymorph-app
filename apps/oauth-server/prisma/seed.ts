@@ -33,6 +33,7 @@ const CLIENT_APPS = [
     allowedRedirectUris: [
       'http://localhost:3008/auth/callback', // 대시보드 웹 로그인용 (로컬)
       'https://directfeedback.polymorph.co.kr/auth/callback', // 대시보드 웹 로그인용 (프로덕션)
+      'http://127.0.0.1/callback', // MCP 루프백 (RFC 8252, 포트 무시 매칭)
       ...[
         'oaoboabibkdlppgglbccllmognkkpinn', // 로컬 unpacked 개발
         'eooipclemnmfgcmkpcedkejelmnjlpkb', // Chrome 웹스토어 배포

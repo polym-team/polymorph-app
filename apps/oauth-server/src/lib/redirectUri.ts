@@ -2,26 +2,44 @@
  * redirectUri/returnUrl 검증 헬퍼
  * - 등록된 URL과 origin + path가 일치하면 허용
  * - query, fragment는 무시 (앱이 returnTo 등을 자유롭게 붙일 수 있도록)
+ * - 루프백(127.0.0.1/localhost/[::1])끼리는 포트를 무시 (RFC 8252 §7.3)
  */
-function normalize(uri: string): string | null {
-  try {
-    const u = new URL(uri);
-    return `${u.origin}${u.pathname}`;
-  } catch {
-    return null;
-  }
+
+/**
+ * 루프백 IP 리다이렉트 여부 (RFC 8252 §7.3).
+ * native/CLI 클라이언트는 http://127.0.0.1:<random>/callback 처럼 임의 포트를 쓰므로
+ * 루프백 호스트끼리는 포트를 무시하고 pathname 만 매칭한다.
+ */
+const LOOPBACK_HOSTS = new Set(['127.0.0.1', '[::1]', 'localhost']);
+
+function isLoopback(u: URL): boolean {
+  return u.protocol === 'http:' && LOOPBACK_HOSTS.has(u.hostname);
 }
 
 export function isAllowedRedirectUri(uri: string, allowedRedirectUris: string): boolean {
-  const target = normalize(uri);
-  if (!target) return false;
+  let target: URL;
+  try {
+    target = new URL(uri);
+  } catch {
+    return false;
+  }
+  const targetNorm = `${target.origin}${target.pathname}`;
 
-  const allowed = allowedRedirectUris
+  return allowedRedirectUris
     .split(',')
-    .map(s => normalize(s.trim()))
-    .filter((v): v is string => v !== null);
-
-  return allowed.includes(target);
+    .map(s => s.trim())
+    .some(entry => {
+      let allowed: URL;
+      try {
+        allowed = new URL(entry);
+      } catch {
+        return false;
+      }
+      if (allowed.pathname !== target.pathname) return false;
+      // 루프백끼리는 포트·호스트 표기 차이를 무시 (127.0.0.1 등록 → 임의 포트 허용)
+      if (isLoopback(allowed) && isLoopback(target)) return true;
+      return `${allowed.origin}${allowed.pathname}` === targetNorm;
+    });
 }
 
 /**
