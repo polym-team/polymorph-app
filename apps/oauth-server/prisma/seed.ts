@@ -31,7 +31,8 @@ const CLIENT_APPS = [
     // 로컬 unpacked 개발본과 웹스토어 배포본은 ID 가 달라 둘 다 등록한다.
     // 추가 ID 는 DIRECT_FEEDBACK_EXT_ID(들, 콤마구분) env 로도 주입 가능.
     allowedRedirectUris: [
-      'http://localhost:3008/auth/callback', // 대시보드 웹 로그인용
+      'http://localhost:3008/auth/callback', // 대시보드 웹 로그인용 (로컬)
+      'https://directfeedback.polymorph.co.kr/auth/callback', // 대시보드 웹 로그인용 (프로덕션)
       ...[
         'oaoboabibkdlppgglbccllmognkkpinn', // 로컬 unpacked 개발
         'eooipclemnmfgcmkpcedkejelmnjlpkb', // Chrome 웹스토어 배포
