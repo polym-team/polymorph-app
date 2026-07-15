@@ -37,21 +37,20 @@ export async function GET(req: Request) {
   return NextResponse.json({ comments });
 }
 
+// 엘리먼트 앵커(cssPath/tagName/rect/pageUrl)는 optional.
+// 확장(브라우저 클릭)은 전부 채워 보내고, MCP 등 앵커 없는 클라이언트는 생략 → 스토리 레벨 코멘트.
 const CreateComment = z.object({
   groupId: z.string().min(1),
-  pageUrl: z.string().min(1),
   urlKey: z.string().min(1),
-  cssPath: z.string().min(1),
-  classList: z.string().default(''),
-  tagName: z.string().min(1),
-  rect: z.object({
-    x: z.number(),
-    y: z.number(),
-    w: z.number(),
-    h: z.number(),
-  }),
-  anchorHint: z.record(z.any()).optional(),
   body: z.string().min(1),
+  pageUrl: z.string().min(1).optional(),
+  cssPath: z.string().min(1).optional(),
+  classList: z.string().default(''),
+  tagName: z.string().min(1).optional(),
+  rect: z
+    .object({ x: z.number(), y: z.number(), w: z.number(), h: z.number() })
+    .optional(),
+  anchorHint: z.record(z.any()).optional(),
 });
 
 // POST /api/comments — 엘리먼트 코멘트 작성
@@ -76,12 +75,12 @@ export async function POST(req: Request) {
   const comment = await prisma.comment.create({
     data: {
       groupId: data.groupId,
-      pageUrl: data.pageUrl,
+      pageUrl: data.pageUrl ?? null,
       urlKey: data.urlKey,
-      cssPath: data.cssPath,
+      cssPath: data.cssPath ?? null,
       classList: data.classList,
-      tagName: data.tagName,
-      rect: data.rect,
+      tagName: data.tagName ?? null,
+      rect: data.rect ?? undefined,
       anchorHint: data.anchorHint,
       body: data.body,
       authorId: user.userId,

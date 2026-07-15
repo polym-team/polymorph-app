@@ -53,13 +53,13 @@ model Comment {
   id         String         @id @default(cuid())
   groupId    String         @map("group_id")
   // URL 키
-  pageUrl    String         @map("page_url") @db.Text
+  pageUrl    String?        @map("page_url") @db.Text
   urlKey     String         @map("url_key") // Storybook: story id
-  // 엘리먼트 앵커
-  cssPath    String         @map("css_path") @db.Text
-  classList  String         @map("class_list") @db.Text
-  tagName    String         @map("tag_name")
-  rect       Json
+  // 엘리먼트 앵커 (모두 nullable — MCP 등으로 앵커 없이 스토리 레벨 코멘트 생성 가능)
+  cssPath    String?        @map("css_path") @db.Text
+  classList  String         @default("") @map("class_list") @db.Text
+  tagName    String?        @map("tag_name")
+  rect       Json?
   anchorHint Json?          @map("anchor_hint")
   // 본문/상태
   body       String         @db.Text
