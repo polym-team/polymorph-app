@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { issueAccessToken } from '@/lib/accessToken';
+import { redirectUrisEqual } from '@/lib/redirectUri';
 import {
   generateOpaqueToken,
   hashToken,
@@ -83,7 +84,9 @@ async function handleAuthorizationCode(params: Params): Promise<NextResponse> {
   if (ac.usedAt) return oauthError('invalid_grant', 400, '이미 사용된 code입니다.');
   if (ac.expiresAt.getTime() < Date.now()) return oauthError('invalid_grant', 400, '만료된 code입니다.');
   if (ac.clientId !== clientId) return oauthError('invalid_grant', 400, 'client_id 불일치.');
-  if (ac.redirectUri !== redirectUri) return oauthError('invalid_grant', 400, 'redirect_uri 불일치.');
+  if (!redirectUrisEqual(ac.redirectUri, redirectUri)) {
+    return oauthError('invalid_grant', 400, 'redirect_uri 불일치.');
+  }
   if (!verifyPkceS256(codeVerifier, ac.codeChallenge)) {
     return oauthError('invalid_grant', 400, 'PKCE 검증 실패.');
   }

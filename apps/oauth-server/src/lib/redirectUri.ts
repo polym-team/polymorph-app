@@ -43,6 +43,25 @@ export function isAllowedRedirectUri(uri: string, allowedRedirectUris: string): 
 }
 
 /**
+ * authorize 에 쓰인 redirect_uri 와 token 교환 시 보낸 redirect_uri 가 같은지 비교.
+ * 루프백(RFC 8252 §7.3)은 native 앱이 매 실행 임의 포트를 쓰므로 포트를 무시하고 pathname 만 비교한다.
+ * (authorize 단계의 허용 검증과 동일한 규칙 — token 교환만 엄격 문자열 비교하면 포트가 어긋날 때 실패.)
+ */
+export function redirectUrisEqual(a: string, b: string): boolean {
+  let ua: URL;
+  let ub: URL;
+  try {
+    ua = new URL(a);
+    ub = new URL(b);
+  } catch {
+    return false;
+  }
+  if (ua.pathname !== ub.pathname) return false;
+  if (isLoopback(ua) && isLoopback(ub)) return true;
+  return `${ua.origin}${ua.pathname}` === `${ub.origin}${ub.pathname}`;
+}
+
+/**
  * returnUrl 검증 (계정 관리/로그아웃 후 돌아갈 URL)
  * 등록된 redirectUri의 origin과 일치하면 허용 (path 자유)
  */
