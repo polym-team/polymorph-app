@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { rebuildIntoSandboxedIframe, createCache, createMirror } from 'rrweb-snapshot';
 
 const OAUTH =
   process.env.NEXT_PUBLIC_OAUTH_SERVER_URL || 'https://oauth.polymorph.co.kr';
@@ -25,6 +26,7 @@ export default function ToBePreview() {
   const [loading, setLoading] = useState(true);
   const [authed, setAuthed] = useState(true);
   const [snap, setSnap] = useState<Snapshot | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -40,6 +42,37 @@ export default function ToBePreview() {
       setLoading(false);
     })();
   }, [id]);
+
+  // rrweb JSON 이면 sandbox iframe 으로 rebuild, 아니면(구버전 HTML) srcdoc 폴백.
+  useEffect(() => {
+    const root = containerRef.current;
+    if (!snap || !root) return;
+    root.innerHTML = '';
+
+    let node: unknown = null;
+    try {
+      node = JSON.parse(snap.html);
+    } catch {
+      node = null;
+    }
+
+    if (node && typeof node === 'object' && 'type' in (node as object)) {
+      rebuildIntoSandboxedIframe(node as Parameters<typeof rebuildIntoSandboxedIframe>[0], {
+        root,
+        cache: createCache(),
+        mirror: createMirror(),
+        iframeAttributes: { style: 'width:100%;height:100%;border:0;background:#fff' },
+      });
+    } else {
+      const iframe = document.createElement('iframe');
+      iframe.setAttribute('sandbox', '');
+      iframe.style.cssText = 'width:100%;height:100%;border:0;background:#fff';
+      iframe.srcdoc = /^\s*<(!doctype|html)/i.test(snap.html)
+        ? snap.html
+        : `<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;padding:16px}</style></head><body>${snap.html}</body></html>`;
+      root.appendChild(iframe);
+    }
+  }, [snap]);
 
   if (loading) return <main style={S.msg}>로딩 중…</main>;
 
@@ -66,22 +99,16 @@ export default function ToBePreview() {
           캡처: {snap.createdByName} · {new Date(snap.updatedAt).toLocaleString('ko-KR')}
         </span>
       </header>
-      <iframe title="tobe-preview" style={S.frame} sandbox="" srcDoc={docFor(snap.html)} />
+      <div ref={containerRef} style={S.frame} />
     </div>
   );
-}
-
-// 신규 스냅샷은 완전한 HTML 문서. (구버전 조각은 감싸서 렌더)
-function docFor(html: string): string {
-  if (/^\s*<(!doctype|html)/i.test(html)) return html;
-  return `<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;padding:16px;background:#fff}</style></head><body>${html}</body></html>`;
 }
 
 const S: Record<string, React.CSSProperties> = {
   wrap: { display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'sans-serif' },
   head: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, padding: '10px 16px', borderBottom: '1px solid #e5e7eb', background: '#f8fafc', fontSize: 14 },
   muted: { color: '#6b7280', fontSize: 13 },
-  frame: { flex: 1, width: '100%', border: 0, background: '#f1f5f9' },
+  frame: { flex: 1, width: '100%', background: '#f1f5f9', overflow: 'hidden' },
   msg: { padding: 24, fontFamily: 'sans-serif', color: '#1a1a1a' },
   primary: { background: '#1e84ff', color: '#fff', border: 0, borderRadius: 6, padding: '8px 14px', fontWeight: 600, cursor: 'pointer', marginTop: 8 },
 };
