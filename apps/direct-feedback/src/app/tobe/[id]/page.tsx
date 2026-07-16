@@ -66,14 +66,15 @@ export default function ToBePreview() {
           캡처: {snap.createdByName} · {new Date(snap.updatedAt).toLocaleString('ko-KR')}
         </span>
       </header>
-      <iframe
-        title="tobe-preview"
-        style={S.frame}
-        sandbox=""
-        srcDoc={`<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;padding:16px;background:#fff}</style></head><body>${snap.html}</body></html>`}
-      />
+      <iframe title="tobe-preview" style={S.frame} sandbox="" srcDoc={docFor(snap.html)} />
     </div>
   );
+}
+
+// 신규 스냅샷은 완전한 HTML 문서. (구버전 조각은 감싸서 렌더)
+function docFor(html: string): string {
+  if (/^\s*<(!doctype|html)/i.test(html)) return html;
+  return `<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;padding:16px;background:#fff}</style></head><body>${html}</body></html>`;
 }
 
 const S: Record<string, React.CSSProperties> = {
