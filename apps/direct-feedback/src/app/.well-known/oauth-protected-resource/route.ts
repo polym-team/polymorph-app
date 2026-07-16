@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 // resourceUrl 을 명시(프록시 뒤에서 http 로 잘못 추정되는 것 방지, https 강제).
 const prm = protectedResourceHandler({
   authServerUrls: [process.env.OAUTH_ISSUER || 'https://oauth.polymorph.co.kr'],
-  resourceUrl: process.env.MCP_RESOURCE_URL || 'https://directfeedback.polymorph.co.kr/api/mcp',
+  resourceUrl: process.env.MCP_RESOURCE_URL || 'https://directfeedback.polymorph.co.kr',
 });
 
 export function GET(req: Request) {

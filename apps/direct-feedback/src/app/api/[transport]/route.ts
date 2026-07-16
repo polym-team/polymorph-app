@@ -227,8 +227,8 @@ const verifyToken = async (_req: Request, bearer?: string): Promise<AuthInfo | u
 const handler = withMcpAuth(baseHandler, verifyToken, {
   required: true,
   resourceMetadataPath: '/.well-known/oauth-protected-resource',
-  // 프록시 뒤 http 오인 방지 — https resource URL 명시
-  resourceUrl: process.env.MCP_RESOURCE_URL || 'https://directfeedback.polymorph.co.kr/api/mcp',
+  // 프록시 뒤 http 오인 방지 + PRM 경로 일치를 위해 origin 으로 명시(끝에 /.well-known 붙음).
+  resourceUrl: process.env.MCP_RESOURCE_URL || 'https://directfeedback.polymorph.co.kr',
 });
 
 export { handler as GET, handler as POST, handler as DELETE };
