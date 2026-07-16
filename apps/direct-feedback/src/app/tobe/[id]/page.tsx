@@ -20,6 +20,16 @@ function login(returnTo: string) {
   location.href = `${OAUTH}/login?clientId=direct-feedback&redirectUri=${encodeURIComponent(redirect)}`;
 }
 
+// 편집 참고용 computed CSS 속성(디자이너가 기존 값 보고 오버라이드)
+const REF_PROPS = [
+  'display', 'width', 'height', 'font-size', 'font-weight', 'line-height', 'letter-spacing',
+  'color', 'background-color', 'text-align', 'opacity',
+  'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+  'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
+  'border-top-left-radius', 'border-top-right-radius', 'border-bottom-right-radius', 'border-bottom-left-radius',
+  'gap',
+];
+
 function parseNode(html: string): unknown | null {
   try {
     const n = JSON.parse(html);
@@ -38,6 +48,7 @@ export default function ToBeEditor() {
   const [deleted, setDeleted] = useState(false);
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [sel, setSel] = useState<{ tag: string; css: string; leaf: boolean; text: string } | null>(null);
+  const [computed, setComputed] = useState<{ p: string; v: string }[]>([]);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
 
@@ -91,6 +102,16 @@ export default function ToBeEditor() {
       leaf,
       text: leaf ? el.textContent || '' : '',
     });
+    // 선택 요소의 원본(computed) CSS 참고용 — 디자이너가 기존 값을 보고 오버라이드
+    const win = iframeRef.current?.contentWindow;
+    if (win) {
+      const cs = win.getComputedStyle(el);
+      setComputed(
+        REF_PROPS.map((p) => ({ p, v: cs.getPropertyValue(p) })).filter((r) => r.v && r.v !== 'none'),
+      );
+    } else {
+      setComputed([]);
+    }
     positionOverlay();
   }, []);
 
@@ -148,6 +169,7 @@ export default function ToBeEditor() {
     if (mode === 'view') {
       selElRef.current = null;
       setSel(null);
+      setComputed([]);
       if (overlayRef.current) overlayRef.current.style.display = 'none';
     }
   }, [mode]);
@@ -173,6 +195,13 @@ export default function ToBeEditor() {
     if (selElRef.current) selElRef.current.textContent = text;
     setDirty(true);
     positionOverlay();
+  }
+  // 참고 패널에서 속성 클릭 → 오버라이드 박스에 `prop: value;` 시드(없을 때만) → 값만 바꾸면 됨
+  function seedOverride(prop: string, value: string) {
+    const cur = sel?.css || '';
+    if (new RegExp(`(^|;)\\s*${prop}\\s*:`).test(cur)) return; // 이미 있으면 유지
+    const next = `${cur.trim()}${cur.trim() && !cur.trim().endsWith(';') ? ';' : ''} ${prop}: ${value};`.trim();
+    applyCss(next);
   }
 
   async function save() {
@@ -266,6 +295,24 @@ export default function ToBeEditor() {
                   placeholder="color: red; font-size: 14px; ..."
                   onChange={(e) => applyCss(e.target.value)}
                 />
+                {computed.length > 0 && (
+                  <>
+                    <label style={S.label}>원본 CSS (클릭해 오버라이드에 추가)</label>
+                    <div style={S.refList}>
+                      {computed.map((r) => (
+                        <button
+                          key={r.p}
+                          style={S.refRow}
+                          title="이 속성을 오버라이드 박스에 추가"
+                          onClick={() => seedOverride(r.p, r.v)}
+                        >
+                          <span style={S.refProp}>{r.p}</span>
+                          <span style={S.refVal}>{r.v}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
                 {sel.leaf && (
                   <>
                     <label style={S.label}>텍스트</label>
@@ -278,6 +325,7 @@ export default function ToBeEditor() {
                   onClick={() => {
                     selElRef.current = null;
                     setSel(null);
+                    setComputed([]);
                     if (overlayRef.current) overlayRef.current.style.display = 'none';
                   }}
                 >
@@ -310,6 +358,10 @@ const S: Record<string, React.CSSProperties> = {
   cssArea: { width: '100%', minHeight: 120, boxSizing: 'border-box', border: '1px solid #d0d5dd', borderRadius: 6, padding: 8, font: '12px ui-monospace, monospace', resize: 'vertical' },
   textArea: { width: '100%', minHeight: 56, boxSizing: 'border-box', border: '1px solid #d0d5dd', borderRadius: 6, padding: 8, font: 'inherit', fontSize: 13, resize: 'vertical' },
   hint: { fontSize: 12, color: '#8b95a1', marginTop: 8 },
+  refList: { display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 240, overflow: 'auto', border: '1px solid #eef1f4', borderRadius: 6, padding: 4 },
+  refRow: { display: 'flex', justifyContent: 'space-between', gap: 8, width: '100%', textAlign: 'left', background: 'transparent', border: 0, borderRadius: 4, padding: '3px 6px', cursor: 'pointer', font: '11px ui-monospace, monospace' },
+  refProp: { color: '#8b5cf6' },
+  refVal: { color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 },
   overlay: { position: 'fixed', display: 'none', pointerEvents: 'none', border: '2px solid #1e84ff', background: 'rgba(30,132,255,0.1)', zIndex: 9999, borderRadius: 2 },
   msg: { padding: 24, fontFamily: 'sans-serif', color: '#1a1a1a' },
   primary: { background: '#1e84ff', color: '#fff', border: 0, borderRadius: 6, padding: '8px 14px', fontWeight: 600, cursor: 'pointer', marginTop: 8 },
