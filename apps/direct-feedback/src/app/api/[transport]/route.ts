@@ -227,6 +227,8 @@ const verifyToken = async (_req: Request, bearer?: string): Promise<AuthInfo | u
 const handler = withMcpAuth(baseHandler, verifyToken, {
   required: true,
   resourceMetadataPath: '/.well-known/oauth-protected-resource',
+  // 프록시 뒤 http 오인 방지 — https resource URL 명시
+  resourceUrl: process.env.MCP_RESOURCE_URL || 'https://directfeedback.polymorph.co.kr/api/mcp',
 });
 
 export { handler as GET, handler as POST, handler as DELETE };
