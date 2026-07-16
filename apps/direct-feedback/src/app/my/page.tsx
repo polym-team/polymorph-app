@@ -26,14 +26,34 @@ function login(returnTo: string) {
   location.href = `${OAUTH}/login?clientId=direct-feedback&redirectUri=${encodeURIComponent(redirect)}`;
 }
 
+/** 초기 필터를 URL querystring 에서 읽는다(공유 링크 지원). SSR 에선 null. */
+function readParam(key: string): string | null {
+  if (typeof window === 'undefined') return null;
+  return new URLSearchParams(window.location.search).get(key);
+}
+
 export default function MyComments() {
   const [loading, setLoading] = useState(true);
   const [authed, setAuthed] = useState(false);
   const [groups, setGroups] = useState<Group[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
-  const [status, setStatus] = useState<'all' | 'open' | 'resolved'>('open');
-  const [author, setAuthor] = useState<'me' | 'all'>('me');
-  const [groupId, setGroupId] = useState<string>('');
+  const [status, setStatus] = useState<'all' | 'open' | 'resolved'>(() => {
+    const v = readParam('status');
+    return v === 'all' || v === 'resolved' || v === 'open' ? v : 'open';
+  });
+  const [author, setAuthor] = useState<'me' | 'all'>(() =>
+    readParam('author') === 'all' ? 'all' : 'me',
+  );
+  const [groupId, setGroupId] = useState<string>(() => readParam('group') || '');
+
+  // 선택된 필터를 URL querystring 에 반영(replace) — 링크째로 공유하면 필터도 전달됨
+  useEffect(() => {
+    const qs = new URLSearchParams();
+    qs.set('status', status);
+    qs.set('author', author);
+    if (groupId) qs.set('group', groupId);
+    window.history.replaceState(null, '', `${window.location.pathname}?${qs.toString()}`);
+  }, [status, author, groupId]);
 
   const loadComments = useCallback(async () => {
     const qs = new URLSearchParams({ status, author });
