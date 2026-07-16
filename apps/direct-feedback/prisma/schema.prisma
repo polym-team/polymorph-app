@@ -23,6 +23,11 @@ enum CommentStatus {
   REJECTED
 }
 
+enum SnapshotStatus {
+  OPEN
+  RESOLVED
+}
+
 model Group {
   id               String        @id @default(cuid())
   name             String
@@ -84,19 +89,23 @@ model Comment {
  * 디자이너가 값을 직접 바꿔 to-be 를 그린다. urlKey(스토리) 당 그룹별 1개.
  */
 model Snapshot {
-  id            String   @id @default(cuid())
-  groupId       String   @map("group_id")
-  urlKey        String   @map("url_key")
-  html          String   @map("html") @db.LongText // 편집 중인 현재 to-be
-  originalHtml  String   @map("original_html") @db.LongText // 캡처 원본(리셋용)
-  createdBy     String   @map("created_by")
-  createdByName String   @map("created_by_name")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id             String         @id @default(cuid())
+  groupId        String         @map("group_id")
+  urlKey         String         @map("url_key")
+  html           String         @map("html") @db.LongText // 편집 중인 현재 to-be
+  originalHtml   String         @map("original_html") @db.LongText // 캡처 원본(리셋용)
+  status         SnapshotStatus @default(OPEN)
+  createdBy      String         @map("created_by")
+  createdByName  String         @map("created_by_name")
+  resolvedAt     DateTime?      @map("resolved_at")
+  resolvedByName String?        @map("resolved_by_name")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
 
   group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
-  @@unique([groupId, urlKey])
+  // 스토리(urlKey)당 OPEN 은 최대 1개(앱 로직으로 보장). 완료(RESOLVED)본은 이력으로 남김.
+  @@index([groupId, urlKey, status])
   @@map("snapshots")
 }
 

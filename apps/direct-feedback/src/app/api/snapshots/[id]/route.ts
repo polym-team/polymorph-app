@@ -6,8 +6,14 @@ import { requireAuth, getMembership } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 
 const PatchSnapshot = z
-  .object({ html: z.string().min(1).optional(), reset: z.literal(true).optional() })
-  .refine((v) => v.html !== undefined || v.reset, { message: 'html 또는 reset 이 필요합니다' });
+  .object({
+    html: z.string().min(1).optional(),
+    reset: z.literal(true).optional(),
+    status: z.enum(['OPEN', 'RESOLVED']).optional(),
+  })
+  .refine((v) => v.html !== undefined || v.reset || v.status !== undefined, {
+    message: 'html, reset, status 중 하나는 필요합니다',
+  });
 
 // PATCH /api/snapshots/:id — 편집 저장(html) 또는 원본으로 리셋(reset). 그룹 멤버만.
 export async function PATCH(
@@ -31,8 +37,21 @@ export async function PATCH(
     return NextResponse.json({ error: '입력이 올바르지 않습니다' }, { status: 400 });
   }
 
-  const html = parsed.data.reset ? snapshot.originalHtml : parsed.data.html!;
-  const updated = await prisma.snapshot.update({ where: { id }, data: { html } });
+  const data: {
+    html?: string;
+    status?: 'OPEN' | 'RESOLVED';
+    resolvedAt?: Date | null;
+    resolvedByName?: string | null;
+  } = {};
+  if (parsed.data.reset) data.html = snapshot.originalHtml;
+  else if (parsed.data.html !== undefined) data.html = parsed.data.html;
+  if (parsed.data.status !== undefined) {
+    data.status = parsed.data.status;
+    data.resolvedAt = parsed.data.status === 'RESOLVED' ? new Date() : null;
+    data.resolvedByName = parsed.data.status === 'RESOLVED' ? user.name : null;
+  }
+
+  const updated = await prisma.snapshot.update({ where: { id }, data });
   return NextResponse.json({ snapshot: updated });
 }
 

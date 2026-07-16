@@ -27,18 +27,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: '그룹 멤버가 아닙니다' }, { status: 403 });
   }
 
-  const snapshot = await prisma.snapshot.upsert({
-    where: { groupId_urlKey: { groupId, urlKey } },
-    update: { html, originalHtml: html, createdBy: user.userId, createdByName: user.name },
-    create: {
-      groupId,
-      urlKey,
-      html,
-      originalHtml: html,
-      createdBy: user.userId,
-      createdByName: user.name,
-    },
-  });
+  // 캡처는 OPEN(진행 중) 스냅샷을 대상으로 find-or-create.
+  // 완료(RESOLVED)본은 이력으로 남고, OPEN 이 없으면 새로 만든다 → 같은 스토리 재작업 가능.
+  const open = await prisma.snapshot.findFirst({ where: { groupId, urlKey, status: 'OPEN' } });
+  const snapshot = open
+    ? await prisma.snapshot.update({
+        where: { id: open.id },
+        data: { html, originalHtml: html, createdBy: user.userId, createdByName: user.name },
+      })
+    : await prisma.snapshot.create({
+        data: { groupId, urlKey, html, originalHtml: html, createdBy: user.userId, createdByName: user.name },
+      });
   return NextResponse.json({ snapshot }, { status: 201 });
 }
 
@@ -58,9 +57,10 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: '그룹 멤버가 아닙니다' }, { status: 403 });
   }
 
-  const snapshot = await prisma.snapshot.findUnique({
-    where: { groupId_urlKey: { groupId, urlKey } },
-    select: { id: true, urlKey: true, createdByName: true, updatedAt: true },
+  // 진행 중(OPEN) 스냅샷만 반환 — 캡처 덮어쓰기 가드/링크용
+  const snapshot = await prisma.snapshot.findFirst({
+    where: { groupId, urlKey, status: 'OPEN' },
+    select: { id: true, urlKey: true, status: true, createdByName: true, updatedAt: true },
   });
   return NextResponse.json({ snapshot });
 }

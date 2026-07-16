@@ -102,7 +102,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: '그룹 멤버가 아닙니다' }, { status: 403 });
   }
 
-  const snap = await prisma.snapshot.findUnique({ where: { groupId_urlKey: { groupId, urlKey } } });
+  // 진행 중(OPEN) 스냅샷의 to-be 변경을 반환
+  const snap = await prisma.snapshot.findFirst({ where: { groupId, urlKey, status: 'OPEN' } });
   if (!snap) return NextResponse.json({ snapshot: null, changes: [] });
 
   let orig: RRNode | null = null;

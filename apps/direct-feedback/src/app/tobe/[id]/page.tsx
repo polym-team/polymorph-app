@@ -11,6 +11,7 @@ type Snapshot = {
   id: string;
   urlKey: string;
   html: string;
+  status: 'OPEN' | 'RESOLVED';
   createdByName: string;
   updatedAt: string;
 };
@@ -233,6 +234,18 @@ export default function ToBeEditor() {
     else alert('리셋 실패');
   }
 
+  async function changeStatus(next: 'OPEN' | 'RESOLVED') {
+    const res = await fetch(`/api/snapshots/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: next }),
+    });
+    if (res.ok) {
+      setSnap((await res.json()).snapshot);
+      if (next === 'RESOLVED') setMode('view');
+    } else alert((await res.json().catch(() => ({}))).error || '상태 변경 실패');
+  }
+
   async function del() {
     if (!confirm('이 To-Be 스냅샷을 삭제할까요?')) return;
     const res = await fetch(`/api/snapshots/${id}`, { method: 'DELETE' });
@@ -251,13 +264,16 @@ export default function ToBeEditor() {
     );
   if (!snap) return <main style={S.msg}>스냅샷을 찾을 수 없습니다.</main>;
 
-  const editable = !!parseNode(snap.html);
+  const isOpen = snap.status === 'OPEN';
+  const editable = !!parseNode(snap.html) && isOpen; // 완료본은 편집 잠금
+  const inEdit = mode === 'edit' && editable;
 
   return (
     <div style={S.wrap}>
       <header style={S.head}>
         <div>
-          <strong>To-Be {mode === 'edit' ? '편집' : '프리뷰'}</strong>
+          <strong>To-Be {inEdit ? '편집' : '프리뷰'}</strong>
+          <span style={isOpen ? S.badgeOpen : S.badgeDone}>{isOpen ? '진행 중' : '완료'}</span>
           <span style={S.muted}> · {snap.urlKey}</span>
           {dirty && <span style={S.dirty}> · 저장 안 됨</span>}
         </div>
@@ -268,19 +284,29 @@ export default function ToBeEditor() {
               <button style={mode === 'edit' ? S.tabOn : S.tab} onClick={() => setMode('edit')}>편집</button>
             </div>
           )}
-          {mode === 'edit' && (
+          {inEdit && (
             <button style={S.primarySm} disabled={saving} onClick={save}>
               {saving ? '저장 중…' : '저장'}
             </button>
           )}
           {editable && <button style={S.ghostSm} onClick={reset}>원본으로 리셋</button>}
+          {isOpen ? (
+            <button style={S.doneSm} onClick={() => changeStatus('RESOLVED')}>완료</button>
+          ) : (
+            <button style={S.ghostSm} onClick={() => changeStatus('OPEN')}>다시 열기</button>
+          )}
           <button style={S.danger} onClick={del}>삭제</button>
         </div>
       </header>
+      {!isOpen && (
+        <div style={S.doneBar}>
+          완료된 피드백입니다. 이 스토리에서 <strong>새 스냅샷</strong>을 다시 만들 수 있습니다(확장의 “이 컴포넌트 스냅샷”).
+        </div>
+      )}
 
       <div style={S.body}>
         <div ref={containerRef} style={S.frame} />
-        {mode === 'edit' && (
+        {inEdit && (
           <aside style={S.panel}>
             {!sel ? (
               <p style={S.muted}>편집할 요소를 클릭하세요.</p>
@@ -368,4 +394,8 @@ const S: Record<string, React.CSSProperties> = {
   primarySm: { background: '#1e84ff', color: '#fff', border: 0, borderRadius: 6, padding: '6px 14px', fontWeight: 600, cursor: 'pointer', fontSize: 13 },
   ghostSm: { background: 'transparent', color: '#6b7280', border: '1px solid #d0d5dd', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 13 },
   danger: { background: 'transparent', color: '#e5484d', border: '1px solid #f2b8ba', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 13 },
+  doneSm: { background: '#e7f6ec', color: '#1a7f43', border: '1px solid #b7e4c7', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 13, fontWeight: 600 },
+  badgeOpen: { marginLeft: 8, background: '#e0efff', color: '#1e6fd0', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 600 },
+  badgeDone: { marginLeft: 8, background: '#e7f6ec', color: '#1a7f43', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 600 },
+  doneBar: { padding: '8px 16px', background: '#f0fdf4', borderBottom: '1px solid #dcfce7', color: '#166534', fontSize: 13 },
 };
