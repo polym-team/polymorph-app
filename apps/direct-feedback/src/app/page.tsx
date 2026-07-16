@@ -9,6 +9,7 @@ type Group = {
   id: string;
   name: string;
   inviteToken: string | null;
+  storybookBaseUrl?: string | null;
   _count?: { comments: number; members: number };
 };
 type Member = { id: string; email: string; role: string; userId: string | null };
@@ -25,6 +26,23 @@ export default function Home() {
   const [name, setName] = useState('');
   const [members, setMembers] = useState<Record<string, Member[]>>({});
   const [copied, setCopied] = useState('');
+  const [bases, setBases] = useState<Record<string, string>>({});
+  const [savedBase, setSavedBase] = useState('');
+
+  useEffect(() => {
+    setBases(Object.fromEntries(groups.map((g) => [g.id, g.storybookBaseUrl || ''])));
+  }, [groups]);
+
+  async function saveBase(g: Group) {
+    await fetch(`/api/groups/${g.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ storybookBaseUrl: bases[g.id] || '' }),
+    });
+    setSavedBase(g.id);
+    setTimeout(() => setSavedBase(''), 1500);
+    load();
+  }
 
   async function load() {
     const res = await fetch('/api/groups');
@@ -154,6 +172,18 @@ export default function Home() {
             <input readOnly style={{ ...S.input, fontSize: 12 }} value={inviteUrl(g)} />
             <button style={S.ghost} onClick={() => copyInvite(g)}>
               {copied === g.id ? '복사됨 ✓' : '초대 링크 복사'}
+            </button>
+          </div>
+
+          <div style={S.row}>
+            <input
+              style={{ ...S.input, fontSize: 12 }}
+              placeholder="Storybook base URL (예: https://.../index.html) — 스토리 레벨 코멘트 링크용"
+              value={bases[g.id] ?? ''}
+              onChange={(e) => setBases((b) => ({ ...b, [g.id]: e.target.value }))}
+            />
+            <button style={S.ghost} onClick={() => saveBase(g)}>
+              {savedBase === g.id ? '저장됨 ✓' : '저장'}
             </button>
           </div>
 

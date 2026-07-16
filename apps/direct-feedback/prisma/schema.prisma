@@ -23,10 +23,11 @@ enum CommentStatus {
 }
 
 model Group {
-  id          String        @id @default(cuid())
-  name        String
-  createdBy   String        @map("created_by") // oauth-server userId (OWNER)
-  inviteToken String?       @unique @map("invite_token") // 초대 링크 토큰
+  id               String        @id @default(cuid())
+  name             String
+  createdBy        String        @map("created_by") // oauth-server userId (OWNER)
+  inviteToken      String?       @unique @map("invite_token") // 초대 링크 토큰
+  storybookBaseUrl String?       @map("storybook_base_url") @db.Text // 스토리 레벨 코멘트 링크 base (예: https://.../index.html)
   members     GroupMember[]
   comments    Comment[]
   createdAt   DateTime      @default(now()) @map("created_at")

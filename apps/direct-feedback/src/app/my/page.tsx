@@ -17,7 +17,7 @@ type Comment = {
   status: 'OPEN' | 'RESOLVED';
   authorName: string;
   createdAt: string;
-  group?: { name: string };
+  group?: { name: string; storybookBaseUrl?: string | null };
   _count?: { replies: number };
 };
 
@@ -87,8 +87,14 @@ export default function MyComments() {
     loadComments();
   }, [loadComments]);
 
+  // 정확한 pageUrl(작성 시점 그 빌드)이 있으면 그걸, 없으면 그룹 base + 스토리 경로로 링크 구성
   function storyLink(c: Comment): string | null {
-    return c.pageUrl || null;
+    if (c.pageUrl) return c.pageUrl;
+    const base = c.group?.storybookBaseUrl;
+    if (!base) return null;
+    const kind = c.urlKey.endsWith('--docs') ? 'docs' : 'story';
+    const sep = base.includes('?') ? '&' : '?';
+    return `${base}${sep}path=/${kind}/${c.urlKey}`;
   }
 
   if (loading) return <main style={S.main}>로딩 중…</main>;

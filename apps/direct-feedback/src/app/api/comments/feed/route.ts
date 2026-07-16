@@ -32,7 +32,7 @@ export async function GET(req: Request) {
   const comments = await prisma.comment.findMany({
     where: { groupId: { in: groupIds }, status, authorId },
     include: {
-      group: { select: { name: true } },
+      group: { select: { name: true, storybookBaseUrl: true } },
       _count: { select: { replies: true } },
     },
     orderBy: { createdAt: 'desc' },
