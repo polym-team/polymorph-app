@@ -35,9 +35,9 @@ export function isAllowedRedirectUri(uri: string, allowedRedirectUris: string): 
       } catch {
         return false;
       }
-      if (allowed.pathname !== target.pathname) return false;
-      // 루프백끼리는 포트·호스트 표기 차이를 무시 (127.0.0.1 등록 → 임의 포트 허용)
+      // 루프백끼리는 포트·경로를 모두 무시 (native/CLI 클라이언트가 임의 포트·콜백 경로를 씀. 로컬호스트 + PKCE라 안전)
       if (isLoopback(allowed) && isLoopback(target)) return true;
+      if (allowed.pathname !== target.pathname) return false;
       return `${allowed.origin}${allowed.pathname}` === targetNorm;
     });
 }
