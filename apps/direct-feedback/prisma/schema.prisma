@@ -20,6 +20,7 @@ enum MemberRole {
 enum CommentStatus {
   OPEN
   RESOLVED
+  REJECTED
 }
 
 model Group {
@@ -71,6 +72,7 @@ model Comment {
   group      Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
   createdAt  DateTime       @default(now()) @map("created_at")
   resolvedAt DateTime?      @map("resolved_at")
+  rejectedAt DateTime?      @map("rejected_at")
 
   @@index([groupId, urlKey, status])
   @@map("comments")

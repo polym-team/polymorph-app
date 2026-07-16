@@ -7,14 +7,14 @@ export const dynamic = 'force-dynamic';
 
 const PatchComment = z
   .object({
-    status: z.enum(['OPEN', 'RESOLVED']).optional(),
+    status: z.enum(['OPEN', 'RESOLVED', 'REJECTED']).optional(),
     body: z.string().min(1).optional(),
   })
   .refine((v) => v.status !== undefined || v.body !== undefined, {
     message: 'status 또는 body 중 하나는 필요합니다',
   });
 
-// PATCH /api/comments/:id — resolve / 본문 수정 (그룹 멤버만)
+// PATCH /api/comments/:id — 본문 수정(작성자만) / 상태 변경(비작성자만)
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -36,18 +36,28 @@ export async function PATCH(
   if (!parsed.success) {
     return NextResponse.json({ error: '입력이 올바르지 않습니다' }, { status: 400 });
   }
+  const { status, body } = parsed.data;
+  const isAuthor = comment.authorId === user.userId;
+
+  // 본문 수정은 작성자만
+  if (body !== undefined && !isAuthor) {
+    return NextResponse.json({ error: '작성자만 수정할 수 있습니다' }, { status: 403 });
+  }
+  // 상태 변경(해결/반려/열기)은 작성자를 제외한 멤버만
+  if (status !== undefined && isAuthor) {
+    return NextResponse.json(
+      { error: '작성자는 상태를 변경할 수 없습니다' },
+      { status: 403 },
+    );
+  }
 
   const updated = await prisma.comment.update({
     where: { id },
     data: {
-      body: parsed.data.body,
-      status: parsed.data.status,
-      resolvedAt:
-        parsed.data.status === 'RESOLVED'
-          ? new Date()
-          : parsed.data.status === 'OPEN'
-            ? null
-            : undefined,
+      body,
+      status,
+      resolvedAt: status === 'RESOLVED' ? new Date() : status !== undefined ? null : undefined,
+      rejectedAt: status === 'REJECTED' ? new Date() : status !== undefined ? null : undefined,
     },
   });
   return NextResponse.json({ comment: updated });
@@ -69,6 +79,9 @@ export async function DELETE(
   const me = await getMembership(user, comment.groupId);
   if (!me) {
     return NextResponse.json({ error: '그룹 멤버가 아닙니다' }, { status: 403 });
+  }
+  if (comment.authorId !== user.userId) {
+    return NextResponse.json({ error: '작성자만 삭제할 수 있습니다' }, { status: 403 });
   }
 
   await prisma.comment.delete({ where: { id } });

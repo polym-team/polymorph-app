@@ -25,7 +25,13 @@ export async function GET(req: Request) {
 
   const statusParam = searchParams.get('status');
   const status =
-    statusParam === 'open' ? 'OPEN' : statusParam === 'resolved' ? 'RESOLVED' : undefined;
+    statusParam === 'open'
+      ? 'OPEN'
+      : statusParam === 'resolved'
+        ? 'RESOLVED'
+        : statusParam === 'rejected'
+          ? 'REJECTED'
+          : undefined;
 
   const authorId = searchParams.get('author') === 'me' ? user.userId : undefined;
 
@@ -33,11 +39,12 @@ export async function GET(req: Request) {
     where: { groupId: { in: groupIds }, status, authorId },
     include: {
       group: { select: { name: true, storybookBaseUrl: true } },
-      _count: { select: { replies: true } },
+      replies: { orderBy: { createdAt: 'asc' } },
     },
     orderBy: { createdAt: 'desc' },
     take: 500,
   });
 
-  return NextResponse.json({ comments });
+  // meId 로 클라이언트가 작성자 여부(수정/삭제 vs 상태변경 권한)를 판별한다.
+  return NextResponse.json({ comments, meId: user.userId });
 }
