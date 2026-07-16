@@ -31,6 +31,7 @@ model Group {
   storybookBaseUrl String?       @map("storybook_base_url") @db.Text // 스토리 레벨 코멘트 링크 base (예: https://.../index.html)
   members     GroupMember[]
   comments    Comment[]
+  snapshots   Snapshot[]
   createdAt   DateTime      @default(now()) @map("created_at")
 
   @@map("groups")
@@ -76,6 +77,27 @@ model Comment {
 
   @@index([groupId, urlKey, status])
   @@map("comments")
+}
+
+/**
+ * To-Be 스냅샷 — 컴포넌트의 자체완결 DOM(계산된 스타일 인라인)을 저장해
+ * 디자이너가 값을 직접 바꿔 to-be 를 그린다. urlKey(스토리) 당 그룹별 1개.
+ */
+model Snapshot {
+  id            String   @id @default(cuid())
+  groupId       String   @map("group_id")
+  urlKey        String   @map("url_key")
+  html          String   @map("html") @db.LongText // 편집 중인 현재 to-be
+  originalHtml  String   @map("original_html") @db.LongText // 캡처 원본(리셋용)
+  createdBy     String   @map("created_by")
+  createdByName String   @map("created_by_name")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, urlKey])
+  @@map("snapshots")
 }
 
 model CommentReply {
