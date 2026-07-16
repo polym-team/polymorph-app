@@ -26,7 +26,15 @@ export default function ToBePreview() {
   const [loading, setLoading] = useState(true);
   const [authed, setAuthed] = useState(true);
   const [snap, setSnap] = useState<Snapshot | null>(null);
+  const [deleted, setDeleted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  async function del() {
+    if (!confirm('이 To-Be 스냅샷을 삭제할까요?')) return;
+    const res = await fetch(`/api/snapshots/${id}`, { method: 'DELETE' });
+    if (res.ok) setDeleted(true);
+    else alert((await res.json().catch(() => ({}))).error || '삭제 실패');
+  }
 
   useEffect(() => {
     if (!id) return;
@@ -74,6 +82,8 @@ export default function ToBePreview() {
     }
   }, [snap]);
 
+  if (deleted) return <main style={S.msg}>스냅샷을 삭제했습니다. 이 창을 닫으셔도 됩니다.</main>;
+
   if (loading) return <main style={S.msg}>로딩 중…</main>;
 
   if (!authed)
@@ -95,9 +105,14 @@ export default function ToBePreview() {
           <strong>To-Be 프리뷰</strong>
           <span style={S.muted}> · {snap.urlKey}</span>
         </div>
-        <span style={S.muted}>
-          캡처: {snap.createdByName} · {new Date(snap.updatedAt).toLocaleString('ko-KR')}
-        </span>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <span style={S.muted}>
+            캡처: {snap.createdByName} · {new Date(snap.updatedAt).toLocaleString('ko-KR')}
+          </span>
+          <button style={S.danger} onClick={del}>
+            삭제
+          </button>
+        </div>
       </header>
       <div ref={containerRef} style={S.frame} />
     </div>
@@ -111,4 +126,5 @@ const S: Record<string, React.CSSProperties> = {
   frame: { flex: 1, width: '100%', background: '#f1f5f9', overflow: 'hidden' },
   msg: { padding: 24, fontFamily: 'sans-serif', color: '#1a1a1a' },
   primary: { background: '#1e84ff', color: '#fff', border: 0, borderRadius: 6, padding: '8px 14px', fontWeight: 600, cursor: 'pointer', marginTop: 8 },
+  danger: { background: 'transparent', color: '#e5484d', border: '1px solid #f2b8ba', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 13 },
 };
