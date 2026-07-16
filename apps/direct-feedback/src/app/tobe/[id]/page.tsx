@@ -131,6 +131,9 @@ export default function ToBeEditor() {
         doc: idoc,
         cache: createCache(),
         mirror: createMirror(),
+        // iframe sandbox(allow-same-origin, no allow-scripts)로 스크립트 실행이 이미 차단됨 →
+        // rrweb 의 unprotected-document 거부를 우회 (스크립트 위험 없음).
+        UNSAFE_allowUnprotectedRebuild: true,
       });
       idocRef.current = idoc;
       idoc.addEventListener('click', onPick, true);
