@@ -143,6 +143,11 @@ export default function Home() {
       <p style={S.muted}>
         그룹 멤버는 그 그룹의 모든 코멘트를 봅니다. 초대 링크를 공유해 멤버를 추가하세요.
       </p>
+      <p>
+        <a href="/my" style={S.topLink}>내 코멘트</a>
+        {' · '}
+        <a href="/guide" style={S.topLink}>MCP 연결 가이드 ↗</a>
+      </p>
 
       <div style={S.row}>
         <input
@@ -214,6 +219,7 @@ const S: Record<string, React.CSSProperties> = {
   primary: { background: '#1e84ff', color: '#fff', border: 0, borderRadius: 6, padding: '8px 14px', fontWeight: 600, cursor: 'pointer' },
   ghost: { background: 'transparent', color: '#1e84ff', border: '1px solid #1e84ff', borderRadius: 6, padding: '8px 12px', cursor: 'pointer', whiteSpace: 'nowrap' },
   link: { background: 'none', border: 0, color: '#6b7280', cursor: 'pointer', padding: 0, fontSize: 12, textDecoration: 'underline' },
+  topLink: { color: '#1e84ff', fontSize: 13, textDecoration: 'none', fontWeight: 600 },
   card: { border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginTop: 12 },
   cardHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 },
   members: { margin: '8px 0 0', paddingLeft: 18, fontSize: 13, color: '#374151' },

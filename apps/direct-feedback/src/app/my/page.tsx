@@ -166,7 +166,12 @@ export default function MyComments() {
   return (
     <main style={S.main}>
       <h1>코멘트</h1>
-      <p style={S.muted}>내가 속한 그룹의 코멘트를 상태·작성자·그룹으로 필터해 봅니다.</p>
+      <p style={S.muted}>
+        내가 속한 그룹의 코멘트를 상태·작성자·그룹으로 필터해 봅니다. ·{' '}
+        <a href="/guide" style={{ color: '#1e84ff', textDecoration: 'none', fontWeight: 600 }}>
+          MCP 연결 가이드 ↗
+        </a>
+      </p>
 
       <div style={S.filters}>
         <div style={S.tabs}>
