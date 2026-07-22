@@ -18,6 +18,7 @@
     "@modelcontextprotocol/sdk": "^1.26.0",
     "@package/ui": "workspace:*",
     "@package/utils": "workspace:*",
+    "@polym-team/element-inspector": "workspace:*",
     "@polymorph/shared-auth": "workspace:*",
     "@prisma/client": "^6.2.1",
     "mcp-handler": "^1.1.0",

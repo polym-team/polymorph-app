@@ -3,6 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { rebuild, snapshot, createCache, createMirror } from 'rrweb-snapshot';
+import {
+  boxModel,
+  gaps,
+  visibleParent,
+  firstVisibleChild,
+  nextVisibleSibling,
+  prevVisibleSibling,
+} from '@polym-team/element-inspector';
 
 const OAUTH =
   process.env.NEXT_PUBLIC_OAUTH_SERVER_URL || 'https://oauth.polymorph.co.kr';
@@ -59,6 +67,10 @@ export default function ToBeEditor() {
   const selElRef = useRef<HTMLElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const editableRef = useRef(false);
+  // iframe 내부에 그리는 인스펙터 레이어(hover 아웃라인 + 박스모델/gap). 저장 직전 제거.
+  const inspectorRef = useRef<HTMLDivElement | null>(null);
+  const hoverElRef = useRef<HTMLDivElement | null>(null);
+  const bandElsRef = useRef<HTMLElement[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -89,12 +101,90 @@ export default function ToBeEditor() {
     box.style.height = `${r.height}px`;
   }
 
-  const onPick = useCallback((e: Event) => {
-    if (!editableRef.current) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const el = e.target as HTMLElement;
-    if (!el || el.nodeType !== 1) return;
+  // ── iframe 내부 인스펙터 레이어(hover 아웃라인 + 박스모델/gap) ──────────
+  // 인스펙터 노드인지(순회/hover 에서 제외, 저장 직전 통째로 제거).
+  const INSPECTOR_ATTR = 'data-df-inspector';
+  function isOurs(el: Element | null): boolean {
+    return !!el && !!el.closest?.(`[${INSPECTOR_ATTR}]`);
+  }
+  function ensureInspector(): HTMLDivElement | null {
+    const idoc = idocRef.current;
+    if (!idoc) return null;
+    const cur = inspectorRef.current;
+    if (cur && cur.ownerDocument === idoc && cur.isConnected) return cur;
+    const c = idoc.createElement('div');
+    c.setAttribute(INSPECTOR_ATTR, '');
+    // position:fixed → iframe 뷰포트 기준. 자식은 getBoundingClientRect(뷰포트) 좌표 그대로 사용.
+    c.style.cssText =
+      'position:fixed;inset:0;margin:0;pointer-events:none;z-index:2147483000';
+    (idoc.documentElement || idoc.body).appendChild(c);
+    inspectorRef.current = c;
+    hoverElRef.current = null;
+    bandElsRef.current = [];
+    return c;
+  }
+  function clearBands() {
+    bandElsRef.current.forEach((b) => b.remove());
+    bandElsRef.current = [];
+  }
+  function renderInspector(el: HTMLElement) {
+    const idoc = idocRef.current;
+    const c = ensureInspector();
+    if (!idoc || !c) return;
+    clearBands();
+    const put = (
+      left: number, top: number, width: number, height: number,
+      bg: string, value: number, labelBg: string,
+    ) => {
+      const b = idoc.createElement('div');
+      b.setAttribute(INSPECTOR_ATTR, '');
+      b.style.cssText =
+        `position:absolute;left:${left}px;top:${top}px;width:${Math.max(width, 0)}px;` +
+        `height:${Math.max(height, 0)}px;background:${bg};box-sizing:border-box;pointer-events:none`;
+      if (value >= 1 && Math.min(width, height) >= 8) {
+        const lbl = idoc.createElement('span');
+        lbl.textContent = String(Math.round(value));
+        lbl.style.cssText =
+          'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);' +
+          `font:600 10px/1 ui-monospace,monospace;color:#fff;background:${labelBg};` +
+          'padding:1px 3px;border-radius:2px;white-space:nowrap';
+        b.appendChild(lbl);
+      }
+      c.appendChild(b);
+      bandElsRef.current.push(b);
+    };
+    const { padding, margin } = boxModel(el);
+    padding.forEach((p) => put(p.left, p.top, p.width, p.height, 'rgba(34,197,94,0.35)', p.value, 'rgba(21,128,61,0.95)'));
+    margin.forEach((m) => put(m.left, m.top, m.width, m.height, 'rgba(245,158,11,0.35)', m.value, 'rgba(180,83,9,0.95)'));
+    gaps(el, { skip: isOurs }).forEach((g) => put(g.left, g.top, g.width, g.height, 'rgba(30,132,255,0.3)', g.value, 'rgba(30,111,208,0.95)'));
+  }
+  function moveHover(el: HTMLElement) {
+    const idoc = idocRef.current;
+    const c = ensureInspector();
+    if (!idoc || !c) return;
+    let h = hoverElRef.current;
+    if (!h || !h.isConnected) {
+      h = idoc.createElement('div');
+      h.setAttribute(INSPECTOR_ATTR, '');
+      h.style.cssText =
+        'position:absolute;pointer-events:none;box-sizing:border-box;' +
+        'outline:1px dashed rgba(30,132,255,0.9);background:rgba(30,132,255,0.06)';
+      c.appendChild(h);
+      hoverElRef.current = h;
+    }
+    const r = el.getBoundingClientRect();
+    h.style.display = 'block';
+    h.style.left = `${r.left}px`;
+    h.style.top = `${r.top}px`;
+    h.style.width = `${r.width}px`;
+    h.style.height = `${r.height}px`;
+  }
+  function hideHover() {
+    if (hoverElRef.current) hoverElRef.current.style.display = 'none';
+  }
+
+  // 클릭/방향키 공통 선택 진입점. 라이브 DOM 노드를 붙잡고 UI/오버레이를 갱신.
+  const selectElement = useCallback((el: HTMLElement) => {
     selElRef.current = el;
     const leaf = el.children.length === 0;
     setSel({
@@ -113,8 +203,56 @@ export default function ToBeEditor() {
     } else {
       setComputed([]);
     }
+    hideHover();
     positionOverlay();
+    renderInspector(el);
   }, []);
+
+  const onPick = useCallback(
+    (e: Event) => {
+      if (!editableRef.current) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const el = e.target as HTMLElement;
+      if (!el || el.nodeType !== 1 || isOurs(el)) return;
+      selectElement(el);
+    },
+    [selectElement],
+  );
+
+  // hover 미리보기 — 커서 밑 요소를 옅은 아웃라인으로.
+  const onMove = useCallback((e: Event) => {
+    if (!editableRef.current) return;
+    const idoc = idocRef.current;
+    if (!idoc) return;
+    const me = e as MouseEvent;
+    const el = idoc.elementFromPoint(me.clientX, me.clientY) as HTMLElement | null;
+    if (!el || isOurs(el) || el === selElRef.current) {
+      hideHover();
+      return;
+    }
+    moveHover(el);
+  }, []);
+
+  // ↑ 부모 / ↓ 첫 자식 / ← → 형제 로 선택 이동. 얇은 그룹 컨테이너를 클릭 없이 잡기 위함.
+  const onKey = useCallback(
+    (e: Event) => {
+      if (!editableRef.current) return;
+      const cur = selElRef.current;
+      if (!cur) return;
+      const ke = e as KeyboardEvent;
+      let next: Element | null = null;
+      if (ke.key === 'ArrowUp') next = visibleParent(cur);
+      else if (ke.key === 'ArrowDown') next = firstVisibleChild(cur, { skip: isOurs });
+      else if (ke.key === 'ArrowRight') next = nextVisibleSibling(cur, { skip: isOurs });
+      else if (ke.key === 'ArrowLeft') next = prevVisibleSibling(cur, { skip: isOurs });
+      else return;
+      ke.preventDefault();
+      ke.stopPropagation();
+      if (next) selectElement(next as HTMLElement);
+    },
+    [selectElement],
+  );
 
   // 스냅샷 → iframe(rebuild). rrweb JSON 이면 편집 가능, 아니면(구버전 HTML) srcdoc 뷰 전용.
   useEffect(() => {
@@ -124,6 +262,10 @@ export default function ToBeEditor() {
     selElRef.current = null;
     setSel(null);
     setDirty(false);
+    // 이전 iframe 과 함께 버려진 인스펙터 레이어 참조 초기화
+    inspectorRef.current = null;
+    hoverElRef.current = null;
+    bandElsRef.current = [];
 
     const node = parseNode(snap.html);
     const iframe = document.createElement('iframe');
@@ -159,10 +301,12 @@ export default function ToBeEditor() {
       });
       idocRef.current = idoc;
       idoc.addEventListener('click', onPick, true);
+      idoc.addEventListener('mousemove', onMove, true);
+      idoc.addEventListener('keydown', onKey, true);
     };
     root.appendChild(iframe);
     iframeRef.current = iframe;
-  }, [snap, onPick]);
+  }, [snap, onPick, onMove, onKey]);
 
   // 모드 전환 → 편집 활성 여부만 토글(리빌드 없이 편집 보존)
   useEffect(() => {
@@ -172,11 +316,17 @@ export default function ToBeEditor() {
       setSel(null);
       setComputed([]);
       if (overlayRef.current) overlayRef.current.style.display = 'none';
+      clearBands();
+      hideHover();
     }
   }, [mode]);
 
   useEffect(() => {
-    const onScroll = () => sel && positionOverlay();
+    const onScroll = () => {
+      if (!sel) return;
+      positionOverlay();
+      if (selElRef.current) renderInspector(selElRef.current);
+    };
     window.addEventListener('scroll', onScroll, true);
     window.addEventListener('resize', onScroll);
     return () => {
@@ -210,6 +360,11 @@ export default function ToBeEditor() {
     if (!idoc) return;
     setSaving(true);
     try {
+      // 인스펙터 오버레이는 저장본에 포함되면 안 됨 → 직렬화 직전 제거
+      inspectorRef.current?.remove();
+      inspectorRef.current = null;
+      hoverElRef.current = null;
+      bandElsRef.current = [];
       const node = snapshot(idoc, { inlineStylesheet: true });
       const res = await fetch(`/api/snapshots/${id}`, {
         method: 'PATCH',
@@ -220,6 +375,8 @@ export default function ToBeEditor() {
       else setDirty(false);
     } finally {
       setSaving(false);
+      // 저장 후에도 편집이 이어지도록 현재 선택의 인스펙터를 다시 렌더
+      if (selElRef.current && editableRef.current) renderInspector(selElRef.current);
     }
   }
 
@@ -309,10 +466,11 @@ export default function ToBeEditor() {
         {inEdit && (
           <aside style={S.panel}>
             {!sel ? (
-              <p style={S.muted}>편집할 요소를 클릭하세요.</p>
+              <p style={S.muted}>편집할 요소를 클릭하세요. (마우스를 올리면 미리 보기)</p>
             ) : (
               <>
                 <div style={S.selTag}>&lt;{sel.tag}&gt;</div>
+                <p style={S.kbdHint}>↑ 부모 · ↓ 자식 · ← → 형제 로 선택 이동</p>
                 <label style={S.label}>인라인 CSS</label>
                 <textarea
                   style={S.cssArea}
@@ -353,6 +511,8 @@ export default function ToBeEditor() {
                     setSel(null);
                     setComputed([]);
                     if (overlayRef.current) overlayRef.current.style.display = 'none';
+                    clearBands();
+                    hideHover();
                   }}
                 >
                   선택 해제
@@ -379,7 +539,8 @@ const S: Record<string, React.CSSProperties> = {
   body: { flex: 1, display: 'flex', minHeight: 0 },
   frame: { flex: 1, background: '#f1f5f9', overflow: 'hidden' },
   panel: { width: 300, borderLeft: '1px solid #e5e7eb', padding: 14, overflow: 'auto', background: '#fff' },
-  selTag: { font: '600 13px ui-monospace, monospace', color: '#1e6fd0', marginBottom: 10 },
+  selTag: { font: '600 13px ui-monospace, monospace', color: '#1e6fd0', marginBottom: 4 },
+  kbdHint: { fontSize: 11, color: '#8b95a1', margin: '0 0 10px' },
   label: { display: 'block', fontSize: 12, color: '#6b7280', margin: '8px 0 4px' },
   cssArea: { width: '100%', minHeight: 120, boxSizing: 'border-box', border: '1px solid #d0d5dd', borderRadius: 6, padding: 8, font: '12px ui-monospace, monospace', resize: 'vertical' },
   textArea: { width: '100%', minHeight: 56, boxSizing: 'border-box', border: '1px solid #d0d5dd', borderRadius: 6, padding: 8, font: 'inherit', fontSize: 13, resize: 'vertical' },

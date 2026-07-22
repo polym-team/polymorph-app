@@ -213,6 +213,9 @@ importers:
       '@package/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@polym-team/element-inspector':
+        specifier: workspace:*
+        version: link:../../packages/element-inspector
       '@polymorph/shared-auth':
         specifier: workspace:*
         version: link:../../packages/shared-auth
