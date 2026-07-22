@@ -54,6 +54,15 @@ const CLIENT_APPS = [
     accessTokenLifetime: 60 * 60 * 24 * 7,
   },
   {
+    clientId: 'tallo',
+    name: 'Tallo',
+    allowedRedirectUris: [
+      'http://localhost:3010/auth/callback',
+      'https://tallo.polymorph.co.kr/auth/callback',
+    ].join(','),
+    accessTokenLifetime: 60 * 60 * 24 * 7,
+  },
+  {
     clientId: 'test',
     name: '테스트 클라이언트',
     allowedRedirectUris: [
