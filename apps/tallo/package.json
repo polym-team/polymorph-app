@@ -16,6 +16,7 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@polymorph/shared-auth": "workspace:*",
     "@prisma/client": "^6.2.1"
   },
   "devDependencies": {

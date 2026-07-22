@@ -14,7 +14,7 @@
     "autto": "node scripts/dev.mjs autto oauth-server",
     "direct-feedback": "node scripts/dev.mjs direct-feedback oauth-server",
     "myflighthistory": "node scripts/dev.mjs myflighthistory oauth-server",
-    "tallo": "node scripts/dev.mjs tallo",
+    "tallo": "node scripts/dev.mjs tallo oauth-server",
     "oauth": "node scripts/dev.mjs oauth-server",
     "prepare": "husky"
   },

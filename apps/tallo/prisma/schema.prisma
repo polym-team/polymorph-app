@@ -37,3 +37,42 @@ model ApiToken {
 
   @@map("api_tokens")
 }
+
+/// 사용자 소유 디바이스(브릿지 앱 설치 기기). oauth userId에 귀속.
+/// 최초 설치 시 앱이 SSO 로그인 후 엔롤(POST /api/devices)로 생성.
+model Device {
+  id            Int       @id @default(autoincrement())
+  userId        String    @map("user_id") @db.VarChar(191)   // oauth User.id(sub)
+  name          String?   @db.VarChar(191)                    // 사용자 라벨(예: "매장 공기계")
+  phoneNumber   String?   @map("phone_number") @db.VarChar(32) // 엔롤 시 보고(자동조회→실패시 수동)
+  platform      String    @default("android") @db.VarChar(16)
+  ingestTokenId Int?      @map("ingest_token_id")             // 등록 완료 시 발급된 ApiToken.id
+  lastSeenAt    DateTime? @map("last_seen_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("devices")
+}
+
+/// 은행 입금알림 등록 세션. 웹에서 시작, 앱이 은행 OTP를 캡처해 릴레이, 웹에서 완료.
+/// 상호배제: phoneNumber당 active(awaiting_otp) 세션 1개 — MariaDB partial unique 미지원이라
+/// 앱 레벨(트랜잭션 내 체크)로 강제. @@index([phoneNumber, status])로 조회 최적화.
+model RegistrationSession {
+  id            Int       @id @default(autoincrement())
+  userId        String    @map("user_id") @db.VarChar(191)
+  deviceId      Int       @map("device_id")
+  bank          String    @db.VarChar(32)
+  accountKey    String?   @map("account_key") @db.VarChar(191) // 계좌 식별(선택)
+  phoneNumber   String    @map("phone_number") @db.VarChar(32)  // 은행 폼에 입력할 번호(=디바이스 번호)
+  status        String    @db.VarChar(24)                       // awaiting_otp | verified | expired | canceled
+  otpCode       String?   @map("otp_code") @db.VarChar(16)      // 앱이 릴레이한 OTP(완료/만료 후 폐기)
+  otpReceivedAt DateTime? @map("otp_received_at")
+  expiresAt     DateTime  @map("expires_at")
+  verifiedAt    DateTime? @map("verified_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([phoneNumber, status])
+  @@index([deviceId])
+  @@index([userId])
+  @@map("registration_sessions")
+}

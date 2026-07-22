@@ -1,9 +1,8 @@
 export const dynamic = 'force-dynamic';
 
-import { randomBytes } from 'crypto';
-
-import { hashToken, isAdmin, Scope } from '@/lib/auth';
+import { isAdmin, Scope } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { issueApiToken } from '@/lib/tokens';
 
 const SCOPES: Scope[] = ['ingest', 'read'];
 
@@ -38,18 +37,9 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  const plaintext = randomBytes(32).toString('base64url');
-  const created = await prisma.apiToken.create({
-    data: {
-      name: body.name.trim(),
-      scope: body.scope,
-      tokenHash: hashToken(plaintext),
-    },
-    select: { id: true, name: true, scope: true, createdAt: true },
-  });
-
   // token(원문)은 이 응답에서만 확인 가능하다.
-  return Response.json({ ...created, token: plaintext }, { status: 201 });
+  const issued = await issueApiToken(body.name.trim(), body.scope as Scope);
+  return Response.json(issued, { status: 201 });
 }
 
 /**
