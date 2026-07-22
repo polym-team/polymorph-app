@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// 입금 원장의 원본 레코드. 브릿지가 은행 SMS/알림을 파싱해 POST /api/deposits로 적재한다.
+/// 원장은 매칭/소비 상태를 갖지 않는다(디커플링) — 소비 상태는 소비자(mall)가 소유.
+model Deposit {
+  id          Int      @id @default(autoincrement())
+  externalId  String   @unique @map("external_id") @db.VarChar(191) // 멱등 키(브릿지 생성: 원문 해시 등)
+  bankAccount String?  @map("bank_account") @db.VarChar(64)         // 수취 계좌(우리 계좌)
+  payerName   String   @map("payer_name") @db.VarChar(191)          // 입금자명(원문)
+  amount      Int                                                    // 입금액(원)
+  balance     Int?                                                   // 잔액(파싱되면)
+  txAt        DateTime @map("tx_at")                                 // 은행 거래 시각
+  rawText     String   @map("raw_text") @db.Text                     // 원문(감사용)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([txAt])
+  @@map("deposits")
+}
+
+/// API 접근 토큰. 발급 API로 생성하며 원문은 발급 시 1회만 노출, DB에는 SHA-256 해시로만 저장.
+/// scope로 엔드포인트 권한 분리: ingest=POST /api/deposits, read=GET /api/deposits.
+model ApiToken {
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(191)                       // 사람이 식별할 라벨(예: "android-bridge", "mall")
+  scope      String    @db.VarChar(16)                        // 'ingest' | 'read'
+  tokenHash  String    @unique @map("token_hash") @db.VarChar(64) // SHA-256 hex
+  lastUsedAt DateTime? @map("last_used_at")
+  revokedAt  DateTime? @map("revoked_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@map("api_tokens")
+}
