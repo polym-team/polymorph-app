@@ -57,8 +57,9 @@ const CLIENT_APPS = [
     clientId: 'tallo',
     name: 'Tallo',
     allowedRedirectUris: [
-      'http://localhost:3010/auth/callback',
-      'https://tallo.polymorph.co.kr/auth/callback',
+      'http://localhost:3010/auth/callback', // 웹 서비스 페이지(로컬)
+      'https://tallo.polymorph.co.kr/auth/callback', // 웹 서비스 페이지(프로덕션)
+      'tallobridge://auth/callback', // RN 브릿지 앱(dev build/standalone 커스텀 스킴)
     ].join(','),
     accessTokenLifetime: 60 * 60 * 24 * 7,
   },
