@@ -71,6 +71,7 @@ export default function ToBeEditor() {
   const inspectorRef = useRef<HTMLDivElement | null>(null);
   const hoverElRef = useRef<HTMLDivElement | null>(null);
   const bandElsRef = useRef<HTMLElement[]>([]);
+  const scrollRafRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -141,13 +142,14 @@ export default function ToBeEditor() {
       b.style.cssText =
         `position:absolute;left:${left}px;top:${top}px;width:${Math.max(width, 0)}px;` +
         `height:${Math.max(height, 0)}px;background:${bg};box-sizing:border-box;pointer-events:none`;
-      if (value >= 1 && Math.min(width, height) >= 8) {
+      if (value >= 1) {
+        // 얇은 밴드라 라벨이 밴드 밖으로 넘쳐도 항상 표시 (중앙 정렬, overflow 허용)
         const lbl = idoc.createElement('span');
         lbl.textContent = String(Math.round(value));
         lbl.style.cssText =
           'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);' +
           `font:600 10px/1 ui-monospace,monospace;color:#fff;background:${labelBg};` +
-          'padding:1px 3px;border-radius:2px;white-space:nowrap';
+          'padding:1px 3px;border-radius:2px;white-space:nowrap;z-index:1';
         b.appendChild(lbl);
       }
       c.appendChild(b);
@@ -156,7 +158,7 @@ export default function ToBeEditor() {
     const { padding, margin } = boxModel(el);
     padding.forEach((p) => put(p.left, p.top, p.width, p.height, 'rgba(34,197,94,0.35)', p.value, 'rgba(21,128,61,0.95)'));
     margin.forEach((m) => put(m.left, m.top, m.width, m.height, 'rgba(245,158,11,0.35)', m.value, 'rgba(180,83,9,0.95)'));
-    gaps(el, { skip: isOurs }).forEach((g) => put(g.left, g.top, g.width, g.height, 'rgba(30,132,255,0.3)', g.value, 'rgba(30,111,208,0.95)'));
+    gaps(el, { skip: isOurs }).forEach((g) => put(g.left, g.top, g.width, g.height, 'rgba(30,132,255,0.42)', g.value, 'rgba(30,111,208,0.95)'));
   }
   function moveHover(el: HTMLElement) {
     const idoc = idocRef.current;
@@ -254,6 +256,20 @@ export default function ToBeEditor() {
     [selectElement],
   );
 
+  // iframe 내부 스크롤(문서/내부 컨테이너 모두 capture 로 포착) → 오버레이 재배치.
+  // 부모 window scroll 리스너는 iframe 경계를 못 넘으므로 idoc 에 별도 등록해야 함. rAF throttle.
+  const onFrameScroll = useCallback(() => {
+    if (!selElRef.current) return;
+    hideHover(); // 스크롤 중 hover 박스 드리프트 방지(다음 mousemove 에 복귀)
+    if (scrollRafRef.current != null) return;
+    scrollRafRef.current = requestAnimationFrame(() => {
+      scrollRafRef.current = null;
+      if (!selElRef.current) return;
+      positionOverlay();
+      renderInspector(selElRef.current);
+    });
+  }, []);
+
   // 스냅샷 → iframe(rebuild). rrweb JSON 이면 편집 가능, 아니면(구버전 HTML) srcdoc 뷰 전용.
   useEffect(() => {
     const root = containerRef.current;
@@ -303,10 +319,11 @@ export default function ToBeEditor() {
       idoc.addEventListener('click', onPick, true);
       idoc.addEventListener('mousemove', onMove, true);
       idoc.addEventListener('keydown', onKey, true);
+      idoc.addEventListener('scroll', onFrameScroll, true);
     };
     root.appendChild(iframe);
     iframeRef.current = iframe;
-  }, [snap, onPick, onMove, onKey]);
+  }, [snap, onPick, onMove, onKey, onFrameScroll]);
 
   // 모드 전환 → 편집 활성 여부만 토글(리빌드 없이 편집 보존)
   useEffect(() => {
