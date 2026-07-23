@@ -41,7 +41,7 @@ export async function PATCH(
   return Response.json(updated);
 }
 
-/** DELETE /api/devices/[id] — 디바이스 삭제(소유자). 발급된 ingest 토큰도 폐기. */
+/** DELETE /api/devices/[id] — 디바이스 삭제(소유자). */
 export async function DELETE(
   req: Request,
   { params }: { params: { id: string } }
@@ -52,14 +52,6 @@ export async function DELETE(
   const device = await ownedDevice(auth.userId, params.id);
   if (!device) return Response.json({ message: '디바이스를 찾을 수 없습니다.' }, { status: 404 });
 
-  await prisma.$transaction(async (tx) => {
-    if (device.ingestTokenId != null) {
-      await tx.apiToken
-        .update({ where: { id: device.ingestTokenId }, data: { revokedAt: new Date() } })
-        .catch(() => undefined);
-    }
-    await tx.device.delete({ where: { id: device.id } });
-  });
-
+  await prisma.device.delete({ where: { id: device.id } });
   return Response.json({ id: device.id, deleted: true });
 }

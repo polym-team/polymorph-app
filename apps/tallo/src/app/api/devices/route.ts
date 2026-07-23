@@ -16,14 +16,14 @@ export async function GET(req: Request): Promise<Response> {
       name: true,
       phoneNumber: true,
       platform: true,
-      ingestTokenId: true,
+      notificationConfirmedAt: true,
       lastSeenAt: true,
       createdAt: true,
     },
   });
 
-  // 등록 완료 여부 = ingestTokenId 존재
-  const items = devices.map((d) => ({ ...d, registered: d.ingestTokenId != null }));
+  // 등록 확인 여부 = 첫 은행 SMS 유입으로 자동 세팅된 notificationConfirmedAt 존재
+  const items = devices.map((d) => ({ ...d, confirmed: d.notificationConfirmedAt != null }));
   return Response.json({ items });
 }
 

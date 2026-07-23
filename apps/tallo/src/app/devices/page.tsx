@@ -25,7 +25,13 @@ export default async function DevicesPage() {
   const devices = await prisma.device.findMany({
     where: { userId: user.userId },
     orderBy: { id: 'desc' },
-    select: { id: true, name: true, phoneNumber: true, platform: true, ingestTokenId: true },
+    select: {
+      id: true,
+      name: true,
+      phoneNumber: true,
+      platform: true,
+      notificationConfirmedAt: true,
+    },
   });
 
   const items = devices.map((d) => ({
@@ -33,7 +39,7 @@ export default async function DevicesPage() {
     name: d.name,
     phoneNumber: d.phoneNumber,
     platform: d.platform,
-    registered: d.ingestTokenId != null,
+    confirmedAt: d.notificationConfirmedAt ? d.notificationConfirmedAt.toISOString() : null,
   }));
 
   return <DevicesClient userName={user.name ?? user.email} devices={items} />;
