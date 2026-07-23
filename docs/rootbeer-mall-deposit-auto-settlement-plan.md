@@ -116,63 +116,48 @@ model Deposit {
 
 ---
 
-## ②-bis Tallo 온보딩 / 디바이스 관리 + 번호 등록 (신규, 2026-07-22 개정)
+## ②-bis Tallo 온보딩 / 디바이스 관리 (2026-07-23 단순화)
 
-> **모델 확정 — 분산형**: 각 사용자가 **자기 폰에 브릿지 앱을 직접 설치**해 자기 은행 문자를 받는다. 우리는 **앱 + Tallo 웹 플랫폼만 제공**(중앙 SMS 수신·회선 인프라 없음). 계좌의 은행 입금알림 등록은 **Tallo 웹에서 진행**하고, 은행이 그 번호로 보낸 OTP는 **그 폰의 앱이 캡처해 웹에 릴레이**한다. (검토했던 대안: 우리가 중앙 번호를 제공하는 페이액션식 → 채택 안 함)
+> **모델 — 분산형**: 각 사용자가 **자기 폰에 브릿지 앱을 직접 설치**해 자기 은행 문자를 받는다. 우리는 **앱 + Tallo 웹 플랫폼만 제공**(중앙 SMS/회선 인프라 없음).
+>
+> **⚠️ OTP/등록세션은 제거됨(2026-07-23).** 분산 모델에선 사용자가 **자기 은행 입금알림을 스스로 신청**하고 OTP도 자기 폰 기본 문자앱에서 직접 확인·입력한다. 우리가 OTP를 캡처·릴레이하거나 등록 세션을 orchestrate할 이유가 없다. (그 발상은 우리가 중앙 번호를 제공하던 옛 모델의 잔재였음.) → `RegistrationSession`·`/api/registrations/*`·웹 등록 마법사·번호 잠금·파서 `otp` 전부 삭제.
 
-### 두 개의 인증 평면 (중요)
-- **사용자 평면(웹+앱 로그인)**: **oauth-server(폴리모프 SSO)**. Tallo 웹(운영자 서비스 페이지)과 RN 앱 모두 SSO 로그인, JWT 검증 `packages/shared-auth`. → **Tallo에 oauth 통합 신규 추가**(현재 미통합, `apps/oauth-server/CLAUDE.md` 절차 따름).
-- **데이터 평면(입금 적재/조회)**: 불투명 scope 토큰(ingest/read, **이미 구현됨**). 등록 완료 시 디바이스에 ingest 토큰 발급.
+### 두 개의 인증 평면
+- **사용자 평면(웹+앱 로그인)**: **oauth-server(폴리모프 SSO)**. Tallo 웹·RN 앱 모두 SSO, JWT 검증 `packages/shared-auth`. (Tallo에 oauth 통합 완료.)
+- **데이터 평면(입금 적재/조회)**: scope 토큰(ingest/read) — 기존. ※ 브릿지의 실제 전송 인증 방식(SSO JWT vs 토큰)은 **Phase 3에서 확정**.
+
+### 역할 분담
+- **웹(Tallo 서비스 페이지)**: 기기 **추가(전화번호 수동 입력)/수정/삭제** + 상태 표시. 기기 CRUD는 웹에서만.
+- **앱(RN)**: SSO 로그인 + **기기 조회 전용** + SMS 캡처·전달. 등록/관리 불가(웹으로 안내).
 
 ### 데이터 모델
 ```prisma
 model Device {
-  id            Int      @id @default(autoincrement())
-  userId        String   @map("user_id")            // oauth User.id (소유자)
-  name          String?                              // 사용자 라벨(예: "매장 공기계")
-  phoneNumber   String?  @map("phone_number")        // 엔롤 시 앱이 보고(자동조회→실패 시 수동)
-  platform      String   @default("android")
-  ingestTokenId Int?     @map("ingest_token_id")      // 등록 완료 시 발급된 ApiToken.id
-  lastSeenAt    DateTime? @map("last_seen_at")
-  createdAt     DateTime @default(now()) @map("created_at")
+  id                      Int       @id @default(autoincrement())
+  userId                  String    @map("user_id")   // oauth User.id (소유자)
+  name                    String?
+  phoneNumber             String?   @map("phone_number")  // 수동 입력(자동조회는 eSIM 등 불가)
+  platform                String    @default("android")
+  // 은행 입금알림 등록 "확인" — 수동 토글 아님. 앱이 첫 은행 SMS를 Tallo로 전달하면 자동 세팅(Phase 3).
+  notificationConfirmedAt DateTime? @map("notification_confirmed_at") // null = 아직 문자 유입 없음
+  lastSeenAt              DateTime? @map("last_seen_at")
+  createdAt               DateTime  @default(now()) @map("created_at")
   @@index([userId])
   @@map("devices")
 }
-
-model RegistrationSession {
-  id            Int      @id @default(autoincrement())
-  userId        String   @map("user_id")
-  deviceId      Int      @map("device_id")
-  bank          String   @db.VarChar(32)
-  accountKey    String?  @map("account_key")          // 계좌 식별(선택)
-  phoneNumber   String   @map("phone_number")          // 은행 폼에 입력할 번호(=디바이스 번호)
-  status        String   @db.VarChar(24)               // awaiting_otp | verified | expired | canceled
-  otpCode       String?  @map("otp_code")              // 앱이 릴레이한 OTP(완료/만료 후 폐기)
-  otpReceivedAt DateTime? @map("otp_received_at")
-  expiresAt     DateTime @map("expires_at")
-  verifiedAt    DateTime? @map("verified_at")
-  createdAt     DateTime @default(now()) @map("created_at")
-  // 상호배제: active(awaiting_otp) 세션은 phoneNumber당 최대 1개 (partial unique / 트랜잭션 체크)
-  @@map("registration_sessions")
-}
 ```
 
-### 흐름 (웹 주도 + 앱 릴레이)
-1. **앱 엔롤**: 앱 설치 → SSO 로그인 → 자기 정보(번호 자동조회→실패 시 수동, 플랫폼) 보고 → `Device` 생성(소유자=로그인 사용자).
-2. **웹에서 등록 시작**: 사용자가 Tallo 웹 SSO 로그인 → **내 디바이스 목록**에서 선택 → `POST /api/registrations {deviceId, bank}` → 같은 phoneNumber active 세션 있으면 **409(잠금)**. 웹이 **은행 폼에 입력할 번호를 표시**.
-3. **은행 등록 + OTP**: 사용자가 은행 입금알림 등록(ARS/웹/앱)에 그 번호 입력 → 은행이 번호로 OTP SMS 발송 → **그 폰의 앱이 OTP 캡처** → `POST /api/registrations/:id/otp {code, rawText}` → **웹 페이지에 OTP 실시간 표시**.
-4. **완료**: 사용자가 OTP를 은행 폼에 입력해 은행 등록 마침 → 웹에서 완료 → `POST /api/registrations/:id/complete` → verified, 잠금 해제, **디바이스에 ingest 토큰 발급(데이터 평면)** → 앱이 입금 적재 시작.
-5. **취소/만료**: TTL(예: 10분) 만료·취소 시 잠금 해제(끊긴 등록 영구 점유 방지).
-
-### 웹 UI (Tallo 서비스 페이지, 신규 — scope 큼)
-- Tallo가 현재 **API 전용**이므로 **프론트엔드 신규 구축**. SSO 로그인, 내 디바이스 목록/상태, 등록 마법사(번호 표시 → OTP 실시간 표시 → 완료), 디바이스/토큰 관리.
+### 흐름 (단순화)
+1. **웹에서 기기 등록**: 사용자 SSO 로그인 → 기기 추가(라벨 + 전화번호 **수동**).
+2. **은행 입금알림 신청**: 사용자가 그 번호로 은행 입금알림을 **직접 신청**(우리 개입 없음, OTP도 본인이 처리).
+3. **자동 확인**: 앱이 그 번호로 온 **첫 은행 SMS를 Tallo로 전달**하면, Tallo가 해당 디바이스의 `notificationConfirmedAt`을 자동으로 찍는다 → 상태 "확인됨". (실 데이터 흐름 = 등록 성공의 가장 확실한 증거. **Phase 3에서 구현**.)
 
 ### API
-- **사용자 평면(SSO 보호)**: `POST/GET /api/devices`(엔롤/내 목록), `PATCH/DELETE /api/devices/:id`, `POST /api/registrations`, `.../otp`, `.../complete`, `.../cancel` + TTL 스윕.
-- **데이터 평면(scope 토큰, 기존)**: `/api/deposits`(ingest/read), `/api/tokens`(관리자).
+- **사용자 평면(SSO 보호)**: `GET/POST /api/devices`(목록/추가), `PATCH/DELETE /api/devices/:id`(수정/삭제), `GET /api/me`.
+- **데이터 평면(기존)**: `/api/deposits`, `/api/tokens`.
 
 ### 멀티테넌트
-- Device/Session/토큰이 **oauth userId 귀속** → 자연스러운 멀티테넌트 기반. 외부 개방 시 `deposits`에 device/user 귀속 컬럼 추가로 데이터 분리(**지금은 단일 계좌라 미룸**, 경계만 계정 단위로 설계).
+- Device가 oauth userId 귀속 → 멀티테넌트 기반. 외부 개방 시 `deposits`에 device/user 귀속 컬럼 추가(지금은 단일 계좌라 미룸).
 
 ## ③ mall 변경 설계
 
@@ -257,7 +242,7 @@ model Order {
 > **원칙: 실제 데이터 흐름이 end-to-end로 검증되기 전엔 mall을 건드리지 않는다.** mall 스키마/매칭(Phase 2·3·4)은 **최후로 미룬다**.
 >
 > 1. **Tallo 서버 완성 + 프로덕션 배포 확인** ← 지금 여기
-> 2. **RN 브릿지 앱**(별도 repo `tallo-react-native`): ①실제 은행 문자 파싱 → `POST /api/deposits` 적재, ②**온보딩(번호 등록) 플로우** — 은행 OTP 캡처 + Tallo `RegistrationSession`(번호/계좌 단위 상호배제). 계획서 = 그 repo의 `PLAN.md`, Tallo 서버측 스펙은 위 "②-bis" 섹션. (안드로이드 전용)
+> 2. **RN 브릿지 앱**(별도 repo `tallo-react-native`): 실제 은행 문자 파싱 → `POST /api/deposits` 적재 + 첫 유입 시 기기 자동확인. 온보딩은 **웹에서 기기 등록(수동 번호) + 사용자가 은행 입금알림 직접 신청**뿐(OTP 캡처 없음 — ②-bis 참조). 계획서 = 그 repo의 `PLAN.md`. (안드로이드 전용)
 > 3. **사이클 검증**: 실제 문자 → 브릿지 파싱 → tallo 적재 → `GET /api/deposits` 조회까지 한 바퀴 도는 것을 실데이터로 확인.
 > 4. **그 다음에야** mall 작업(Phase 2 스키마 → Phase 3 매칭 엔진 → Phase 4 큐 → Phase 5 크론).
 
@@ -294,6 +279,7 @@ model Order {
 - 2026-07-22: **Phase 1 앱 코드 완료**. `apps/tallo` 스캐폴딩 + Prisma(Deposit/ApiToken) + baseline 마이그레이션 실DB 적용 + 토큰 발급/데이터 API 구현 + E2E 스모크 전건 통과.
 - 2026-07-22: **진행 순서 재조정** — mall(Phase 2~5)을 최후로 미룸. tallo 배포 → RN 브릿지 → 실데이터 사이클 검증 후에야 mall 착수.
 - 2026-07-22: **브릿지 앱 계획 수립**(별도 repo `tallo-react-native/PLAN.md`) + **Tallo 온보딩(②-bis) 추가**. 인증번호=은행 발송·앱 캡처(게이트웨이 불필요), 등록 상호배제=번호 단위. 파싱 로직은 실 SMS 샘플(입금/출금/OTP) 확보 후 확정.
+- 2026-07-23: **온보딩 대폭 단순화 + 재배포**. 실기기(삼성, eSIM) 테스트 중 사용자 피드백으로 방향 정정 — 분산 모델에선 OTP 캡처/등록세션이 불필요(옛 중앙번호 모델의 잔재). **제거**: `RegistrationSession`·`/api/registrations/*`·웹 등록마법사·번호잠금·파서 otp. **교체**: Device.ingestTokenId→notificationConfirmedAt(앱이 첫 은행SMS 전달 시 Tallo가 자동 세팅, Phase 3). 웹=기기 add(수동번호)/edit/delete, 앱=조회 전용. eSIM에서 번호 자동조회 실패→수동 메인. 마이그레이션 2_simplify_onboarding 실DB 적용, tsc/build/E2E 통과, 커밋·push(재배포 CI 성공, argocd 롤아웃 대기). 또 RN 앱에 SafeArea 적용(하단탭 겹침 수정) + 실기기 release APK 설치 완료.
 - 2026-07-22: **Tallo 서버+웹 온보딩 프로덕션 배포·검증 완료**. polymorph-app(feat tallo + feat oauth-server seed)·polymorph-k8s(secret oauth 변수) push → CI 재빌드 → argocd 롤아웃. oauth `db:seed` 실행해 prod oauth DB에 `tallo` clientId 등록. prod 검증: /api/me Bearer 200(OAUTH_JWT_SECRET 주입 확인)·미인증 401, /devices 로그인 안내, oauth /login?clientId=tallo unknown-client 없음. (인터랙티브 SSO 로그인/마법사 클릭은 브라우저 필요 — 플러밍은 전부 검증됨.)
 - 2026-07-22: **Tallo 서버+웹 온보딩 구현 완료(로컬 검증)**. A) oauth-server SSO 통합(clientId `tallo` seed 추가, middleware silent SSO, /auth/callback·set-cookie, getAuthUser=Bearer(RN)+쿠키(웹), /api/me). B) `Device`+`RegistrationSession` 모델 + 마이그레이션 `1_onboarding` 실DB 적용. C) 사용자평면 API `/api/devices`(엔롤/목록/PATCH/DELETE), `/api/registrations`(시작·**번호단위 잠금409**·`/otp` 릴레이·`/complete` ingest토큰발급·`/cancel`) + lazy TTL 만료. D) 웹 서비스 페이지 `/devices`(목록·수동엔롤·등록시작·삭제) + `/registrations/[id]` 마법사(번호표시·OTP 2초 폴링·완료 시 토큰 1회 표시·취소·카운트다운). tsc/build/E2E(로컬, 실DB) 전건 통과, 테스트데이터 정리. **남은 것: 배포(커밋+push→CI) + oauth-server seed 실행(prod oauth DB에 tallo clientId 등록) + k8s secret(OAUTH_JWT_SECRET·NEXT_PUBLIC_OAUTH_SERVER_URL 추가됨) 반영.** 완료 시 토큰의 앱 자동전달(web 표시 대신)은 RN Phase에서 마무리.
 - 2026-07-22: **온보딩 모델 개정 — 분산형 확정**. 우리는 앱+웹 플랫폼만 제공(중앙 번호 인프라 없음). 각자 자기 폰에 앱 설치. **웹/앱 로그인=oauth-server SSO**(Tallo에 oauth 통합 신규 필요), 디바이스는 계정 귀속. 번호 확보=자동조회→실패 시 수동. 등록 절차는 **Tallo 웹(신규 프론트엔드)에서 주도**, 앱은 엔롤+OTP 캡처/릴레이. `Device`+`RegistrationSession` 모델. → Tallo scope 확장(oauth 통합 + 웹 UI).
