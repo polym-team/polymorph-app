@@ -39,20 +39,21 @@ model ApiToken {
 }
 
 /// 사용자 소유 디바이스(브릿지 앱 설치 기기). oauth userId에 귀속.
-/// 사용자 소유 디바이스(브릿지 앱 설치 기기). oauth userId에 귀속.
-/// 분산 모델: 등록·수정·삭제는 웹에서. 앱은 조회 전용. 번호는 수동 입력(자동조회는 eSIM 등에서 불가).
-model Device {
+/// 감시 대상 계좌. oauth userId에 귀속. 등록의 단위는 "기기"가 아니라 "계좌"다.
+/// 한 폰이 여러 계좌의 SMS를 받을 수 있으므로, SMS의 마스킹 계좌(예: *981268)를
+/// 등록된 accountNumber 뒷자리와 매칭해 (1) 감시 대상만 필터 (2) 어느 계좌인지 귀속(Phase 3).
+/// 등록·수정·삭제는 웹에서. 앱은 조회 전용.
+model Account {
   id                    Int       @id @default(autoincrement())
   userId                String    @map("user_id") @db.VarChar(191) // oauth User.id(sub)
-  name                  String?   @db.VarChar(191)                  // 사용자 라벨(예: "매장 공기계")
-  phoneNumber           String?   @map("phone_number") @db.VarChar(32) // 수동 입력
-  platform              String    @default("android") @db.VarChar(16)
-  // 은행 입금알림 등록 "확인" 시각. 수동 토글이 아니라, 앱이 첫 은행 SMS를 Tallo로 전달하면
+  bank                  String    @default("woori") @db.VarChar(32)
+  accountNumber         String    @map("account_number") @db.VarChar(64) // 전체 계좌번호(예: 1002-854-981268)
+  label                 String?   @db.VarChar(191)                        // 사용자 라벨(예: "공동구매 수취")
+  // 은행 입금알림 등록 "확인" 시각. 수동 토글이 아니라, 앱이 이 계좌의 첫 은행 SMS를 전달하면
   // 자동 세팅(Phase 3). null = 아직 문자 유입 없음(미확인).
   notificationConfirmedAt DateTime? @map("notification_confirmed_at")
-  lastSeenAt            DateTime? @map("last_seen_at")
   createdAt             DateTime  @default(now()) @map("created_at")
 
   @@index([userId])
-  @@map("devices")
+  @@map("accounts")
 }

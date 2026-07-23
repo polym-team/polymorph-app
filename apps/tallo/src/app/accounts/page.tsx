@@ -1,13 +1,13 @@
 import { getAuthUserFromCookies } from '@/lib/user-auth';
 import { prisma } from '@/lib/prisma';
-import { DevicesClient } from './DevicesClient';
+import { AccountsClient } from './AccountsClient';
 
 export const dynamic = 'force-dynamic';
 
 const OAUTH = process.env.NEXT_PUBLIC_OAUTH_SERVER_URL ?? 'https://oauth.polymorph.co.kr';
 const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? '';
 
-export default async function DevicesPage() {
+export default async function AccountsPage() {
   const user = await getAuthUserFromCookies();
 
   if (!user) {
@@ -22,25 +22,25 @@ export default async function DevicesPage() {
     );
   }
 
-  const devices = await prisma.device.findMany({
+  const accounts = await prisma.account.findMany({
     where: { userId: user.userId },
     orderBy: { id: 'desc' },
     select: {
       id: true,
-      name: true,
-      phoneNumber: true,
-      platform: true,
+      bank: true,
+      accountNumber: true,
+      label: true,
       notificationConfirmedAt: true,
     },
   });
 
-  const items = devices.map((d) => ({
-    id: d.id,
-    name: d.name,
-    phoneNumber: d.phoneNumber,
-    platform: d.platform,
-    confirmedAt: d.notificationConfirmedAt ? d.notificationConfirmedAt.toISOString() : null,
+  const items = accounts.map((a) => ({
+    id: a.id,
+    bank: a.bank,
+    accountNumber: a.accountNumber,
+    label: a.label,
+    confirmedAt: a.notificationConfirmedAt ? a.notificationConfirmedAt.toISOString() : null,
   }));
 
-  return <DevicesClient userName={user.name ?? user.email} devices={items} />;
+  return <AccountsClient userName={user.name ?? user.email} accounts={items} />;
 }

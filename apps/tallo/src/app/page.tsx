@@ -20,7 +20,7 @@ export default async function Home() {
             <span style={{ color: '#888' }}> ({user.userId})</span>
           </p>
           <p>
-            <a href="/devices">내 디바이스</a>
+            <a href="/accounts">내 계좌</a>
             {' · '}
             <a href="/api/auth/logout">로그아웃</a>
           </p>

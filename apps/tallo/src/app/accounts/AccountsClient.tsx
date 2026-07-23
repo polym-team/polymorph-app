@@ -3,12 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-interface DeviceItem {
+interface AccountItem {
   id: number;
-  name: string | null;
-  phoneNumber: string | null;
-  platform: string;
-  confirmedAt: string | null; // 은행 입금알림 등록 자동 확인 시각(첫 SMS 유입 시 Phase 3에서 세팅)
+  bank: string;
+  accountNumber: string;
+  label: string | null;
+  confirmedAt: string | null; // 첫 은행 SMS 유입 시 Phase 3에서 자동 세팅
 }
 
 const box: React.CSSProperties = {
@@ -32,38 +32,41 @@ const inputStyle: React.CSSProperties = {
   marginRight: '0.5rem',
 };
 
-export function DevicesClient({
+const BANKS = ['woori'];
+
+export function AccountsClient({
   userName,
-  devices,
+  accounts,
 }: {
   userName: string;
-  devices: DeviceItem[];
+  accounts: AccountItem[];
 }) {
   const router = useRouter();
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [label, setLabel] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [bank, setBank] = useState('woori');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<number | null>(null);
-  const [editName, setEditName] = useState('');
-  const [editPhone, setEditPhone] = useState('');
+  const [editLabel, setEditLabel] = useState('');
+  const [editNumber, setEditNumber] = useState('');
 
-  async function addDevice() {
-    if (!phone.trim()) {
-      setError('전화번호를 입력하세요.');
+  async function addAccount() {
+    if (!accountNumber.trim()) {
+      setError('계좌번호를 입력하세요.');
       return;
     }
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch('/api/devices', {
+      const res = await fetch('/api/accounts', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ name: name || undefined, phoneNumber: phone }),
+        body: JSON.stringify({ bank, accountNumber, label: label || undefined }),
       });
       if (!res.ok) throw new Error((await res.json()).message ?? '실패');
-      setName('');
-      setPhone('');
+      setLabel('');
+      setAccountNumber('');
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : '오류');
@@ -72,20 +75,20 @@ export function DevicesClient({
     }
   }
 
-  function startEdit(d: DeviceItem) {
-    setEditing(d.id);
-    setEditName(d.name ?? '');
-    setEditPhone(d.phoneNumber ?? '');
+  function startEdit(a: AccountItem) {
+    setEditing(a.id);
+    setEditLabel(a.label ?? '');
+    setEditNumber(a.accountNumber);
   }
 
   async function saveEdit(id: number) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/devices/${id}`, {
+      const res = await fetch(`/api/accounts/${id}`, {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ name: editName, phoneNumber: editPhone }),
+        body: JSON.stringify({ label: editLabel, accountNumber: editNumber }),
       });
       if (!res.ok) throw new Error((await res.json()).message ?? '실패');
       setEditing(null);
@@ -98,10 +101,10 @@ export function DevicesClient({
   }
 
   async function remove(id: number) {
-    if (!confirm('이 디바이스를 삭제할까요?')) return;
+    if (!confirm('이 계좌를 삭제할까요?')) return;
     setBusy(true);
     try {
-      await fetch(`/api/devices/${id}`, { method: 'DELETE' });
+      await fetch(`/api/accounts/${id}`, { method: 'DELETE' });
       router.refresh();
     } finally {
       setBusy(false);
@@ -113,34 +116,34 @@ export function DevicesClient({
       <p style={{ color: '#888' }}>
         {userName} · <a href="/api/auth/logout">로그아웃</a>
       </p>
-      <h1>내 디바이스</h1>
+      <h1>내 계좌</h1>
       <p style={{ color: '#888', fontSize: 14 }}>
-        기기를 추가하고, 그 번호로 <strong>은행 입금알림 서비스</strong>를 직접 신청하세요. 앱이
-        첫 은행 문자를 받으면 아래 상태가 <strong>자동으로 “확인됨”</strong>으로 바뀝니다.
+        입금 감시할 계좌를 등록하고, 그 계좌로 <strong>은행 입금알림 서비스</strong>를 직접
+        신청하세요. 앱이 이 계좌의 첫 문자를 받으면 상태가 <strong>자동으로 “확인됨”</strong>이 됩니다.
       </p>
 
       {error && <p style={{ color: '#c00' }}>{error}</p>}
 
-      {devices.length === 0 && <p style={{ color: '#888' }}>아직 등록된 디바이스가 없습니다.</p>}
+      {accounts.length === 0 && <p style={{ color: '#888' }}>아직 등록된 계좌가 없습니다.</p>}
 
-      {devices.map((d) => (
-        <div key={d.id} style={box}>
-          {editing === d.id ? (
+      {accounts.map((a) => (
+        <div key={a.id} style={box}>
+          {editing === a.id ? (
             <div>
               <input
                 style={inputStyle}
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
+                value={editLabel}
+                onChange={(e) => setEditLabel(e.target.value)}
                 placeholder="라벨"
               />
               <input
                 style={inputStyle}
-                value={editPhone}
-                onChange={(e) => setEditPhone(e.target.value)}
-                placeholder="전화번호"
+                value={editNumber}
+                onChange={(e) => setEditNumber(e.target.value)}
+                placeholder="계좌번호"
               />
               <div style={{ marginTop: '0.5rem' }}>
-                <button style={btn} disabled={busy} onClick={() => saveEdit(d.id)}>
+                <button style={btn} disabled={busy} onClick={() => saveEdit(a.id)}>
                   저장
                 </button>
                 <button style={btn} disabled={busy} onClick={() => setEditing(null)}>
@@ -151,21 +154,21 @@ export function DevicesClient({
           ) : (
             <div>
               <div style={{ fontWeight: 600 }}>
-                {d.name ?? `디바이스 #${d.id}`}{' '}
-                <span style={{ fontWeight: 400, color: d.confirmedAt ? '#0a0' : '#c80' }}>
-                  {d.confirmedAt
-                    ? `● 확인됨 (${new Date(d.confirmedAt).toLocaleDateString()})`
+                {a.label ?? `계좌 #${a.id}`}{' '}
+                <span style={{ fontWeight: 400, color: a.confirmedAt ? '#0a0' : '#c80' }}>
+                  {a.confirmedAt
+                    ? `● 확인됨 (${new Date(a.confirmedAt).toLocaleDateString()})`
                     : '○ 문자 대기 중'}
                 </span>
               </div>
               <div style={{ color: '#666', fontSize: 14 }}>
-                {d.phoneNumber ?? '번호 없음'} · {d.platform}
+                {a.bank} · {a.accountNumber}
               </div>
               <div style={{ marginTop: '0.6rem' }}>
-                <button style={btn} disabled={busy} onClick={() => startEdit(d)}>
+                <button style={btn} disabled={busy} onClick={() => startEdit(a)}>
                   수정
                 </button>
-                <button style={btn} disabled={busy} onClick={() => remove(d.id)}>
+                <button style={btn} disabled={busy} onClick={() => remove(a.id)}>
                   삭제
                 </button>
               </div>
@@ -174,22 +177,32 @@ export function DevicesClient({
         </div>
       ))}
 
-      <h2 style={{ marginTop: '2rem', fontSize: 16 }}>디바이스 추가</h2>
-      <p style={{ color: '#888', fontSize: 13 }}>전화번호는 직접 입력하세요(자동조회 미지원).</p>
+      <h2 style={{ marginTop: '2rem', fontSize: 16 }}>계좌 추가</h2>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <select
+          value={bank}
+          onChange={(e) => setBank(e.target.value)}
+          style={{ padding: '0.4rem', border: '1px solid #ccc', borderRadius: 4 }}
+        >
+          {BANKS.map((b) => (
+            <option key={b} value={b}>
+              {b}
+            </option>
+          ))}
+        </select>
         <input
-          placeholder="라벨(예: 매장 공기계)"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          placeholder="계좌번호(예: 1002-854-981268)"
+          value={accountNumber}
+          onChange={(e) => setAccountNumber(e.target.value)}
           style={{ padding: '0.4rem', border: '1px solid #ccc', borderRadius: 4 }}
         />
         <input
-          placeholder="전화번호"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          placeholder="라벨(예: 공동구매 수취)"
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
           style={{ padding: '0.4rem', border: '1px solid #ccc', borderRadius: 4 }}
         />
-        <button style={btn} disabled={busy} onClick={addDevice}>
+        <button style={btn} disabled={busy} onClick={addAccount}>
           추가
         </button>
       </div>
