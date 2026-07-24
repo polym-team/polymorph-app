@@ -22,6 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const tabs = [
     { href: '/admin/rounds', label: '주문 라운드' },
+    { href: '/admin/deposits', label: '입금 정산' },
     { href: '/admin/users', label: '사용자 관리' },
     { href: '/admin/scrape', label: '상품 갱신' },
   ];

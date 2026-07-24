@@ -146,6 +146,10 @@ model Order {
   customPhone      String?          @map("custom_phone")
   customAddress    String?          @map("custom_address") @db.VarChar(500)
   status           OrderStatus      @default(submitted)
+  // 입금 자동정산: 이 주문을 정산한 Tallo 원장 입금의 externalId(멱등키). null=미정산.
+  // Tallo 원장은 소비상태를 안 가지므로 "어떤 입금으로 정산됐는지"는 mall이 소유한다.
+  matchedDepositId String?          @map("matched_deposit_id") @db.VarChar(191)
+  settledAt        DateTime?         @map("settled_at")
   createdAt        DateTime         @default(now()) @map("created_at")
 
   round OrderRound @relation(fields: [roundId], references: [id])
@@ -153,6 +157,7 @@ model Order {
   items OrderItem[]
 
   @@unique([roundId, userId])
+  @@index([matchedDepositId])
   @@map("orders")
 }
 
