@@ -430,6 +430,7 @@ export default function RoundDetailPage({ params }: { params: Promise<{ id: stri
                     <th className="p-3 font-medium text-right">상품 합계</th>
                     <th className="p-3 font-medium text-right">배송비 분담</th>
                     <th className="p-3 font-medium text-right">정산 금액</th>
+                    <th className="p-3 font-medium">정산 상태</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">
@@ -442,6 +443,19 @@ export default function RoundDetailPage({ params }: { params: Promise<{ id: stri
                       <td className="p-3 text-right text-ink-600">{formatPrice(row.items_total)}</td>
                       <td className="p-3 text-right text-ink-600">{formatPrice(row.shipping_share)}</td>
                       <td className="p-3 text-right font-bold text-ink-900">{formatPrice(row.total)}</td>
+                      <td className="p-3">
+                        {row.settled ? (
+                          <div>
+                            <p className="text-sage-600 font-medium">✓ 입금 확인</p>
+                            <p className="text-xs text-ink-400">
+                              {row.settled_at && `${formatDate(row.settled_at)} · `}
+                              {row.confirm_no}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="text-ink-400">미확인</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -456,6 +470,9 @@ export default function RoundDetailPage({ params }: { params: Promise<{ id: stri
                     </td>
                     <td className="p-3 text-right">
                       {formatPrice(settlement.reduce((s, r) => s + r.total, 0))}
+                    </td>
+                    <td className="p-3 text-ink-600">
+                      {settlement.filter((r) => r.settled).length}/{settlement.length} 확인
                     </td>
                   </tr>
                 </tfoot>

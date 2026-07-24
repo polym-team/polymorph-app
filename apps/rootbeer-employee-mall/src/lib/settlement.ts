@@ -9,6 +9,8 @@ export interface OrderSettlement {
   itemsTotal: number;
   shippingShare: number;
   total: number; // 직원이 입금해야 할 금액(items_total + shipping_share)
+  matchedDepositId: string | null; // 정산 근거 입금(externalId). null=미확인
+  settledAt: Date | null;
 }
 
 /**
@@ -28,7 +30,14 @@ export async function computeRoundSettlement(roundId: number): Promise<OrderSett
 
   const byUser = new Map<
     number,
-    { orderId: number; name: string; email: string; itemsTotal: number }
+    {
+      orderId: number;
+      name: string;
+      email: string;
+      itemsTotal: number;
+      matchedDepositId: string | null;
+      settledAt: Date | null;
+    }
   >();
   for (const order of orders) {
     const activeItems = order.items.filter((item) => item.status === 'active');
@@ -41,6 +50,8 @@ export async function computeRoundSettlement(roundId: number): Promise<OrderSett
       name: order.user.name,
       email: order.user.email,
       itemsTotal,
+      matchedDepositId: order.matchedDepositId,
+      settledAt: order.settledAt,
     });
   }
 
@@ -71,6 +82,8 @@ export async function computeRoundSettlement(roundId: number): Promise<OrderSett
       itemsTotal: d.itemsTotal,
       shippingShare,
       total: d.itemsTotal + shippingShare,
+      matchedDepositId: d.matchedDepositId,
+      settledAt: d.settledAt,
     };
   });
 }

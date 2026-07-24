@@ -29,6 +29,9 @@ export interface SettlementRow {
   items_total: number;
   shipping_share: number;
   total: number;
+  settled: boolean;
+  settled_at: string | null;
+  confirm_no: string | null; // 정산 근거 입금 확인번호(Tallo externalId 앞 16자)
 }
 
 export const ADMIN_EMAIL = 'majac6@gmail.com';

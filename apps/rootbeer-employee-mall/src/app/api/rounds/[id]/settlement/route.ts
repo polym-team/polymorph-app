@@ -11,7 +11,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   const rows = await computeRoundSettlement(roundId);
 
-  // 기존 응답 스키마(snake_case, user 단위) 유지.
+  // 기존 응답 스키마(snake_case, user 단위) + 정산 상태 필드.
   const settlement = rows.map((r) => ({
     user_id: r.userId,
     user_name: r.userName,
@@ -19,6 +19,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     items_total: r.itemsTotal,
     shipping_share: r.shippingShare,
     total: r.total,
+    settled: r.matchedDepositId != null,
+    settled_at: r.settledAt ? r.settledAt.toISOString() : null,
+    confirm_no: r.matchedDepositId ? r.matchedDepositId.slice(0, 16) : null,
   }));
 
   return NextResponse.json(settlement);
