@@ -16,6 +16,8 @@ interface OrderData {
   customAddress: string | null;
   status: string;
   createdAt: string;
+  settledAt: string | null;
+  matchedDepositId: string | null;
   shippingShare: number;
   round: { title: string | null; status: string };
   items: {
@@ -164,14 +166,32 @@ export default function MyOrdersPage() {
                     <span>{formatPrice(total)}</span>
                   </div>
                 </div>
-                {order.round.status === 'ordered' && (
-                  <div className="p-3 border-t border-line bg-clay-50 text-sm">
-                    <p className="font-medium text-clay-600 mb-1">입금 안내</p>
-                    <p className="text-ink-900">우리은행 1002-854-981268 (예금주: 임흥선)</p>
-                    <p className="text-xs text-ink-600 mt-1">
-                      주문이 완료되었습니다. 위 계좌로 정산 금액을 입금해주세요.
+                {order.matchedDepositId ? (
+                  <div className="p-3 border-t border-line bg-sage-50 text-sm">
+                    <p className="font-medium text-sage-600 mb-1">✓ 입금 확인 완료</p>
+                    <p className="text-ink-900">
+                      {formatPrice(total)} 입금이 자동으로 확인되었습니다.
+                    </p>
+                    <p className="text-xs text-ink-400 mt-1">
+                      {order.settledAt && <>확인 시각: {formatDate(order.settledAt)} · </>}
+                      확인번호: {order.matchedDepositId.slice(0, 16)}
                     </p>
                   </div>
+                ) : (
+                  order.round.status === 'ordered' && (
+                    <div className="p-3 border-t border-line bg-clay-50 text-sm">
+                      <p className="font-medium text-clay-600 mb-1">입금 안내</p>
+                      <p className="text-ink-900">우리은행 1002-854-981268 (예금주: 임흥선)</p>
+                      <p className="text-ink-900 font-medium mt-0.5">
+                        입금액 {formatPrice(total)}
+                      </p>
+                      <p className="text-xs text-ink-600 mt-1">
+                        위 계좌로 <span className="font-medium">정확한 금액</span>을 입금해주세요.
+                        입금이 확인되면 <span className="font-medium">자동으로 정산 완료</span>로
+                        바뀝니다. (예금주명과 입금액으로 자동 매칭)
+                      </p>
+                    </div>
+                  )
                 )}
               </SectionCard>
             );

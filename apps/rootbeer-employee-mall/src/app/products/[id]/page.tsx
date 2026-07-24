@@ -38,6 +38,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [added, setAdded] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // 상세 진입/상품 변경 시 항상 최상단에서 시작.
+  // (목록에서 스크롤된 위치가 상세로 넘어와 잔상으로 남는 문제 방지)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
   useEffect(() => {
     fetch(`/api/products/${id}`)
       .then((r) => {
