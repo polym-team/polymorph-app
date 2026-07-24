@@ -25,6 +25,21 @@ function isNonEmptyString(v: unknown): v is string {
 }
 
 /**
+ * 입금의 수취 계좌(마스킹, 예: *981268)와 끝자리가 일치하는 미확인 계좌의
+ * notificationConfirmedAt을 자동 세팅한다. "첫 은행 SMS 유입 시 확인됨" UX.
+ * 실패해도 입금 적재에는 영향 없음(호출부에서 catch).
+ */
+async function confirmMatchingAccounts(bankAccount: string | null): Promise<void> {
+  if (!bankAccount) return;
+  const digits = bankAccount.replace(/\D/g, '');
+  if (digits.length < 4) return; // 너무 짧으면 과매칭 방지
+  await prisma.account.updateMany({
+    where: { notificationConfirmedAt: null, accountNumber: { endsWith: digits } },
+    data: { notificationConfirmedAt: new Date() },
+  });
+}
+
+/**
  * POST /api/deposits — 브릿지 인그레스(scope=ingest).
  * externalId 기준 멱등 upsert. 이미 존재하면 created:false로 무시.
  */
@@ -94,6 +109,12 @@ export async function POST(req: Request): Promise<Response> {
       },
       select: { id: true },
     });
+    // 첫 입금 문자 유입 시 대응 계좌 "확인됨" 자동 세팅(적재 성공엔 영향 없음).
+    try {
+      await confirmMatchingAccounts(bankAccount);
+    } catch {
+      // 무시 — 계좌 확인 실패가 입금 적재를 막지 않는다.
+    }
     return Response.json({ created: true, id: created.id }, { status: 201 });
   } catch (error) {
     // 동시 요청으로 unique 충돌 시에도 멱등하게 응답
