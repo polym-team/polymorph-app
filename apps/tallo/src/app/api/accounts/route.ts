@@ -21,8 +21,16 @@ export async function GET(req: Request): Promise<Response> {
     },
   });
 
-  // 등록 확인 여부 = 이 계좌의 첫 은행 SMS 유입으로 자동 세팅된 notificationConfirmedAt 존재
-  const items = accounts.map((a) => ({ ...a, confirmed: a.notificationConfirmedAt != null }));
+  // 등록 확인 시각 = 첫 은행 SMS 유입으로 자동 세팅된 notificationConfirmedAt.
+  // 앱/웹 클라이언트는 confirmedAt(ISO|null)로 소비한다.
+  const items = accounts.map((a) => ({
+    id: a.id,
+    bank: a.bank,
+    accountNumber: a.accountNumber,
+    label: a.label,
+    confirmedAt: a.notificationConfirmedAt,
+    createdAt: a.createdAt,
+  }));
   return Response.json({ items });
 }
 
