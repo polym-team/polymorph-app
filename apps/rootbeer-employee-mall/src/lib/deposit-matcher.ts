@@ -38,10 +38,17 @@ function normalizeName(s: string): string {
   return s.replace(/\s+/g, '').trim();
 }
 
-/** 공백 제거 후 완전 일치. 빈 문자열은 불일치 취급. */
+/**
+ * 공백 제거 후 완전 일치 또는 부분 포함 일치.
+ * User.name이 "edward.k(김병우)"처럼 영문닉+괄호실명 형태라 은행 입금자명(김병우)과
+ * 완전일치가 안 되는 경우가 흔해, 한쪽이 다른 쪽을 포함하면 일치로 본다.
+ * 단일 글자 오탐 방지를 위해 짧은 쪽이 2자 이상일 때만 포함 매칭 허용.
+ */
 export function nameMatches(a: string, b: string): boolean {
   const na = normalizeName(a);
-  return na.length > 0 && na === normalizeName(b);
+  const nb = normalizeName(b);
+  if (na.length < 2 || nb.length < 2) return false;
+  return na === nb || na.includes(nb) || nb.includes(na);
 }
 
 export function proposeMatches(
