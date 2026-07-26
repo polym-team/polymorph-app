@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/api-utils';
+import { nameMatches } from '@/lib/deposit-matcher';
+import { fetchDeposits } from '@/lib/tallo';
 import type { Prisma } from '@/generated/prisma';
 
 export async function GET() {
@@ -69,10 +71,51 @@ export async function GET() {
       (sum, pid) => sum + (purchaseShareMap.get(pid) ?? 0),
       0,
     );
-    return { ...order, shippingShare };
+    const itemsTotal = order.items
+      .filter((i) => i.status === 'active')
+      .reduce((sum, i) => sum + i.priceAtOrder * i.quantity, 0);
+    return { ...order, shippingShare, total: itemsTotal + shippingShare };
   });
 
-  return NextResponse.json(enriched);
+  // 조기 입금/크론 반영 전 안내: 아직 정산 안 된 주문에 대해, 원장에 "이 주문 금액 +
+  // 이름"과 맞는 미소비 입금이 있으면 "입금 확인됨(반영 대기)"으로 표시.
+  // (정산대기 전 조기 입금 + 크론 10분 지연 모두 커버, 이름·금액 정확 매칭이라 오탐 방지)
+  // Tallo 조회 실패는 조용히 무시(주문 목록 렌더는 항상 성공).
+  const pendingByOrder = new Map<number, { amount: number; txAt: string }>();
+  try {
+    const unsettled = enriched.filter((o) => !o.matchedDepositId);
+    if (unsettled.length > 0 && user!.name) {
+      const usedRows = await prisma.order.findMany({
+        where: { matchedDepositId: { not: null } },
+        select: { matchedDepositId: true },
+      });
+      const usedSet = new Set(usedRows.map((u) => u.matchedDepositId as string));
+      const from = new Date(Date.now() - 45 * 24 * 60 * 60 * 1000);
+      const deposits = (await fetchDeposits({ from })).filter((d) => !usedSet.has(d.externalId));
+      const claimed = new Set<string>();
+      for (const o of unsettled) {
+        const hit = deposits.find(
+          (d) =>
+            !claimed.has(d.externalId) &&
+            d.amount === o.total &&
+            nameMatches(d.payerName, user!.name)
+        );
+        if (hit) {
+          claimed.add(hit.externalId);
+          pendingByOrder.set(o.id, { amount: hit.amount, txAt: hit.txAt });
+        }
+      }
+    }
+  } catch {
+    // Tallo 불가 시 조기입금 안내만 생략(주문 조회는 정상).
+  }
+
+  const withPending = enriched.map((o) => ({
+    ...o,
+    depositPending: pendingByOrder.get(o.id) ?? null,
+  }));
+
+  return NextResponse.json(withPending);
 }
 
 export async function POST(req: Request) {

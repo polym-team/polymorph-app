@@ -18,6 +18,7 @@ interface OrderData {
   createdAt: string;
   settledAt: string | null;
   matchedDepositId: string | null;
+  depositPending: { amount: number; txAt: string } | null;
   shippingShare: number;
   round: { title: string | null; status: string };
   items: {
@@ -177,22 +178,31 @@ export default function MyOrdersPage() {
                       확인번호: {order.matchedDepositId.slice(0, 16)}
                     </p>
                   </div>
-                ) : (
-                  order.round.status === 'ordered' && (
-                    <div className="p-3 border-t border-line bg-clay-50 text-sm">
-                      <p className="font-medium text-clay-600 mb-1">입금 안내</p>
-                      <p className="text-ink-900">우리은행 1002-854-981268 (예금주: 임흥선)</p>
-                      <p className="text-ink-900 font-medium mt-0.5">
-                        입금액 {formatPrice(total)}
-                      </p>
-                      <p className="text-xs text-ink-600 mt-1">
-                        위 계좌로 <span className="font-medium">정확한 금액</span>을 입금해주세요.
-                        입금이 확인되면 <span className="font-medium">자동으로 정산 완료</span>로
-                        바뀝니다. (예금주명과 입금액으로 자동 매칭)
-                      </p>
-                    </div>
-                  )
-                )}
+                ) : order.depositPending ? (
+                  <div className="p-3 border-t border-line bg-sage-50 text-sm">
+                    <p className="font-medium text-sage-600 mb-1">✓ 입금 내역 확인됨</p>
+                    <p className="text-ink-900">
+                      {formatPrice(order.depositPending.amount)} 입금이 확인되었습니다. 정산 반영을
+                      기다리는 중입니다.
+                    </p>
+                    <p className="text-xs text-ink-400 mt-1">
+                      라운드 정산이 진행되면 자동으로 완료 처리됩니다.
+                    </p>
+                  </div>
+                ) : order.round.status === 'ordered' ? (
+                  <div className="p-3 border-t border-line bg-clay-50 text-sm">
+                    <p className="font-medium text-clay-600 mb-1">입금 안내</p>
+                    <p className="text-ink-900">우리은행 1002-854-981268 (예금주: 임흥선)</p>
+                    <p className="text-ink-900 font-medium mt-0.5">
+                      입금액 {formatPrice(total)}
+                    </p>
+                    <p className="text-xs text-ink-600 mt-1">
+                      위 계좌로 <span className="font-medium">정확한 금액</span>을 입금해주세요.
+                      입금이 확인되면 <span className="font-medium">자동으로 정산 완료</span>로
+                      바뀝니다. (예금주명과 입금액으로 자동 매칭)
+                    </p>
+                  </div>
+                ) : null}
               </SectionCard>
             );
           })}
