@@ -6,6 +6,7 @@ import { Toaster } from '@package/ui';
 
 import { GlobalConfirmDialog } from '@/widgets/ui/GlobalConfirmDialog';
 
+import '../../../../packages/theme/presets/jibsayo.css';
 import '../../../../packages/styles/globals.css';
 import { ConfigProvider } from './components/ConfigProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';

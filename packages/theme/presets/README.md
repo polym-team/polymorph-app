@@ -31,12 +31,16 @@
 
 ## 로딩 (Phase 1)
 
-앱 레이아웃에서 `tokens.css` 다음에 자기 프리셋을 import:
+앱 레이아웃에서 **자기 프리셋만** import한다 (globals.css 위에, 상대경로):
 
 ```ts
-import '@package/theme/tokens.css';
-import '@package/theme/presets/jibsayo.css';
+import '../../../../packages/theme/presets/jibsayo.css';
+import '../../../../packages/styles/globals.css';
 ```
 
-> 참고: 현재 `@package/config`는 `hsl(var(--x, <기본값>) / <alpha>)` 형태라, 프리셋을
-> 로드하지 않은 앱도 fallback(하우스 블루)으로 정상 렌더된다. 프리셋을 로드한 앱만 브랜드가 입혀진다.
+- base 뉴트럴/semantic은 `@package/config`의 `hsl(var(--x, <기본값>) / <alpha>)` fallback이
+  이미 제공하므로, 프리셋은 `--primary` 등 브랜드 토큰만 정의하면 된다.
+- `tokens.css`(정본 base)를 앱마다 로드하지 않는 이유: preset과 둘 다 `:root`라
+  로드 순서(특히 eslint import 정렬)에 따라 base가 브랜드를 덮어쓸 수 있다.
+  `tokens.css`는 정본 정의로 유지하고, **다크모드 단계에서 전역으로 1회 로드**한다.
+- 프리셋을 로드하지 않은 앱은 fallback(하우스 블루)으로 정상 렌더된다.
