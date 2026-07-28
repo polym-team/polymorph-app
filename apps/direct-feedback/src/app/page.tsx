@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { CHROME_EXTENSION_URL } from '@/lib/constants';
 
 const OAUTH =
   process.env.NEXT_PUBLIC_OAUTH_SERVER_URL || 'https://oauth.polymorph.co.kr';
@@ -146,7 +147,13 @@ export default function Home() {
       <p>
         <a href="/my" style={S.topLink}>내 코멘트</a>
         {' · '}
+        <a href="/snapshots" style={S.topLink}>스냅샷 관리</a>
+        {' · '}
         <a href="/guide" style={S.topLink}>MCP 연결 가이드 ↗</a>
+        {' · '}
+        <a href={CHROME_EXTENSION_URL} style={S.topLink} target="_blank" rel="noreferrer">
+          크롬 확장 설치 ↗
+        </a>
       </p>
 
       <div style={S.row}>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { CHROME_EXTENSION_URL } from '@/lib/constants';
 
 const OAUTH =
   process.env.NEXT_PUBLIC_OAUTH_SERVER_URL || 'https://oauth.polymorph.co.kr';
@@ -168,8 +169,21 @@ export default function MyComments() {
       <h1>코멘트</h1>
       <p style={S.muted}>
         내가 속한 그룹의 코멘트를 상태·작성자·그룹으로 필터해 봅니다. ·{' '}
+        <a href="/snapshots" style={{ color: '#1e84ff', textDecoration: 'none', fontWeight: 600 }}>
+          스냅샷 관리
+        </a>
+        {' · '}
         <a href="/guide" style={{ color: '#1e84ff', textDecoration: 'none', fontWeight: 600 }}>
           MCP 연결 가이드 ↗
+        </a>
+        {' · '}
+        <a
+          href={CHROME_EXTENSION_URL}
+          style={{ color: '#1e84ff', textDecoration: 'none', fontWeight: 600 }}
+          target="_blank"
+          rel="noreferrer"
+        >
+          크롬 확장 설치 ↗
         </a>
       </p>
 
