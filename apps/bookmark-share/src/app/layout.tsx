@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { SessionProvider } from 'next-auth/react';
 
+import '../../../../packages/theme/presets/bookmark-share.css';
 import '../../../../packages/styles/globals.css';
 
 export const metadata: Metadata = {
