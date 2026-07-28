@@ -29,9 +29,9 @@ export function Spinner() {
         }
       `}</style>
       <div className="flex gap-2">
-        <div className="w-3 h-3 bg-primary-500 rounded-full dot dot-1"></div>
-        <div className="w-3 h-3 bg-primary-500 rounded-full dot dot-2"></div>
-        <div className="w-3 h-3 bg-primary-500 rounded-full dot dot-3"></div>
+        <div className="w-3 h-3 bg-primary rounded-full dot dot-1"></div>
+        <div className="w-3 h-3 bg-primary rounded-full dot dot-2"></div>
+        <div className="w-3 h-3 bg-primary rounded-full dot dot-3"></div>
       </div>
     </div>
   );
