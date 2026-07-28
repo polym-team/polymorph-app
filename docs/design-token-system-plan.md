@@ -186,4 +186,14 @@ grep 결과 실사용 거의 없음(`primary-500`이 jibsayo Spinner 1파일 3�
 - [x] **scaffolding 오버뷰 페이지 (`/themes`)** — `@package/theme/registry.ts`(단일 소스)에서 자동 렌더, 앱별 토큰을 스코프 주입해 실제 @package/ui 컴포넌트로 프리뷰. 브라우저 검증 완료.
   - registry.ts가 오버뷰의 정본. ⚠️ presets/*.css 는 아직 수기 동기화 → 추후 registry에서 생성 권장.
 - [x] **why-doc 작성** (`packages/theme/CLAUDE.md`) — 틀+값 개념, theme/ui 경계, **프리셋 얇게 유지 결정(primary만)+근거**, HSL 규약, 새 앱 절차, self-themed 예외, fallback 메커니즘
-- [ ] Phase 2: 그룹 B/자체 config 앱(oauth·rootbeer·autto·official·tallo) 정합화
+- [~] **전략 재평가 (Phase 2 대체)**: 조사 결과 나머지 8개 앱은 `@package/ui`·`bg-primary` seam을
+  **아예 소비하지 않음** (각자 own-config/self-themed/인라인). 일괄 편입은 대규모 UI 리팩토링이라
+  가치 대비 위험이 큼. → **"jibsayo를 완성 레퍼런스로 만들고, 앱별로 하나씩 리팩토링"** 전략으로 전환.
+- [x] **jibsayo 리팩토링 (레퍼런스 앱)** — 하드코딩 색을 토큰으로:
+  - 브랜드 blue → `primary` (nav 활성·링크·선택 마커·소프트 hover)
+  - 에러 red → `danger` (ErrorBoundary·auth·로그아웃)
+  - 가격 상승/하락 red/blue → **앱 로컬 토큰** `priceUp`/`priceDown` (presets/jibsayo.css + jibsayo tailwind 확장)
+  - 유지: 즐겨찾기 별(yellow)·차트 hex·gray 뉴트럴
+  - 애매(미결): `ApartItem`의 신규(red)/최근(blue) 카테고리 배지 → 남겨둠
+  - 검증: tailwind 컴파일로 새 클래스 정상 생성 확인
+- [ ] 앱별 순차 리팩토링: oauth·rootbeer·autto·official·tallo (각 앱이 seam을 쓰게 하려면 UI 편입 필요 — 앱별 판단)
