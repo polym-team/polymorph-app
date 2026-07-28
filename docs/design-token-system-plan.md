@@ -185,5 +185,5 @@ grep 결과 실사용 거의 없음(`primary-500`이 jibsayo Spinner 1파일 3�
   - → 결론: 신규 앱 중 프리셋 대상은 그룹 A(완료)뿐. 나머지는 self-themed이거나 별도 편입 과제.
 - [x] **scaffolding 오버뷰 페이지 (`/themes`)** — `@package/theme/registry.ts`(단일 소스)에서 자동 렌더, 앱별 토큰을 스코프 주입해 실제 @package/ui 컴포넌트로 프리뷰. 브라우저 검증 완료.
   - registry.ts가 오버뷰의 정본. ⚠️ presets/*.css 는 아직 수기 동기화 → 추후 registry에서 생성 권장.
+- [x] **why-doc 작성** (`packages/theme/CLAUDE.md`) — 틀+값 개념, theme/ui 경계, **프리셋 얇게 유지 결정(primary만)+근거**, HSL 규약, 새 앱 절차, self-themed 예외, fallback 메커니즘
 - [ ] Phase 2: 그룹 B/자체 config 앱(oauth·rootbeer·autto·official·tallo) 정합화
-- [ ] why-doc 작성 (`packages/theme/CLAUDE.md`)
