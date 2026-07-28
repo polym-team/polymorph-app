@@ -11,6 +11,7 @@
     "clean": "rm -rf .next"
   },
   "dependencies": {
+    "@package/theme": "workspace:*",
     "@package/ui": "workspace:*",
     "@package/utils": "workspace:*"
   },

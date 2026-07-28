@@ -175,9 +175,15 @@ grep 결과 실사용 거의 없음(`primary-500`이 jibsayo Spinner 1파일 3�
   - jibsayo `Spinner.tsx`: `bg-primary-500` → `bg-primary`
   - 검증: tailwind 컴파일 시 fallback으로 기존 색 재현 + 알파 modifier 동작 확인
 - [ ] 팔레트 hex → HSL 채널 변환표 작성 (11개, README에 jibsayo 예시 있음)
-- [ ] Phase 1: 앱별 프리셋 추가 + 로딩 (그룹 A: jibsayo → bookmark-share → okra)
-  - 로딩 방식 확정 필요: `@import`(postcss-import 추가) vs 레이아웃 JS import
-  - official-website·myflighthistory는 자체 globals라 프리셋 로딩 별도 처리
-- [ ] Phase 2: 그룹 B(rootbeer/autto/official) 정합화
-- [ ] scaffolding 오버뷰 페이지
+- [x] **Phase 1 그룹 A 완료**: jibsayo(블루)·bookmark-share(바이올렛)·okra(그린)
+  - 로딩 방식 확정: 레이아웃에서 **자기 preset만** 상대경로 import (order-independent). tokens.css는 다크모드 단계에서 전역 로드.
+  - 앱별 커밋 3개.
+- [~] Phase 1 나머지 신규 앱 — 조사 결과 **프리셋 방식 부적합**:
+  - **myflighthistory**: 토큰 미사용. 자체 "공항 FIDS" 다크 디자인(`--board`/`--fids-*`/`--delay #ff9f38`)이 이미 완성. `bg-primary`·`@package/ui` 0개 → 프리셋 무의미. **self-themed로 분류, 프리셋 불필요.**
+  - **direct-feedback**: Tailwind/shadcn 미사용(`className` 0, `style={{` 인라인만 6). 토큰 시스템에 편입하려면 Tailwind+@package/ui 도입 = **별도 마이그레이션**(프리셋 드롭 아님).
+  - **tallo**: 자체 config(shared 미사용) → Phase 2 성격.
+  - → 결론: 신규 앱 중 프리셋 대상은 그룹 A(완료)뿐. 나머지는 self-themed이거나 별도 편입 과제.
+- [x] **scaffolding 오버뷰 페이지 (`/themes`)** — `@package/theme/registry.ts`(단일 소스)에서 자동 렌더, 앱별 토큰을 스코프 주입해 실제 @package/ui 컴포넌트로 프리뷰. 브라우저 검증 완료.
+  - registry.ts가 오버뷰의 정본. ⚠️ presets/*.css 는 아직 수기 동기화 → 추후 registry에서 생성 권장.
+- [ ] Phase 2: 그룹 B/자체 config 앱(oauth·rootbeer·autto·official·tallo) 정합화
 - [ ] why-doc 작성 (`packages/theme/CLAUDE.md`)

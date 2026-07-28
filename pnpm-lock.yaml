@@ -622,6 +622,9 @@ importers:
 
   apps/scaffolding:
     dependencies:
+      '@package/theme':
+        specifier: workspace:*
+        version: link:../../packages/theme
       '@package/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -706,6 +709,8 @@ importers:
       next:
         specifier: '>=14.2.0'
         version: 15.5.9(react-dom@19.2.3)(react@19.2.3)
+
+  packages/theme: {}
 
   packages/ui:
     dependencies:
