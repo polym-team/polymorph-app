@@ -256,7 +256,7 @@ export function LocationInfo({ data }: LocationInfoProps) {
         onClick={() => setIsUnlocked(prev => !prev)}
         className={`absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold shadow-lg ring-2 transition-all hover:scale-105 ${
           isUnlocked
-            ? 'bg-blue-500 text-white ring-white/60 hover:bg-blue-600'
+            ? 'bg-primary text-white ring-white/60 hover:bg-primary/90'
             : 'bg-gray-900 text-white ring-white/60 hover:bg-gray-800'
         }`}
         title={isUnlocked ? '지도 잠그기' : '지도 잠금 해제'}

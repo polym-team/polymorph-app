@@ -22,8 +22,8 @@ function formatPrice(amount: number): string {
 function getChangeRate(current: number, prev: number | null): { text: string; color: string } {
   if (!prev) return { text: '-', color: 'text-gray-400' };
   const rate = ((current - prev) / prev) * 100;
-  if (rate > 0) return { text: `+${rate.toFixed(1)}%`, color: 'text-red-500' };
-  if (rate < 0) return { text: `${rate.toFixed(1)}%`, color: 'text-blue-500' };
+  if (rate > 0) return { text: `+${rate.toFixed(1)}%`, color: 'text-priceUp' };
+  if (rate < 0) return { text: `${rate.toFixed(1)}%`, color: 'text-priceDown' };
   return { text: '0%', color: 'text-gray-400' };
 }
 
@@ -47,7 +47,7 @@ export function RegionSummary({ summaries }: Props) {
           return (
             <button
               key={s.regionCode}
-              className="rounded-lg border bg-white p-3 text-left transition hover:border-blue-200 hover:bg-blue-50"
+              className="rounded-lg border bg-white p-3 text-left transition hover:border-primary/30 hover:bg-primary/5"
               onClick={() => handleClick(s.regionCode)}
             >
               <div className="mb-1 flex items-center justify-between">

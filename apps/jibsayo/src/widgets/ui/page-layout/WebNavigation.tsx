@@ -146,7 +146,7 @@ export function WebNavigation() {
                     </button>
                     <button
                       onClick={() => { setMenuOpen(false); logout(); }}
-                      className="block w-full border-t px-3 py-2 text-left text-xs text-red-500 hover:bg-red-50 lg:text-sm"
+                      className="block w-full border-t px-3 py-2 text-left text-xs text-danger hover:bg-danger/10 lg:text-sm"
                     >
                       로그아웃
                     </button>

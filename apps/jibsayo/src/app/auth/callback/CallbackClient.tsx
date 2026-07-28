@@ -59,7 +59,7 @@ export function CallbackClient() {
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600">
+        <div className="rounded-lg bg-danger/10 p-4 text-sm text-danger">
           {error}{' '}
           <Link href="/" className="underline">홈으로</Link>
         </div>

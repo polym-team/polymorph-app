@@ -217,7 +217,7 @@ export function TableView({
                 {!!row.original.highestTransaction &&
                   row.original.dealAmount >
                     row.original.highestTransaction.dealAmount && (
-                    <PriceLabel className="bg-red-600 text-white">
+                    <PriceLabel className="bg-priceUp text-white">
                       신고가
                     </PriceLabel>
                   )}
@@ -234,10 +234,10 @@ export function TableView({
                           className="flex cursor-pointer items-center gap-x-0.5"
                           onClick={e => e.stopPropagation()}
                         >
-                          <PriceLabel className="bg-red-100 text-red-600">
+                          <PriceLabel className="bg-priceUp/10 text-priceUp">
                             고
                           </PriceLabel>
-                          <span className="text-sm text-red-600">
+                          <span className="text-sm text-priceUp">
                             {formatKoreanAmountText(
                               row.original.highestTransaction.dealAmount
                             ).replace('원', '')}
@@ -262,10 +262,10 @@ export function TableView({
                           className="flex cursor-pointer items-center gap-x-1"
                           onClick={e => e.stopPropagation()}
                         >
-                          <PriceLabel className="bg-blue-100 text-blue-600">
+                          <PriceLabel className="bg-priceDown/10 text-priceDown">
                             저
                           </PriceLabel>
-                          <span className="text-sm text-blue-600">
+                          <span className="text-sm text-priceDown">
                             {formatKoreanAmountText(
                               row.original.lowestTransaction.dealAmount
                             ).replace('원', '')}

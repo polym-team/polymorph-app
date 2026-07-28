@@ -41,7 +41,7 @@ export function RecentTransactions({ transactions }: Props) {
         {transactions.map(t => (
           <button
             key={t.id}
-            className="flex w-full items-center justify-between rounded-lg border bg-white p-3 text-left transition hover:border-blue-200"
+            className="flex w-full items-center justify-between rounded-lg border bg-white p-3 text-left transition hover:border-primary/30"
             onClick={() => {
               if (t.apartId) router.push(`${ROUTE_PATH.APART}/${t.apartId}`);
             }}
