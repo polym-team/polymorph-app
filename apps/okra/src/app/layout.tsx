@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Providers } from './components/Providers';
 
+import '../../../../packages/theme/presets/okra.css';
 import '../../../../packages/styles/globals.css';
 
 export const metadata: Metadata = {
