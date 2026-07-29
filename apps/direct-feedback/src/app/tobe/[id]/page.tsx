@@ -60,6 +60,7 @@ export default function ToBeEditor() {
   const [computed, setComputed] = useState<{ p: string; v: string }[]>([]);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [restricted, setRestricted] = useState(false); // 프로필 선택자로 편집 선택 제한 중인지
 
   const containerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
@@ -72,6 +73,7 @@ export default function ToBeEditor() {
   const hoverElRef = useRef<HTMLDivElement | null>(null);
   const bandElsRef = useRef<HTMLElement[]>([]);
   const scrollRafRef = useRef<number | null>(null);
+  const targetSelRef = useRef<string>(''); // 프로덕션 스냅샷의 프로필 선택자(있으면 선택 제한)
 
   useEffect(() => {
     if (!id) return;
@@ -107,6 +109,43 @@ export default function ToBeEditor() {
   const INSPECTOR_ATTR = 'data-df-inspector';
   function isOurs(el: Element | null): boolean {
     return !!el && !!el.closest?.(`[${INSPECTOR_ATTR}]`);
+  }
+  // 프로덕션 스냅샷: 프로필 선택자(targetSelRef)로 선택을 매칭 요소로 제한(스토리북은 빈 문자열=무제한).
+  function closestTarget(el: Element | null): HTMLElement | null {
+    const sel = targetSelRef.current;
+    if (!el) return null;
+    if (!sel) return el as HTMLElement;
+    try {
+      return el.closest(sel) as HTMLElement | null;
+    } catch {
+      return null;
+    }
+  }
+  function matchAncestor(el: HTMLElement, sel: string): Element | null {
+    try {
+      return el.parentElement ? el.parentElement.closest(sel) : null;
+    } catch {
+      return null;
+    }
+  }
+  function matchDescendant(el: HTMLElement, sel: string): Element | null {
+    try {
+      return el.querySelector(sel);
+    } catch {
+      return null;
+    }
+  }
+  function matchSibling(el: HTMLElement, sel: string, dir: 1 | -1): Element | null {
+    let n = dir > 0 ? el.nextElementSibling : el.previousElementSibling;
+    while (n) {
+      try {
+        if (n.matches(sel)) return n;
+      } catch {
+        return null;
+      }
+      n = dir > 0 ? n.nextElementSibling : n.previousElementSibling;
+    }
+    return null;
   }
   function ensureInspector(): HTMLDivElement | null {
     const idoc = idocRef.current;
@@ -217,7 +256,9 @@ export default function ToBeEditor() {
       e.stopPropagation();
       const el = e.target as HTMLElement;
       if (!el || el.nodeType !== 1 || isOurs(el)) return;
-      selectElement(el);
+      const target = closestTarget(el); // 프로필 있으면 매칭 조상, 없으면 el 자신
+      if (!target) return; // 매칭 대상 없음 → 선택 불가
+      selectElement(target);
     },
     [selectElement],
   );
@@ -229,11 +270,12 @@ export default function ToBeEditor() {
     if (!idoc) return;
     const me = e as MouseEvent;
     const el = idoc.elementFromPoint(me.clientX, me.clientY) as HTMLElement | null;
-    if (!el || isOurs(el) || el === selElRef.current) {
+    const target = el && !isOurs(el) ? closestTarget(el) : null;
+    if (!target || target === selElRef.current) {
       hideHover();
       return;
     }
-    moveHover(el);
+    moveHover(target);
   }, []);
 
   // ↑ 부모 / ↓ 첫 자식 / ← → 형제 로 선택 이동. 얇은 그룹 컨테이너를 클릭 없이 잡기 위함.
@@ -244,11 +286,21 @@ export default function ToBeEditor() {
       if (!cur) return;
       const ke = e as KeyboardEvent;
       let next: Element | null = null;
-      if (ke.key === 'ArrowUp') next = visibleParent(cur);
-      else if (ke.key === 'ArrowDown') next = firstVisibleChild(cur, { skip: isOurs });
-      else if (ke.key === 'ArrowRight') next = nextVisibleSibling(cur, { skip: isOurs });
-      else if (ke.key === 'ArrowLeft') next = prevVisibleSibling(cur, { skip: isOurs });
-      else return;
+      const sel = targetSelRef.current;
+      if (sel) {
+        // 프로필 모드: 매칭 요소만 — ↑ 매칭 조상 / ↓ 첫 매칭 자손 / ← → 매칭 형제
+        if (ke.key === 'ArrowUp') next = matchAncestor(cur, sel);
+        else if (ke.key === 'ArrowDown') next = matchDescendant(cur, sel);
+        else if (ke.key === 'ArrowRight') next = matchSibling(cur, sel, 1);
+        else if (ke.key === 'ArrowLeft') next = matchSibling(cur, sel, -1);
+        else return;
+      } else {
+        if (ke.key === 'ArrowUp') next = visibleParent(cur);
+        else if (ke.key === 'ArrowDown') next = firstVisibleChild(cur, { skip: isOurs });
+        else if (ke.key === 'ArrowRight') next = nextVisibleSibling(cur, { skip: isOurs });
+        else if (ke.key === 'ArrowLeft') next = prevVisibleSibling(cur, { skip: isOurs });
+        else return;
+      }
       ke.preventDefault();
       ke.stopPropagation();
       if (next) selectElement(next as HTMLElement);
@@ -269,6 +321,39 @@ export default function ToBeEditor() {
       renderInspector(selElRef.current);
     });
   }, []);
+
+  // 프로덕션 스냅샷이면 urlKey 호스트로 프로필을 조회해 편집 선택을 매칭 요소로 제한.
+  // (스토리북 스냅샷은 urlKey 가 URL 이 아니라 조회 안 됨 → 무제한)
+  useEffect(() => {
+    targetSelRef.current = '';
+    setRestricted(false);
+    if (!snap) return;
+    let host = '';
+    try {
+      host = new URL(snap.urlKey).hostname;
+    } catch {
+      host = '';
+    }
+    if (!host) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/site-profiles/resolve?host=${encodeURIComponent(host)}`);
+        if (!res.ok) return;
+        const d = await res.json();
+        const selectors = d.profile?.selectors;
+        if (!cancelled && Array.isArray(selectors) && selectors.length) {
+          targetSelRef.current = selectors.join(',');
+          setRestricted(true);
+        }
+      } catch {
+        /* noop */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [snap]);
 
   // 스냅샷 → iframe(rebuild). rrweb JSON 이면 편집 가능, 아니면(구버전 HTML) srcdoc 뷰 전용.
   useEffect(() => {
@@ -483,7 +568,15 @@ export default function ToBeEditor() {
         {inEdit && (
           <aside style={S.panel}>
             {!sel ? (
-              <p style={S.muted}>편집할 요소를 클릭하세요. (마우스를 올리면 미리 보기)</p>
+              <p style={S.muted}>
+                편집할 요소를 클릭하세요. (마우스를 올리면 미리 보기)
+                {restricted && (
+                  <>
+                    <br />
+                    이 스냅샷은 사이트 프로필 대상 컴포넌트만 선택됩니다.
+                  </>
+                )}
+              </p>
             ) : (
               <>
                 <div style={S.selTag}>&lt;{sel.tag}&gt;</div>

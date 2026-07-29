@@ -245,7 +245,7 @@ export default function MyComments() {
               <span style={S.muted}>{c.urlKey}</span>
               {link && (
                 <a style={S.storyLink} href={link} target="_blank" rel="noreferrer">
-                  스토리북 열기 ↗
+                  관련 링크 ↗
                 </a>
               )}
             </div>
