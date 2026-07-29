@@ -14,7 +14,8 @@
     "@package/styles": "workspace:*",
     "@package/theme": "workspace:*",
     "@package/ui": "workspace:*",
-    "@package/utils": "workspace:*"
+    "@package/utils": "workspace:*",
+    "next-themes": "^0.4.6"
   },
   "devDependencies": {}
 }

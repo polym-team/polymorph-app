@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import '@package/styles/globals.css';
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'Polymorph Scaffolding App',
@@ -15,8 +16,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko">
-      <body>{children}</body>
+    <html lang="ko" suppressHydrationWarning>
+      <body className="bg-background text-foreground">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

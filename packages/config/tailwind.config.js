@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 
 module.exports = (contentPaths = []) => ({
+  darkMode: 'class',
   content: [
     ...contentPaths,
     // packages 폴더의 소스 파일들만 포함 (node_modules 제외)

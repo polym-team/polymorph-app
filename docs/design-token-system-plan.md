@@ -196,4 +196,7 @@ grep 결과 실사용 거의 없음(`primary-500`이 jibsayo Spinner 1파일 3�
   - 유지: 즐겨찾기 별(yellow)·차트 hex·gray 뉴트럴
   - 애매(미결): `ApartItem`의 신규(red)/최근(blue) 카테고리 배지 → 남겨둠
   - 검증: tailwind 컴파일로 새 클래스 정상 생성 확인
+- [x] **다크모드 도입** — `tokens.css`에 `.dark` 블록(뉴트럴만 뒤집고 브랜드 유지) + `@package/config` `darkMode:'class'` + `postcss-import`로 `styles/globals.css`가 `tokens.css` 전역 @import + scaffolding `/themes`에 next-themes 토글. 브라우저로 라이트/다크 검증 완료.
+  - tokens.css에서 브랜드 토큰(--primary/--ring) 제거 → preset과 로드순서 충돌 제거(브랜드는 preset/fallback).
 - [ ] 앱별 순차 리팩토링: oauth·rootbeer·autto·official·tallo (각 앱이 seam을 쓰게 하려면 UI 편입 필요 — 앱별 판단)
+- [ ] (후속) presets/*.css 를 registry.ts에서 생성 자동화 / 앱별 다크 토글 배치
