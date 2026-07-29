@@ -24,7 +24,7 @@ const POLICY_LIST = [
               href="https://www.data.go.kr"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 underline"
+              className="text-primary underline"
             >
               https://www.data.go.kr
             </a>
@@ -35,7 +35,7 @@ const POLICY_LIST = [
               href="https://www.data.go.kr/data/15058017/openapi.do"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 underline"
+              className="text-primary underline"
             >
               https://www.data.go.kr/data/15058017/openapi.do
             </a>

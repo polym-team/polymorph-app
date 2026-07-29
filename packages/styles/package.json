@@ -1,0 +1,11 @@
+{
+  "name": "@package/styles",
+  "version": "0.1.0",
+  "description": "Polymorph 전역 스타일 진입점 (@tailwind + base 리셋)",
+  "files": [
+    "globals.css"
+  ],
+  "exports": {
+    "./globals.css": "./globals.css"
+  }
+}

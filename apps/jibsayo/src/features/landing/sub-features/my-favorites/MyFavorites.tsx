@@ -33,7 +33,7 @@ export function MyFavorites() {
           <button
             key={apt.apartId}
             onClick={() => router.push(`${ROUTE_PATH.APART}/${apt.apartId}`)}
-            className="flex-shrink-0 rounded-lg border bg-white px-3 py-2 text-left transition hover:border-blue-200 hover:bg-blue-50"
+            className="flex-shrink-0 rounded-lg border bg-white px-3 py-2 text-left transition hover:border-primary/30 hover:bg-primary/5"
           >
             <div className="text-sm font-medium">{apt.apartName}</div>
           </button>

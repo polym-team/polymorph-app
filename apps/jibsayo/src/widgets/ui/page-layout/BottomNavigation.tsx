@@ -34,7 +34,7 @@ export function BottomNavigation() {
               onClick={() => router.push(path)}
               className={cn(
                 'flex flex-1 flex-col items-center gap-1 py-4 text-[10px]',
-                isActive ? 'text-blue-600' : 'text-gray-400',
+                isActive ? 'text-primary' : 'text-gray-400',
               )}
             >
               <Icon size={20} strokeWidth={isActive ? 2.4 : 1.8} />

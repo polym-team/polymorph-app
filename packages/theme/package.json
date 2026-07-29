@@ -1,0 +1,17 @@
+{
+  "name": "@package/theme",
+  "version": "0.1.0",
+  "description": "Polymorph 디자인 토큰(테마) — 앱별 브랜드를 CSS 변수로 주입하는 틀",
+  "main": "registry.ts",
+  "types": "registry.ts",
+  "files": [
+    "tokens.css",
+    "presets",
+    "registry.ts"
+  ],
+  "exports": {
+    "./tokens.css": "./tokens.css",
+    "./presets/*": "./presets/*",
+    "./registry": "./registry.ts"
+  }
+}

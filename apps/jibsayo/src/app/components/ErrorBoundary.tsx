@@ -30,17 +30,17 @@ export class ErrorBoundary extends Component<
     if (this.state.error) {
       return (
         <div className="flex min-h-screen items-center justify-center px-4 py-10">
-          <div className="w-full max-w-lg rounded-lg border border-red-200 bg-red-50 p-6">
-            <h2 className="text-base font-bold text-red-700">
+          <div className="w-full max-w-lg rounded-lg border border-danger/30 bg-danger/10 p-6">
+            <h2 className="text-base font-bold text-danger">
               페이지를 표시하는 중 오류가 발생했어요
             </h2>
-            <p className="mt-2 text-sm text-red-600">
+            <p className="mt-2 text-sm text-danger">
               {this.state.error.message || '알 수 없는 오류'}
             </p>
             <div className="mt-4 flex gap-2">
               <button
                 onClick={() => this.setState({ error: null })}
-                className="rounded bg-red-500 px-3 py-1.5 text-xs text-white hover:bg-red-600"
+                className="rounded bg-danger px-3 py-1.5 text-xs text-danger-foreground hover:bg-danger/90"
               >
                 다시 시도
               </button>
@@ -48,7 +48,7 @@ export class ErrorBoundary extends Component<
                 onClick={() => {
                   if (typeof window !== 'undefined') window.location.href = '/';
                 }}
-                className="rounded border border-red-300 bg-white px-3 py-1.5 text-xs text-red-600 hover:bg-red-50"
+                className="rounded border border-danger/40 bg-white px-3 py-1.5 text-xs text-danger hover:bg-danger/10"
               >
                 홈으로
               </button>

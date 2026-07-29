@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { SessionProvider } from 'next-auth/react';
 
-import '../../../../packages/styles/globals.css';
+import '@package/theme/presets/bookmark-share.css';
+import '@package/styles/globals.css';
 
 export const metadata: Metadata = {
   title: 'Bookmark Share',

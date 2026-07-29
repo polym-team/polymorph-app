@@ -15,6 +15,8 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@package/styles": "workspace:*",
+    "@package/theme": "workspace:*",
     "@package/ui": "workspace:*",
     "@package/utils": "workspace:*",
     "@prisma/client": "^6.2.1",

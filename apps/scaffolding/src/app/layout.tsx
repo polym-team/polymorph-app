@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import '../../../../packages/styles/globals.css';
+import '@package/styles/globals.css';
 
 export const metadata: Metadata = {
   title: 'Polymorph Scaffolding App',

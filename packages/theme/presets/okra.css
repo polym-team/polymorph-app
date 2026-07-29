@@ -1,0 +1,6 @@
+/* okra — 그린 #15803D (OKR 성장 + 이름 말장난) */
+:root {
+  --primary: 142 72% 29%;          /* #15803D */
+  --primary-foreground: 0 0% 100%;
+  --ring: 142 72% 29%;
+}

@@ -105,7 +105,7 @@ export function CardView({
                         item.dealAmount >
                           item.highestTransaction.dealAmount && (
                           <span className="-translate-y-[1px]">
-                            <PriceLabel className="bg-red-600 text-white">
+                            <PriceLabel className="bg-priceUp text-white">
                               신고가
                             </PriceLabel>
                           </span>
@@ -127,10 +127,10 @@ export function CardView({
                           className="flex items-center gap-x-1"
                           onClick={e => e.stopPropagation()}
                         >
-                          <PriceLabel className="bg-red-100 text-red-600">
+                          <PriceLabel className="bg-priceUp/10 text-priceUp">
                             최고
                           </PriceLabel>
-                          <span className="text-sm text-red-600">
+                          <span className="text-sm text-priceUp">
                             {formatKoreanAmountText(
                               item.highestTransaction.dealAmount
                             ).replace('원', '')}
@@ -140,10 +140,10 @@ export function CardView({
                           className="flex items-center gap-x-1"
                           onClick={e => e.stopPropagation()}
                         >
-                          <PriceLabel className="bg-blue-100 text-blue-600">
+                          <PriceLabel className="bg-priceDown/10 text-priceDown">
                             5년 최저
                           </PriceLabel>
-                          <span className="text-sm text-blue-600">
+                          <span className="text-sm text-priceDown">
                             {formatKoreanAmountText(
                               item.lowestTransaction.dealAmount
                             ).replace('원', '')}
