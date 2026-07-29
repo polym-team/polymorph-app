@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { Providers } from './components/Providers';
 
-import '../../../../packages/theme/presets/okra.css';
-import '../../../../packages/styles/globals.css';
+import '@package/theme/presets/okra.css';
+import '@package/styles/globals.css';
 
 export const metadata: Metadata = {
   title: 'Okra - OKR 관리',

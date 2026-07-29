@@ -21,6 +21,8 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@package/styles": "workspace:*",
+    "@package/theme": "workspace:*",
     "@package/ui": "workspace:*",
     "@package/utils": "workspace:*",
     "@polymorph/firebase": "workspace:*",

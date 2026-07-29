@@ -25,6 +25,8 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@hocuspocus/provider": "^2.15.0",
+    "@package/styles": "workspace:*",
+    "@package/theme": "workspace:*",
     "@package/ui": "workspace:*",
     "@package/utils": "workspace:*",
     "@prisma/client": "^6.2.1",
