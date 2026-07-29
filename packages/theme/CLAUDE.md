@@ -20,6 +20,22 @@ UI를 일관되게 만들기 위한 **정본 컨텍스트**이기도 합니다. 
 
 theme에는 **컴포넌트 구조가 들어오지 않는다.** 색·radius 같은 값과 그 메타데이터만.
 
+## 4-조각 구조 (config · styles · theme · ui)
+
+디자인 시스템은 서로 import하지 않는 4개 패키지가 **"토큰 이름" 계약**으로 느슨하게 엮인 구조다:
+
+```
+@package/config  →  bg-primary 를 hsl(var(--primary) / <alpha>) 로 매핑   [규칙/사전]
+@package/styles  →  @tailwind 실행 = 실제 CSS 생성 + base 리셋           [진입점]
+@package/theme   →  --primary: 221 83% 53%  (base + 앱별 preset)          [값]
+@package/ui      →  className="bg-primary" 로 토큰 "이름"만 사용          [소비자]
+```
+
+- theme ↔ ui는 **직접 의존이 없다.** 가운데 `config`가 "이름 → 변수" 다리, `styles`가 그 규칙으로 실제 CSS를 찍어내는 실행 지점이다.
+- 그래서 **컴포넌트는 그대로 두고 theme(값)만 교체**해 앱마다 다른 얼굴을 만든다.
+- `config` fallback 덕에 theme(preset) 없이도 ui는 하우스 기본값으로 정상 렌더 → **ui는 theme에 하드 의존하지 않는다** (theme은 선택적 오버라이드).
+- 병합하지 않고 4개로 두는 이유: 각자 **변하는 이유·소비자가 다르다**(규칙 / 진입점 / 값 / 컴포넌트). 분리가 느슨한 커플링을 강제한다.
+
 ## 파일
 
 - `tokens.css` — base 토큰 정본(전 앱 공통 기본값). ⚠️ 현재는 앱별로 로드하지 않는다

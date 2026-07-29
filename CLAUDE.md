@@ -86,6 +86,25 @@ CronJob, Secret, Ingress 등 런타임 리소스 추가가 필요하면 앱 코�
 
 인증이 필요한 앱은 **자체 로그인 UI를 만들지 않고** `oauth.polymorph.co.kr`(`apps/oauth-server`)로 위임합니다. JWT 검증은 `packages/shared-auth`를 사용합니다. 신규 앱을 통합할 때는 `apps/oauth-server/CLAUDE.md`의 통합 가이드를 따르세요.
 
+## 디자인 시스템 (필수)
+
+모든 앱 UI는 아래 **4개 패키지로 구성된 공유 디자인 시스템**을 사용합니다. 새 앱·새 화면을 만들 때 색을 하드코딩하거나 컴포넌트를 처음부터 만들지 말고 이 시스템을 쓰세요. (레퍼런스 구현: `apps/jibsayo`, 전체 원칙: `packages/theme/CLAUDE.md`)
+
+| 패키지 | 역할 |
+|---|---|
+| `@package/ui` | shadcn 기반 공통 컴포넌트 (**구조**). 앱은 여기서 import하고, 새 컴포넌트도 여기에 추가 |
+| `@package/config` | Tailwind preset — 토큰 클래스(`bg-primary` 등)를 `hsl(var(--x))`로 매핑 (**다리**) |
+| `@package/theme` | 디자인 토큰(**값**). base(`tokens.css`) + 앱별 `presets/<app>.css` + `registry.ts`. 앱별 브랜드는 여기서 |
+| `@package/styles` | 전역 CSS 진입점 — `@tailwind` 실행 + base 리셋. 앱 `layout`에서 import (**진입점**) |
+
+**규칙 (반드시 준수):**
+
+- 색은 **토큰 클래스**로 씁니다 (`bg-primary`, `text-danger`, `border-border` 등). raw `bg-blue-600`·hex 하드코딩 금지 — 앱별 테마가 안 먹습니다.
+- 앱 `layout`에서 `@package/styles/globals.css`를, 앱 브랜드가 있으면 `@package/theme/presets/<app>.css`를 함께 import.
+- 새 앱에 브랜드색을 주려면 `@package/theme`에 preset 추가 + `registry.ts` 등록 (절차: `packages/theme/CLAUDE.md`).
+- 도메인 고유색(예: 가격 상승/하락)은 **앱 로컬 토큰**으로, 장식·차트색은 raw 허용.
+- **예외**: 마케팅 사이트·강한 독자 디자인 등 의도적으로 시스템 밖에 두는 앱은 self-themed로 두되 `@package/theme/registry.ts`의 `status`로 표기합니다.
+
 ## UI Conventions
 
 `packages/ui`는 shadcn/ui 스타일을 따릅니다. 새 컴포넌트를 추가할 때:
