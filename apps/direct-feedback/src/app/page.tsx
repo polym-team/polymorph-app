@@ -14,6 +14,9 @@ type Group = {
   _count?: { comments: number; members: number };
 };
 type Member = { id: string; email: string; role: string; userId: string | null };
+type SiteProfile = { id: string; name: string; domainPatterns: string; targetSelectors: string };
+type ProfileDraft = { id?: string; name: string; domainPatterns: string; targetSelectors: string };
+const EMPTY_DRAFT: ProfileDraft = { name: '', domainPatterns: '', targetSelectors: '' };
 
 function login(returnTo: string) {
   const redirect = `${location.origin}/auth/callback?returnTo=${encodeURIComponent(returnTo)}`;
@@ -29,6 +32,9 @@ export default function Home() {
   const [copied, setCopied] = useState('');
   const [bases, setBases] = useState<Record<string, string>>({});
   const [savedBase, setSavedBase] = useState('');
+  const [profiles, setProfiles] = useState<Record<string, SiteProfile[]>>({});
+  const [profileOpen, setProfileOpen] = useState<Record<string, boolean>>({});
+  const [pDraft, setPDraft] = useState<Record<string, ProfileDraft>>({});
 
   useEffect(() => {
     setBases(Object.fromEntries(groups.map((g) => [g.id, g.storybookBaseUrl || ''])));
@@ -93,6 +99,66 @@ export default function Home() {
     const r = await fetch(`/api/groups/${id}/members`);
     const d = await r.json();
     setMembers((m) => ({ ...m, [id]: d.members || [] }));
+  }
+
+  // ── 사이트 프로필(프로덕션 타겟) ─────────────────────────
+  async function loadProfiles(id: string) {
+    const r = await fetch(`/api/groups/${id}/site-profiles`);
+    const d = await r.json();
+    setProfiles((m) => ({ ...m, [id]: d.profiles || [] }));
+  }
+  function toggleProfiles(id: string) {
+    setProfileOpen((o) => {
+      const next = !o[id];
+      if (next && !profiles[id]) loadProfiles(id);
+      return { ...o, [id]: next };
+    });
+  }
+  function draftOf(id: string): ProfileDraft {
+    return pDraft[id] || EMPTY_DRAFT;
+  }
+  function setDraft(id: string, patch: Partial<ProfileDraft>) {
+    setPDraft((d) => ({ ...d, [id]: { ...(d[id] || EMPTY_DRAFT), ...patch } }));
+  }
+  async function saveProfile(groupId: string) {
+    const draft = draftOf(groupId);
+    const name = draft.name.trim();
+    const domainPatterns = draft.domainPatterns.trim();
+    const targetSelectors = draft.targetSelectors.trim();
+    if (!name || !domainPatterns || !targetSelectors) return;
+    const body = JSON.stringify({ name, domainPatterns, targetSelectors });
+    const res = draft.id
+      ? await fetch(`/api/site-profiles/${draft.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+        })
+      : await fetch(`/api/groups/${groupId}/site-profiles`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+        });
+    if (!res.ok) {
+      alert((await res.json().catch(() => ({}))).error || '저장 실패');
+      return;
+    }
+    setPDraft((d) => ({ ...d, [groupId]: EMPTY_DRAFT }));
+    loadProfiles(groupId);
+  }
+  function editProfile(groupId: string, p: SiteProfile) {
+    setPDraft((d) => ({
+      ...d,
+      [groupId]: { id: p.id, name: p.name, domainPatterns: p.domainPatterns, targetSelectors: p.targetSelectors },
+    }));
+  }
+  async function deleteProfile(groupId: string, id: string) {
+    if (!confirm('이 사이트 프로필을 삭제할까요?')) return;
+    const res = await fetch(`/api/site-profiles/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      alert((await res.json().catch(() => ({}))).error || '삭제 실패');
+      return;
+    }
+    loadProfiles(groupId);
   }
 
   function inviteUrl(g: Group) {
@@ -212,6 +278,65 @@ export default function Home() {
               ))}
             </ul>
           )}
+
+          <div style={{ marginTop: 6 }}>
+            <button style={S.link} onClick={() => toggleProfiles(g.id)}>
+              {profileOpen[g.id] ? '사이트 프로필 닫기' : '사이트 프로필 (프로덕션 타겟)'}
+            </button>
+          </div>
+          {profileOpen[g.id] && (
+            <div style={S.profileBox}>
+              <p style={S.profileHint}>
+                스토리북이 아닌 실제 서비스에서 코멘트/스냅샷 대상을 한정합니다. 도메인과 CSS 선택자를 등록하세요.
+              </p>
+              {(profiles[g.id] || []).map((p) => (
+                <div key={p.id} style={S.profileRow}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={S.profileName}>{p.name}</div>
+                    <div style={S.profileMeta}>{p.domainPatterns}</div>
+                    <div style={S.profileSel}>
+                      {p.targetSelectors.split('\n').filter(Boolean).join('  ,  ')}
+                    </div>
+                  </div>
+                  <button style={S.link} onClick={() => editProfile(g.id, p)}>수정</button>
+                  <button style={S.linkDanger} onClick={() => deleteProfile(g.id, p.id)}>삭제</button>
+                </div>
+              ))}
+              {(profiles[g.id]?.length ?? 0) === 0 && <p style={S.muted}>아직 프로필이 없습니다.</p>}
+
+              <div style={S.profileForm}>
+                <input
+                  style={{ ...S.input, fontSize: 12 }}
+                  placeholder="이름 (예: Daum PC)"
+                  value={draftOf(g.id).name}
+                  onChange={(e) => setDraft(g.id, { name: e.target.value })}
+                />
+                <input
+                  style={{ ...S.input, fontSize: 12 }}
+                  placeholder="도메인 (콤마 구분: v.daum.net,*.daum.net)"
+                  value={draftOf(g.id).domainPatterns}
+                  onChange={(e) => setDraft(g.id, { domainPatterns: e.target.value })}
+                />
+                <textarea
+                  style={S.profileTextarea}
+                  spellCheck={false}
+                  placeholder={'CSS 선택자 (줄바꿈으로 여러 개)\n[class*="daum-ui-"]'}
+                  value={draftOf(g.id).targetSelectors}
+                  onChange={(e) => setDraft(g.id, { targetSelectors: e.target.value })}
+                />
+                <div style={S.row}>
+                  <button style={S.primary} onClick={() => saveProfile(g.id)}>
+                    {draftOf(g.id).id ? '저장' : '추가'}
+                  </button>
+                  {draftOf(g.id).id && (
+                    <button style={S.ghost} onClick={() => setPDraft((d) => ({ ...d, [g.id]: EMPTY_DRAFT }))}>
+                      취소
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </section>
       ))}
     </main>
@@ -230,4 +355,13 @@ const S: Record<string, React.CSSProperties> = {
   card: { border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginTop: 12 },
   cardHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 },
   members: { margin: '8px 0 0', paddingLeft: 18, fontSize: 13, color: '#374151' },
+  linkDanger: { background: 'none', border: 0, color: '#e5484d', cursor: 'pointer', padding: 0, fontSize: 12, textDecoration: 'underline' },
+  profileBox: { marginTop: 8, padding: 10, border: '1px solid #eef1f4', borderRadius: 6, background: '#fafbfc' },
+  profileHint: { fontSize: 12, color: '#6b7280', margin: '0 0 8px' },
+  profileRow: { display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 0', borderTop: '1px solid #f0f0f0' },
+  profileName: { fontSize: 13, fontWeight: 600, color: '#1a1a1a' },
+  profileMeta: { fontSize: 12, color: '#1e6fd0', marginTop: 2 },
+  profileSel: { font: '11px ui-monospace, monospace', color: '#64748b', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  profileForm: { display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 },
+  profileTextarea: { width: '100%', minHeight: 56, boxSizing: 'border-box', border: '1px solid #d0d5dd', borderRadius: 6, padding: 8, font: '12px ui-monospace, monospace', resize: 'vertical' },
 };

@@ -34,12 +34,32 @@ model Group {
   createdBy        String        @map("created_by") // oauth-server userId (OWNER)
   inviteToken      String?       @unique @map("invite_token") // 초대 링크 토큰
   storybookBaseUrl String?       @map("storybook_base_url") @db.Text // 스토리 레벨 코멘트 링크 base (예: https://.../index.html)
-  members     GroupMember[]
-  comments    Comment[]
-  snapshots   Snapshot[]
-  createdAt   DateTime      @default(now()) @map("created_at")
+  members      GroupMember[]
+  comments     Comment[]
+  snapshots    Snapshot[]
+  siteProfiles SiteProfile[]
+  createdAt    DateTime      @default(now()) @map("created_at")
 
   @@map("groups")
+}
+
+/**
+ * 프로덕션 사이트 타겟팅 프로필 — 스토리북이 아닌 실제 서비스에서 DF를 쓸 때,
+ * 어떤 도메인에서 어떤 CSS 선택자에 맞는 요소만 피드백 대상으로 삼을지 그룹 단위로 등록.
+ * 계획: docs/directfeedback-production-targeting-plan.md
+ */
+model SiteProfile {
+  id              String   @id @default(cuid())
+  groupId         String   @map("group_id")
+  name            String // 라벨(예: "Daum PC")
+  domainPatterns  String   @map("domain_patterns") @db.Text // comma-sep 호스트 패턴(예: "v.daum.net,*.daum.net")
+  targetSelectors String   @map("target_selectors") @db.Text // newline-sep CSS 선택자(콤마 포함 가능 → 줄바꿈 구분)
+  group           Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([groupId])
+  @@map("site_profiles")
 }
 
 model GroupMember {
