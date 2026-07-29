@@ -4,8 +4,13 @@
  * 값 포맷: bare HSL 채널.  tailwind preset이 hsl(var(--x) / <alpha-value>) 로 소비하므로
  * 알파 modifier(bg-primary/90 등)가 그대로 동작한다.
  *
- * 여기 값은 "전 앱 공통 기본값" 이다. 앱별 브랜드는 presets/<app>.css 가
- * --primary / --ring 등 일부 토큰만 덮어써서 만든다. (틀은 공유, 값만 교체)
+ * 이 파일은 @package/styles/globals.css 가 @import 로 전역 1회 로드한다.
+ *
+ * 담는 것: 전 앱 공통 뉴트럴 + semantic + radius + 다크 오버라이드(.dark).
+ * 담지 않는 것: 브랜드 토큰(--primary/--primary-foreground/--ring).
+ *   → 브랜드는 presets/<app>.css(앱별) 또는 @package/config 의 var() fallback(하우스 기본)이 담당한다.
+ *     tokens.css 가 preset 뒤에 로드돼도 브랜드를 덮어쓰지 않도록 여기서 정의하지 않는다.
+ *     (다크에서도 브랜드 primary 는 유지 — .dark 는 뉴트럴만 뒤집는다)
  */
 :root {
   /* 뉴트럴 (전 앱 공통) */
@@ -23,20 +28,37 @@
   --accent-foreground: 222.2 84% 4.9%;
   --default: 210 40% 96%;
   --default-foreground: 222.2 84% 4.9%;
+  --secondary: 220 13% 20%;
+  --secondary-foreground: 0 0% 98%;
 
-  /* semantic (전 앱 공통 — 앱별로 나누지 않음) */
+  /* semantic (전 앱 공통) */
   --danger: 0 84.2% 60.2%;
   --danger-foreground: 210 40% 98%;
   --warning: 44 100% 70%;
   --warning-foreground: 222.2 84% 4.9%;
 
-  /* 브랜드 (앱별 프리셋이 오버라이드) — 기본값 = 하우스 블루 #0963FF */
-  --primary: 218 100% 52%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 220 13% 20%;
-  --secondary-foreground: 0 0% 98%;
-  --ring: 218 100% 52%;
-
   /* 형태 */
   --radius: 0.75rem;
+}
+
+/* 다크 테마 — 뉴트럴/보조만 뒤집는다. 브랜드(primary/ring)는 preset/fallback 값을 유지. */
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --default: 217.2 32.6% 17.5%;
+  --default-foreground: 210 40% 98%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+
+  /* semantic 은 다크에서도 동일 hue 유지 (대비 충분) */
 }

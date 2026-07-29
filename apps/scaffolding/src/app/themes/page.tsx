@@ -1,6 +1,8 @@
 import { APP_THEMES, type AppTheme, type ThemeStatus } from '@package/theme/registry';
 import { Badge, Button, Input, Typography } from '@package/ui';
 
+import { ThemeToggle } from './ThemeToggle';
+
 export const metadata = {
   title: '앱별 테마 오버뷰 · Polymorph',
   description: '@package/theme 레지스트리에서 자동 렌더되는 앱별 브랜드 팔레트',
@@ -14,10 +16,10 @@ const STATUS_LABEL: Record<ThemeStatus, string> = {
 };
 
 const STATUS_STYLE: Record<ThemeStatus, string> = {
-  preset: 'bg-green-100 text-green-700',
-  'own-config': 'bg-amber-100 text-amber-700',
-  'self-themed': 'bg-gray-100 text-gray-500',
-  default: 'bg-blue-100 text-blue-700',
+  preset: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
+  'own-config': 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
+  'self-themed': 'bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400',
+  default: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
 };
 
 /** HSL 채널 → hsl() 문자열 */
@@ -45,7 +47,7 @@ function ThemeCard({ t }: { t: AppTheme }) {
   return (
     <div
       style={scope}
-      className="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm"
+      className="flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm"
     >
       <div className="h-1.5" style={{ background: hsl(t.primary) }} />
       <div className="flex flex-col gap-4 p-5">
@@ -53,11 +55,11 @@ function ThemeCard({ t }: { t: AppTheme }) {
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-base font-semibold tracking-tight">{t.label}</div>
-            <div className="text-xs text-gray-400">{t.domain}</div>
-            {t.note ? <div className="mt-1 text-xs text-gray-500">{t.note}</div> : null}
+            <div className="text-xs text-muted-foreground">{t.domain}</div>
+            {t.note ? <div className="mt-1 text-xs text-muted-foreground">{t.note}</div> : null}
           </div>
           <div className="flex flex-none flex-col items-end gap-1">
-            <span className="rounded-full border border-gray-200 px-2 py-0.5 text-[10px] text-gray-500">
+            <span className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
               {t.brand}
             </span>
             <span
@@ -69,14 +71,14 @@ function ThemeCard({ t }: { t: AppTheme }) {
         </div>
 
         {/* ramp */}
-        <div className="flex overflow-hidden rounded-md border border-gray-200">
+        <div className="flex overflow-hidden rounded-md border border-border">
           {ramp.map((c, i) => (
             <div key={i} className="h-9 flex-1" style={{ background: c }} />
           ))}
         </div>
 
         {/* live component preview (scoped tokens) */}
-        <div className="flex flex-col gap-3 rounded-md border border-gray-100 bg-gray-50/60 p-4">
+        <div className="flex flex-col gap-3 rounded-md border border-border bg-muted/40 p-4">
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="primary" size="sm">
               Primary
@@ -96,10 +98,10 @@ function ThemeCard({ t }: { t: AppTheme }) {
         </div>
 
         {/* token values */}
-        <div className="flex items-center justify-between font-mono text-[11px] text-gray-500">
+        <div className="flex items-center justify-between font-mono text-[11px] text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <span
-              className="inline-block h-3 w-3 rounded-sm border border-gray-200"
+              className="inline-block h-3 w-3 rounded-sm border border-border"
               style={{ background: t.hex }}
             />
             {t.hex}
@@ -113,25 +115,26 @@ function ThemeCard({ t }: { t: AppTheme }) {
 
 export default function ThemesOverview() {
   return (
-    <main className="mx-auto max-w-6xl px-6 py-12">
+    <main className="mx-auto min-h-screen max-w-6xl px-6 py-12">
       <header className="mb-8">
-        <Typography variant="h1" className="mb-2">
-          앱별 테마 오버뷰
-        </Typography>
-        <p className="max-w-2xl text-sm text-gray-500">
-          <code className="rounded bg-gray-100 px-1">@package/theme</code> 레지스트리에서 자동
+        <div className="mb-2 flex items-start justify-between gap-4">
+          <Typography variant="h1">앱별 테마 오버뷰</Typography>
+          <ThemeToggle />
+        </div>
+        <p className="max-w-2xl text-sm text-muted-foreground">
+          <code className="rounded bg-muted px-1">@package/theme</code> 레지스트리에서 자동
           렌더됩니다. 각 카드의 버튼·뱃지·입력은 해당 앱의 토큰을 주입해 실제{' '}
-          <code className="rounded bg-gray-100 px-1">@package/ui</code> 컴포넌트로 그린 것입니다.
+          <code className="rounded bg-muted px-1">@package/ui</code> 컴포넌트로 그린 것입니다.
         </p>
-        <div className="mt-4 flex flex-wrap gap-3 text-xs text-gray-500">
+        <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
           <span>
-            <b className="text-green-700">프리셋 적용</b> — 토큰 seam으로 실제 반영
+            <b className="text-green-700 dark:text-green-400">프리셋 적용</b> — 토큰 seam으로 실제 반영
           </span>
           <span>
-            <b className="text-amber-700">자체 config</b> — 앱 자체 팔레트(정합화 대상)
+            <b className="text-amber-700 dark:text-amber-400">자체 config</b> — 앱 자체 팔레트(정합화 대상)
           </span>
           <span>
-            <b className="text-gray-500">self-themed</b> — 독자 디자인, 토큰 미편입
+            <b className="text-gray-500 dark:text-gray-400">self-themed</b> — 독자 디자인, 토큰 미편입
           </span>
         </div>
       </header>
