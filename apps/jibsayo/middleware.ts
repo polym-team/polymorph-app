@@ -16,7 +16,10 @@ export async function middleware(req: NextRequest) {
   const oauthServerUrl =
     process.env.NEXT_PUBLIC_OAUTH_SERVER_URL ?? 'https://oauth.polymorph.co.kr';
 
-  return authMiddleware(req, {
+  // jibsayo는 next@14, shared-auth(6개 앱 공유)는 모노레포 표준 next@15 타입으로 해석된다.
+  // NextRequest는 두 버전 런타임 호환이며 nextUrl 내부 브랜드 타입만 달라 경계에서 캐스트로 연결한다.
+  // (jibsayo를 next@15로 올리면 이 캐스트 제거)
+  return authMiddleware(req as unknown as Parameters<typeof authMiddleware>[0], {
     clientId: CLIENT_ID,
     oauthServerUrl,
     onUnauthenticated: 'silent',
