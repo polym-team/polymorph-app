@@ -3,7 +3,7 @@ import { prisma } from '@/shared/lib/prisma';
 import { getAuthUser } from '@/shared/lib/api-auth';
 import { getSpaceMembership, getOKROwnership } from '@/shared/lib/permissions';
 import { updateOKRStatusSchema } from '@/shared/schemas/okr';
-import { OKRStatus } from '@prisma/client';
+import { OKRStatus } from '@/generated/prisma';
 
 type RouteParams = { params: Promise<{ spaceId: string; okrId: string }> };
 
