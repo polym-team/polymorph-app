@@ -200,4 +200,6 @@ grep 결과 실사용 거의 없음(`primary-500`이 jibsayo Spinner 1파일 3�
   - tokens.css에서 브랜드 토큰(--primary/--ring) 제거 → preset과 로드순서 충돌 제거(브랜드는 preset/fallback).
 - [ ] 앱별 순차 리팩토링: oauth·rootbeer·autto·official·tallo (각 앱이 seam을 쓰게 하려면 UI 편입 필요 — 앱별 판단)
 - [x] **presets 생성 자동화** — `packages/theme/scripts/generate-presets.ts` (`generate:presets`). registry가 단일 소스, extraTokens로 앱 전용 토큰(jibsayo price-up/down) 포함. 무회귀(값 동일) 확인.
-- [ ] (후속) 앱별 다크 토글 배치 / tallo 편입 / jibsayo next@15 업그레이드
+- [x] **tallo 편입 + 재설계 + 입금 내역(원장) 화면 신규** — 인라인→shared config/@package/ui, 시안 preset, 홈/감시계좌/입금내역, 삭제 Dialog. tsc+prod build 검증. Next15 라우트 params 수정, prisma postinstall.
+- [x] **모노레포 prisma client 충돌 해결** — jibsayo·tallo·okra를 앱별 output(`../src/generated/prisma`)으로 분리(나머지 6앱 패턴과 통일). import `@prisma/client`→`@/generated/prisma`, okra postinstall 추가. 3앱 동시 tsc 통과.
+- [ ] (후속) 앱별 다크 토글 배치 / jibsayo next@15 업그레이드
