@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession, signIn } from 'next-auth/react';
+import { useSession, login } from '@/components/AuthProvider';
 import { useEffect, useLayoutEffect } from 'react';
 import type { Product, OrderRound, Notice } from '@/types';
 import { STORE_LABELS } from '@/types';
@@ -186,7 +186,7 @@ export default function HomePage() {
           <p className="font-serif text-[15px] tracking-[0.2em] text-clay-500 mb-3">Employee Beauty</p>
           <h1 className="font-serif text-4xl text-ink-900 mb-2 tracking-tight">ROOTBEER MALL</h1>
           <p className="text-ink-400 mb-8">임직원 할인 공동구매</p>
-          <Button variant="accent" size="lg" onClick={() => signIn('google', { callbackUrl: '/' })} className="shadow-lift">
+          <Button variant="accent" size="lg" onClick={() => login('/')} className="shadow-lift">
             Google 계정으로 로그인
           </Button>
         </div>

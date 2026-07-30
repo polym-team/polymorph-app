@@ -1,6 +1,6 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
+import { login } from '@/components/AuthProvider';
 import { Button } from '@/components/ui';
 
 export default function LoginPage() {
@@ -13,7 +13,7 @@ export default function LoginPage() {
         <Button
           variant="accent"
           size="lg"
-          onClick={() => signIn('google', { callbackUrl: '/' })}
+          onClick={() => login('/')}
           className="shadow-lift"
         >
           Google 계정으로 로그인

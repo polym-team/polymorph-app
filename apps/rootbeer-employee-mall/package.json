@@ -18,9 +18,9 @@
   "dependencies": {
     "@package/ui": "workspace:*",
     "@package/utils": "workspace:*",
+    "@polymorph/shared-auth": "workspace:*",
     "@prisma/client": "^6.2.1",
     "next": "^15.3.1",
-    "next-auth": "^4.24.11",
     "next-themes": "^0.4.6",
     "playwright": "^1.52.0",
     "react": "^19.1.0",

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession, logout } from '@/components/AuthProvider';
 import { useCartStore } from './CartStore';
 import { useUiStore } from './UiStore';
 
@@ -105,7 +105,7 @@ export function TopBar() {
                 )}
                 <div className="my-1 border-t border-line-soft" />
                 <p className="px-4 pt-1 pb-1 text-[11px] text-ink-400 truncate">{session.user.email}</p>
-                <button onClick={() => signOut()} className="w-full text-left px-4 py-2.5 text-sm text-ink-600 hover:bg-line-soft transition-colors">
+                <button onClick={() => logout()} className="w-full text-left px-4 py-2.5 text-sm text-ink-600 hover:bg-line-soft transition-colors">
                   로그아웃
                 </button>
               </div>
