@@ -37,15 +37,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'border-transparent bg-gray-100 text-default-foreground',
+        default: 'border-transparent bg-default text-default-foreground',
         primary: 'border-transparent bg-primary text-primary-foreground',
         'primary-light':
           'border-transparent bg-primary/10 text-primary lg:hover:bg-primary/20',
         danger: 'border-transparent bg-danger text-danger-foreground',
         warning: 'border-transparent bg-warning text-warning-foreground',
         outline: 'border-input bg-background',
-        secondary: 'border-transparent bg- text-secondary-foreground',
-        ghost: 'border-transparent lg:hover:bg-gray-50',
+        secondary: 'border-transparent bg-secondary text-secondary-foreground',
+        ghost: 'border-transparent lg:hover:bg-muted',
         link: 'border-transparent text-primary underline-offset-4',
       },
       size: {
