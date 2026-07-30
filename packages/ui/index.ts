@@ -41,3 +41,16 @@ export {
   HoverCardContent,
 } from './src/hover-card';
 export { BottomSheet } from './src/bottom-sheet';
+export { Alert, AlertTitle, AlertDescription } from './src/alert';
+export { Separator } from './src/separator';
+export { Avatar, AvatarImage, AvatarFallback } from './src/avatar';
+export {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from './src/dialog';
