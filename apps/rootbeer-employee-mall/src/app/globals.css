@@ -27,6 +27,33 @@
   --rb-terra-50: 14 55% 92%;
   --rb-terra-500: 11 45% 54%;
   --rb-terra-600: 12 45% 45%;
+
+  /* 상품 사진 플레이트 — 라이트/다크 무관 항상 흰색(#fff). 상품 이미지의 배경이
+     흰색인 경우/아닌 경우가 섞여 있어, 플레이트를 고정해 다크에서도 일관되게 보이도록. */
+  --rb-plate: 0 0% 100%;
+
+  /* 폴리모프 디자인시스템 토큰 seam.
+     @package/ui 의 중립 컴포넌트(Input/Select/Toast 등)가 사용하는 표준 토큰명을
+     rootbeer 워밍 팔레트(--rb-*)에 매핑한다. --rb-* 가 .dark 에서 이미 뒤집히므로,
+     여기(:root)에 한 번만 정의해도 var() 지연치환으로 라이트/다크가 자동 전환된다.
+     → 브랜드는 유지하면서 폴리모프 정체성(공통 컴포넌트)을 차용. */
+  --background: var(--rb-paper);
+  --foreground: var(--rb-ink-900);
+  --card: var(--rb-paper-card);
+  --card-foreground: var(--rb-ink-900);
+  --popover: var(--rb-paper-card);
+  --popover-foreground: var(--rb-ink-900);
+  --border: var(--rb-line);
+  --input: var(--rb-line);
+  --ring: var(--rb-clay-500);
+  --primary: var(--rb-ink-900);
+  --primary-foreground: var(--rb-paper);
+  --secondary: var(--rb-clay-500);
+  --secondary-foreground: 0 0% 100%;
+  --muted: var(--rb-line-soft);
+  --muted-foreground: var(--rb-ink-600);
+  --accent: var(--rb-clay-50);
+  --accent-foreground: var(--rb-ink-900);
 }
 
 .dark {

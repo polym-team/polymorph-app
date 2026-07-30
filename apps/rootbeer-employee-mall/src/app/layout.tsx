@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { Nanum_Myeongjo } from 'next/font/google';
 import './globals.css';
+import { Toaster } from '@package/ui';
 import { AuthProvider } from '@/components/AuthProvider';
 import { ThemeProviders } from '@/components/ThemeProviders';
 import { TopBar } from '@/components/TopBar';
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <SearchOverlay />
             <CartDrawer />
           </AuthProvider>
+          <Toaster />
         </ThemeProviders>
       </body>
     </html>

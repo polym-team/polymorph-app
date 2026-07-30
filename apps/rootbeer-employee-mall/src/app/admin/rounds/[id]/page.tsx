@@ -4,6 +4,7 @@ import { useEffect, useState, use } from 'react';
 import { STORE_LABELS } from '@/types';
 import type { SettlementRow, Store } from '@/types';
 import { SectionCard, Button, StatusBadge, EmptyState, fieldClass, tabItemClass } from '@/components/ui';
+import { toast } from '@package/ui';
 import { PURCHASE_STATUS, type StatusMeta } from '@/lib/status';
 import { formatPrice, formatDate, formatDateTime } from '@/lib/format';
 
@@ -125,7 +126,7 @@ export default function RoundDetailPage({ params }: { params: Promise<{ id: stri
       });
 
     if (items.length === 0) {
-      alert('해당 마켓의 상품을 선택해주세요.');
+      toast.error('해당 마켓의 상품을 선택해주세요.');
       return;
     }
 

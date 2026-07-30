@@ -98,7 +98,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     <div className="max-w-3xl mx-auto">
       <button
         onClick={() => router.back()}
-        className="mb-5 inline-flex items-center gap-1 font-serif text-[13px] italic text-ink-400 hover:text-clay-600 transition-colors"
+        className="mb-5 inline-flex items-center gap-1 font-serif text-[13px] text-ink-400 hover:text-clay-600 transition-colors"
       >
         ← 목록으로
       </button>
@@ -107,7 +107,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         {/* 이미지 갤러리 */}
         <div className="sm:w-1/2 sm:flex-shrink-0">
           <SectionCard className="overflow-hidden">
-            <div className="aspect-square bg-line-soft relative">
+            <div className="aspect-square bg-plate relative">
               {selectedImage && (
                 <img src={selectedImage} alt={product.name} className="w-full h-full object-contain" />
               )}

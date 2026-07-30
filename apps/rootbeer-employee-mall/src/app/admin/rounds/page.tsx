@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { OrderRound } from '@/types';
 import { PageHeader, SectionCard, Button, StatusBadge, EmptyState, fieldClass } from '@/components/ui';
+import { toast } from '@package/ui';
 import { ROUND_STATUS } from '@/lib/status';
 import { formatDate, formatDateTime } from '@/lib/format';
 
@@ -67,7 +68,7 @@ export default function AdminRoundsPage() {
     const res = await fetch(`/api/rounds/${round.id}`, { method: 'DELETE' });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      alert(data.error || '삭제에 실패했습니다');
+      toast.error(data.error || '삭제에 실패했습니다');
       return;
     }
     fetchRounds();

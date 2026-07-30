@@ -42,6 +42,39 @@ module.exports = {
           500: 'hsl(var(--rb-terra-500) / <alpha-value>)',
           600: 'hsl(var(--rb-terra-600) / <alpha-value>)',
         },
+        // 상품 사진 플레이트(항상 흰색)
+        plate: 'hsl(var(--rb-plate) / <alpha-value>)',
+        // 폴리모프 디자인시스템 토큰 — @package/ui 컴포넌트가 소비. globals 의 seam 이
+        // 이 토큰들을 워밍 팔레트에 매핑한다(라이트/다크 자동).
+        background: 'hsl(var(--background) / <alpha-value>)',
+        foreground: 'hsl(var(--foreground) / <alpha-value>)',
+        border: 'hsl(var(--border) / <alpha-value>)',
+        input: 'hsl(var(--input) / <alpha-value>)',
+        ring: 'hsl(var(--ring) / <alpha-value>)',
+        primary: {
+          DEFAULT: 'hsl(var(--primary) / <alpha-value>)',
+          foreground: 'hsl(var(--primary-foreground) / <alpha-value>)',
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary) / <alpha-value>)',
+          foreground: 'hsl(var(--secondary-foreground) / <alpha-value>)',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted) / <alpha-value>)',
+          foreground: 'hsl(var(--muted-foreground) / <alpha-value>)',
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
+          foreground: 'hsl(var(--accent-foreground) / <alpha-value>)',
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--popover) / <alpha-value>)',
+          foreground: 'hsl(var(--popover-foreground) / <alpha-value>)',
+        },
+        card: {
+          DEFAULT: 'hsl(var(--card) / <alpha-value>)',
+          foreground: 'hsl(var(--card-foreground) / <alpha-value>)',
+        },
       },
       borderRadius: {
         sm: '6px',
@@ -69,5 +102,6 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  // @package/ui 의 radix 기반 컴포넌트(Select/Dialog 등) enter/leave 애니메이션용
+  plugins: [require('tailwindcss-animate')],
 };

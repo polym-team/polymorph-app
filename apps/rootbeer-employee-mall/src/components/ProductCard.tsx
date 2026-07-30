@@ -65,7 +65,7 @@ export function ProductCard({
     <div className="group">
       {/* 이미지 — 라운딩만, 박스/그림자 없음 */}
       <div
-        className={`${ASPECT[aspect]} relative bg-line-soft rounded-xl overflow-hidden cursor-pointer`}
+        className={`${ASPECT[aspect]} relative bg-plate rounded-xl overflow-hidden cursor-pointer`}
         onClick={goToDetail}
       >
         {product.imageUrl && (
@@ -80,7 +80,7 @@ export function ProductCard({
 
         {product.soldOut && (
           <div className="absolute inset-0 bg-ink-900/35 backdrop-blur-[1px] flex items-center justify-center">
-            <span className="font-serif italic text-white text-base">Sold out</span>
+            <span className="font-serif text-white text-base">Sold out</span>
           </div>
         )}
 
