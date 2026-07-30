@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { Button } from '@package/ui';
 import { AccountCard } from './AccountCard';
 import { AddAccountForm } from './AddAccountForm';
 import { PurchaseHistory } from './PurchaseHistory';
@@ -69,35 +70,36 @@ export function Dashboard() {
   };
 
   if (loading) {
-    return <div className="text-center text-gray-400 py-20">로딩 중...</div>;
+    return <div className="text-center text-muted-foreground py-20">로딩 중...</div>;
   }
 
   return (
     <div className="space-y-6">
       {/* 헤더 */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Autto</h1>
-          <p className="text-sm text-gray-500">{user?.name ?? user?.email}</p>
+        <div className="flex items-center gap-2.5">
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 3l1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9z" />
+            </svg>
+          </span>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Autto</h1>
+            <p className="text-sm text-muted-foreground">{user?.name ?? user?.email}</p>
+          </div>
         </div>
-        <button
-          onClick={handleLogout}
-          className="rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100"
-        >
+        <Button variant="outline" size="sm" onClick={handleLogout}>
           로그아웃
-        </button>
+        </Button>
       </div>
 
       {/* 계정 카드 목록 */}
       {accounts.length === 0 && !showAddForm ? (
-        <div className="rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center">
-          <p className="mb-4 text-gray-500">등록된 동행복권 계정이 없습니다.</p>
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="rounded-lg bg-lotto-500 px-4 py-2 text-sm font-medium text-white hover:bg-lotto-600"
-          >
+        <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center shadow-sm">
+          <p className="mb-4 text-muted-foreground">등록된 동행복권 계정이 없습니다.</p>
+          <Button variant="primary" onClick={() => setShowAddForm(true)}>
             계정 추가
-          </button>
+          </Button>
         </div>
       ) : (
         <>
@@ -116,7 +118,7 @@ export function Dashboard() {
           {!showAddForm && (
             <button
               onClick={() => setShowAddForm(true)}
-              className="w-full rounded-lg border-2 border-dashed border-gray-300 py-3 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-600"
+              className="w-full rounded-xl border-2 border-dashed border-border py-3 text-sm text-muted-foreground transition hover:border-primary hover:text-foreground"
             >
               + 계정 추가
             </button>

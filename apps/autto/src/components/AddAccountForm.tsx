@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Button, Input } from '@package/ui';
 
 interface Props {
   onClose: () => void;
@@ -41,61 +42,53 @@ export function AddAccountForm({ onClose, onAdded }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-lg border bg-white p-4 shadow-sm">
-      <h3 className="mb-4 font-medium">동행복권 계정 추가</h3>
+    <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-card p-4 shadow-sm">
+      <h3 className="mb-4 font-medium text-foreground">동행복권 계정 추가</h3>
 
       <div className="space-y-3">
         <div>
-          <label className="mb-1 block text-xs text-gray-500">별명 (선택)</label>
-          <input
+          <label className="mb-1 block text-xs text-muted-foreground">별명 (선택)</label>
+          <Input
             type="text"
+            size="sm"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             placeholder="예: 내 계정"
-            className="w-full rounded border px-3 py-2 text-sm"
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs text-gray-500">동행복권 아이디</label>
-          <input
+          <label className="mb-1 block text-xs text-muted-foreground">동행복권 아이디</label>
+          <Input
             type="text"
+            size="sm"
             value={dhlotteryId}
             onChange={(e) => setDhlotteryId(e.target.value)}
             required
-            className="w-full rounded border px-3 py-2 text-sm"
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs text-gray-500">동행복권 비밀번호</label>
-          <input
+          <label className="mb-1 block text-xs text-muted-foreground">동행복권 비밀번호</label>
+          <Input
             type="password"
+            size="sm"
             value={dhlotteryPw}
             onChange={(e) => setDhlotteryPw(e.target.value)}
             required
-            className="w-full rounded border px-3 py-2 text-sm"
           />
         </div>
       </div>
 
       {error && (
-        <div className="mt-3 rounded bg-red-50 p-2 text-sm text-red-600">{error}</div>
+        <div className="mt-3 rounded bg-danger/10 p-2 text-sm text-danger">{error}</div>
       )}
 
       <div className="mt-4 flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-lg px-4 py-2 text-sm text-gray-500 hover:bg-gray-100"
-        >
+        <Button type="button" variant="outline" size="sm" onClick={onClose}>
           취소
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-lg bg-lotto-500 px-4 py-2 text-sm font-medium text-white hover:bg-lotto-600 disabled:opacity-50"
-        >
+        </Button>
+        <Button type="submit" variant="primary" size="sm" disabled={loading}>
           {loading ? '추가 중...' : '추가'}
-        </button>
+        </Button>
       </div>
     </form>
   );

@@ -1,7 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
-  transpilePackages: ['@package/ui', '@package/utils', '@polymorph/shared-auth'],
+  transpilePackages: [
+    '@package/ui',
+    '@package/utils',
+    '@package/theme',
+    '@polymorph/shared-auth',
+  ],
   logging: {
     fetches: { fullUrl: true },
     incomingRequests: true,

@@ -17,7 +17,7 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <div className="flex min-h-[60vh] items-center justify-center text-sm text-gray-400">
+    <div className="flex min-h-[60vh] items-center justify-center text-sm text-muted-foreground">
       로그인 페이지로 이동 중...
     </div>
   );

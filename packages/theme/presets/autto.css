@@ -1,0 +1,8 @@
+/* AUTO-GENERATED from registry.ts — 직접 편집 금지.
+   값 변경은 registry.ts 수정 후 `pnpm --filter @package/theme generate:presets` 실행. */
+/* autto — 골드 #E6A817 (로또·행운) */
+:root {
+  --primary: 42 82% 50%;
+  --primary-foreground: 24 20% 14%;
+  --ring: 42 82% 50%;
+}
