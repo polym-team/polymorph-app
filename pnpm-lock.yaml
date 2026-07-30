@@ -682,19 +682,64 @@ importers:
 
   apps/tallo:
     dependencies:
+      '@package/styles':
+        specifier: workspace:*
+        version: link:../../packages/styles
+      '@package/theme':
+        specifier: workspace:*
+        version: link:../../packages/theme
+      '@package/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@package/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@polymorph/shared-auth':
         specifier: workspace:*
         version: link:../../packages/shared-auth
       '@prisma/client':
         specifier: ^6.2.1
-        version: 6.19.2(prisma@6.19.2)(typescript@5.7.2)
+        version: 6.19.2(prisma@6.19.2)(typescript@5.9.3)
+      next:
+        specifier: ^15.3.1
+        version: 15.5.9(react-dom@19.2.3)(react@19.2.3)
+      next-themes:
+        specifier: ^0.4.6
+        version: 0.4.6(react-dom@19.2.3)(react@19.2.3)
+      react:
+        specifier: ^19.1.0
+        version: 19.2.3
+      react-dom:
+        specifier: ^19.1.0
+        version: 19.2.3(react@19.2.3)
     devDependencies:
       '@package/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@types/node':
+        specifier: ^20.17.9
+        version: 20.17.9
+      '@types/react':
+        specifier: ^19.1.2
+        version: 19.2.9
+      '@types/react-dom':
+        specifier: ^19.1.2
+        version: 19.2.3(@types/react@19.2.9)
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.4.20(postcss@8.5.1)
+      postcss:
+        specifier: ^8.5.1
+        version: 8.5.1
       prisma:
         specifier: ^6.2.1
-        version: 6.19.2(typescript@5.7.2)
+        version: 6.19.2(typescript@5.9.3)
+      tailwindcss:
+        specifier: ^3.4.17
+        version: 3.4.17
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
 
   packages/config:
     dependencies:

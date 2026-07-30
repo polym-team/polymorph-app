@@ -13,11 +13,16 @@ export default async function AccountsPage() {
   if (!user) {
     const loginUrl = `${OAUTH}/login?clientId=tallo&redirectUri=${encodeURIComponent(`${BASE}/auth/callback`)}`;
     return (
-      <main style={{ fontFamily: 'sans-serif', padding: '2rem' }}>
-        <h1>Tallo</h1>
-        <p>
-          <a href={loginUrl}>로그인</a>이 필요합니다.
-        </p>
+      <main className="flex min-h-screen items-center justify-center px-4">
+        <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
+          <h1 className="text-lg font-semibold tracking-tight">로그인이 필요합니다</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            내 계좌 관리는 로그인 후 사용할 수 있습니다.
+          </p>
+          <a href={loginUrl} className="mt-6 inline-block w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground">
+            로그인
+          </a>
+        </div>
       </main>
     );
   }
