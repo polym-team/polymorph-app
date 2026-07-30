@@ -202,4 +202,6 @@ grep 결과 실사용 거의 없음(`primary-500`이 jibsayo Spinner 1파일 3�
 - [x] **presets 생성 자동화** — `packages/theme/scripts/generate-presets.ts` (`generate:presets`). registry가 단일 소스, extraTokens로 앱 전용 토큰(jibsayo price-up/down) 포함. 무회귀(값 동일) 확인.
 - [x] **tallo 편입 + 재설계 + 입금 내역(원장) 화면 신규** — 인라인→shared config/@package/ui, 시안 preset, 홈/감시계좌/입금내역, 삭제 Dialog. tsc+prod build 검증. Next15 라우트 params 수정, prisma postinstall.
 - [x] **모노레포 prisma client 충돌 해결** — jibsayo·tallo·okra를 앱별 output(`../src/generated/prisma`)으로 분리(나머지 6앱 패턴과 통일). import `@prisma/client`→`@/generated/prisma`, okra postinstall 추가. 3앱 동시 tsc 통과.
-- [ ] (후속) 앱별 다크 토글 배치 / jibsayo next@15 업그레이드
+- [x] **autto 편입 + 재설계** — 자체 lotto 스케일→골드 preset, @package/ui, LottoBalls(동행복권 공 색 시각화). tsc+build 검증.
+- 편입 현황: preset 적용 = jibsayo·bookmark·okra·oauth·tallo·autto(+scaffolding 기본). 유지(자체 브랜드) = rootbeer·official. self-themed = myflighthistory·direct-feedback. 다크 토글은 OS 자동(system) 기본으로 확정(앱별 토글 X).
+- [ ] (후속) rootbeer/official 편입(선택, 자체 브랜드라 우선순위 낮음) / jibsayo next@15 업그레이드(불필요, 트리거 생길 때)
