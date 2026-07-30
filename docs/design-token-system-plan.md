@@ -204,4 +204,11 @@ grep 결과 실사용 거의 없음(`primary-500`이 jibsayo Spinner 1파일 3�
 - [x] **모노레포 prisma client 충돌 해결** — jibsayo·tallo·okra를 앱별 output(`../src/generated/prisma`)으로 분리(나머지 6앱 패턴과 통일). import `@prisma/client`→`@/generated/prisma`, okra postinstall 추가. 3앱 동시 tsc 통과.
 - [x] **autto 편입 + 재설계** — 자체 lotto 스케일→골드 preset, @package/ui, LottoBalls(동행복권 공 색 시각화). tsc+build 검증.
 - 편입 현황: preset 적용 = jibsayo·bookmark·okra·oauth·tallo·autto(+scaffolding 기본). 유지(자체 브랜드) = rootbeer·official. self-themed = myflighthistory·direct-feedback. 다크 토글은 OS 자동(system) 기본으로 확정(앱별 토글 X).
-- [ ] (후속) rootbeer/official 편입(선택, 자체 브랜드라 우선순위 낮음) / jibsayo next@15 업그레이드(불필요, 트리거 생길 때)
+- [x] **rootbeer MD 추천** — 할인 기반 "특가" 레인 → 키워드(리퍼·세트·셋트·기획·대용량·에디션) 기반 "MD 추천"으로 교체(lib/recommend.ts). PR#16 머지.
+- [ ] **rootbeer v1 뷰티 에디토리얼 전면 재설계** (확정: v1 톤 = 워밍 아이보리/코코아 + 로즈·골드 악센트 + 디스플레이 세리프, 절제된 럭셔리. v2 드라마틱은 반려). 단계:
+  1. 온보딩 인프라: tailwind=baseConfig+워밍 팔레트(paper/ink/clay/sage/ocher/terra) extend, preset(clay→primary + 워밍 뉴트럴 --background/--foreground + .dark), next/font 세리프(한글 대응), @package/{theme,styles}·next-themes, layout ThemeProviders
+  2. 스토어프론트(page.tsx + HeroRound/FeatureCard/ProductCard): v1 에디토리얼, MD추천 레인 유지, 공동구매 진행률(참여/목표 파생 — 스키마 필드 없음)
+  3. 상세/장바구니/주문(my-orders)
+  4. 어드민(rounds/[id] 정산·구매·주문, deposits, users)
+  - 참고: rootbeer는 auth가 oauth-server 위임 아님(직접 Google) — 건드리지 말 것. 자체 UI킷(src/components/ui/)은 토큰화하며 유지/강화.
+- [ ] (후속) official 편입(선택) / jibsayo next@15(불필요)
