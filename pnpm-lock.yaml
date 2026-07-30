@@ -435,6 +435,12 @@ importers:
 
   apps/oauth-server:
     dependencies:
+      '@package/styles':
+        specifier: workspace:*
+        version: link:../../packages/styles
+      '@package/theme':
+        specifier: workspace:*
+        version: link:../../packages/theme
       '@package/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -453,6 +459,9 @@ importers:
       next-auth:
         specifier: ^4.24.11
         version: 4.24.13(next@15.5.9)(react-dom@19.2.3)(react@19.2.3)
+      next-themes:
+        specifier: ^0.4.6
+        version: 0.4.6(react-dom@19.2.3)(react@19.2.3)
       react:
         specifier: ^19.1.0
         version: 19.2.3

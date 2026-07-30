@@ -1,0 +1,6 @@
+/* oauth-server — 인디고 #4F46E5 (중앙 인증 허브, 신뢰의 기준점) */
+:root {
+  --primary: 243 75% 59%;          /* #4F46E5 */
+  --primary-foreground: 0 0% 100%;
+  --ring: 243 75% 59%;
+}
