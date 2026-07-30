@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
+import { useSession, logout } from '@/components/AuthProvider';
 import { useEffect, useState } from 'react';
 import { STORE_LABELS, DELIVERY_LABELS } from '@/types';
 import { SectionCard, StatusBadge, EmptyState, PageHeader } from '@/components/ui';
@@ -213,7 +213,7 @@ export default function MyOrdersPage() {
       <div className="mt-8 pt-6 border-t border-line text-center">
         <p className="text-xs text-ink-400 mb-2">{session.user.email}</p>
         <button
-          onClick={() => signOut()}
+          onClick={() => logout()}
           className="text-xs text-ink-400 hover:text-ink-600 transition-colors"
         >
           로그아웃

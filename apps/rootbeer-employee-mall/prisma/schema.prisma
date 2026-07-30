@@ -56,6 +56,11 @@ model User {
   name         String
   profileImage String?  @map("profile_image")
   googleId     String?  @unique @map("google_id")
+  // oauth-server 통합: JWT sub(oauth User.id, cuid)를 연결하는 링크 컬럼.
+  // nullable = 아직 연결/전환 안 한 기존 회원. orders.user_id(Int PK)는 그대로 앵커로 유지.
+  oauthUserId  String?  @unique @map("oauth_user_id") @db.VarChar(64)
+  // 이용 주의사항 필수 동의 시각(가입/전환 게이트). null = 미동의.
+  cautionsAgreedAt DateTime? @map("cautions_agreed_at")
   role            UserRole @default(pending)
   filterPreset    String?  @map("filter_preset") @db.Text
   createdAt       DateTime @default(now()) @map("created_at")

@@ -64,6 +64,15 @@ const CLIENT_APPS = [
     accessTokenLifetime: 60 * 60 * 24 * 7,
   },
   {
+    clientId: 'rootbeer-employee-mall',
+    name: '임직원몰',
+    allowedRedirectUris: [
+      'http://localhost:3005/auth/callback',
+      'https://rootbeer-employee-mall.polymorph.co.kr/auth/callback',
+    ].join(','),
+    accessTokenLifetime: 60 * 60 * 24 * 7, // 7일
+  },
+  {
     clientId: 'test',
     name: '테스트 클라이언트',
     allowedRedirectUris: [

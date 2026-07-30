@@ -1,9 +1,8 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useSession } from '@/components/AuthProvider';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ADMIN_EMAIL } from '@/types';
 import { tabItemClass } from '@/components/ui';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -12,7 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (status === 'loading') return <div className="text-center py-12 text-ink-600">로딩 중...</div>;
 
-  if (!session || session.user.email !== ADMIN_EMAIL) {
+  if (!session || session.user.role !== 'admin') {
     return (
       <div className="text-center py-12">
         <p className="text-terra-600">접근 권한이 없습니다.</p>

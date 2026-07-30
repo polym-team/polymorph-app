@@ -4,6 +4,9 @@
     "paths": {
       "@/*": ["./src/*"]
     },
+    // 모노레포에 @types/react 두 사본(19.2.9 + 루트 18.3.17)이 있어 전역 React 타입이
+    // 18로 잡히면 createContext Provider 등에서 JSX 충돌 → 자기 @types(19)만 auto-include.
+    "typeRoots": ["./node_modules/@types"],
     "plugins": [
       {
         "name": "next"

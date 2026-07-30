@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useSession } from '@/components/AuthProvider';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { PageHeader, EmptyState } from '@/components/ui';

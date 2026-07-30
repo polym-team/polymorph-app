@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useSession } from '@/components/AuthProvider';
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/components/CartStore';
