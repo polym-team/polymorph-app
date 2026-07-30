@@ -7,11 +7,6 @@ import {
   Badge,
   Button,
   Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
   DatePicker,
   Input,
   MonthPicker,
@@ -88,7 +83,7 @@ export default function ModernUIPage() {
                     Large Button
                   </Button>
                   <div className="flex justify-center">
-                    <Button size="icon" variant="outline">
+                    <Button variant="outline" className="h-10 w-10 p-0">
                       ⚙️
                     </Button>
                   </div>
@@ -307,13 +302,13 @@ export default function ModernUIPage() {
               </Typography>
               <div className="space-y-4">
                 <Card className="w-full">
-                  <CardHeader>
-                    <CardTitle className="text-lg">프로젝트 카드</CardTitle>
-                    <CardDescription>
+                  <Card.Header>
+                    <div className="text-lg font-semibold">프로젝트 카드</div>
+                    <div className="text-sm text-muted-foreground">
                       shadcn/ui 카드 컴포넌트 예시
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
+                    </div>
+                  </Card.Header>
+                  <Card.Content>
                     <div className="mb-3 flex flex-wrap justify-center gap-2">
                       <Badge variant="default">기본</Badge>
                       <Badge variant="secondary">보조</Badge>
@@ -325,12 +320,12 @@ export default function ModernUIPage() {
                     <Typography variant="small" className="text-gray-600">
                       모던한 UI 컴포넌트로 구성된 카드입니다.
                     </Typography>
-                  </CardContent>
-                  <CardFooter>
+                  </Card.Content>
+                  <Card.Footer>
                     <Button variant="outline" size="sm" className="w-full">
                       자세히 보기
                     </Button>
-                  </CardFooter>
+                  </Card.Footer>
                 </Card>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import { APP_THEMES, type AppTheme, type ThemeStatus } from '@package/theme/registry';
+import { AppSymbol } from '@package/theme/symbols';
 import { Badge, Button, Input, Typography } from '@package/ui';
 
 import { ThemeToggle } from './ThemeToggle';
@@ -54,8 +55,11 @@ function ThemeCard({ t }: { t: AppTheme }) {
         {/* header */}
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-base font-semibold tracking-tight">{t.label}</div>
-            <div className="text-xs text-muted-foreground">{t.domain}</div>
+            <div className="flex items-center gap-2">
+              <AppSymbol name={t.app} className="h-4 w-4" style={{ color: t.hex }} />
+              <span className="text-base font-semibold tracking-tight">{t.label}</span>
+            </div>
+            <div className="mt-0.5 text-xs text-muted-foreground">{t.domain}</div>
             {t.note ? <div className="mt-1 text-xs text-muted-foreground">{t.note}</div> : null}
           </div>
           <div className="flex flex-none flex-col items-end gap-1">
