@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     './src/**/*.{js,ts,jsx,tsx,mdx}',
     '../../packages/ui/**/*.{js,ts,jsx,tsx}',
@@ -7,45 +8,39 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // 배경 / 표면
+        // 워밍 팔레트 — CSS 변수 구동(globals.css :root/.dark). 라이트/다크 자동 전환.
         paper: {
-          DEFAULT: '#FBF9F6', // 따뜻한 오프화이트 페이지 배경
-          card: '#FFFFFF', // 카드 표면
+          DEFAULT: 'hsl(var(--rb-paper) / <alpha-value>)',
+          card: 'hsl(var(--rb-paper-card) / <alpha-value>)',
         },
-        // 텍스트 (웜 차콜 계열)
         ink: {
-          900: '#2B2724', // 제목·본문
-          600: '#6F6660', // 보조 텍스트
-          400: '#A79E96', // 라벨·muted
+          900: 'hsl(var(--rb-ink-900) / <alpha-value>)',
+          600: 'hsl(var(--rb-ink-600) / <alpha-value>)',
+          400: 'hsl(var(--rb-ink-400) / <alpha-value>)',
         },
-        // 헤어라인 보더
         line: {
-          DEFAULT: '#ECE7E0',
-          soft: '#F3EFEA',
+          DEFAULT: 'hsl(var(--rb-line) / <alpha-value>)',
+          soft: 'hsl(var(--rb-line-soft) / <alpha-value>)',
         },
-        // 포인트 (dusty rose / clay)
         clay: {
-          50: '#F3E9E4',
-          500: '#B98A7A',
-          600: '#A2745F',
+          50: 'hsl(var(--rb-clay-50) / <alpha-value>)',
+          500: 'hsl(var(--rb-clay-500) / <alpha-value>)',
+          600: 'hsl(var(--rb-clay-600) / <alpha-value>)',
         },
-        // 서브 / 성공 (sage)
         sage: {
-          50: '#EAEFEA',
-          500: '#8C9A8E',
-          600: '#6F7E72',
+          50: 'hsl(var(--rb-sage-50) / <alpha-value>)',
+          500: 'hsl(var(--rb-sage-500) / <alpha-value>)',
+          600: 'hsl(var(--rb-sage-600) / <alpha-value>)',
         },
-        // 경고 (ocher)
         ocher: {
-          50: '#F6EEDD',
-          500: '#C9A15A',
-          600: '#A9843F',
+          50: 'hsl(var(--rb-ocher-50) / <alpha-value>)',
+          500: 'hsl(var(--rb-ocher-500) / <alpha-value>)',
+          600: 'hsl(var(--rb-ocher-600) / <alpha-value>)',
         },
-        // 위험 / 품절 / 삭제 (terracotta)
         terra: {
-          50: '#F6E7E1',
-          500: '#C06B54',
-          600: '#A5553F',
+          50: 'hsl(var(--rb-terra-50) / <alpha-value>)',
+          500: 'hsl(var(--rb-terra-500) / <alpha-value>)',
+          600: 'hsl(var(--rb-terra-600) / <alpha-value>)',
         },
       },
       borderRadius: {
@@ -69,6 +64,8 @@ module.exports = {
           'Roboto',
           'sans-serif',
         ],
+        // 에디토리얼 디스플레이 세리프 (한글 대응)
+        serif: ['var(--font-serif)', 'Nanum Myeongjo', 'Georgia', 'serif'],
       },
     },
   },
