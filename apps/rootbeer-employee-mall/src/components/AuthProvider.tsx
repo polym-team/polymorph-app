@@ -74,6 +74,12 @@ export function login(returnTo?: string) {
   window.location.href = `${OAUTH_URL}/login?clientId=${CLIENT_ID}&redirectUri=${encodeURIComponent(redirectUri)}`;
 }
 
+/** oauth-server 계정 관리 페이지로 이동 (연동 provider·계정 관리) */
+export function manageAccount() {
+  const origin = window.location.origin;
+  window.location.href = `${OAUTH_URL}/account?clientId=${CLIENT_ID}&returnUrl=${encodeURIComponent(origin)}`;
+}
+
 /** 로컬 쿠키 제거 후 oauth-server SSO 로그아웃 */
 export async function logout() {
   try {
