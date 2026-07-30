@@ -83,7 +83,7 @@ export function SearchOverlay() {
         <div className="flex-1 overflow-y-auto px-5 pb-6">
           {brands.length > 0 && (
             <>
-              <p className="text-[13px] italic text-clay-600 mt-3 mb-2.5" style={{ fontFamily: 'Georgia, serif' }}>
+              <p className="text-[13px] text-clay-600 mt-3 mb-2.5 font-serif">
                 브랜드로 찾기
               </p>
               <div className="flex flex-wrap gap-2">

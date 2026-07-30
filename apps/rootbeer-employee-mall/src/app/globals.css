@@ -2,6 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * 워밍 팔레트를 CSS 변수로 구동 → 기존 클래스(bg-paper/text-ink-900/bg-clay-500 …)를
+ * 그대로 두고도 라이트/다크가 전환된다. (tailwind.config 가 hsl(var(--rb-*)) 로 매핑)
+ * 값 포맷: bare HSL 채널.
+ */
+:root {
+  --rb-paper: 34 33% 97%;       /* #FBF9F6 warm off-white */
+  --rb-paper-card: 0 0% 100%;
+  --rb-ink-900: 26 9% 15%;      /* warm charcoal */
+  --rb-ink-600: 30 7% 41%;
+  --rb-ink-400: 32 11% 62%;
+  --rb-line: 34 25% 90%;
+  --rb-line-soft: 34 30% 93%;
+  --rb-clay-50: 24 40% 92%;
+  --rb-clay-500: 16 30% 60%;    /* dusty rose / clay #B98A7A */
+  --rb-clay-600: 20 26% 50%;
+  --rb-sage-50: 120 14% 92%;
+  --rb-sage-500: 140 8% 58%;
+  --rb-sage-600: 140 9% 47%;
+  --rb-ocher-50: 44 55% 91%;
+  --rb-ocher-500: 38 48% 57%;
+  --rb-ocher-600: 34 46% 46%;
+  --rb-terra-50: 14 55% 92%;
+  --rb-terra-500: 11 45% 54%;
+  --rb-terra-600: 12 45% 45%;
+
+  /* 상품 사진 플레이트 — 라이트/다크 무관 항상 흰색(#fff). 상품 이미지의 배경이
+     흰색인 경우/아닌 경우가 섞여 있어, 플레이트를 고정해 다크에서도 일관되게 보이도록. */
+  --rb-plate: 0 0% 100%;
+
+  /* 폴리모프 디자인시스템 토큰 seam.
+     @package/ui 의 중립 컴포넌트(Input/Select/Toast 등)가 사용하는 표준 토큰명을
+     rootbeer 워밍 팔레트(--rb-*)에 매핑한다. --rb-* 가 .dark 에서 이미 뒤집히므로,
+     여기(:root)에 한 번만 정의해도 var() 지연치환으로 라이트/다크가 자동 전환된다.
+     → 브랜드는 유지하면서 폴리모프 정체성(공통 컴포넌트)을 차용. */
+  --background: var(--rb-paper);
+  --foreground: var(--rb-ink-900);
+  --card: var(--rb-paper-card);
+  --card-foreground: var(--rb-ink-900);
+  --popover: var(--rb-paper-card);
+  --popover-foreground: var(--rb-ink-900);
+  --border: var(--rb-line);
+  --input: var(--rb-line);
+  --ring: var(--rb-clay-500);
+  --primary: var(--rb-ink-900);
+  --primary-foreground: var(--rb-paper);
+  --secondary: var(--rb-clay-500);
+  --secondary-foreground: 0 0% 100%;
+  --muted: var(--rb-line-soft);
+  --muted-foreground: var(--rb-ink-600);
+  --accent: var(--rb-clay-50);
+  --accent-foreground: var(--rb-ink-900);
+}
+
+.dark {
+  --rb-paper: 24 12% 9%;        /* warm near-black */
+  --rb-paper-card: 24 10% 13%;
+  --rb-ink-900: 34 26% 92%;     /* warm off-white text */
+  --rb-ink-600: 32 10% 66%;
+  --rb-ink-400: 30 8% 52%;
+  --rb-line: 26 8% 22%;
+  --rb-line-soft: 26 8% 18%;
+  --rb-clay-50: 16 26% 22%;
+  --rb-clay-500: 16 44% 68%;    /* lightened clay for dark */
+  --rb-clay-600: 16 40% 74%;
+  --rb-sage-50: 140 10% 20%;
+  --rb-sage-500: 140 16% 62%;
+  --rb-sage-600: 140 18% 68%;
+  --rb-ocher-50: 40 30% 22%;
+  --rb-ocher-500: 40 55% 64%;
+  --rb-ocher-600: 40 58% 70%;
+  --rb-terra-50: 12 34% 24%;
+  --rb-terra-500: 11 60% 66%;
+  --rb-terra-600: 11 62% 72%;
+}
+
 @layer base {
   body {
     @apply text-ink-900 antialiased;
@@ -35,7 +111,7 @@
 
 /* 상품 상세 HTML 스타일 */
 .product-detail-html {
-  color: theme('colors.ink.600');
+  color: hsl(var(--rb-ink-600));
   line-height: 1.7;
 }
 .product-detail-html img {
@@ -50,7 +126,7 @@
 }
 .product-detail-html td,
 .product-detail-html th {
-  border: 1px solid theme('colors.line.DEFAULT');
+  border: 1px solid hsl(var(--rb-line));
   padding: 8px;
   font-size: 0.875rem;
 }

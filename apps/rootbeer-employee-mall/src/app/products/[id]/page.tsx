@@ -98,7 +98,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     <div className="max-w-3xl mx-auto">
       <button
         onClick={() => router.back()}
-        className="text-sm text-ink-400 mb-4 hover:text-ink-600 transition-colors"
+        className="mb-5 inline-flex items-center gap-1 font-serif text-[13px] text-ink-400 hover:text-clay-600 transition-colors"
       >
         ← 목록으로
       </button>
@@ -107,7 +107,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         {/* 이미지 갤러리 */}
         <div className="sm:w-1/2 sm:flex-shrink-0">
           <SectionCard className="overflow-hidden">
-            <div className="aspect-square bg-line-soft relative">
+            <div className="aspect-square bg-plate relative">
               {selectedImage && (
                 <img src={selectedImage} alt={product.name} className="w-full h-full object-contain" />
               )}
@@ -142,18 +142,18 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
         {/* 상품 정보 */}
         <div className="mt-5 sm:mt-0 sm:flex-1 sm:min-w-0">
-          <p className="text-xs text-ink-400">
+          <p className="text-[10px] uppercase tracking-[0.14em] text-ink-400">
             {STORE_LABELS[product.store]}
             {product.brand && ` · ${product.brand}`}
           </p>
-          <h1 className="text-xl font-bold text-ink-900 mt-1 mb-3 leading-snug">{product.name}</h1>
+          <h1 className="font-serif text-[24px] text-ink-900 mt-2 mb-4 leading-[1.2] tracking-tight">{product.name}</h1>
 
           <Price sale={currentPrice} origin={product.originPrice} size="lg" />
 
           {/* 옵션 선택 */}
           {hasOptions && (
             <div className="border-t border-line pt-4 mt-4">
-              <h2 className="text-sm font-semibold text-ink-900 mb-2">옵션 선택</h2>
+              <h2 className="font-serif text-[15px] tracking-tight text-ink-900 mb-2.5">옵션 선택</h2>
               <div className="flex flex-col gap-1.5">
                 {options.map((opt) => (
                   <button
@@ -195,7 +195,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         <SectionCard className="p-4 mt-6">
           {product.detail?.description && (
             <div>
-              <h2 className="text-sm font-semibold text-ink-900 mb-2">상품 설명</h2>
+              <h2 className="font-serif text-[15px] tracking-tight text-ink-900 mb-2.5">상품 설명</h2>
               <p className="text-sm text-ink-600 whitespace-pre-line leading-relaxed">
                 {product.detail.description}
               </p>
@@ -203,7 +203,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           )}
           {product.detail?.htmlContent && (
             <div className={product.detail?.description ? 'border-t border-line pt-4 mt-4' : ''}>
-              <h2 className="text-sm font-semibold text-ink-900 mb-3">상품 상세</h2>
+              <h2 className="font-serif text-[15px] tracking-tight text-ink-900 mb-3">상품 상세</h2>
               <div
                 className="product-detail-html text-sm overflow-hidden"
                 dangerouslySetInnerHTML={{ __html: product.detail.htmlContent }}

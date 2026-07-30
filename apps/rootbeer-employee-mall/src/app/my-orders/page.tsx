@@ -69,7 +69,7 @@ export default function MyOrdersPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <PageHeader title="내 주문" subtitle={orders.length > 0 ? `${orders.length}건` : undefined} />
+      <PageHeader eyebrow="Order history" title="내 주문" subtitle={orders.length > 0 ? `${orders.length}건` : undefined} />
 
       {orders.length === 0 ? (
         <EmptyState title="주문 내역이 없습니다" />

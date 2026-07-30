@@ -44,7 +44,7 @@ export function CartDrawer() {
       >
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-line">
           <div>
-            <span className="block text-[10px] tracking-[0.15em] text-clay-500 italic" style={{ fontFamily: 'Georgia, serif' }}>
+            <span className="block text-[10px] tracking-[0.15em] text-clay-500 font-serif">
               YOUR BAG
             </span>
             <h2 className="text-lg font-bold text-ink-900">장바구니</h2>
@@ -64,7 +64,7 @@ export function CartDrawer() {
             <div className="flex-1 overflow-y-auto px-5">
               {items.map((item) => (
                 <div key={`${item.productId}-${item.optionId}`} className="flex gap-3 py-4 border-b border-line-soft">
-                  <div className="w-16 h-16 rounded-xl bg-line-soft flex-shrink-0 overflow-hidden">
+                  <div className="w-16 h-16 rounded-xl bg-plate flex-shrink-0 overflow-hidden">
                     {item.imageUrl && <img src={item.imageUrl} alt="" className="w-full h-full object-cover" />}
                   </div>
                   <div className="flex-1 min-w-0">

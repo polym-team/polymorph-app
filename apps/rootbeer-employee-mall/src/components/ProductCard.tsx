@@ -65,7 +65,7 @@ export function ProductCard({
     <div className="group">
       {/* 이미지 — 라운딩만, 박스/그림자 없음 */}
       <div
-        className={`${ASPECT[aspect]} relative bg-line-soft rounded-lg overflow-hidden cursor-pointer`}
+        className={`${ASPECT[aspect]} relative bg-plate rounded-xl overflow-hidden cursor-pointer`}
         onClick={goToDetail}
       >
         {product.imageUrl && (
@@ -74,18 +74,18 @@ export function ProductCard({
             alt={product.name}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
           />
         )}
 
         {product.soldOut && (
           <div className="absolute inset-0 bg-ink-900/35 backdrop-blur-[1px] flex items-center justify-center">
-            <span className="text-white text-sm font-medium">품절</span>
+            <span className="font-serif text-white text-base">Sold out</span>
           </div>
         )}
 
         {discountText && !product.soldOut && (
-          <span className="absolute top-2.5 left-2.5 bg-terra-500/95 text-white text-[10.5px] font-bold tracking-tight px-1.5 py-0.5 rounded backdrop-blur-sm tnum">
+          <span className="absolute top-3 left-3 bg-terra-500 text-white text-[10.5px] font-bold tracking-tight px-2 py-0.5 rounded-full tnum">
             {discountText}
           </span>
         )}
@@ -95,7 +95,7 @@ export function ProductCard({
           <button
             onClick={handleAdd}
             aria-label={product.hasOptions ? '옵션 선택' : '장바구니 담기'}
-            className={`absolute bottom-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all duration-200 active:scale-90 ${
+            className={`absolute bottom-3 right-3 w-9 h-9 rounded-full flex items-center justify-center shadow-sm transition-all duration-200 active:scale-90 ${
               added ? 'bg-sage-500 text-white' : 'bg-paper/90 text-ink-900 backdrop-blur hover:bg-ink-900 hover:text-paper'
             }`}
           >
@@ -111,13 +111,13 @@ export function ProductCard({
       </div>
 
       {/* 정보 — 투명 배경 위 세로 스택 */}
-      <div className="pt-2.5">
-        <p className="text-[11px] text-ink-400 truncate">
+      <div className="pt-3">
+        <p className="text-[10px] uppercase tracking-[0.13em] text-ink-400 truncate">
           {STORE_LABELS[product.store]}
           {product.brand && ` · ${product.brand}`}
         </p>
         <h3
-          className="text-[13px] leading-snug text-ink-900 line-clamp-2 mt-1 mb-1.5 cursor-pointer group-hover:text-clay-600 transition-colors"
+          className="text-[13px] leading-snug text-ink-900 line-clamp-2 mt-1.5 mb-2 cursor-pointer group-hover:text-clay-600 transition-colors"
           onClick={goToDetail}
         >
           {product.name}

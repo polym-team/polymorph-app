@@ -6,7 +6,22 @@ import { useEffect, useState, useMemo } from 'react';
 import { useCartStore, type CartItem } from '@/components/CartStore';
 import { STORE_LABELS, DELIVERY_LABELS } from '@/types';
 import type { Product, OrderRound } from '@/types';
-import { Button, SectionCard, EmptyState, PageHeader, fieldClass } from '@/components/ui';
+import { Button, SectionCard, EmptyState, PageHeader } from '@/components/ui';
+import {
+  Input,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  toast,
+} from '@package/ui';
+
+// @package/ui Select 트리거/아이템의 하드코딩 그레이를 rootbeer 워밍 토큰으로 오버라이드(다크 안전)
+const selectTriggerCls =
+  'w-full bg-paper-card border border-input text-ink-900 data-[placeholder]:text-ink-400';
+const selectItemCls =
+  'text-ink-900 hover:bg-clay-50 data-[highlighted]:bg-clay-50 data-[state=checked]:bg-clay-50 data-[state=checked]:text-clay-600';
 import { ITEM_ISSUE_LABELS } from '@/lib/status';
 import { formatPrice, formatDateTime } from '@/lib/format';
 
@@ -138,7 +153,7 @@ export default function CartPage() {
         router.push('/my-orders');
       } else {
         const data = await res.json();
-        alert(data.error || '주문 실패');
+        toast.error(data.error || '주문 실패');
       }
     } finally {
       setSubmitting(false);
@@ -147,7 +162,7 @@ export default function CartPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <PageHeader title="장바구니" subtitle={items.length > 0 ? `${items.length}개 상품` : undefined} />
+      <PageHeader eyebrow="Your bag" title="장바구니" subtitle={items.length > 0 ? `${items.length}개 상품` : undefined} />
 
       {items.length === 0 ? (
         <EmptyState title="장바구니가 비어있습니다" />
@@ -161,7 +176,7 @@ export default function CartPage() {
 
           {storeSubtotals.map(({ store, subtotal, items: storeItems }) => (
             <div key={store} className="mb-6">
-              <h2 className="font-medium text-sm text-ink-600 mb-2">
+              <h2 className="font-serif text-[15px] tracking-tight text-ink-900 mb-2.5">
                 {STORE_LABELS[store as keyof typeof STORE_LABELS]}
               </h2>
               <SectionCard className="divide-y divide-line">
@@ -256,59 +271,64 @@ export default function CartPage() {
               {openRounds.length === 0 ? (
                 <p className="text-sm text-ocher-600">열려있는 라운드가 없습니다.</p>
               ) : (
-                <select
-                  value={selectedRoundId ?? ''}
-                  onChange={(e) => setSelectedRoundId(Number(e.target.value))}
-                  className={fieldClass}
+                <Select
+                  value={selectedRoundId != null ? String(selectedRoundId) : undefined}
+                  onValueChange={(v) => setSelectedRoundId(Number(v))}
                 >
-                  {openRounds.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.title || `라운드 #${r.id}`}
-                      {r.deadline && ` (마감: ${formatDateTime(r.deadline)})`}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className={selectTriggerCls}>
+                    <SelectValue placeholder="라운드 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {openRounds.map((r) => (
+                      <SelectItem key={r.id} value={String(r.id)} className={selectItemCls}>
+                        {r.title || `라운드 #${r.id}`}
+                        {r.deadline && ` (마감: ${formatDateTime(r.deadline)})`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </div>
             <div>
               <label className="text-sm font-medium text-ink-900 block mb-2">배송지</label>
-              <select
+              <Select
                 value={deliveryLocation}
-                onChange={(e) => setDeliveryLocation(e.target.value as 'pangyo' | 'jeju' | 'custom')}
-                className={fieldClass}
+                onValueChange={(v) => setDeliveryLocation(v as 'pangyo' | 'jeju' | 'custom')}
               >
-                {Object.entries(DELIVERY_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>
-                    {v}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className={selectTriggerCls}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(DELIVERY_LABELS).map(([k, v]) => (
+                    <SelectItem key={k} value={k} className={selectItemCls}>
+                      {v}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             {deliveryLocation === 'custom' && (
               <div className="space-y-2 pt-3 border-t border-line">
                 <p className="text-xs text-ocher-600">
                   특정 배송지는 단독 주문으로 처리되며 합배송이 적용되지 않습니다.
                 </p>
-                <input
+                <Input
                   type="text"
                   placeholder="수령인 이름"
                   value={customDelivery.name}
                   onChange={(e) => setCustomDelivery({ ...customDelivery, name: e.target.value })}
-                  className={fieldClass}
                 />
-                <input
+                <Input
                   type="text"
                   placeholder="연락처"
                   value={customDelivery.phone}
                   onChange={(e) => setCustomDelivery({ ...customDelivery, phone: e.target.value })}
-                  className={fieldClass}
                 />
-                <input
+                <Input
                   type="text"
                   placeholder="배송 주소"
                   value={customDelivery.address}
                   onChange={(e) => setCustomDelivery({ ...customDelivery, address: e.target.value })}
-                  className={fieldClass}
                 />
               </div>
             )}
