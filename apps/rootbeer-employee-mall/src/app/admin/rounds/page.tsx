@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { OrderRound } from '@/types';
-import { PageHeader, SectionCard, Button, StatusBadge, EmptyState, fieldClass } from '@/components/ui';
-import { toast } from '@package/ui';
+import { PageHeader, SectionCard, Button, StatusBadge, EmptyState } from '@/components/ui';
+import { Input, toast } from '@package/ui';
 import { ROUND_STATUS } from '@/lib/status';
 import { formatDate, formatDateTime } from '@/lib/format';
 
@@ -83,18 +83,20 @@ export default function AdminRoundsPage() {
       <SectionCard className="p-4 mb-6">
         <h2 className="text-sm font-medium text-ink-900 mb-3">새 라운드 생성</h2>
         <div className="flex flex-wrap gap-2">
-          <input
+          <Input
+            size="sm"
             type="text"
             placeholder="제목 (선택)"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className={`${fieldClass} flex-1 min-w-[120px]`}
+            className="flex-1 min-w-[120px]"
           />
-          <input
+          <Input
+            size="sm"
             type="datetime-local"
             value={deadline}
             onChange={(e) => setDeadline(e.target.value)}
-            className={`${fieldClass} w-auto min-w-0`}
+            className="w-auto min-w-0"
           />
           <Button variant="accent" size="sm" onClick={handleCreate}>
             생성

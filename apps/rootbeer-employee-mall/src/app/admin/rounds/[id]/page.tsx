@@ -3,8 +3,8 @@
 import { useEffect, useState, use } from 'react';
 import { STORE_LABELS } from '@/types';
 import type { SettlementRow, Store } from '@/types';
-import { SectionCard, Button, StatusBadge, EmptyState, fieldClass, tabItemClass } from '@/components/ui';
-import { toast } from '@package/ui';
+import { SectionCard, Button, StatusBadge, EmptyState, tabItemClass } from '@/components/ui';
+import { Input, toast } from '@package/ui';
 import { PURCHASE_STATUS, type StatusMeta } from '@/lib/status';
 import { formatPrice, formatDate, formatDateTime } from '@/lib/format';
 
@@ -582,21 +582,21 @@ function PurchaseCard({
         <div className="flex gap-2 items-end">
           <div className="flex-1">
             <label className="text-xs text-ink-600 block mb-1">주문번호</label>
-            <input
+            <Input
+              size="sm"
               type="text"
               value={orderNo}
               onChange={(e) => setOrderNo(e.target.value)}
               placeholder="외부 몰 주문번호"
-              className={fieldClass}
             />
           </div>
           <div className="w-32">
             <label className="text-xs text-ink-600 block mb-1">배송비</label>
-            <input
+            <Input
+              size="sm"
               type="number"
               value={shippingFee}
               onChange={(e) => setShippingFee(e.target.value)}
-              className={fieldClass}
             />
           </div>
           <Button variant="accent" size="md" onClick={handleSave} disabled={saving}>
