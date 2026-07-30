@@ -10,6 +10,7 @@ import { useCatalogStore } from '@/components/CatalogStore';
 import { Button, EmptyState, Price } from '@/components/ui';
 import { savePreset } from '@/lib/preset';
 import { formatDate, formatDateTime } from '@/lib/format';
+import { isRecommended } from '@/lib/recommend';
 
 const STORE_TABS: { value: string; label: string }[] = [
   { value: 'all', label: '전체' },
@@ -205,11 +206,19 @@ export default function HomePage() {
   const searchActive = keyword.length > 0 || selectedBrands.length > 0;
   const feed = searchActive ? filtered : storeProducts;
 
-  const deals = storeProducts
-    .filter((p) => !p.soldOut && (p.discountRate ?? 0) > 0)
-    .sort((a, b) => (b.discountRate ?? 0) - (a.discountRate ?? 0))
-    .slice(0, 10);
-  const feature = deals[0];
+  // MD 추천: 상품명 키워드(리퍼/세트/기획/대용량/에디션…) 매칭 상품을 추천.
+  // 매칭 우선(할인율 높은 순), 없으면 할인 상품으로 폴백해 섹션이 비지 않게.
+  const keywordMatched = storeProducts
+    .filter((p) => !p.soldOut && isRecommended(p.name))
+    .sort((a, b) => (b.discountRate ?? 0) - (a.discountRate ?? 0));
+  const recommended = (
+    keywordMatched.length > 0
+      ? keywordMatched
+      : storeProducts
+          .filter((p) => !p.soldOut && (p.discountRate ?? 0) > 0)
+          .sort((a, b) => (b.discountRate ?? 0) - (a.discountRate ?? 0))
+  ).slice(0, 10);
+  const feature = recommended[0];
 
   const clearAll = () => {
     setKeyword('');
@@ -272,12 +281,12 @@ export default function HomePage() {
 
       {!searchActive ? (
         <>
-          {/* 이번 주 특가 */}
-          {deals.length > 0 && (
+          {/* MD 추천 */}
+          {recommended.length > 0 && (
             <>
-              <SectionHeader num="01" title="이번 주 특가" />
+              <SectionHeader num="01" title="MD 추천" />
               <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4">
-                {deals.map((p) => (
+                {recommended.map((p) => (
                   <div key={p.id} className="w-40 flex-shrink-0">
                     <ProductCard product={p} />
                   </div>
