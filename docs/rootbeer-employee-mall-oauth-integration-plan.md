@@ -254,7 +254,9 @@ role/filterPreset 이관. shared DB라 점검창(maintenance-svc ingress 스왑)
 ## 진행 상태 추적 (SSOT)
 
 ### 현재 단계
-**계획 개정 완료(Strategy A 확정, 2026-07-30). 작업 미착수.**
+**Phase 0 완료 + Phase 1 코드 완료(커밋 9d1e97c, 브랜치 feat/rootbeer-oauth-integration).**
+남은 것: (1) 공유 DB에 nullable 컬럼 마이그레이션 적용(migrate deploy, 확인 후) (2) 로컬 OAUTH_JWT_SECRET
++ oauth-server seed 반영 후 Google 로그인 e2e (3) Phase 2 배포.
 
 ### 결정 (2026-07-30, 사용자 승인)
 - 신원/데이터 모델: **A(링크 컬럼)** — users 유지 + oauth_user_id, orders.user_id 무변경
@@ -263,14 +265,17 @@ role/filterPreset 이관. shared DB라 점검창(maintenance-svc ingress 스왑)
 - 완전 정리(B)는 향후 선택지로 연기
 
 ### 체크리스트
-- [ ] Phase 0: 백업
-- [ ] Phase 1: oauth 통합 + 링크 컬럼 + 동의 페이지 (로컬 e2e)
+- [x] Phase 0: 백업 (dump-2026-07-30.sql, 8.3M, users~18/orders~29)
+- [~] Phase 1: 코드 완료(tsc+build 통과). 남음: 공유 DB 컬럼 적용 + Google 로그인 e2e
 - [ ] Phase 2: 배포(비파괴)
 - [ ] Phase 3(선택): 완전 정리(B)
 
 ### 진행 로그
 - 2026-05-27: Strategy B 계획 수립
 - 2026-07-30: Strategy A로 개정(링크 컬럼 + opt-in 동의). 사용자 결정.
+- 2026-07-30: Phase 0 백업 + Phase 1 코드 구현 완료(커밋 9d1e97c). oauth seed·링크컬럼 마이그레이션·
+  api-utils 피벗·인증 API(set-cookie/logout/me/link/apply)·미들웨어·콜백·AuthProvider(모듈스토어)·
+  MembershipGate·cautions.ts·useSession 8곳 교체·next-auth 제거. tsconfig typeRoots로 @types/react 충돌 회피.
 
 ### 사용자에게 받아야 하는 것
 - Phase 0: rootbeer 운영 DB 접근/덤프 위치, 운영 도메인 확정
