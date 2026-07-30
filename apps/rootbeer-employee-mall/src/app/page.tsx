@@ -187,8 +187,13 @@ export default function HomePage() {
           <h1 className="font-serif text-4xl text-ink-900 mb-2 tracking-tight">ROOTBEER MALL</h1>
           <p className="text-ink-400 mb-8">임직원 할인 공동구매</p>
           <Button variant="accent" size="lg" onClick={() => login('/')} className="shadow-lift">
-            Google 계정으로 로그인
+            polymorph 계정으로 로그인
           </Button>
+          <p className="mt-4 text-xs text-ink-400 leading-relaxed">
+            polymorph 통합 계정(Google · Kakao)으로 로그인합니다.
+            <br />
+            기존 임직원몰 회원은 최초 로그인 시 계정 연결 안내가 표시됩니다.
+          </p>
         </div>
       </div>
     );

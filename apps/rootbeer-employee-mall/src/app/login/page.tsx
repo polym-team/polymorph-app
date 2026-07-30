@@ -16,8 +16,11 @@ export default function LoginPage() {
           onClick={() => login('/')}
           className="shadow-lift"
         >
-          Google 계정으로 로그인
+          polymorph 계정으로 로그인
         </Button>
+        <p className="mt-4 text-xs text-ink-400 leading-relaxed">
+          polymorph 통합 계정(Google · Kakao)으로 로그인합니다.
+        </p>
       </div>
     </div>
   );

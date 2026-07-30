@@ -80,14 +80,17 @@ export function manageAccount() {
   window.location.href = `${OAUTH_URL}/account?clientId=${CLIENT_ID}&returnUrl=${encodeURIComponent(origin)}`;
 }
 
-/** 로컬 쿠키 제거 후 oauth-server SSO 로그아웃 */
+/** 로컬 쿠키 제거 후 oauth-server 글로벌 로그아웃(SSO 세션까지 제거) */
 export async function logout() {
   try {
     await fetch('/api/auth/logout', { method: 'POST' });
   } catch {
     /* ignore */
   }
-  window.location.href = `${OAUTH_URL}/logout?returnUrl=${encodeURIComponent(window.location.origin)}`;
+  // oauth-server 로그아웃은 페이지가 아니라 API 라우트: /api/logout?returnTo=
+  // (autto/jibsayo 동일). /logout 로 보내면 SSO 세션이 안 지워져 silent SSO 가 재로그인시킴.
+  const returnTo = encodeURIComponent(window.location.origin);
+  window.location.href = `${OAUTH_URL}/api/logout?returnTo=${returnTo}`;
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
