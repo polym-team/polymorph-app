@@ -9,7 +9,7 @@ import { prisma } from '@/lib/prisma';
  */
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<Response> {
   if (!isAdmin(req)) {
     return Response.json(
@@ -18,7 +18,8 @@ export async function DELETE(
     );
   }
 
-  const id = Number(params.id);
+  const { id: idParam } = await params;
+  const id = Number(idParam);
   if (!Number.isInteger(id)) {
     return Response.json({ message: 'id가 유효하지 않습니다.' }, { status: 400 });
   }

@@ -1,0 +1,8 @@
+/* AUTO-GENERATED from registry.ts — 직접 편집 금지.
+   값 변경은 registry.ts 수정 후 `pnpm --filter @package/theme generate:presets` 실행. */
+/* tallo — 시안 #06B6D4 (핀테크 원장·정밀) */
+:root {
+  --primary: 193 82% 31%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 193 82% 31%;
+}

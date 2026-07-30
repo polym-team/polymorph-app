@@ -47,8 +47,13 @@ export function CallbackClient() {
   }, []);
 
   return (
-    <div style={{ fontFamily: 'sans-serif', padding: '2rem', color: '#888' }}>
-      {error ?? '잠시만요...'}
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        {!error && (
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        )}
+        {error ?? '잠시만요…'}
+      </div>
     </div>
   );
 }
