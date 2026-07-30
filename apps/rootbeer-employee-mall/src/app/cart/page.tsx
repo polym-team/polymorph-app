@@ -147,7 +147,7 @@ export default function CartPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <PageHeader title="장바구니" subtitle={items.length > 0 ? `${items.length}개 상품` : undefined} />
+      <PageHeader eyebrow="Your bag" title="장바구니" subtitle={items.length > 0 ? `${items.length}개 상품` : undefined} />
 
       {items.length === 0 ? (
         <EmptyState title="장바구니가 비어있습니다" />
@@ -161,7 +161,7 @@ export default function CartPage() {
 
           {storeSubtotals.map(({ store, subtotal, items: storeItems }) => (
             <div key={store} className="mb-6">
-              <h2 className="font-medium text-sm text-ink-600 mb-2">
+              <h2 className="font-serif text-[15px] tracking-tight text-ink-900 mb-2.5">
                 {STORE_LABELS[store as keyof typeof STORE_LABELS]}
               </h2>
               <SectionCard className="divide-y divide-line">
