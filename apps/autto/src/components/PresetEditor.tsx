@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { LottoBalls } from '@/components/LottoBalls';
 
 interface Preset {
   id: number;
@@ -116,11 +117,11 @@ export function PresetEditor({ accountId, presets, onUpdate, onEditingChange, on
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-600">번호 설정 (5세트)</h3>
+        <h3 className="text-sm font-medium text-muted-foreground">번호 설정 (5세트)</h3>
         {!editing ? (
           <button
             onClick={startEditing}
-            className="text-xs text-lotto-600 hover:underline"
+            className="text-xs text-primary hover:underline"
           >
             수정
           </button>
@@ -128,14 +129,14 @@ export function PresetEditor({ accountId, presets, onUpdate, onEditingChange, on
           <div className="flex gap-2">
             <button
               onClick={cancelEditing}
-              className="text-xs text-gray-400 hover:underline"
+              className="text-xs text-muted-foreground hover:underline"
             >
               취소
             </button>
             <button
               onClick={handleSave}
               disabled={saving || !areAllPresetsValid(localPresets)}
-              className="text-xs font-medium text-lotto-600 hover:underline disabled:text-gray-300 disabled:no-underline"
+              className="text-xs font-medium text-primary hover:underline disabled:text-muted-foreground/50 disabled:no-underline"
             >
               {saving ? '저장 중...' : '저장'}
             </button>
@@ -160,11 +161,11 @@ export function PresetEditor({ accountId, presets, onUpdate, onEditingChange, on
           return (
             <div key={slot}>
               <div
-                className={`flex items-center gap-2 rounded border bg-white px-3 py-2 ${
-                  validation && !validation.valid ? 'border-red-300' : ''
+                className={`flex items-center gap-2 rounded border bg-card px-3 py-2 ${
+                  validation && !validation.valid ? 'border-danger' : 'border-border'
                 }`}
               >
-                <span className="w-6 text-center text-sm font-bold text-lotto-500">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded bg-primary/10 text-xs font-bold text-primary">
                   {slot}
                 </span>
 
@@ -173,7 +174,7 @@ export function PresetEditor({ accountId, presets, onUpdate, onEditingChange, on
                     <select
                       value={preset.mode}
                       onChange={(e) => handleModeChange(slot, e.target.value)}
-                      className="rounded border px-2 py-1 text-sm"
+                      className="rounded border border-border bg-background px-2 py-1 text-sm text-foreground"
                     >
                       <option value="auto">자동</option>
                       <option value="manual">수동</option>
@@ -184,24 +185,26 @@ export function PresetEditor({ accountId, presets, onUpdate, onEditingChange, on
                         value={preset.numbers ?? ''}
                         onChange={(e) => handleNumbersChange(slot, e.target.value)}
                         placeholder="1,2,3,4,5,6"
-                        className={`flex-1 rounded border px-2 py-1 text-sm ${
-                          validation && !validation.valid ? 'border-red-300' : ''
+                        className={`flex-1 rounded border bg-background px-2 py-1 text-sm text-foreground ${
+                          validation && !validation.valid ? 'border-danger' : 'border-border'
                         }`}
                       />
                     )}
                   </>
                 ) : (
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm">
                     {preset.mode === 'auto' ? (
-                      <span className="text-gray-400">자동 선택</span>
+                      <span className="text-muted-foreground">자동 선택</span>
+                    ) : preset.numbers ? (
+                      <LottoBalls numbers={preset.numbers} size="sm" />
                     ) : (
-                      preset.numbers || <span className="text-red-400">번호 미설정</span>
+                      <span className="text-danger">번호 미설정</span>
                     )}
                   </span>
                 )}
               </div>
               {validation && !validation.valid && (
-                <p className="mt-0.5 pl-8 text-xs text-red-500">{validation.error}</p>
+                <p className="mt-0.5 pl-8 text-xs text-danger">{validation.error}</p>
               )}
             </div>
           );

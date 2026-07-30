@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { Button, Avatar, AvatarFallback } from '@package/ui';
 import type { DhAccount } from './Dashboard';
 import { PresetEditor } from './PresetEditor';
 import { BalanceInfo } from './BalanceInfo';
@@ -88,29 +89,31 @@ export function AccountCard({ account, isSelected, onSelect, onUpdate }: Props) 
 
   return (
     <div
-      className={`rounded-lg border bg-white shadow-sm transition ${
-        isSelected ? 'border-lotto-500 ring-1 ring-lotto-500' : 'border-gray-200'
+      className={`rounded-xl border bg-card shadow-sm transition ${
+        isSelected ? 'border-primary ring-1 ring-ring' : 'border-border'
       }`}
     >
       {/* 헤더 */}
-      <div className="flex items-center justify-between border-b px-4 py-3" onClick={onSelect}>
+      <div className="flex items-center justify-between border-b border-border px-4 py-3" onClick={onSelect}>
         <div className="flex items-center gap-3 cursor-pointer">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-lotto-50 text-sm font-bold text-lotto-600">
-            {(account.nickname || account.dhlotteryId)[0].toUpperCase()}
-          </div>
+          <Avatar className="h-9 w-9">
+            <AvatarFallback className="font-bold">
+              {(account.nickname || account.dhlotteryId)[0].toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <div>
-            <div className="font-medium">{account.nickname || account.dhlotteryId}</div>
-            <div className="text-xs text-gray-400">{account.dhlotteryId}</div>
+            <div className="font-medium text-foreground">{account.nickname || account.dhlotteryId}</div>
+            <div className="text-xs text-muted-foreground">{account.dhlotteryId}</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={(e) => { e.stopPropagation(); handleToggleAuto(); }}
             disabled={toggling}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+            className={`rounded-full px-3 py-1 text-xs font-medium transition disabled:opacity-50 ${
               account.autoEnabled
-                ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                ? 'bg-green-500/15 text-green-600 dark:text-green-400'
+                : 'bg-muted text-muted-foreground'
             }`}
           >
             자동구매 {account.autoEnabled ? 'ON' : 'OFF'}
@@ -118,7 +121,7 @@ export function AccountCard({ account, isSelected, onSelect, onUpdate }: Props) 
           <button
             onClick={(e) => { e.stopPropagation(); handleDelete(); }}
             disabled={deleting}
-            className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
+            className="rounded p-1 text-muted-foreground transition hover:bg-danger/10 hover:text-danger disabled:opacity-50"
             title="삭제"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -144,21 +147,22 @@ export function AccountCard({ account, isSelected, onSelect, onUpdate }: Props) 
           />
 
           {/* 구매 버튼 */}
-          <button
+          <Button
+            variant="primary"
             onClick={handleBuy}
             disabled={!canBuy}
-            className="w-full rounded-lg bg-lotto-500 py-3 font-medium text-white transition hover:bg-lotto-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full"
             title={
               presetEditing ? '번호 설정을 저장한 후 구매해주세요' :
               !presetsValid ? '모든 수동 번호를 올바르게 입력해주세요' : ''
             }
           >
             {buying ? '구매 중...' : presetEditing ? '번호 설정 저장 후 구매 가능' : '수동 구매'}
-          </button>
+          </Button>
 
           {/* 구매 결과 */}
           {buyResult && (
-            <pre className="rounded-lg bg-gray-50 p-3 text-xs text-gray-700 whitespace-pre-wrap">
+            <pre className="rounded-lg bg-muted/40 p-3 text-xs text-foreground whitespace-pre-wrap">
               {buyResult}
             </pre>
           )}

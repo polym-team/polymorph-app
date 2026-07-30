@@ -83,7 +83,7 @@ export const APP_THEMES: AppTheme[] = [
     hex: '#E6A817',
     primary: '42 82% 50%',
     primaryForeground: '24 20% 14%',
-    status: 'own-config',
+    status: 'preset',
     brand: '유지',
     note: '로또·행운',
   },

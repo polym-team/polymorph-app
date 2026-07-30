@@ -15,10 +15,13 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@package/styles": "workspace:*",
+    "@package/theme": "workspace:*",
     "@package/ui": "workspace:*",
     "@package/utils": "workspace:*",
     "@polymorph/shared-auth": "workspace:*",
     "@prisma/client": "^6.2.1",
+    "next-themes": "^0.4.6",
     "cheerio": "^1.0.0",
     "next": "^15.3.1",
     "node-forge": "^1.3.1",

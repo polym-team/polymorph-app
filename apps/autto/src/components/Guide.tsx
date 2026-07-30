@@ -6,12 +6,12 @@ export function Guide() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="rounded-lg border bg-white">
+    <div className="rounded-xl border border-border bg-card shadow-sm">
       <button
         onClick={() => setOpen(!open)}
         className="flex w-full items-center justify-between px-4 py-3 text-left"
       >
-        <span className="text-sm font-medium text-gray-600">이용 안내</span>
+        <span className="text-sm font-medium text-muted-foreground">이용 안내</span>
         <svg
           width="16"
           height="16"
@@ -19,14 +19,14 @@ export function Guide() {
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          className={`text-gray-400 transition ${open ? 'rotate-180' : ''}`}
+          className={`text-muted-foreground transition ${open ? 'rotate-180' : ''}`}
         >
           <path d="M6 9l6 6 6-6" />
         </svg>
       </button>
 
       {open && (
-        <div className="border-t px-4 pb-4 pt-3 text-sm leading-relaxed text-gray-600">
+        <div className="border-t border-border px-4 pb-4 pt-3 text-sm leading-relaxed text-muted-foreground">
           <ol className="list-decimal space-y-3 pl-4">
             <li>
               <strong>계정 등록</strong>
@@ -35,7 +35,7 @@ export function Guide() {
                 href="https://www.dhlottery.co.kr"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-lotto-600 underline"
+                className="text-primary underline"
               >
                 동행복권 웹사이트
               </a>
