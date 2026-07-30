@@ -38,9 +38,9 @@ export const APP_THEMES: AppTheme[] = [
     hex: '#4F46E5',
     primary: '243 75% 59%',
     primaryForeground: '0 0% 100%',
-    status: 'own-config',
+    status: 'preset',
     brand: '신규',
-    note: '인증·신뢰의 기준점',
+    note: '인증·신뢰의 기준점 (재설계 완료)',
   },
   {
     app: 'jibsayo',

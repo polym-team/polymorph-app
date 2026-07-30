@@ -7,11 +7,19 @@
   "files": [
     "tokens.css",
     "presets",
-    "registry.ts"
+    "registry.ts",
+    "symbols.tsx"
   ],
   "exports": {
     "./tokens.css": "./tokens.css",
     "./presets/*": "./presets/*",
-    "./registry": "./registry.ts"
+    "./registry": "./registry.ts",
+    "./symbols": "./symbols.tsx"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12"
   }
 }

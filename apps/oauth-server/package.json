@@ -16,12 +16,15 @@
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@package/styles": "workspace:*",
+    "@package/theme": "workspace:*",
     "@package/ui": "workspace:*",
     "@package/utils": "workspace:*",
     "@polymorph/shared-auth": "workspace:*",
     "@prisma/client": "^6.2.1",
     "next": "^15.3.1",
     "next-auth": "^4.24.11",
+    "next-themes": "^0.4.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

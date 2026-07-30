@@ -1,6 +1,10 @@
 import type { Metadata } from 'next';
-import './globals.css';
+
+import '@package/theme/presets/oauth-server.css';
+import '@package/styles/globals.css';
+
 import { SessionProviderWrapper } from '@/components/SessionProviderWrapper';
+import { ThemeProviders } from './providers';
 
 export const metadata: Metadata = {
   title: 'Polymorph OAuth',
@@ -9,9 +13,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko">
-      <body className="bg-gray-50 min-h-screen">
-        <SessionProviderWrapper>{children}</SessionProviderWrapper>
+    <html lang="ko" suppressHydrationWarning>
+      <body className="min-h-screen bg-background text-foreground antialiased">
+        <ThemeProviders>
+          <SessionProviderWrapper>{children}</SessionProviderWrapper>
+        </ThemeProviders>
       </body>
     </html>
   );

@@ -1,5 +1,6 @@
 'use client';
 
+import { Alert, Button } from '@package/ui';
 import { useEffect, useState } from 'react';
 
 interface DecodedPayload {
@@ -51,7 +52,7 @@ export function CallbackClient() {
 
     // /api/me 호출
     fetch('/api/me')
-      .then(r => r.json())
+      .then((r) => r.json())
       .then(setMeData)
       .catch(() => setMeData({ error: '조회 실패' }));
   }, []);
@@ -59,23 +60,27 @@ export function CallbackClient() {
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="rounded-lg bg-red-50 p-6 text-sm text-red-600">{error}</div>
+        <div className="w-full max-w-md">
+          <Alert variant="danger">{error}</Alert>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen px-4 py-8">
-      <div className="mx-auto max-w-2xl space-y-6">
-        <div className="rounded-2xl border bg-white p-6 shadow-sm">
-          <h1 className="text-xl font-bold text-gray-900">✅ 로그인 성공</h1>
-          <p className="mt-1 text-sm text-gray-500">JWT가 발급되어 URL fragment로 전달되었습니다.</p>
+    <div className="min-h-screen px-4 py-8 sm:py-10">
+      <div className="mx-auto flex max-w-2xl flex-col gap-4">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <h1 className="text-xl font-semibold tracking-tight">✅ 로그인 성공</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            JWT가 발급되어 URL fragment로 전달되었습니다.
+          </p>
         </div>
 
         {payload && (
-          <div className="rounded-2xl border bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-base font-bold text-gray-900">JWT 페이로드</h2>
-            <div className="space-y-3 text-sm">
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <h2 className="mb-4 text-sm font-semibold">JWT 페이로드</h2>
+            <div className="flex flex-col gap-3 text-sm">
               <Row label="sub (User ID)" value={payload.sub} />
               <Row label="email" value={payload.email} />
               <Row label="name" value={payload.name ?? '-'} />
@@ -89,8 +94,8 @@ export function CallbackClient() {
         )}
 
         {token && (
-          <div className="rounded-2xl border bg-white p-6 shadow-sm">
-            <h2 className="mb-3 text-base font-bold text-gray-900">Raw JWT</h2>
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <h2 className="mb-3 text-sm font-semibold">Raw JWT</h2>
             <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 text-xs text-green-300">
               {token}
             </pre>
@@ -98,26 +103,24 @@ export function CallbackClient() {
         )}
 
         {meData != null && (
-          <div className="rounded-2xl border bg-white p-6 shadow-sm">
-            <h2 className="mb-3 text-base font-bold text-gray-900">/api/me 응답</h2>
-            <pre className="overflow-x-auto rounded-lg bg-gray-50 p-4 text-xs">
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <h2 className="mb-3 text-sm font-semibold">/api/me 응답</h2>
+            <pre className="overflow-x-auto rounded-lg bg-muted/50 p-4 text-xs">
               {JSON.stringify(meData, null, 2)}
             </pre>
           </div>
         )}
 
         <div className="grid grid-cols-2 gap-2">
-          <a
-            href="/test"
-            className="rounded-lg border bg-white px-4 py-3 text-center text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            다시 테스트
+          <a href="/test" className="block">
+            <Button variant="outline" className="w-full">
+              다시 테스트
+            </Button>
           </a>
-          <a
-            href="/account"
-            className="rounded-lg border bg-white px-4 py-3 text-center text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            계정 관리
+          <a href="/account" className="block">
+            <Button variant="outline" className="w-full">
+              계정 관리
+            </Button>
           </a>
         </div>
       </div>
@@ -127,9 +130,11 @@ export function CallbackClient() {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-2 last:border-b-0">
-      <span className="flex-shrink-0 text-xs font-medium text-gray-400">{label}</span>
-      <code className="break-all text-right text-xs text-gray-800">{value}</code>
+    <div className="flex items-start justify-between gap-4 border-b border-border pb-2 last:border-b-0">
+      <span className="flex-shrink-0 text-xs font-medium text-muted-foreground">
+        {label}
+      </span>
+      <code className="break-all text-right text-xs">{value}</code>
     </div>
   );
 }
