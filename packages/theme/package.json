@@ -16,10 +16,14 @@
     "./registry": "./registry.ts",
     "./symbols": "./symbols.tsx"
   },
+  "scripts": {
+    "generate:presets": "tsx scripts/generate-presets.ts"
+  },
   "peerDependencies": {
     "react": ">=18"
   },
   "devDependencies": {
-    "@types/react": "^18.3.12"
+    "@types/react": "^18.3.12",
+    "tsx": "^4.7.0"
   }
 }

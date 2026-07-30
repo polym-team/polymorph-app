@@ -11,7 +11,9 @@
  *   self-themed — Tailwind/shadcn 토큰 미사용, 독자 디자인(편입 대상 아님)
  *   default     — 하우스 기본값(레퍼런스)
  *
- * ⚠️ presets/*.css 는 현재 수기로 이 값과 동기화한다. (추후 이 레지스트리에서 생성 권장)
+ * presets/*.css 는 이 레지스트리에서 자동 생성한다(단일 소스):
+ *   pnpm --filter @package/theme generate:presets
+ * 앱 전용 추가 토큰은 extraTokens 필드로 등록하면 함께 생성된다. presets/*.css 는 직접 편집 금지.
  */
 export type ThemeStatus = 'preset' | 'own-config' | 'self-themed' | 'default';
 export type BrandTag = '신규' | '유지' | '기본';
@@ -27,6 +29,8 @@ export interface AppTheme {
   status: ThemeStatus;
   brand: BrandTag;
   note?: string;
+  /** 앱 전용 추가 토큰 (예: jibsayo 가격 상승/하락). presets/<app>.css 에 함께 생성된다. */
+  extraTokens?: Record<string, string>;
 }
 
 export const APP_THEMES: AppTheme[] = [
@@ -53,6 +57,11 @@ export const APP_THEMES: AppTheme[] = [
     status: 'preset',
     brand: '신규',
     note: '데이터를 신뢰감 있게',
+    // 도메인 색 — 한국 부동산 관례: 빨강=상승, 파랑=하락 (jibsayo tailwind에서 priceUp/priceDown 로 매핑)
+    extraTokens: {
+      '--price-up': '0 72% 51%',
+      '--price-down': '221 83% 53%',
+    },
   },
   {
     app: 'rootbeer-employee-mall',

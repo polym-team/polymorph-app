@@ -1,6 +1,8 @@
+/* AUTO-GENERATED from registry.ts — 직접 편집 금지.
+   값 변경은 registry.ts 수정 후 `pnpm --filter @package/theme generate:presets` 실행. */
 /* bookmark-share — 바이올렛 #7C3AED (수집·공유의 산뜻함) */
 :root {
-  --primary: 262 83% 58%;          /* #7C3AED */
+  --primary: 262 83% 58%;
   --primary-foreground: 0 0% 100%;
   --ring: 262 83% 58%;
 }
