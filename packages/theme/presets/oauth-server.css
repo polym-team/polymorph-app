@@ -1,6 +1,8 @@
-/* oauth-server — 인디고 #4F46E5 (중앙 인증 허브, 신뢰의 기준점) */
+/* AUTO-GENERATED from registry.ts — 직접 편집 금지.
+   값 변경은 registry.ts 수정 후 `pnpm --filter @package/theme generate:presets` 실행. */
+/* oauth-server — 인디고 #4F46E5 (인증·신뢰의 기준점 (재설계 완료)) */
 :root {
-  --primary: 243 75% 59%;          /* #4F46E5 */
+  --primary: 243 75% 59%;
   --primary-foreground: 0 0% 100%;
   --ring: 243 75% 59%;
 }

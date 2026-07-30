@@ -60,12 +60,12 @@ theme에는 **컴포넌트 구조가 들어오지 않는다.** 색·radius 같�
 
 전제: 그 앱이 shared config(`@package/config`) + Tailwind + `@package/ui`를 쓸 때만 해당.
 
-1. `registry.ts`에 항목 추가 (primary 채널, hue, hex, status 등).
-2. `presets/<app>.css` 생성 — `--primary` / `--primary-foreground` / `--ring`만.
-3. 앱 `layout.tsx`에서 globals import **위에** 자기 preset을 상대경로로 import.
+1. `registry.ts`에 항목 추가 (primary 채널, hue, hex, `status: 'preset'` 등). 앱 전용 토큰이 있으면 `extraTokens`에.
+2. `pnpm --filter @package/theme generate:presets` 실행 → `presets/<app>.css` 자동 생성.
+3. 앱 `layout.tsx`에서 globals import **위에** 자기 preset을 import (`@package/theme/presets/<app>.css`).
 4. `/themes` 오버뷰에서 확인.
 
-> ⚠️ 현재 `presets/*.css`와 `registry.ts`는 **수기로 동기화**한다. (추후 registry에서 CSS 생성 권장)
+> `presets/*.css` 는 **registry.ts에서 생성**된다(단일 소스). 직접 편집하지 말고 registry를 고친 뒤 `generate:presets`를 재실행한다.
 
 ## 기존 앱 리팩토링 규칙 (하드코딩 색 → 토큰)
 

@@ -184,7 +184,7 @@ grep 결과 실사용 거의 없음(`primary-500`이 jibsayo Spinner 1파일 3�
   - **tallo**: 자체 config(shared 미사용) → Phase 2 성격.
   - → 결론: 신규 앱 중 프리셋 대상은 그룹 A(완료)뿐. 나머지는 self-themed이거나 별도 편입 과제.
 - [x] **scaffolding 오버뷰 페이지 (`/themes`)** — `@package/theme/registry.ts`(단일 소스)에서 자동 렌더, 앱별 토큰을 스코프 주입해 실제 @package/ui 컴포넌트로 프리뷰. 브라우저 검증 완료.
-  - registry.ts가 오버뷰의 정본. ⚠️ presets/*.css 는 아직 수기 동기화 → 추후 registry에서 생성 권장.
+  - registry.ts가 정본. presets/*.css 는 registry에서 생성(`generate:presets`).
 - [x] **why-doc 작성** (`packages/theme/CLAUDE.md`) — 틀+값 개념, theme/ui 경계, **프리셋 얇게 유지 결정(primary만)+근거**, HSL 규약, 새 앱 절차, self-themed 예외, fallback 메커니즘
 - [~] **전략 재평가 (Phase 2 대체)**: 조사 결과 나머지 8개 앱은 `@package/ui`·`bg-primary` seam을
   **아예 소비하지 않음** (각자 own-config/self-themed/인라인). 일괄 편입은 대규모 UI 리팩토링이라
@@ -199,4 +199,5 @@ grep 결과 실사용 거의 없음(`primary-500`이 jibsayo Spinner 1파일 3�
 - [x] **다크모드 도입** — `tokens.css`에 `.dark` 블록(뉴트럴만 뒤집고 브랜드 유지) + `@package/config` `darkMode:'class'` + `postcss-import`로 `styles/globals.css`가 `tokens.css` 전역 @import + scaffolding `/themes`에 next-themes 토글. 브라우저로 라이트/다크 검증 완료.
   - tokens.css에서 브랜드 토큰(--primary/--ring) 제거 → preset과 로드순서 충돌 제거(브랜드는 preset/fallback).
 - [ ] 앱별 순차 리팩토링: oauth·rootbeer·autto·official·tallo (각 앱이 seam을 쓰게 하려면 UI 편입 필요 — 앱별 판단)
-- [ ] (후속) presets/*.css 를 registry.ts에서 생성 자동화 / 앱별 다크 토글 배치
+- [x] **presets 생성 자동화** — `packages/theme/scripts/generate-presets.ts` (`generate:presets`). registry가 단일 소스, extraTokens로 앱 전용 토큰(jibsayo price-up/down) 포함. 무회귀(값 동일) 확인.
+- [ ] (후속) 앱별 다크 토글 배치 / tallo 편입 / jibsayo next@15 업그레이드

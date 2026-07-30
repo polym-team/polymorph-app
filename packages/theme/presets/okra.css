@@ -1,6 +1,8 @@
-/* okra — 그린 #15803D (OKR 성장 + 이름 말장난) */
+/* AUTO-GENERATED from registry.ts — 직접 편집 금지.
+   값 변경은 registry.ts 수정 후 `pnpm --filter @package/theme generate:presets` 실행. */
+/* okra — 그린 #15803D (성장 + 이름(오크라)) */
 :root {
-  --primary: 142 72% 29%;          /* #15803D */
+  --primary: 142 72% 29%;
   --primary-foreground: 0 0% 100%;
   --ring: 142 72% 29%;
 }
