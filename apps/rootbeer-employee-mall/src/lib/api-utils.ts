@@ -41,11 +41,28 @@ export async function getOAuthIdentity(): Promise<OAuthIdentity | null> {
   };
 }
 
-/** 매칭 시도 이메일 후보. 대표가 더미면 linkedEmails 우선. */
+// 회사 도메인 변경(axzcorp.com → daumcorp.com) 대응.
+// local-part(@앞)는 동일하다는 전제로 상호 별칭을 함께 매칭한다.
+// 신규 도메인으로 로그인해도 구 도메인으로 등록된 기존 회원 row 를 찾아 연동할 수 있게 한다.
+const DOMAIN_ALIASES: ReadonlyArray<readonly [string, string]> = [
+  ['@daumcorp.com', '@axzcorp.com'],
+  ['@axzcorp.com', '@daumcorp.com'],
+];
+
+function expandDomainAliases(email: string): string[] {
+  const out = [email];
+  for (const [from, to] of DOMAIN_ALIASES) {
+    if (email.endsWith(from)) out.push(email.slice(0, -from.length) + to);
+  }
+  return out;
+}
+
+/** 매칭 시도 이메일 후보. 대표가 더미면 linkedEmails 우선. 회사 도메인 별칭도 확장. */
 function emailCandidates(id: OAuthIdentity): string[] {
   const isDummy = id.email.endsWith(DUMMY_EMAIL_SUFFIX);
-  const all = isDummy ? [...id.linkedEmails, id.email] : [id.email, ...id.linkedEmails];
-  return [...new Set(all.filter(Boolean))];
+  const base = isDummy ? [...id.linkedEmails, id.email] : [id.email, ...id.linkedEmails];
+  const expanded = base.filter(Boolean).flatMap(expandDomainAliases);
+  return [...new Set(expanded)];
 }
 
 /**
